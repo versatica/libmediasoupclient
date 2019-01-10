@@ -56,7 +56,7 @@ SendTransport* Device::CreateSendTransport(
 		throw Exception("missing transportRemoteParameters[\"id\"]");
 
 	// Create a new Transport.
-	auto transport = new SendTransport(
+	auto* transport = new SendTransport(
 	  listener,
 	  transportRemoteParameters,
 	  iceServers,
@@ -87,7 +87,7 @@ RecvTransport* Device::CreateRecvTransport(
 		throw Exception("missing transportRemoteParameters[\"id\"]");
 
 	// Create a new Transport.
-	auto transport = new RecvTransport(
+	auto* transport = new RecvTransport(
 	  listener,
 	  transportRemoteParameters,
 	  iceServers,

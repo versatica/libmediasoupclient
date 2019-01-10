@@ -3,8 +3,8 @@
 
 #include "Transport.hpp"
 #include "Logger.hpp"
-#include "ortc.hpp"
 #include "VideoLayers.hpp"
+#include "ortc.hpp"
 #include <string>
 #include <utility>
 
@@ -109,7 +109,7 @@ std::future<Producer*> SendTransport::Produce(
 		return reject(error);
 	}
 
-	auto producer = new Producer(
+	auto* producer = new Producer(
 	  this,
 	  producerPublicListener,
 	  producerRemoteParameters["id"].get<std::string>(),
@@ -267,7 +267,7 @@ std::future<Consumer*> RecvTransport::Consume(
 		return reject(error);
 	}
 
-	auto consumer = new Consumer(
+	auto* consumer = new Consumer(
 	  this,
 	  consumerPublicListener,
 	  consumerParameters["id"].get<std::string>(),

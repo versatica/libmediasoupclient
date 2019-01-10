@@ -14,7 +14,6 @@ static std::set<std::string> layers = {
 
 inline bool isValidSpatialLayer(const std::string& layer)
 {
-
 	return layers.find(layer) != layers.end();
 }
 

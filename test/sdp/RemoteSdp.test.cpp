@@ -88,7 +88,7 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 		};
 		/* clang-format on */
 
-		auto remoteSdp = new Sdp::RemoteSdp(transportRemoteParameters, sendingRtpParametersByKind);
+		auto* remoteSdp = new Sdp::RemoteSdp(transportRemoteParameters, sendingRtpParametersByKind);
 
 		auto sdp         = helpers::readFile("test/sdp/data/jssip.sdp");
 		auto localSdpObj = sdptransform::parse(sdp);
@@ -259,7 +259,7 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 		};
 		/* clang-format on */
 
-		auto remoteSdp = new Sdp::RemoteSdp(transportRemoteParameters, sendingRtpParametersByKind);
+		auto* remoteSdp = new Sdp::RemoteSdp(transportRemoteParameters, sendingRtpParametersByKind);
 
 		auto sdp         = helpers::readFile("test/sdp/data/audio_video.sdp");
 		auto localSdpObj = sdptransform::parse(sdp);

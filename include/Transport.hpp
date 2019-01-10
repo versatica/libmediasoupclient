@@ -156,7 +156,8 @@ public:
 
 	std::future<Consumer*> Consume(
 	  Consumer::PublicListener* consumerPublicListener,
-	  const json& consumerRemoteParameters, json appData);
+	  const json& consumerRemoteParameters,
+	  json appData);
 
 	/* Virtual methods inherited from Transport. */
 public:

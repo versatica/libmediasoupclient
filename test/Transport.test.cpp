@@ -93,8 +93,7 @@ TEST_CASE("SendTransport", "[Transport][SendTransport]")
 		auto track  = pc->CreateAudioTrack("audio-track-id", source);
 
 		auto future = sendTransport.Produce(
-			&producerPublicListener,
-		  track, false /* simulcast */
+		  &producerPublicListener, track, false /* simulcast */
 		);
 
 		REQUIRE_NOTHROW(future.get());
@@ -109,8 +108,11 @@ TEST_CASE("SendTransport", "[Transport][SendTransport]")
 		videoTrack = pc->CreateVideoTrack("video-track-id", videoSource);
 
 		auto future = sendTransport.Produce(
-			&producerPublicListener,
-		  videoTrack, true /* simulcast */, "high" /* maxSpatialLayer */, nullptr /* appData */
+		  &producerPublicListener,
+		  videoTrack,
+		  true /* simulcast */,
+		  "high" /* maxSpatialLayer */,
+		  nullptr /* appData */
 		);
 
 		REQUIRE_NOTHROW(producer = future.get());
@@ -253,7 +255,8 @@ TEST_CASE("RecvTransport", "[Transport][RecvTransport]")
 		auto audioConsumerRemoteParameters = generateConsumerRemoteParameters("audio/opus");
 		auto videoConsumerRemoteParameters = generateConsumerRemoteParameters("video/VP8");
 
-		auto future = recvTransport.Consume(&consumerPublicListener, audioConsumerRemoteParameters, nullptr);
+		auto future =
+		  recvTransport.Consume(&consumerPublicListener, audioConsumerRemoteParameters, nullptr);
 
 		REQUIRE_NOTHROW(consumer = future.get());
 		REQUIRE(

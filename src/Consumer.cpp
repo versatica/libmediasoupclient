@@ -16,8 +16,9 @@ Consumer::Consumer(
   webrtc::MediaStreamTrackInterface* track,
   json rtpParameters,
   json appData)
-  : listener(listener), publicListener(publicListener), id(std::move(id)), producerId(std::move(producerId)), track(track),
-    rtpParameters(std::move(rtpParameters)), appData(std::move(appData))
+  : listener(listener), publicListener(publicListener), id(std::move(id)),
+    producerId(std::move(producerId)), track(track), rtpParameters(std::move(rtpParameters)),
+    appData(std::move(appData))
 {
 	MSC_TRACE();
 }

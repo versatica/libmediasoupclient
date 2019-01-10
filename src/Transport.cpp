@@ -110,7 +110,12 @@ std::future<Producer*> SendTransport::Produce(
 	}
 
 	auto producer = new Producer(
-	  this, producerPublicListener, producerRemoteParameters["id"].get<std::string>(), track, producerRemoteParameters, appData);
+	  this,
+	  producerPublicListener,
+	  producerRemoteParameters["id"].get<std::string>(),
+	  track,
+	  producerRemoteParameters,
+	  appData);
 
 	this->producers[producer->GetId()] = producer;
 
@@ -226,8 +231,7 @@ RecvTransport::RecvTransport(
  * Consume a remote Producer.
  */
 std::future<Consumer*> RecvTransport::Consume(
-	  Consumer::PublicListener* consumerPublicListener,
-	  const json& consumerRemoteParameters, json appData)
+  Consumer::PublicListener* consumerPublicListener, const json& consumerRemoteParameters, json appData)
 {
 	MSC_TRACE();
 
@@ -276,7 +280,7 @@ std::future<Consumer*> RecvTransport::Consume(
 
 	auto consumer = new Consumer(
 	  this,
-		consumerPublicListener,
+	  consumerPublicListener,
 	  consumerParameters["id"].get<std::string>(),
 	  consumerParameters["producerId"].get<std::string>(),
 	  track,

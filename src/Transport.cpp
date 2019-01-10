@@ -3,8 +3,8 @@
 
 #include "Transport.hpp"
 #include "Logger.hpp"
-#include "Utils.hpp"
 #include "ortc.hpp"
+#include "VideoLayers.hpp"
 #include <string>
 #include <utility>
 
@@ -67,7 +67,7 @@ std::future<Producer*> SendTransport::Produce(
 		return reject(Exception("Track ended"));
 	if (simulcast && track->kind() == "audio")
 		return reject(Exception("Cannot set simulcast with audio track"));
-	if (simulcast && !Utils::isValidSpatialLayer(maxSpatialLayer))
+	if (simulcast && !isValidSpatialLayer(maxSpatialLayer))
 		return reject(Exception("Invalid maxSpatialLayer"));
 
 	json rtpParameters;

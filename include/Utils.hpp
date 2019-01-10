@@ -14,8 +14,6 @@ namespace Utils
 
 	std::vector<std::string> split(const std::string& s, char delimiter);
 
-	bool isValidSpatialLayer(const std::string& layer);
-
 	/* Inline utils implementations */
 
 	template<typename T>
@@ -43,19 +41,6 @@ namespace Utils
 			tokens.push_back(token);
 		}
 		return tokens;
-	}
-
-	inline bool isValidSpatialLayer(const std::string& layer)
-	{
-		/* clang-format off */
-		static std::set<std::string> layers = {
-			{ "low"    },
-			{ "medium" },
-			{ "high"   }
-		};
-		/* clang-format on */
-
-		return layers.find(layer) != layers.end();
 	}
 } // namespace Utils
 

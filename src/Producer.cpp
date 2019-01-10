@@ -5,7 +5,7 @@
 
 #include "Exception.hpp"
 #include "Logger.hpp"
-#include "Utils.hpp"
+#include "VideoLayers.hpp"
 #include <utility>
 
 Producer::Producer(
@@ -146,7 +146,7 @@ std::future<void> Producer::SetMaxSpatialLayer(const std::string& spatialLayer)
 		return reject(Exception("Invalid state"));
 	if (this->track->kind() != "video")
 		return reject(Exception("Not a video Producer"));
-	if (!Utils::isValidSpatialLayer(spatialLayer))
+	if (!isValidSpatialLayer(spatialLayer))
 		return reject(Exception("Invalid spatial layer"));
 
 	if (spatialLayer == this->maxSpatialLayer)

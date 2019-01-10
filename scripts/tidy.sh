@@ -13,8 +13,8 @@ if [ "${OS}" != "Darwin" ] ; then
 fi
 
 current_dir_name=${PROJECT_PWD##*/}
-if [ "${current_dir_name}" != "mediasoup-client-native" ] ; then
-	echo ">>> [ERROR] $(basename $0) must be called from mediasoup-client-native/ root directory" >&2
+if [ "${current_dir_name}" != "libmediasoupclient" ] ; then
+	echo ">>> [ERROR] $(basename $0) must be called from libmediasoupclient/ root directory" >&2
 	exit 1
 fi
 

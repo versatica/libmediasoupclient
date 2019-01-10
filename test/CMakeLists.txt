@@ -1,4 +1,4 @@
-include_directories(${mediasoup-client_SOURCE_DIR}/include)
+include_directories(${mediasoupclient_SOURCE_DIR}/include)
 include_directories(include)
 
 set(
@@ -15,6 +15,6 @@ set(
 	tests.cpp
 )
 
-add_executable(test_mediasoup-client ${SOURCE_FILES} ${HEADER_FILES})
+add_executable(test_mediasoupclient ${SOURCE_FILES} ${HEADER_FILES})
 
-target_link_libraries(test_mediasoup-client mediasoup-client)
+target_link_libraries(test_mediasoupclient mediasoupclient)

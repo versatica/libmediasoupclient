@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.3)
 
-project(mediasoup-client VERSION 0.0.1)
+project(mediasoupclient VERSION 0.0.1)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -36,7 +36,7 @@ endif(APPLE)
 
 subdirs(test)
 
-include_directories(${mediasoup-client_SOURCE_DIR}/include)
+include_directories(${mediasoupclient_SOURCE_DIR}/include)
 
 set(
 	SOURCE_FILES
@@ -56,7 +56,7 @@ set(
 #	HEADER_FILES
 #)
 
-add_library(mediasoup-client STATIC ${SOURCE_FILES} ${HEADER_FILES})
+add_library(mediasoupclient STATIC ${SOURCE_FILES} ${HEADER_FILES})
 
 # Add dependencies.
 include_directories("${CMAKE_SOURCE_DIR}/deps/libwebrtc/include")
@@ -69,5 +69,5 @@ target_link_libraries(${PROJECT_NAME}
 	${EXTRA_LIBS}
 )
 
-install(TARGETS mediasoup-client DESTINATION lib)
-install(FILES ${HEADER_FILES} DESTINATION include/mediasoup-client)
+install(TARGETS mediasoupclient DESTINATION lib)
+install(FILES ${HEADER_FILES} DESTINATION include/mediasoupclient)

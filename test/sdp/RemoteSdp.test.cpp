@@ -165,7 +165,7 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 		REQUIRE(parsed["origin"]["ipVer"] == 4);
 		REQUIRE(parsed["origin"]["netType"] == "IN");
 		REQUIRE(parsed["origin"]["sessionVersion"] == 1);
-		REQUIRE(parsed["origin"]["username"] == "mediasoup-client-native");
+		REQUIRE(parsed["origin"]["username"] == "libmediasoupclient");
 
 		REQUIRE(parsed.find("timing") != parsed.end());
 		REQUIRE(parsed["timing"]["start"] == 0);
@@ -336,7 +336,7 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 		REQUIRE(parsed["origin"]["ipVer"] == 4);
 		REQUIRE(parsed["origin"]["netType"] == "IN");
 		REQUIRE(parsed["origin"]["sessionVersion"] == 1);
-		REQUIRE(parsed["origin"]["username"] == "mediasoup-client-native");
+		REQUIRE(parsed["origin"]["username"] == "libmediasoupclient");
 
 		REQUIRE(parsed.find("timing") != parsed.end());
 		REQUIRE(parsed["timing"]["start"] == 0);

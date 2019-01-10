@@ -38,11 +38,11 @@ flags = [
     'c++',
     '-DWEBRTC_MAC',
     '-DWEBRTC_POSIX',
-    '-I/Users/jmillan/src/mediasoup-client-native/deps/libsdptransform/include',
-    '-I/Users/jmillan/src/mediasoup-client-native/deps/libwebrtc/include',
-    '-I/Users/jmillan/src/mediasoup-client-native/deps/libwebrtc/include/webrtc',
-    '-I/Users/jmillan/src/mediasoup-client-native/include',
-    '-I/Users/jmillan/src/mediasoup-client-native/test/include',
+    '-I/Users/jmillan/src/libmediasoupclient/deps/libsdptransform/include',
+    '-I/Users/jmillan/src/libmediasoupclient/deps/libwebrtc/include',
+    '-I/Users/jmillan/src/libmediasoupclient/deps/libwebrtc/include/webrtc',
+    '-I/Users/jmillan/src/libmediasoupclient/include',
+    '-I/Users/jmillan/src/libmediasoupclient/test/include',
     '-std=gnu++11',
 ]
 

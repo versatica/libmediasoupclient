@@ -70,7 +70,7 @@ std::string Sdp::RemoteSdp::CreateAnswerSdp(const json& localSdpObj)
 		{ "netType",        "IN"                             },
 		{ "sessionId",      this->sdpGlobalFields["id"]      },
 		{ "sessionVersion", this->sdpGlobalFields["version"] },
-		{ "username",       "mediasoup-client-native"        }
+		{ "username",       "libmediasoupclient"        }
 	};
 	/* clang-format on */
 
@@ -340,7 +340,7 @@ std::string Sdp::RemoteSdp::CreateOfferSdp(const json& receiverInfos)
 		{ "netType",        "IN"                             },
 		{ "sessionId",      this->sdpGlobalFields["id"]      },
 		{ "sessionVersion", this->sdpGlobalFields["version"] },
-		{ "username",       "mediasoup-client-native"        }
+		{ "username",       "libmediasoupclient"        }
 	};
 	/* clang-format on */
 

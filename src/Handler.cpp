@@ -538,13 +538,12 @@ RecvHandler::RecvHandler(
   const json& transportRemoteParameters,
   const json& iceServers,
   const std::string& iceTransportPolicy,
-  const json& proprietaryConstraints,
-  const json& rtpParametersByKind)
+  const json& proprietaryConstraints)
   : ::Handler(listener, iceServers, iceTransportPolicy, proprietaryConstraints)
 {
 	MSC_TRACE();
 
-	this->remoteSdp.reset(new Sdp::RemoteSdp(transportRemoteParameters, rtpParametersByKind));
+	this->remoteSdp.reset(new Sdp::RemoteSdp(transportRemoteParameters));
 };
 
 std::future<webrtc::MediaStreamTrackInterface*> RecvHandler::Receive(
@@ -578,13 +577,12 @@ std::future<webrtc::MediaStreamTrackInterface*> RecvHandler::Receive(
 	/* clang-format off */
 	json receiverInfo =
 	{
-		{ "mid",      mid              },
-		{ "kind",     kind             },
-		{ "closed",   false            },
-		{ "streamId", id               },
-		{ "trackId",  trackId          },
-		{ "ssrc",     encoding["ssrc"] },
-		{ "cname",    cname            }
+		{ "mid",           mid           },
+		{ "kind",          kind          },
+		{ "closed",        false         },
+		{ "streamId",      id            },
+		{ "trackId",       trackId       },
+		{ "rtpParameters", rtpParameters }
 	};
 	/* clang-format on */
 

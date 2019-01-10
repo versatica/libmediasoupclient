@@ -316,10 +316,10 @@ std::string Sdp::RemoteSdp::CreateOfferSdp(const json& receiverInfos)
 	json sdpObj = json::object();
 	json mids   = json::array();
 
-	for (auto& info : receiverInfos)
+	for (auto& receiverInfo : receiverInfos)
 	{
-		auto it = info.find("mid");
-		if (it == info.end())
+		auto it = receiverInfo.find("mid");
+		if (it == receiverInfo.end())
 			continue;
 
 		mids.push_back((*it).get<std::string>());
@@ -391,29 +391,31 @@ std::string Sdp::RemoteSdp::CreateOfferSdp(const json& receiverInfos)
 		{ "hash", remoteDtlsParameters.at("fingerprints")[numFingerprints - 1]["value"] }
 	};
 
-	for (auto& info : receiverInfos)
+	for (auto& receiverInfo : receiverInfos)
 	{
-		auto closed           = info["closed"].get<bool>();
-		auto kind             = info["kind"].get<std::string>();
-		auto codecs           = json::array();
-		auto headerExtensions = json::array();
+		auto mid           = receiverInfo["mid"].get<std::string>();
+		auto kind          = receiverInfo["kind"].get<std::string>();
+		auto closed        = receiverInfo["closed"].get<bool>();
+		auto streamId      = receiverInfo["streamId"].get<std::string>();
+		auto trackId       = receiverInfo["trackId"].get<std::string>();
+		auto rtpParameters = receiverInfo["rtpParameters"];
+
+		auto codecs           = rtpParameters["codecs"];
+		auto headerExtensions = rtpParameters["headerExtensions"];
+		auto encodings        = rtpParameters["encodings"];
+		auto rtcp             = rtpParameters["rtcp"];
 		auto remoteMediaObj   = json::object();
 
 		if (kind != "application")
 		{
-			codecs           = this->sendingRtpParametersByKind[kind]["codecs"];
-			headerExtensions = this->sendingRtpParametersByKind[kind]["headerExtensions"];
-
 			remoteMediaObj["type"]       = kind;
 			remoteMediaObj["port"]       = 7;
 			remoteMediaObj["protocol"]   = "RTP/SAVPF";
 			remoteMediaObj["connection"] = { { "ip", "127.0.0.1" }, { "version", 4 } };
-			remoteMediaObj["mid"]        = info["mid"];
+			remoteMediaObj["mid"]        = mid;
 
-			std::string msid;
-			msid.append(info["streamId"].get<std::string>());
-			msid.append(" ");
-			msid.append(info["trackId"].get<std::string>());
+			std::string msid(streamId);
+			msid.append(" ").append(trackId);
 
 			remoteMediaObj["msid"] = msid;
 		}
@@ -423,7 +425,7 @@ std::string Sdp::RemoteSdp::CreateOfferSdp(const json& receiverInfos)
 			remoteMediaObj["port"]       = 7;
 			remoteMediaObj["protocol"]   = "DTLS/SCTP";
 			remoteMediaObj["connection"] = { { "ip", "127.0.0.1" }, { "version", 4 } };
-			remoteMediaObj["mid"]        = info["mid"];
+			remoteMediaObj["mid"]        = mid;
 		}
 
 		remoteMediaObj["iceUfrag"]   = remoteIceParameters["usernameFragment"];
@@ -574,35 +576,48 @@ std::string Sdp::RemoteSdp::CreateOfferSdp(const json& receiverInfos)
 
 			if (!closed)
 			{
+				auto encoding = encodings[0];
+				auto ssrc     = encoding["ssrc"].get<uint32_t>();
+
+				uint32_t rtxSsrc{ 0 };
+
+				auto it = encoding.find("rtx");
+				if (it != encoding.end())
+				{
+					auto rtx = (*it);
+					it       = rtx.find("ssrc");
+					if (it != rtx.end())
+					{
+						rtxSsrc = (*it);
+					}
+				}
+
 				remoteMediaObj["ssrcs"]      = json::array();
 				remoteMediaObj["ssrcGroups"] = json::array();
 
 				/* clang-format off */
 				remoteMediaObj["ssrcs"].push_back(
 				{
-					{ "id",        info["ssrc"]  },
+					{ "id",        ssrc          },
 					{ "attribute", "cname"       },
-					{ "value",     info["cname"] }
+					{ "value",     rtcp["cname"] }
 				});
 				/* clang-format on */
 
-				auto it = info.find("rtxSsrc");
-				if (it != info.end())
+				if (rtxSsrc)
 				{
-					auto rtcSsrc = *it;
-
 					/* clang-format off */
 					remoteMediaObj["ssrcs"].push_back(
 						{
-							{ "id",        rtcSsrc         },
+							{ "id",        rtxSsrc         },
 							{ "attribute", "cname"         },
-							{ "value",     info["cname"]   }
+							{ "value",     rtcp["cname"]   }
 						});
 					/* clang-format on */
 
 					std::string ssrcs;
-					ssrcs.append(info["ssrc"].get<std::string>());
-					ssrcs.append(info["rtcSsrc"].get<std::string>());
+					ssrcs.append(std::to_string(ssrc));
+					ssrcs.append(std::to_string(rtxSsrc));
 
 					// Associate original and retransmission SSRC.
 					/* clang-format off */

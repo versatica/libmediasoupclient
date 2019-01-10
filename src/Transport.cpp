@@ -210,19 +210,8 @@ RecvTransport::RecvTransport(
 {
 	MSC_TRACE();
 
-	json rtpParametersByKind = {
-		{ "audio", ortc::getReceivingFullRtpParameters("audio", extendedRtpCapabilities) },
-		{ "video", ortc::getReceivingFullRtpParameters("video", extendedRtpCapabilities) }
-	};
-
-	this->handler.reset(new RecvHandler({
-	  this,
-	  transportRemoteParameters,
-	  iceServers,
-	  iceTransportPolicy,
-	  proprietaryConstraints,
-	  rtpParametersByKind,
-	}));
+	this->handler.reset(new RecvHandler(
+	  { this, transportRemoteParameters, iceServers, iceTransportPolicy, proprietaryConstraints }));
 
 	::Transport::SetHandler(this->handler.get());
 }

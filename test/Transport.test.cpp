@@ -286,7 +286,7 @@ TEST_CASE("RecvTransport", "[Transport][RecvTransport]")
 				"rtcpFeedback" : [],
 				"parameters"   :
 				{
-					"useinbandfec" : 1
+					"useinbandfec" : "1"
 				}
 			})"_json);
 	}

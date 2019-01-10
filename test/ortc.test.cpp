@@ -117,31 +117,6 @@ TEST_CASE("GetSendingRtpParameters", "[GetSendingRtpParameters]")
 	}
 }
 
-TEST_CASE("GetReceivingFullRtpParameters", "[GetReceivingFullRtpParameters]")
-{
-	SECTION("succeeds if localCaps equals remoteCaps")
-	{
-		json remoteCaps = generateRouterRtpCapabilities();
-		json localCaps  = generateRouterRtpCapabilities();
-
-		auto extendedRtpCapabilities = ortc::getExtendedCapabilities(localCaps, remoteCaps);
-		auto audioReceivingRtpParameters =
-		  ortc::getReceivingFullRtpParameters("audio", extendedRtpCapabilities);
-
-		REQUIRE(audioReceivingRtpParameters["codecs"].size() == 1);
-		REQUIRE(audioReceivingRtpParameters["codecs"][0]["name"] == "opus");
-
-		auto videoReceivingRtpParameters =
-		  ortc::getReceivingFullRtpParameters("video", extendedRtpCapabilities);
-
-		REQUIRE(videoReceivingRtpParameters["codecs"].size() == 4);
-		REQUIRE(videoReceivingRtpParameters["codecs"][0]["name"] == "VP8");
-		REQUIRE(videoReceivingRtpParameters["codecs"][1]["name"] == "rtx");
-		REQUIRE(videoReceivingRtpParameters["codecs"][2]["name"] == "H264");
-		REQUIRE(videoReceivingRtpParameters["codecs"][3]["name"] == "rtx");
-	}
-}
-
 TEST_CASE("ortc::canSend", "[ortc::canSend]")
 {
 	json remoteCaps = generateRouterRtpCapabilities();

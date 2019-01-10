@@ -103,8 +103,7 @@ public:
 	  const json& transportRemoteParameters,
 	  const json& iceServers,
 	  const std::string& iceTransportPolicy,
-	  const json& proprietaryConstraints,
-	  const json& rtpParametersByKind);
+	  const json& proprietaryConstraints);
 
 	std::future<webrtc::MediaStreamTrackInterface*> Receive(
 	  const std::string& id, const std::string& kind, const json& rtpParameters);

@@ -10,7 +10,7 @@ namespace Sdp
 	class RemoteSdp
 	{
 	public:
-		explicit RemoteSdp(json transportRemoteParameters, json sendingRtpParametersByKind);
+		explicit RemoteSdp(json transportRemoteParameters, json sendingRtpParametersByKind = json::array());
 
 	public:
 		std::string CreateAnswerSdp(const json& localSdpObj);

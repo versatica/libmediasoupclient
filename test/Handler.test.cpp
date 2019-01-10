@@ -149,35 +149,16 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 
 TEST_CASE("RecvHandler", "[Handler][RecvHandler]")
 {
-	/* clang-format off */
-	static json rtpParameters =
-	{
-		{ "encodings",
-			{
-				{
-					{ "ssrc", 11111111 }
-				}
-			}
-		},
-		{ "rtcp",
-			{
-				{ "cname",       "test-cname" },
-				{ "reducedSize", true         },
-				{ "mux",         true         }
-			}
-		}
-	};
-	/* clang-format on */
+	auto consumerRemoteParameters = generateConsumerRemoteParameters("audio/opus");
+	auto producerId               = consumerRemoteParameters["producerId"].get<std::string>();
+	auto id                       = consumerRemoteParameters["id"].get<std::string>();
+	auto kind                     = consumerRemoteParameters["kind"].get<std::string>();
+	auto rtpParameters            = consumerRemoteParameters["rtpParameters"];
 
 	static FakeHandlerListener handlerListener;
 
 	static RecvHandler recvHandler(
-	  &handlerListener,
-	  TransportRemoteParameters,
-	  IceServers,
-	  IceTransportPolicy,
-	  ProprietaryConstraints,
-	  RtpParametersByKind);
+	  &handlerListener, TransportRemoteParameters, IceServers, IceTransportPolicy, ProprietaryConstraints);
 
 	SECTION("'recvHander.Receive()' succeeds if correct rtpParameters are provided")
 	{

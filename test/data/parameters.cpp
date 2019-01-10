@@ -305,7 +305,7 @@ json generateConsumerRemoteParameters(const std::string& codecMimeType)
 						"rtcpFeedback" : [],
 						"parameters"   :
 						{
-							"useinbandfec" : 1
+							"useinbandfec" : "1"
 						}
 					}
 				],
@@ -402,7 +402,7 @@ json generateConsumerRemoteParameters(const std::string& codecMimeType)
 						],
 						"parameters" :
 						{
-							"x-google-start-bitrate" : 1500
+							"x-google-start-bitrate" : "1500"
 						}
 					},
 					{
@@ -413,7 +413,7 @@ json generateConsumerRemoteParameters(const std::string& codecMimeType)
 						"rtcpFeedback" : [],
 						"parameters"   :
 						{
-							"apt" : 101
+							"apt" : "101"
 						}
 					}
 				],

@@ -18,7 +18,7 @@ public:
 
 	const std::string& GetHandlerName() const;
 	bool Loaded() const;
-	json GetRtpCapabilities() const;
+	const json& GetRtpCapabilities() const;
 	void Load(const json& routerRtpCapabilities);
 	bool CanProduce(const std::string& kind);
 
@@ -74,7 +74,7 @@ inline bool Device::Loaded() const
 /**
  * RTP capabilities of the Device for receiving media.
  */
-inline json Device::GetRtpCapabilities() const
+inline const json& Device::GetRtpCapabilities() const
 {
 	if (!this->loaded)
 		throw Exception("Not loaded");

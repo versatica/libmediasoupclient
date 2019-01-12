@@ -8,9 +8,9 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#include "webrtc/media/base/fakevideocapturer.h"
+#include "media/base/fakevideocapturer.h"
 
-#include "webrtc/rtc_base/arraysize.h"
+#include "rtc_base/arraysize.h"
 
 namespace cricket {
 	FakeVideoCapturer::FakeVideoCapturer(bool isScreencast)

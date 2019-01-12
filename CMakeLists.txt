@@ -59,13 +59,12 @@ set(
 add_library(mediasoupclient STATIC ${SOURCE_FILES} ${HEADER_FILES})
 
 # Add dependencies.
-include_directories("${CMAKE_SOURCE_DIR}/deps/libwebrtc/include")
-include_directories("${CMAKE_SOURCE_DIR}/deps/libwebrtc/include/webrtc")
 include_directories("${CMAKE_SOURCE_DIR}/deps/libsdptransform/include")
+include_directories("${CMAKE_SOURCE_DIR}/deps/libwebrtc/include")
 
 target_link_libraries(${PROJECT_NAME}
-	${CMAKE_SOURCE_DIR}/deps/libwebrtc/lib/libwebrtc.a
 	${CMAKE_SOURCE_DIR}/deps/libsdptransform/build/libsdptransform.a
+	${CMAKE_SOURCE_DIR}/deps/libwebrtc/lib/libwebrtc.a
 	${EXTRA_LIBS}
 )
 

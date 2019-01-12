@@ -5,8 +5,8 @@
 #include "Handler.hpp"
 #include "Producer.hpp"
 #include "json.hpp"
-#include "webrtc/api/mediastreaminterface.h"    // MediaStreamTrackInterface
-#include "webrtc/api/peerconnectioninterface.h" // IceConnectionState
+#include "api/mediastreaminterface.h"    // MediaStreamTrackInterface
+#include "api/peerconnectioninterface.h" // IceConnectionState
 #include <future>
 #include <map>
 #include <memory> // unique_ptr

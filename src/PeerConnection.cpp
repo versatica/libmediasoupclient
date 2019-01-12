@@ -4,11 +4,11 @@
 #include "PeerConnection.hpp"
 #include "Exception.hpp"
 #include "Logger.hpp"
-#include "webrtc/api/audio_codecs/builtin_audio_decoder_factory.h"
-#include "webrtc/api/audio_codecs/builtin_audio_encoder_factory.h"
-#include "webrtc/api/video_codecs/builtin_video_decoder_factory.h"
-#include "webrtc/api/video_codecs/builtin_video_encoder_factory.h"
-#include "webrtc/rtc_base/ssladapter.h"
+#include "api/audio_codecs/builtin_audio_decoder_factory.h"
+#include "api/audio_codecs/builtin_audio_encoder_factory.h"
+#include "api/video_codecs/builtin_video_decoder_factory.h"
+#include "api/video_codecs/builtin_video_encoder_factory.h"
+#include "rtc_base/ssladapter.h"
 #include <utility>
 
 /*

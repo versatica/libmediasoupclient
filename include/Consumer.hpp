@@ -2,7 +2,7 @@
 #define MSC_CONSUMER_HPP
 
 #include "json.hpp"
-#include "webrtc/api/mediastreaminterface.h" // MediaStreamTrackInterface
+#include "api/mediastreaminterface.h" // MediaStreamTrackInterface
 #include <future>
 #include <string>
 

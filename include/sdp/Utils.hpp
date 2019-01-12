@@ -3,7 +3,7 @@
 
 #include "json.hpp"
 #include "sdptransform.hpp"
-#include "webrtc/api/mediastreaminterface.h"
+#include "api/mediastreaminterface.h"
 
 namespace Sdp
 {

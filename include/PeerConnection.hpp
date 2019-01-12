@@ -3,7 +3,7 @@
 
 #include "Exception.hpp"
 #include "json.hpp"
-#include "webrtc/api/peerconnectioninterface.h"
+#include "api/peerconnectioninterface.h"
 #include <future> // std::promise, std::future
 #include <list>
 

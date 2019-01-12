@@ -1,4 +1,1 @@
-* track.stop() is missing in MediaStreamTrackInterface. Do we need to use an implementation or build our own one?
-* Enhance CMake scripts or think about another building system.
-* libwebrtc build.
-* Get rid of unused symbols in libwebrtc.a.
+* Enhance CMake scripts to build libsdptransform from it (or think about another building system).

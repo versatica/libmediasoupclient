@@ -7,6 +7,8 @@
 #include <set>
 #include <sstream> // istringstream
 
+namespace mediasoupclient
+{
 namespace Utils
 {
 	template<typename T>
@@ -43,5 +45,6 @@ namespace Utils
 		return tokens;
 	}
 } // namespace Utils
+} // namespace mediasoupclient
 
 #endif

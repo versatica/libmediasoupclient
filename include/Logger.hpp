@@ -54,6 +54,9 @@
 	#define _MSC_LOG_DEV_ENABLED false
 #endif
 
+namespace mediasoupclient
+{
+
 class Logger
 {
 public:
@@ -180,5 +183,6 @@ public:
 	}
 
 // clang-format on
+} // namespace mediasoupclient
 
 #endif

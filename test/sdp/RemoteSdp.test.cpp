@@ -3,6 +3,8 @@
 #include "sdp/RemoteSdp.hpp"
 #include "sdptransform.hpp"
 
+using namespace mediasoupclient;
+
 TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 {
 	SECTION("audio only", "[CreateAnswerSdp]")

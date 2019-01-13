@@ -11,6 +11,8 @@
 
 using json = nlohmann::json;
 
+namespace mediasoupclient
+{
 class Handler : public PeerConnection::Listener
 {
 public:
@@ -140,5 +142,6 @@ inline void Handler::Close()
 {
 	this->pc->Close();
 };
+} // namespace mediasoupclient
 
 #endif

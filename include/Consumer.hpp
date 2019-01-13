@@ -8,6 +8,8 @@
 
 using json = nlohmann::json;
 
+namespace mediasoupclient
+{
 class Consumer
 {
 public:
@@ -129,5 +131,6 @@ inline bool Consumer::IsPaused() const
 {
 	return !this->track->enabled();
 }
+} // namespace mediasoupclient
 
 #endif

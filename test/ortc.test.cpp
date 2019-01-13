@@ -2,6 +2,8 @@
 #include "data/parameters.hpp"
 #include "ortc.hpp"
 
+using namespace mediasoupclient;
+
 TEST_CASE("GetExtendedCapabilities", "[ortc][GetExtendedCapabilities]")
 {
 	SECTION("succeeds if localCaps equals remoteCaps")

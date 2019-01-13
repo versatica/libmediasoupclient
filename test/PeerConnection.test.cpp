@@ -4,6 +4,8 @@
 #include "helpers.hpp"
 #include "sdp/Utils.hpp"
 
+using namespace mediasoupclient;
+
 TEST_CASE("PeerConnection", "[PeerConnection]")
 {
 	static std::list<std::string> iceServerUris;

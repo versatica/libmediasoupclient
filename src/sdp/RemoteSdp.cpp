@@ -8,6 +8,8 @@
 #include "sdptransform.hpp"
 #include <utility>
 
+namespace mediasoupclient
+{
 /* Sdp::RemoteSdp methods */
 
 Sdp::RemoteSdp::RemoteSdp(json transportRemoteParameters, json sendingRtpParametersByKind)
@@ -653,3 +655,4 @@ std::string Sdp::RemoteSdp::CreateOfferSdp(const json& receiverInfos)
 
 	return sdp;
 }
+} // namespace mediasoupclient

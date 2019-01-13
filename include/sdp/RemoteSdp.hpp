@@ -5,6 +5,8 @@
 
 using json = nlohmann::json;
 
+namespace mediasoupclient
+{
 namespace Sdp
 {
 	class RemoteSdp
@@ -32,5 +34,6 @@ namespace Sdp
 		json sdpGlobalFields = json::object();
 	};
 } // namespace Sdp
+} // namespace mediasoupclient
 
 #endif

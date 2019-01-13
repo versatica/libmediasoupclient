@@ -5,6 +5,8 @@
 #include "sdptransform.hpp"
 #include "api/mediastreaminterface.h"
 
+namespace mediasoupclient
+{
 namespace Sdp
 {
 	namespace Utils
@@ -15,5 +17,6 @@ namespace Sdp
 		  json& sdpObj, const webrtc::MediaStreamTrackInterface* track, uint8_t numStreams);
 	} // namespace Utils
 } // namespace Sdp
+} // namespace mediasoupclient
 
 #endif

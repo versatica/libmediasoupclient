@@ -6,6 +6,8 @@
 #include "ortc.hpp"
 #include <memory>
 
+using namespace mediasoupclient;
+
 TEST_CASE("Device", "[Device]")
 {
 	static const json TransportRemoteParameters = generateTransportRemoteParameters();

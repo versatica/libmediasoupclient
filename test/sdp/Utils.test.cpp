@@ -2,6 +2,8 @@
 #include "helpers.hpp"
 #include "sdp/Utils.hpp"
 
+using namespace mediasoupclient;
+
 TEST_CASE("Sdp::Utils", "[Sdp][Utils]")
 {
 	SECTION("ExtractDtlsParameters")

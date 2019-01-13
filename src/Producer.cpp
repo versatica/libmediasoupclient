@@ -8,6 +8,8 @@
 #include "VideoLayers.hpp"
 #include <utility>
 
+namespace mediasoupclient
+{
 Producer::Producer(
   Producer::Listener* listener,
   Producer::PublicListener* publicListener,
@@ -171,3 +173,4 @@ std::future<void> Producer::SetMaxSpatialLayer(const std::string& spatialLayer)
 
 	return promise.get_future();
 }
+} // namespace mediasoupclient

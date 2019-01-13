@@ -4,6 +4,8 @@
 #include <set>
 #include <string>
 
+namespace mediasoupclient
+{
 /* clang-format off */
 static std::set<std::string> layers = {
 	{ "low"    },
@@ -16,5 +18,6 @@ inline bool isValidSpatialLayer(const std::string& layer)
 {
 	return layers.find(layer) != layers.end();
 }
+} // namespace mediasoupclient
 
 #endif

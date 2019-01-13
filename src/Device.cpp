@@ -7,6 +7,8 @@
 #include "ortc.hpp"
 #include <utility>
 
+namespace mediasoupclient
+{
 /**
  * Initialize the Device.
  */
@@ -98,3 +100,4 @@ RecvTransport* Device::CreateRecvTransport(
 
 	return transport;
 }
+} // namespace mediasoupclient

@@ -11,6 +11,8 @@ using json = nlohmann::json;
 
 static std::string Name("webrtc70");
 
+namespace mediasoupclient
+{
 class PeerConnection
 {
 public:
@@ -269,5 +271,6 @@ inline std::future<json> PeerConnection::RTCStatsCollectorCallback::GetFuture()
 {
 	return this->promise.get_future();
 }
+} // namespace mediasoupclient
 
 #endif

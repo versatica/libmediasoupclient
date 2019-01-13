@@ -10,6 +10,8 @@
 #include <list>
 #include <utility>
 
+namespace mediasoupclient
+{
 /* Handler static methods */
 
 /*
@@ -121,7 +123,7 @@ SendHandler::SendHandler(
   const std::string& iceTransportPolicy,
   const json& proprietaryConstraints,
   const json& rtpParametersByKind)
-  : ::Handler(listener, iceServers, iceTransportPolicy, proprietaryConstraints, rtpParametersByKind)
+  : Handler(listener, iceServers, iceTransportPolicy, proprietaryConstraints, rtpParametersByKind)
 {
 	MSC_TRACE();
 
@@ -539,7 +541,7 @@ RecvHandler::RecvHandler(
   const json& iceServers,
   const std::string& iceTransportPolicy,
   const json& proprietaryConstraints)
-  : ::Handler(listener, iceServers, iceTransportPolicy, proprietaryConstraints)
+  : Handler(listener, iceServers, iceTransportPolicy, proprietaryConstraints)
 {
 	MSC_TRACE();
 
@@ -787,3 +789,4 @@ std::future<void> RecvHandler::RestartIce(const json& remoteIceParameters)
 
 	return promise.get_future();
 }
+} // namespace mediasoupclient

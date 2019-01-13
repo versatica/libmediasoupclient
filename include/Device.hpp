@@ -10,6 +10,8 @@
 
 using json = nlohmann::json;
 
+namespace mediasoupclient
+{
 class Device
 {
 public:
@@ -96,5 +98,6 @@ inline bool Device::CanProduce(const std::string& kind)
 
 	return this->canProduceByKind[kind];
 }
+} // namespace mediasoupclient
 
 #endif

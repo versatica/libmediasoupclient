@@ -4,6 +4,8 @@
 #include "Logger.hpp"
 #include <iostream>
 
+namespace mediasoupclient
+{
 /* Class variables. */
 
 Logger::LogHandlerInterface* Logger::handler{ nullptr };
@@ -36,3 +38,4 @@ void Logger::DefaultLogHandler::OnLog(LogLevel level, char* payload, size_t len)
 
 	std::cout << payload << std::endl;
 }
+} // namespace mediasoupclient

@@ -8,6 +8,8 @@
 
 using json = nlohmann::json;
 
+namespace mediasoupclient
+{
 class Producer
 {
 public:
@@ -119,5 +121,6 @@ inline std::future<json> Producer::GetStats() const
 {
 	return this->listener->OnGetStats(this);
 }
+} // namespace mediasoupclient
 
 #endif

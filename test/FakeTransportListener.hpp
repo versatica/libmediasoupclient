@@ -1,5 +1,7 @@
 #include "Transport.hpp"
 
+using namespace mediasoupclient;
+
 class FakeSendTransportListener : public SendTransport::Listener
 {
 public:

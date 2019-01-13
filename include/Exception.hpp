@@ -5,6 +5,8 @@
 #include <string>
 #include <utility>
 
+namespace mediasoupclient
+{
 class Exception : public std::exception
 {
 public:
@@ -20,5 +22,6 @@ public:
 private:
 	std::string error;
 };
+} // namespace mediasoupclient
 
 #endif

@@ -6,6 +6,8 @@
 
 using json = nlohmann::json;
 
+namespace mediasoupclient
+{
 namespace ortc
 {
 	json getExtendedCapabilities(const json& localCaps, const json& remoteCaps);
@@ -14,4 +16,6 @@ namespace ortc
 	bool canSend(const std::string& kind, const json& extendedRtpCapabilities);
 	bool canReceive(const json& rtpParameters, const json& extendedRtpCapabilities);
 } // namespace ortc
+} // namespace mediasoupclient
+
 #endif

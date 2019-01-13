@@ -5,6 +5,8 @@
 #include <future>
 #include <memory>
 
+using namespace mediasoupclient;
+
 static const json TransportRemoteParameters = generateTransportRemoteParameters();
 static const json IceServers                = json::array();
 static const json ProprietaryConstraints    = json::array();

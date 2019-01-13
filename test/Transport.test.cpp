@@ -9,6 +9,8 @@
 #include <map>
 #include <memory>
 
+using namespace mediasoupclient;
+
 TEST_CASE("SendTransport", "[Transport][SendTransport]")
 {
 	static const json TransportRemoteParameters = generateTransportRemoteParameters();

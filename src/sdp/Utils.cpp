@@ -10,6 +10,8 @@
 #include <string>
 #include <vector>
 
+namespace mediasoupclient
+{
 namespace Sdp
 {
 	namespace Utils
@@ -89,7 +91,7 @@ namespace Sdp
 					return false;
 
 				auto line = (*it2).get<std::string>();
-				auto v    = ::Utils::split(line, ' ');
+				auto v    = mediasoupclient::Utils::split(line, ' ');
 
 				auto msid = v[1];
 
@@ -103,6 +105,8 @@ namespace Sdp
 
 		void fillRtpParametersForTrack(json& rtpParameters, const json& sdpObj, const std::string& mid)
 		{
+			MSC_TRACE();
+
 			auto index    = findMediaSection(sdpObj, mid);
 			auto mSection = sdpObj["media"][index];
 
@@ -164,7 +168,7 @@ namespace Sdp
 					continue;
 
 				auto fidLine = line["ssrcs"].get<std::string>();
-				auto v       = ::Utils::split(fidLine, ' ');
+				auto v       = mediasoupclient::Utils::split(fidLine, ' ');
 
 				auto ssrc    = v[0];
 				auto rtxSsrc = v[1];
@@ -213,6 +217,8 @@ namespace Sdp
 		void addLegacySimulcast(
 		  json& sdpObj, const webrtc::MediaStreamTrackInterface* track, uint8_t numStreams)
 		{
+			MSC_TRACE();
+
 			if (numStreams <= 1)
 				return;
 
@@ -234,7 +240,7 @@ namespace Sdp
 
 			auto ssrc = ssrcMsidLine["id"].get<std::uint32_t>();
 
-			auto v    = ::Utils::split(ssrcMsidLine["value"].get<std::string>(), ' ');
+			auto v    = mediasoupclient::Utils::split(ssrcMsidLine["value"].get<std::string>(), ' ');
 			auto msid = v[0];
 
 			uint32_t rtxSsrc{ 0 };
@@ -251,7 +257,7 @@ namespace Sdp
 					  if (line["semantics"].get<std::string>() != "FID")
 						  return false;
 
-					  auto v = ::Utils::split(line["ssrcs"].get<std::string>(), ' ');
+					  auto v = mediasoupclient::Utils::split(line["ssrcs"].get<std::string>(), ' ');
 					  if (std::stol(v[0]) == ssrc)
 					  {
 						  rtxSsrc = std::stol(v[1]);
@@ -419,3 +425,4 @@ namespace Sdp
 		};
 	} // namespace Utils
 } // namespace Sdp
+} // namespace mediasoupclient

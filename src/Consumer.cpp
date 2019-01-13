@@ -8,6 +8,8 @@
 #include "Utils.hpp"
 #include <utility>
 
+namespace mediasoupclient
+{
 Consumer::Consumer(
   Consumer::Listener* listener,
   Consumer::PublicListener* publicListener,
@@ -82,3 +84,4 @@ void Consumer::Resume()
 
 	this->track->set_enabled(true);
 }
+} // namespace mediasoupclient

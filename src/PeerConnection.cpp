@@ -11,6 +11,8 @@
 #include "rtc_base/ssladapter.h"
 #include <utility>
 
+namespace mediasoupclient
+{
 /*
  * Helper to convert webrtc::RtpCapabilities to nlohmann::json
  */
@@ -621,3 +623,4 @@ void PeerConnection::Listener::OnInterestingUsage(int /*usagePattern*/)
 {
 	MSC_TRACE();
 }
+} // namespace mediasoupclient

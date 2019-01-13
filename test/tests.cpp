@@ -4,6 +4,8 @@
 #include "PeerConnection.hpp"
 #include "Logger.hpp"
 
+using namespace mediasoupclient;
+
 int main(int argc, char* argv[])
 {
 	// There must be exactly one instance.

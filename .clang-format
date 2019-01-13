@@ -59,7 +59,7 @@ IndentWidth: 2
 IndentWrappedFunctionNames: false
 KeepEmptyLinesAtTheStartOfBlocks: false
 MaxEmptyLinesToKeep: 1
-NamespaceIndentation: All
+NamespaceIndentation: Inner
 PenaltyBreakBeforeFirstCallParameter: 5
 PenaltyBreakComment: 100
 PenaltyBreakFirstLessLess: 200

@@ -8,6 +8,8 @@
 #include <string>
 #include <utility>
 
+namespace mediasoupclient
+{
 /* SendTransport instance methods. */
 
 SendTransport::SendTransport(
@@ -37,7 +39,7 @@ SendTransport::SendTransport(
 	                                      proprietaryConstraints,
 	                                      rtpParametersByKind }));
 
-	::Transport::SetHandler(this->handler.get());
+	Transport::SetHandler(this->handler.get());
 }
 
 /*
@@ -213,7 +215,7 @@ RecvTransport::RecvTransport(
 	this->handler.reset(new RecvHandler(
 	  { this, transportRemoteParameters, iceServers, iceTransportPolicy, proprietaryConstraints }));
 
-	::Transport::SetHandler(this->handler.get());
+	Transport::SetHandler(this->handler.get());
 }
 
 /*
@@ -313,3 +315,4 @@ std::future<json> RecvTransport::OnGetStats(const Consumer* consumer)
 
 	return this->handler->GetReceiverStats(consumer->GetId());
 }
+} // namespace mediasoupclient

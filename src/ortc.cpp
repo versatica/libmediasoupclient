@@ -6,6 +6,8 @@
 #include <algorithm> // std::find_if
 #include <string>
 
+namespace mediasoupclient
+{
 namespace ortc
 {
 	static std::string getH264PacketizationMode(const json& codec)
@@ -454,3 +456,4 @@ namespace ortc
 		return it != codecs.end();
 	}
 } // namespace ortc
+} // namespace mediasoupclient

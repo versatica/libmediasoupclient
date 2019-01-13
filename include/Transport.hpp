@@ -15,6 +15,8 @@
 
 using json = nlohmann::json;
 
+namespace mediasoupclient
+{
 class Transport : public Handler::Listener
 {
 public:
@@ -256,7 +258,7 @@ inline void SendTransport::Close()
 	if (this->closed)
 		return;
 
-	::Transport::Close();
+	Transport::Close();
 
 	// Close all Producers.
 	for (auto kv : this->producers)
@@ -275,7 +277,7 @@ inline void RecvTransport::Close()
 	if (this->closed)
 		return;
 
-	::Transport::Close();
+	Transport::Close();
 
 	// Close all Producers.
 	for (auto kv : this->consumers)
@@ -286,4 +288,5 @@ inline void RecvTransport::Close()
 		// consumer.transportClosed();
 	}
 }
+} // namespace mediasoupclient
 #endif

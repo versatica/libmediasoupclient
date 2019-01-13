@@ -35,7 +35,7 @@ Follow the [official instructions](https://webrtc.org/native-code/development/).
 
 Make sure you compile the branch `remotes/branch-heads/70`.
 
-Copy or link the header files into `deps/libwebrtc/inlcude`:
+Copy or link the header files into `deps/libwebrtc/include`:
 
 ```bash
 mkdir -p ${libmediasoupclient_path}/deps/libwebrtc/include

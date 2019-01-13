@@ -15,6 +15,6 @@ set(
 	tests.cpp
 )
 
-add_executable(test_mediasoupclient ${SOURCE_FILES} ${HEADER_FILES})
+add_executable(test_mediasoupclient ${SOURCE_FILES})
 
 target_link_libraries(test_mediasoupclient mediasoupclient)

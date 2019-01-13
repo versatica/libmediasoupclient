@@ -52,9 +52,11 @@ set(
 	src/sdp/Utils.cpp
 )
 
-#set(
-#	HEADER_FILES
-#)
+set(
+	HEADER_FILES
+	include/mediasoupclient.hpp
+	deps/libsdptransform/include/json.hpp
+)
 
 add_library(mediasoupclient STATIC ${SOURCE_FILES} ${HEADER_FILES})
 

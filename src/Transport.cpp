@@ -62,7 +62,8 @@ std::future<Producer*> SendTransport::Produce(
 		return promise.get_future();
 	};
 
-	// Check if the track is a null pointer.
+	if (this->closed)
+		return reject(Exception("Invalid state"));
 	if (track == nullptr)
 		return reject(Exception("Track cannot be null"));
 	if (track->state() == webrtc::MediaStreamTrackInterface::TrackState::kEnded)
@@ -116,7 +117,8 @@ std::future<Producer*> SendTransport::Produce(
 	  producerPublicListener,
 	  producerRemoteParameters["id"].get<std::string>(),
 	  track,
-	  producerRemoteParameters,
+	  rtpParameters,
+		maxSpatialLayer,
 	  appData);
 
 	this->producers[producer->GetId()] = producer;

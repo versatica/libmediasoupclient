@@ -175,6 +175,8 @@ void PeerConnection::ClassInit()
 {
 	MSC_TRACE();
 
+	// rtc::LogMessage::LogToDebug(rtc::LoggingSeverity::LS_WARNING);
+
 	rtc::InitializeSSL();
 	rtc::InitRandom(rtc::Time());
 }

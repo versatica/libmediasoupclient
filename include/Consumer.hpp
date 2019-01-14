@@ -1,6 +1,7 @@
 #ifndef MSC_CONSUMER_HPP
 #define MSC_CONSUMER_HPP
 
+#include "Exception.hpp"
 #include "json.hpp"
 #include "api/mediastreaminterface.h" // MediaStreamTrackInterface
 #include <future>
@@ -119,7 +120,19 @@ inline const json& Consumer::GetAppData() const
 
 inline std::future<json> Consumer::GetStats() const
 {
-	return this->listener->OnGetStats(this);
+	// Returned future's promise.
+	std::promise<json> promise;
+
+	auto reject = [&promise](const Exception& error) {
+		promise.set_exception(std::make_exception_ptr(error));
+
+		return promise.get_future();
+	};
+
+	if (this->closed)
+		return reject(Exception("Invalid state"));
+	else
+		return this->listener->OnGetStats(this);
 }
 
 inline bool Consumer::IsClosed() const

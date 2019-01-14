@@ -7,8 +7,8 @@ set(
 	FakeVideoCapturer.cpp
 	Handler.test.cpp
 	PeerConnection.test.cpp
-	Transport.test.cpp
 	data/Parameters.cpp
+	mediasoupclient.test.cpp
 	ortc.test.cpp
 	sdp/RemoteSdp.test.cpp
 	sdp/Utils.test.cpp

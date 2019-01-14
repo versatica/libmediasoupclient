@@ -16,9 +16,10 @@ Producer::Producer(
   std::string id,
   webrtc::MediaStreamTrackInterface* track,
   json rtpParameters,
+  std::string maxSpatialLayer,
   json appData)
   : listener(listener), publicListener(publicListener), id(std::move(id)), track(track),
-    rtpParameters(std::move(rtpParameters)), appData(std::move(appData))
+    rtpParameters(std::move(rtpParameters)), maxSpatialLayer(std::move(maxSpatialLayer)), appData(std::move(appData))
 {
 	MSC_TRACE();
 }

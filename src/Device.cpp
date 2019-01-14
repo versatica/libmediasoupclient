@@ -43,9 +43,9 @@ void Device::Load(const json& routerRtpCapabilities)
 SendTransport* Device::CreateSendTransport(
   SendTransport::Listener* listener,
   const json& transportRemoteParameters,
-  const json& iceServers,
+  const json iceServers,
   const std::string& iceTransportPolicy,
-  const json& proprietaryConstraints,
+  const json proprietaryConstraints,
   json appData) const
 {
 	MSC_TRACE();

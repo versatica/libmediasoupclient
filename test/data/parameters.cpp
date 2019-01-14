@@ -1,5 +1,6 @@
 #include "json.hpp"
 #include "parameters.hpp"
+#include "Utils.hpp"
 #include <string>
 
 json generateRouterRtpCapabilities()
@@ -279,9 +280,12 @@ json generateTransportRemoteParameters()
 
 json generateProducerRemoteParameters()
 {
-	return R"({
-		"id" : "34a3f9fa-0d4f-11e9-ab14-d663bd873d93"
-	})"_json;
+	json parameters =
+	{
+		{ "id", mediasoupclient::Utils::getRandomString(20) }
+	};
+
+	return parameters;
 };
 
 json generateConsumerRemoteParameters(const std::string& codecMimeType)
@@ -335,8 +339,8 @@ json generateConsumerRemoteParameters(const std::string& codecMimeType)
 	if (codecMimeType == "audio/ISAC")
 	{
 		return R"({
-			"producerId"    : "0e014094-0d51-11e9-ab14-d663bd873d93",
-			"id"            : "261e6c9c-0d51-11e9-ab14-d663bd873d93",
+			"producerId"    : "0e014094-0d51-11e9-ab14-d663bd873d94",
+			"id"            : "261e6c9c-0d51-11e9-ab14-d663bd873d94",
 			"kind"          : "audio",
 			"rtpParameters" :
 			{
@@ -378,8 +382,8 @@ json generateConsumerRemoteParameters(const std::string& codecMimeType)
 	if (codecMimeType == "video/VP8")
 	{
 		return R"({
-			"producerId"    : "0e014094-0d51-11e9-ab14-d663bd873d93",
-			"id"            : "261e6c9c-0d51-11e9-ab14-d663bd873d93",
+			"producerId"    : "0e014094-0d51-11e9-ab14-d663bd873d95",
+			"id"            : "261e6c9c-0d51-11e9-ab14-d663bd873d95",
 			"kind"          : "video",
 			"rtpParameters" :
 			{

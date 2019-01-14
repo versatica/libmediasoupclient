@@ -140,14 +140,14 @@ namespace Sdp
 
 			// Get all the SSRCs.
 
-			std::set<std::string> ssrcs;
+			std::set<uint32_t> ssrcs;
 
 			for (auto& line : mSection["ssrcs"])
 			{
 				if (line["attribute"].get<std::string>() != "msid")
 					continue;
 
-				auto ssrc = std::to_string(line["id"].get<uint32_t>());
+				auto ssrc = line["id"].get<uint32_t>();
 
 				ssrcs.insert(ssrc);
 
@@ -159,7 +159,7 @@ namespace Sdp
 
 			// Get media and RTX SSRCs.
 
-			std::map<std::string, std::string> ssrcToRtxSsrc;
+			std::map<uint32_t, uint32_t> ssrcToRtxSsrc;
 
 			// First assume RTX is used.
 			for (auto& line : mSection["ssrcGroups"])
@@ -170,8 +170,8 @@ namespace Sdp
 				auto fidLine = line["ssrcs"].get<std::string>();
 				auto v       = mediasoupclient::Utils::split(fidLine, ' ');
 
-				auto ssrc    = v[0];
-				auto rtxSsrc = v[1];
+				auto ssrc    = std::stol(v[0]);
+				auto rtxSsrc = std::stol(v[1]);
 
 				// Remove both the SSRC and RTX SSRC from the Set so later we know that they
 				// are already handled.
@@ -187,7 +187,7 @@ namespace Sdp
 			for (auto& ssrc : ssrcs)
 			{
 				// Add to the map.
-				ssrcToRtxSsrc[ssrc] = std::string();
+				ssrcToRtxSsrc[ssrc] = 0u;
 			}
 
 			// Fill RTP parameters.
@@ -201,8 +201,8 @@ namespace Sdp
 			{
 				json encoding = { { "ssrc", kv.first } };
 
-				if (!kv.second.empty())
-					encoding["rtx"] = { "ssrc", kv.second };
+				if (kv.second != 0u)
+					encoding["rtx"] = { { "ssrc", kv.second } };
 
 				if (simulcast)
 				{
@@ -284,14 +284,14 @@ namespace Sdp
 			mSection["ssrcGroups"] = json::array();
 			mSection["ssrcs"]      = json::array();
 
-			std::string ssrcsLine;
-			ssrcsLine.append(std::to_string(ssrc)).append(" ");
-			ssrcsLine.append(std::to_string(ssrc2)).append(" ");
-			if (numStreams == 3)
-				ssrcsLine.append(std::to_string(ssrc3));
+			std::string ssrcsLine(std::to_string(ssrc));
+			ssrcsLine.append(" ").append(std::to_string(ssrc2));
 
-			std::string msidValue;
-			msidValue.append(msid).append(track->id());
+			if (numStreams == 3)
+				ssrcsLine.append(" ").append(std::to_string(ssrc3));
+
+			std::string msidValue(msid);
+			msidValue.append(" ").append(track->id());
 
 			/* clang-format off */
 			mSection["ssrcGroups"].push_back(

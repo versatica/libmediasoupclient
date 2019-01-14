@@ -104,7 +104,7 @@ public:
 	std::future<Producer*> Produce(
 	  Producer::PublicListener* producerPublicListener,
 	  webrtc::MediaStreamTrackInterface* track,
-	  bool simulcast,
+	  bool simulcast = false,
 	  const std::string& maxSpatialLayer = "high",
 	  json appData                       = json::object());
 
@@ -159,7 +159,7 @@ public:
 	std::future<Consumer*> Consume(
 	  Consumer::PublicListener* consumerPublicListener,
 	  const json& consumerRemoteParameters,
-	  json appData);
+	  json appData = json::object());
 
 	/* Virtual methods inherited from Transport. */
 public:
@@ -207,7 +207,19 @@ inline const json& Transport::GetAppData() const
 
 inline std::future<json> Transport::GetStats() const
 {
-	return this->handler->GetTransportStats();
+	// Returned future's promise.
+	std::promise<json> promise;
+
+	auto reject = [&promise](const Exception& error) {
+		promise.set_exception(std::make_exception_ptr(error));
+
+		return promise.get_future();
+	};
+
+	if (this->closed)
+		return reject(Exception("Invalid state"));
+	else
+		return this->handler->GetTransportStats();
 }
 
 inline bool Transport::IsClosed() const
@@ -217,12 +229,36 @@ inline bool Transport::IsClosed() const
 
 inline std::future<void> Transport::RestartIce(const json& remoteIceParameters)
 {
-	return this->handler->RestartIce(remoteIceParameters);
+	// Returned future's promise.
+	std::promise<void> promise;
+
+	auto reject = [&promise](const Exception& error) {
+		promise.set_exception(std::make_exception_ptr(error));
+
+		return promise.get_future();
+	};
+
+	if (this->closed)
+		return reject(Exception("Invalid state"));
+	else
+		return this->handler->RestartIce(remoteIceParameters);
 }
 
 inline std::future<void> Transport::UpdateIceServers(const json& iceServers)
 {
-	return this->handler->UpdateIceServers(iceServers);
+	// Returned future's promise.
+	std::promise<void> promise;
+
+	auto reject = [&promise](const Exception& error) {
+		promise.set_exception(std::make_exception_ptr(error));
+
+		return promise.get_future();
+	};
+
+	if (this->closed)
+		return reject(Exception("Invalid state"));
+	else
+		return this->handler->UpdateIceServers(iceServers);
 }
 
 inline void Transport::Close()
@@ -263,10 +299,9 @@ inline void SendTransport::Close()
 	// Close all Producers.
 	for (auto kv : this->producers)
 	{
-		auto producer = kv.second;
+		auto* producer = kv.second;
 
-		// TODO
-		// producer.transportClosed();
+		producer->TransportClosed();
 	}
 }
 
@@ -282,10 +317,9 @@ inline void RecvTransport::Close()
 	// Close all Producers.
 	for (auto kv : this->consumers)
 	{
-		auto consumer = kv.second;
+		auto* consumer = kv.second;
 
-		// TODO
-		// consumer.transportClosed();
+		consumer->TransportClosed();
 	}
 }
 } // namespace mediasoupclient

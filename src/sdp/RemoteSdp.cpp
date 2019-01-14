@@ -618,7 +618,7 @@ std::string Sdp::RemoteSdp::CreateOfferSdp(const json& receiverInfos)
 					/* clang-format on */
 
 					std::string ssrcs;
-					ssrcs.append(std::to_string(ssrc));
+					ssrcs.append(std::to_string(ssrc)).append(" ");
 					ssrcs.append(std::to_string(rtxSsrc));
 
 					// Associate original and retransmission SSRC.

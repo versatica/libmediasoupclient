@@ -27,9 +27,9 @@ public:
 	SendTransport* CreateSendTransport(
 	  SendTransport::Listener* listener,
 	  const json& transportRemoteParameters,
-	  const json& iceServers                = json::array(),
+	  const json iceServers                 = json::array(),
 	  const std::string& iceTransportPolicy = "",
-	  const json& proprietaryConstraints    = json::object(),
+	  const json proprietaryConstraints     = json::object(),
 	  json appData                          = json::object()) const;
 
 	RecvTransport* CreateRecvTransport(

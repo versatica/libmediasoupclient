@@ -1,26 +1,50 @@
 #include "Transport.hpp"
+#include "data/parameters.hpp"
+#include "Logger.hpp"
+#include "catch.hpp"
+#include <stdexcept>
 
 using namespace mediasoupclient;
 
 class FakeSendTransportListener : public SendTransport::Listener
 {
 public:
-	std::future<json> OnProduce(const json& /*producerLocalParameters*/) override
+	std::future<json> OnProduce(const json& producerLocalParameters) override
 	{
 		this->onProduceTimesCalled++;
 
 		std::promise<json> promise;
 
-		json producerRemoteParameters = { { "id", "producer-id" } };
+		json producerRemoteParameters;
+
+		auto kind = producerLocalParameters["kind"].get<std::string>();
+
+		if (kind == "audio")
+		{
+			this->audioProducerLocalParameters = producerLocalParameters;
+			this->audioProducerRemoteParameters = generateProducerRemoteParameters();
+			producerRemoteParameters = this->audioProducerRemoteParameters;
+		}
+		else if (kind == "video")
+		{
+			this->videoProducerLocalParameters = producerLocalParameters;
+			this->videoProducerRemoteParameters = generateProducerRemoteParameters();
+			producerRemoteParameters = this->videoProducerRemoteParameters;
+		}
+		else
+		{
+			throw std::runtime_error("Unknown producerLocalParameters[\"kind\"]");
+		}
 
 		promise.set_value(producerRemoteParameters);
 
 		return promise.get_future();
 	};
 
-	void OnConnect(const json& /*transportLocalParameters*/) override
+	void OnConnect(const json& transportLocalParameters) override
 	{
 		this->onConnectTimesCalled++;
+		this->transportLocalParameters = transportLocalParameters;
 	};
 
 	void OnConnectionStateChange(const std::string& /*connectionState*/) override
@@ -29,6 +53,13 @@ public:
 	};
 
 public:
+	json transportLocalParameters;
+
+	json audioProducerLocalParameters;
+	json audioProducerRemoteParameters;
+	json videoProducerLocalParameters;
+	json videoProducerRemoteParameters;
+
 	size_t onProduceTimesCalled{ 0 };
 	size_t onStartConsumerTimesCalled{ 0 };
 	size_t onConnectTimesCalled{ 0 };
@@ -48,8 +79,9 @@ public:
 		this->onStartConsumerTimesCalled++;
 	};
 
-	void OnConnect(const json& /*transportLocalParameters*/) override
+	void OnConnect(const json& transportLocalParameters) override
 	{
+		this->transportLocalParameters = transportLocalParameters;
 		this->onConnectTimesCalled++;
 	};
 
@@ -59,6 +91,8 @@ public:
 	};
 
 public:
+	json transportLocalParameters;
+
 	size_t onStartConsumerTimesCalled{ 0 };
 	size_t onConnectTimesCalled{ 0 };
 	size_t onConnectionStateChangeTimesCalled{ 0 };

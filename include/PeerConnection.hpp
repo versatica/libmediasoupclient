@@ -116,10 +116,8 @@ public:
 	webrtc::PeerConnectionInterface::RTCConfiguration GetConfiguration() const;
 	bool SetConfiguration(const webrtc::PeerConnectionInterface::RTCConfiguration& config);
 	json GetNativeRtpCapabilities() const;
-	std::string CreateOffer(
-	  const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions& options);
-	std::string CreateAnswer(
-	  const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions& options);
+	std::string CreateOffer(const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions& options);
+	std::string CreateAnswer(const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions& options);
 	void SetLocalDescription(PeerConnection::SdpType type, const std::string& sdp);
 	void SetRemoteDescription(PeerConnection::SdpType type, const std::string& sdp);
 	const std::string GetLocalDescription();

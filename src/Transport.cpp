@@ -100,7 +100,7 @@ Producer* SendTransport::Produce(
 	  producerRemoteParameters["id"].get<std::string>(),
 	  track,
 	  rtpParameters,
-		maxSpatialLayer,
+	  maxSpatialLayer,
 	  appData);
 
 	this->producers[producer->GetId()] = producer;
@@ -135,16 +135,14 @@ void SendTransport::OnClose(Producer* producer)
 	this->handler->StopSending(producer->GetTrack());
 }
 
-void SendTransport::OnReplaceTrack(
-  const Producer* producer, webrtc::MediaStreamTrackInterface* newTrack)
+void SendTransport::OnReplaceTrack(const Producer* producer, webrtc::MediaStreamTrackInterface* newTrack)
 {
 	MSC_TRACE();
 
 	return this->handler->ReplaceTrack(producer->GetTrack(), newTrack);
 }
 
-void SendTransport::OnSetMaxSpatialLayer(
-  const Producer* producer, uint8_t maxSpatialLayer)
+void SendTransport::OnSetMaxSpatialLayer(const Producer* producer, uint8_t maxSpatialLayer)
 {
 	MSC_TRACE();
 
@@ -212,9 +210,9 @@ Consumer* RecvTransport::Consume(
 
 	// May throw.
 	track = this->handler->Receive(
-	            consumerParameters["id"].get<std::string>(),
-	            consumerParameters["kind"].get<std::string>(),
-	            consumerParameters["rtpParameters"]);
+	  consumerParameters["id"].get<std::string>(),
+	  consumerParameters["kind"].get<std::string>(),
+	  consumerParameters["rtpParameters"]);
 
 	auto* consumer = new Consumer(
 	  this,

@@ -296,8 +296,7 @@ void SendHandler::ReplaceTrack(
 		this->tracks.insert(newTrack);
 }
 
-void SendHandler::SetMaxSpatialLayer(
-  webrtc::MediaStreamTrackInterface* track, uint8_t spatialLayer)
+void SendHandler::SetMaxSpatialLayer(webrtc::MediaStreamTrackInterface* track, uint8_t spatialLayer)
 {
 	MSC_TRACE();
 

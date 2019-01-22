@@ -24,8 +24,8 @@ public:
 	class Listener
 	{
 	public:
-		virtual std::future<void> OnConnect(const json& transportLocalParameters)             = 0;
-		virtual void OnConnectionStateChange(const std::string& connectionState) = 0;
+		virtual std::future<void> OnConnect(const json& transportLocalParameters) = 0;
+		virtual void OnConnectionStateChange(const std::string& connectionState)  = 0;
 	};
 
 	/* Pure virtual methods inherited from Handler::Listener */
@@ -104,9 +104,9 @@ public:
 	Producer* Produce(
 	  Producer::PublicListener* producerPublicListener,
 	  webrtc::MediaStreamTrackInterface* track,
-	  bool simulcast = false,
+	  bool simulcast          = false,
 	  uint8_t maxSpatialLayer = 0,
-	  json appData                       = json::object());
+	  json appData            = json::object());
 
 	/* Virtual methods inherited from Transport. */
 public:
@@ -115,10 +115,8 @@ public:
 	/* Virtual methods inherited from Producer::Listener. */
 public:
 	void OnClose(Producer* producer) override;
-	void OnReplaceTrack(
-	  const Producer* producer, webrtc::MediaStreamTrackInterface* newTrack) override;
-	void OnSetMaxSpatialLayer(
-	  const Producer* producer, uint8_t maxSpatialLayer) override;
+	void OnReplaceTrack(const Producer* producer, webrtc::MediaStreamTrackInterface* newTrack) override;
+	void OnSetMaxSpatialLayer(const Producer* producer, uint8_t maxSpatialLayer) override;
 	json OnGetStats(const Producer* producer) override;
 
 private:

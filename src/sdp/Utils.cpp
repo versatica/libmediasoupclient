@@ -242,8 +242,8 @@ namespace Sdp
 			{
 				auto ssrcGroups = *it;
 
-				auto it =
-				  std::find_if(ssrcGroups.begin(), ssrcGroups.end(), [&firstSsrc, &firstRtxSsrc](const json& line) {
+				auto it = std::find_if(
+				  ssrcGroups.begin(), ssrcGroups.end(), [&firstSsrc, &firstRtxSsrc](const json& line) {
 					  if (line["semantics"].get<std::string>() != "FID")
 						  return false;
 
@@ -260,9 +260,8 @@ namespace Sdp
 			}
 
 			it = std::find_if(mSsrcs.begin(), mSsrcs.end(), [&firstSsrc](const json& line) {
-					return (line["attribute"].get<std::string>() == "cname" &&
-									line["id"].get<uint32_t>() == firstSsrc);
-
+				return (
+				  line["attribute"].get<std::string>() == "cname" && line["id"].get<uint32_t>() == firstSsrc);
 			});
 
 			if (it == mSsrcs.end())
@@ -273,7 +272,7 @@ namespace Sdp
 			auto ssrcs    = json::array();
 			auto rtxSsrcs = json::array();
 
-			for (uint8_t i = 0; i < numStreams ; ++i)
+			for (uint8_t i = 0; i < numStreams; ++i)
 			{
 				ssrcs.push_back(firstSsrc + i);
 
@@ -285,7 +284,7 @@ namespace Sdp
 			mSection["ssrcs"]      = json::array();
 
 			std::vector<uint32_t> ussrcs = ssrcs;
-			auto ssrcsLine = mediasoupclient::Utils::join(ussrcs, ' ');
+			auto ssrcsLine               = mediasoupclient::Utils::join(ussrcs, ' ');
 
 			std::string msidValue(msid);
 			msidValue.append(" ").append(track->id());

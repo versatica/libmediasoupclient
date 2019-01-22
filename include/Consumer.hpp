@@ -16,7 +16,7 @@ public:
 	class Listener
 	{
 	public:
-		virtual void OnClose(Consumer* consumer)                       = 0;
+		virtual void OnClose(Consumer* consumer)          = 0;
 		virtual json OnGetStats(const Consumer* consumer) = 0;
 	};
 

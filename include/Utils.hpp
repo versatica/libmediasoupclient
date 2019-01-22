@@ -40,6 +40,7 @@ namespace Utils
 
 	inline std::string getRandomString(size_t len)
 	{
+		/* clang-format off */
 		static std::vector<char> chars =
 		{
 			'0','1','2','3','4','5','6','7','8','9',
@@ -50,6 +51,7 @@ namespace Utils
 			'K','L','M','N','O','P','Q','R','S','T',
 			'U','V','W','X','Y','Z'
 		};
+		/* clang-format on */
 
 		// Seed with time.
 		static unsigned int seed = time(nullptr);
@@ -62,12 +64,12 @@ namespace Utils
 
 		std::string s;
 
-    s.reserve(len);
+		s.reserve(len);
 
-    while(len--)
-        s += chars[dis(rng)];
+		while (len--)
+			s += chars[dis(rng)];
 
-    return s;
+		return s;
 	}
 
 	inline std::vector<std::string> split(const std::string& s, char delimiter)

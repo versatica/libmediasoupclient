@@ -15,9 +15,7 @@ static const std::string IceTransportPolicy("all");
 class FakeHandlerListener : public Handler::Listener
 {
 public:
-	void OnConnect(json& /*transportLocalParameters*/) override
-	{
-	};
+	void OnConnect(json& /*transportLocalParameters*/) override{};
 
 	void OnConnectionStateChange(
 	  webrtc::PeerConnectionInterface::IceConnectionState /*connectionState*/) override{};

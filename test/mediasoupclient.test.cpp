@@ -1,9 +1,9 @@
 #include "Exception.hpp"
 #include "FakeTransportListener.hpp"
-#include "mediasoupclient.hpp"
-#include "data/parameters.hpp"
 #include "catch.hpp"
+#include "data/parameters.hpp"
 #include "media/base/fakevideocapturer.h"
+#include "mediasoupclient.hpp"
 
 using namespace mediasoupclient;
 
@@ -37,8 +37,8 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 {
 	// SECTION("mediasoup-client exposes a version property")
 	// {
-		// expect(version).toBeType("string");
-		// expect(version).toBe(pkg.version);
+	// expect(version).toBeType("string");
+	// expect(version).toBe(pkg.version);
 	// }
 
 	SECTION("create a Device succeeds")
@@ -70,10 +70,10 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 	/*
 	SECTION("device->load() without routerRtpCapabilities rejects with TypeError")
 	{
-		routerRtpCapabilities = json::object();
+	  routerRtpCapabilities = json::object();
 
-		REQUIRE_NOTHROW(device->Load(routerRtpCapabilities));
-		REQUIRE(device->Loaded() == false);
+	  REQUIRE_NOTHROW(device->Load(routerRtpCapabilities));
+	  REQUIRE(device->Loaded() == false);
 	}
 	*/
 
@@ -115,8 +115,13 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		};
 		/* clang-format on */
 
-
-		REQUIRE_NOTHROW(sendTransport.reset(device->CreateSendTransport(&sendTransportListener, TransportRemoteParameters, json::array() /* iceServers */, "" /* iceTransportPolicy */, json::object() /* proprietaryConstraints */, appData)));
+		REQUIRE_NOTHROW(sendTransport.reset(device->CreateSendTransport(
+		  &sendTransportListener,
+		  TransportRemoteParameters,
+		  json::array() /* iceServers */,
+		  "" /* iceTransportPolicy */,
+		  json::object() /* proprietaryConstraints */,
+		  appData)));
 
 		REQUIRE(sendTransport->GetId() == TransportRemoteParameters["id"].get<std::string>());
 		REQUIRE(sendTransport->IsClosed() == false);
@@ -126,7 +131,8 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 	SECTION("device->createRecvTransport() for receiving media succeeds")
 	{
-		REQUIRE_NOTHROW(recvTransport.reset(device->CreateRecvTransport(&recvTransportListener, TransportRemoteParameters)));
+		REQUIRE_NOTHROW(recvTransport.reset(
+		  device->CreateRecvTransport(&recvTransportListener, TransportRemoteParameters)));
 
 		REQUIRE(recvTransport->GetId() == TransportRemoteParameters["id"].get<std::string>());
 		REQUIRE(recvTransport->IsClosed() == false);
@@ -149,7 +155,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		audioTrack  = pc->CreateAudioTrack("audio-track-id", audioSource);
 
 		videoSource = pc->CreateVideoSource(std::move(capturer), nullptr);
-		videoTrack = pc->CreateVideoTrack("video-track-id", videoSource);
+		videoTrack  = pc->CreateVideoTrack("video-track-id", videoSource);
 
 		json codecs;
 		json headerExtensions;
@@ -160,18 +166,15 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		audioTrack->set_enabled(false);
 
 		REQUIRE_NOTHROW(audioProducer.reset(sendTransport->Produce(
-			&producerPublicListener,
-			audioTrack,
-			false /* simulcast */,
-			3     /* maxSpatialLayer */,
-			appData
-			)));
+		  &producerPublicListener, audioTrack, false /* simulcast */, 3 /* maxSpatialLayer */, appData)));
 
 		REQUIRE(
 		  sendTransportListener.onConnectTimesCalled ==
-			++sendTransportListener.onConnectExpectedTimesCalled);
+		  ++sendTransportListener.onConnectExpectedTimesCalled);
 
-		REQUIRE(sendTransportListener.transportLocalParameters["id"].get<std::string>() == sendTransport->GetId());
+		REQUIRE(
+		  sendTransportListener.transportLocalParameters["id"].get<std::string>() ==
+		  sendTransport->GetId());
 
 		REQUIRE(
 		  sendTransportListener.onProduceExpectedTimesCalled ==
@@ -229,15 +232,12 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		audioProducer->Resume();
 
 		REQUIRE_NOTHROW(videoProducer.reset(sendTransport->Produce(
-			&producerPublicListener,
-			videoTrack,
-			true /* simulcast */,
-			2    /* maxSpatialLayer */
-			)));
+		  &producerPublicListener, videoTrack, true /* simulcast */, 2 /* maxSpatialLayer */
+		  )));
 
 		REQUIRE(
 		  sendTransportListener.onConnectTimesCalled ==
-			sendTransportListener.onConnectExpectedTimesCalled);
+		  sendTransportListener.onConnectExpectedTimesCalled);
 
 		REQUIRE(
 		  sendTransportListener.onProduceExpectedTimesCalled ==
@@ -278,7 +278,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 			]
 		})"_json);
 
-		// TODO: Check why urn:ietf:params:rtp-hdrext:sdes:mid is not present here 
+		// TODO: Check why urn:ietf:params:rtp-hdrext:sdes:mid is not present here
 		// nor in the audio heades (check whether is present in the local SDP)
 		headerExtensions = videoProducer->GetRtpParameters()["headerExtensions"];
 		REQUIRE(headerExtensions == R"(
@@ -319,30 +319,19 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 	SECTION("transport.produce() without track throws")
 	{
-		REQUIRE_THROWS_AS(sendTransport->Produce(
-			&producerPublicListener,
-			nullptr),
-			Exception);
+		REQUIRE_THROWS_AS(sendTransport->Produce(&producerPublicListener, nullptr), Exception);
 	}
 
 	SECTION("transport.produce() with an already handled track throws")
 	{
-		REQUIRE_THROWS_AS(sendTransport->Produce(
-			&producerPublicListener,
-			audioTrack),
-			Exception);
+		REQUIRE_THROWS_AS(sendTransport->Produce(&producerPublicListener, audioTrack), Exception);
 	}
 
 	SECTION("transport.produce() with audio track and maxSpatialLayer throws")
 	{
-		auto audioTrack  = pc->CreateAudioTrack("audio-track-id-2", audioSource);
+		auto audioTrack = pc->CreateAudioTrack("audio-track-id-2", audioSource);
 
-		REQUIRE_THROWS_AS(sendTransport->Produce(
-			&producerPublicListener,
-			audioTrack,
-			true,
-			2),
-			Exception);
+		REQUIRE_THROWS_AS(sendTransport->Produce(&producerPublicListener, audioTrack, true, 2), Exception);
 	}
 
 	SECTION("transport.consume() succeeds")

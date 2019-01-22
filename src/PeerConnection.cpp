@@ -263,8 +263,7 @@ std::string PeerConnection::CreateAnswer(
 	return future.get();
 }
 
-void PeerConnection::SetLocalDescription(
-  PeerConnection::SdpType type, const std::string& sdp)
+void PeerConnection::SetLocalDescription(PeerConnection::SdpType type, const std::string& sdp)
 {
 	MSC_TRACE();
 
@@ -294,8 +293,7 @@ void PeerConnection::SetLocalDescription(
 	return future.get();
 }
 
-void PeerConnection::SetRemoteDescription(
-  PeerConnection::SdpType type, const std::string& sdp)
+void PeerConnection::SetRemoteDescription(PeerConnection::SdpType type, const std::string& sdp)
 {
 	MSC_TRACE();
 

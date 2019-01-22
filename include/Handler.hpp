@@ -83,8 +83,7 @@ public:
 	void StopSending(webrtc::MediaStreamTrackInterface* track);
 	void ReplaceTrack(
 	  webrtc::MediaStreamTrackInterface* track, webrtc::MediaStreamTrackInterface* newTrack);
-	void SetMaxSpatialLayer(
-	  webrtc::MediaStreamTrackInterface* track, uint8_t spatialLayer);
+	void SetMaxSpatialLayer(webrtc::MediaStreamTrackInterface* track, uint8_t spatialLayer);
 	json GetSenderStats(webrtc::MediaStreamTrackInterface* track);
 
 	/* Methods inherided from Handler. */

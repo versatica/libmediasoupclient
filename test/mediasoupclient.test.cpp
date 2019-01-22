@@ -382,9 +382,6 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 		REQUIRE(
 		  recvTransportListener.onConnectTimesCalled == ++recvTransportListener.onConnectExpectedTimesCalled);
-		REQUIRE(
-		  recvTransportListener.onStartConsumerTimesCalled ==
-		  ++recvTransportListener.onStartConsumerExpectedTimesCalled);
 
 		REQUIRE(recvTransportListener.transportLocalParameters["id"] == recvTransport->GetId());
 		REQUIRE(recvTransportListener.transportLocalParameters["dtlsParameters"].is_object());
@@ -443,9 +440,6 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 		REQUIRE(
 		  recvTransportListener.onConnectTimesCalled == recvTransportListener.onConnectExpectedTimesCalled);
-		REQUIRE(
-		  recvTransportListener.onStartConsumerTimesCalled ==
-		  ++recvTransportListener.onStartConsumerExpectedTimesCalled);
 
 		REQUIRE(videoConsumer->GetId() == videoConsumerRemoteParameters["id"].get<std::string>());
 		REQUIRE(videoConsumer->GetProducerId() == videoConsumerRemoteParameters["producerId"].get<std::string>());

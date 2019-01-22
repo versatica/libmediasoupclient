@@ -72,7 +72,7 @@ SendTransport* Device::CreateSendTransport(
 }
 
 RecvTransport* Device::CreateRecvTransport(
-  RecvTransport::Listener* listener,
+  Transport::Listener* listener,
   const json& transportRemoteParameters,
   const json& iceServers,
   const std::string& iceTransportPolicy,

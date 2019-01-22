@@ -67,24 +67,17 @@ public:
 	json videoProducerRemoteParameters;
 
 	size_t onProduceTimesCalled{ 0 };
-	size_t onStartConsumerTimesCalled{ 0 };
 	size_t onConnectTimesCalled{ 0 };
 	size_t onConnectionStateChangeTimesCalled{ 0 };
 
 	size_t onProduceExpectedTimesCalled{ 0 };
-	size_t onStartConsumerExpectedTimesCalled{ 0 };
 	size_t onConnectExpectedTimesCalled{ 0 };
 	size_t onConnectionStateChangeExpectedTimesCalled{ 0 };
 };
 
-class FakeRecvTransportListener : public RecvTransport::Listener
+class FakeRecvTransportListener : public Transport::Listener
 {
 public:
-	void OnStartConsumer(const Consumer* /*consumer*/) override
-	{
-		this->onStartConsumerTimesCalled++;
-	};
-
 	std::future<void> OnConnect(const json& transportLocalParameters) override
 	{
 		this->transportLocalParameters = transportLocalParameters;
@@ -105,11 +98,9 @@ public:
 public:
 	json transportLocalParameters;
 
-	size_t onStartConsumerTimesCalled{ 0 };
 	size_t onConnectTimesCalled{ 0 };
 	size_t onConnectionStateChangeTimesCalled{ 0 };
 
-	size_t onStartConsumerExpectedTimesCalled{ 0 };
 	size_t onConnectExpectedTimesCalled{ 0 };
 	size_t onConnectionStateChangeExpectedTimesCalled{ 0 };
 };

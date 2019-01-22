@@ -139,16 +139,8 @@ private:
 class RecvTransport : public Transport, public Consumer::Listener
 {
 public:
-	/* Public Listener API */
-	class Listener : public Transport::Listener
-	{
-	public:
-		virtual void OnStartConsumer(const Consumer* consumer) = 0;
-	};
-
-public:
 	RecvTransport(
-	  Listener* listener,
+	  Transport::Listener* listener,
 	  const json& transportRemoteParameters,
 	  const json& iceServers,
 	  const std::string& iceTransportPolicy,
@@ -171,9 +163,6 @@ public:
 	json OnGetStats(const Consumer* consumer) override;
 
 private:
-	// Listener instance.
-	Listener* listener;
-
 	// Map of Consumers indexed by id.
 	std::map<std::string, Consumer*> consumers;
 

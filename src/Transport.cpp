@@ -169,15 +169,14 @@ json SendTransport::OnGetStats(const Producer* producer)
 /* RecvTransport instance methods. */
 
 RecvTransport::RecvTransport(
-  Listener* listener,
+  Transport::Listener* listener,
   const json& transportRemoteParameters,
   const json& iceServers,
   const std::string& iceTransportPolicy,
   const json& proprietaryConstraints,
   const json& extendedRtpCapabilities,
   json appData)
-  : listener(listener),
-    Transport(listener, transportRemoteParameters, extendedRtpCapabilities, std::move(appData))
+  : Transport(listener, transportRemoteParameters, extendedRtpCapabilities, std::move(appData))
 {
 	MSC_TRACE();
 
@@ -232,8 +231,6 @@ Consumer* RecvTransport::Consume(
 	  std::move(appData));
 
 	this->consumers[consumer->GetId()] = consumer;
-
-	this->listener->OnStartConsumer(consumer);
 
 	return consumer;
 }

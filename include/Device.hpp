@@ -33,7 +33,7 @@ public:
 	  json appData                          = json::object()) const;
 
 	RecvTransport* CreateRecvTransport(
-	  RecvTransport::Listener* listener,
+	  Transport::Listener* listener,
 	  const json& transportRemoteParameters,
 	  const json& iceServers                = json::array(),
 	  const std::string& iceTransportPolicy = "",

@@ -7,7 +7,7 @@
 #include "Transport.hpp"
 
 using SendTransportListener = SendTransport::Listener;
-using RecvTransportListener = RecvTransport::Listener;
+using TransportListener     = Transport::Listener;
 using ConsumerListener      = Consumer::PublicListener;
 using ProducerListener      = Producer::PublicListener;
 

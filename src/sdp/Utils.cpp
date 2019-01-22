@@ -194,21 +194,12 @@ namespace Sdp
 
 			rtpParameters["encodings"] = json::array();
 
-			auto simulcast              = ssrcToRtxSsrc.size() > 1;
-			json simulcastSpatialLayers = { "low", "medium", "high" };
-
 			for (auto& kv : ssrcToRtxSsrc)
 			{
 				json encoding = { { "ssrc", kv.first } };
 
 				if (kv.second != 0u)
 					encoding["rtx"] = { { "ssrc", kv.second } };
-
-				if (simulcast)
-				{
-					encoding["spatialLayer"] = simulcastSpatialLayers[0];
-					simulcastSpatialLayers.erase(0);
-				}
 
 				rtpParameters["encodings"].push_back(encoding);
 			}
@@ -227,23 +218,22 @@ namespace Sdp
 
 			// Get the SSRC.
 
-			auto ssrcs = mSection["ssrcs"];
+			auto mSsrcs = mSection["ssrcs"];
 
-			auto it = std::find_if(ssrcs.begin(), ssrcs.end(), [](const json& line) {
+			auto it = std::find_if(mSsrcs.begin(), mSsrcs.end(), [](const json& line) {
 				return line["attribute"].get<std::string>() == "msid";
 			});
 
-			if (it == ssrcs.end())
+			if (it == mSsrcs.end())
 				throw Exception("a=ssrc line with msid information not found");
 
 			auto ssrcMsidLine = *it;
 
-			auto ssrc = ssrcMsidLine["id"].get<std::uint32_t>();
-
 			auto v    = mediasoupclient::Utils::split(ssrcMsidLine["value"].get<std::string>(), ' ');
 			auto msid = v[0];
 
-			uint32_t rtxSsrc{ 0 };
+			auto firstSsrc = ssrcMsidLine["id"].get<std::uint32_t>();
+			uint32_t firstRtxSsrc{ 0 };
 
 			// Get the SSRC for RTX.
 
@@ -253,14 +243,14 @@ namespace Sdp
 				auto ssrcGroups = *it;
 
 				auto it =
-				  std::find_if(ssrcGroups.begin(), ssrcGroups.end(), [&ssrc, &rtxSsrc](const json& line) {
+				  std::find_if(ssrcGroups.begin(), ssrcGroups.end(), [&firstSsrc, &firstRtxSsrc](const json& line) {
 					  if (line["semantics"].get<std::string>() != "FID")
 						  return false;
 
 					  auto v = mediasoupclient::Utils::split(line["ssrcs"].get<std::string>(), ' ');
-					  if (std::stol(v[0]) == ssrc)
+					  if (std::stol(v[0]) == firstSsrc)
 					  {
-						  rtxSsrc = std::stol(v[1]);
+						  firstRtxSsrc = std::stol(v[1]);
 
 						  return true;
 					  }
@@ -269,26 +259,33 @@ namespace Sdp
 				  });
 			}
 
-			it = std::find_if(ssrcs.begin(), ssrcs.end(), [](const json& line) {
-				return line["attribute"].get<std::string>() == "cname";
+			it = std::find_if(mSsrcs.begin(), mSsrcs.end(), [&firstSsrc](const json& line) {
+					return (line["attribute"].get<std::string>() == "cname" &&
+									line["id"].get<uint32_t>() == firstSsrc);
+
 			});
 
-			if (it == ssrcs.end())
+			if (it == mSsrcs.end())
 				throw Exception("CNAME line not found");
 
 			auto cname = (*it)["value"].get<std::string>();
 
-			auto ssrc2 = ssrc + 1;
-			auto ssrc3 = ssrc + 2;
+			auto ssrcs    = json::array();
+			auto rtxSsrcs = json::array();
+
+			for (uint8_t i = 0; i < numStreams ; ++i)
+			{
+				ssrcs.push_back(firstSsrc + i);
+
+				if (firstRtxSsrc)
+					rtxSsrcs.push_back(firstRtxSsrc + i);
+			}
 
 			mSection["ssrcGroups"] = json::array();
 			mSection["ssrcs"]      = json::array();
 
-			std::string ssrcsLine(std::to_string(ssrc));
-			ssrcsLine.append(" ").append(std::to_string(ssrc2));
-
-			if (numStreams == 3)
-				ssrcsLine.append(" ").append(std::to_string(ssrc3));
+			std::vector<uint32_t> ussrcs = ssrcs;
+			auto ssrcsLine = mediasoupclient::Utils::join(ussrcs, ' ');
 
 			std::string msidValue(msid);
 			msidValue.append(" ").append(track->id());
@@ -300,60 +297,34 @@ namespace Sdp
 					{ "ssrcs",     ssrcsLine },
 				});
 
-			mSection["ssrcs"].push_back(
-				{
-					{ "id",        ssrc    },
-					{ "attribute", "cname" },
-					{ "value",     cname   }
-				});
-
-			mSection["ssrcs"].push_back(
-				{
-					{ "id",        ssrc      },
-					{ "attribute", "msid"    },
-					{ "value",     msidValue }
-				});
-
-			mSection["ssrcs"].push_back(
-				{
-					{ "id",        ssrc2   },
-					{ "attribute", "cname" },
-					{ "value",     cname   }
-				});
-
-			mSection["ssrcs"].push_back(
-				{
-					{ "id",        ssrc2     },
-					{ "attribute", "msid"    },
-					{ "value",     msidValue }
-				});
-
-			if (numStreams == 3)
+			for (uint8_t i = 0; i < ssrcs.size(); ++i)
 			{
+				auto ssrc = ssrcs[i].get<uint32_t>();
+
 				mSection["ssrcs"].push_back(
 					{
-						{ "id",        ssrc3   },
+						{ "id",        ssrc    },
 						{ "attribute", "cname" },
 						{ "value",     cname   }
 					});
 
 				mSection["ssrcs"].push_back(
 					{
-						{ "id",        ssrc3     },
+						{ "id",        ssrc      },
 						{ "attribute", "msid"    },
 						{ "value",     msidValue }
 					});
 			}
 
-			if (rtxSsrc != 0u)
+			for (uint8_t i = 0; i < rtxSsrcs.size(); ++i)
 			{
+				auto ssrc = ssrcs[i].get<uint32_t>();
+				auto rtxSsrc = rtxSsrcs[i].get<uint32_t>();
+
 				std::string fid;
-
-				auto rtxSsrc2 = rtxSsrc + 1;
-				auto rtxSsrc3 = rtxSsrc + 2;
-
 				fid = std::to_string(ssrc).append(" ");
 				fid.append(std::to_string(rtxSsrc));
+
 				mSection["ssrcGroups"].push_back(
 					{
 						{ "semantics", "FID" },
@@ -373,53 +344,6 @@ namespace Sdp
 						{ "attribute", "msid"    },
 						{ "value",     msidValue }
 					});
-
-				fid = std::to_string(ssrc2).append(" ");
-				fid.append(std::to_string(rtxSsrc2));
-				mSection["ssrcGroups"].push_back(
-					{
-						{ "semantics", "FID" },
-						{ "ssrcs",     fid   }
-					});
-
-				mSection["ssrcs"].push_back(
-					{
-						{ "id",        rtxSsrc2 },
-						{ "attribute", "cname"  },
-						{ "value",     cname    }
-					});
-
-				mSection["ssrcs"].push_back(
-					{
-						{ "id",        rtxSsrc2  },
-						{ "attribute", "msid"    },
-						{ "value",     msidValue }
-					});
-
-				fid = std::to_string(ssrc3).append(" ");
-				fid.append(std::to_string(rtxSsrc3));
-				if (numStreams == 3)
-				{
-					mSection["ssrcGroups"].push_back(
-						{
-							{ "semantics", "FID" },
-							{ "ssrcs",     fid   }
-						});
-
-					mSection["ssrcs"].push_back(
-						{
-							{ "id",        rtxSsrc3 },
-							{ "attribute", "cname"  },
-							{ "value",     cname    }
-						});
-
-					mSection["ssrcs"].push_back(
-						{
-							{ "id",       rtxSsrc3   },
-							{ "attribute", "msid"    },
-							{ "value",    msidValue  }
-						});
-				}
 			}
 			/* clang-format on */
 		};

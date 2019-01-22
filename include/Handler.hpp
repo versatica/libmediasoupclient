@@ -84,7 +84,7 @@ public:
 	void ReplaceTrack(
 	  webrtc::MediaStreamTrackInterface* track, webrtc::MediaStreamTrackInterface* newTrack);
 	void SetMaxSpatialLayer(
-	  webrtc::MediaStreamTrackInterface* track, const std::string& spatialLayer);
+	  webrtc::MediaStreamTrackInterface* track, uint8_t spatialLayer);
 	json GetSenderStats(webrtc::MediaStreamTrackInterface* track);
 
 	/* Methods inherided from Handler. */

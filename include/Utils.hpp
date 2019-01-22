@@ -7,6 +7,7 @@
 #include <set>
 #include <sstream> // istringstream
 #include <string>
+#include <vector>
 
 namespace mediasoupclient
 {
@@ -17,6 +18,8 @@ namespace Utils
 	std::string getRandomInteger(size_t len);
 
 	std::vector<std::string> split(const std::string& s, char delimiter);
+	std::string join(const std::vector<std::string>& v, char delimiter);
+	std::string join(const std::vector<uint32_t>& v, char delimiter);
 
 	/* Inline utils implementations */
 
@@ -77,6 +80,36 @@ namespace Utils
 			tokens.push_back(token);
 		}
 		return tokens;
+	}
+
+	inline std::string join(const std::vector<std::string>& v, char delimiter)
+	{
+		std::string s;
+
+		auto it = v.begin();
+		for (; it != v.end(); ++it)
+		{
+			s += *it;
+			if (it != v.end() - 1)
+				s += delimiter;
+		}
+
+		return s;
+	}
+
+	inline std::string join(const std::vector<uint32_t>& v, char delimiter)
+	{
+		std::string s;
+
+		auto it = v.begin();
+		for (; it != v.end(); ++it)
+		{
+			s += std::to_string(*it);
+			if (it != v.end() - 1)
+				s += delimiter;
+		}
+
+		return s;
 	}
 } // namespace Utils
 } // namespace mediasoupclient

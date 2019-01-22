@@ -5,7 +5,6 @@
 
 #include "Exception.hpp"
 #include "Logger.hpp"
-#include "VideoLayers.hpp"
 #include <utility>
 
 namespace mediasoupclient
@@ -16,12 +15,17 @@ Producer::Producer(
   std::string id,
   webrtc::MediaStreamTrackInterface* track,
   json rtpParameters,
-  std::string maxSpatialLayer,
+  uint8_t maxSpatialLayer,
   json appData)
   : listener(listener), publicListener(publicListener), id(std::move(id)), track(track),
-    rtpParameters(std::move(rtpParameters)), maxSpatialLayer(std::move(maxSpatialLayer)), appData(std::move(appData))
+    rtpParameters(std::move(rtpParameters)), appData(std::move(appData))
 {
 	MSC_TRACE();
+
+	if (this->GetKind() == "video")
+		this->maxSpatialLayer = maxSpatialLayer;
+	else
+		this->maxSpatialLayer = 0;
 }
 
 /**
@@ -113,7 +117,7 @@ void Producer::ReplaceTrack(webrtc::MediaStreamTrackInterface* track)
 /**
  * Sets the max spatial layer to be sent.
  */
-void Producer::SetMaxSpatialLayer(const std::string& spatialLayer)
+void Producer::SetMaxSpatialLayer(const uint8_t spatialLayer)
 {
 	MSC_TRACE();
 
@@ -121,8 +125,6 @@ void Producer::SetMaxSpatialLayer(const std::string& spatialLayer)
 		throw Exception("Invalid state");
 	if (this->track->kind() != "video")
 		throw Exception("Not a video Producer");
-	if (!isValidSpatialLayer(spatialLayer))
-		throw Exception("Invalid spatial layer");
 
 	if (spatialLayer == this->maxSpatialLayer)
 		return;

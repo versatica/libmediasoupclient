@@ -97,12 +97,12 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 
 	SECTION("'sendHandler.SetMaxSpatialLayer()' fails if a null track is provided")
 	{
-		REQUIRE_THROWS_AS(sendHandler.SetMaxSpatialLayer(nullptr, ""), Exception);
+		REQUIRE_THROWS_AS(sendHandler.SetMaxSpatialLayer(nullptr, 1), Exception);
 	}
 
 	SECTION("'sendHandler.SetMaxSpatialLayer()' succeeds if track is being sent")
 	{
-		REQUIRE_NOTHROW(sendHandler.SetMaxSpatialLayer(track, ""));
+		REQUIRE_NOTHROW(sendHandler.SetMaxSpatialLayer(track, 1));
 	}
 
 	SECTION("'sendHandler.GetSenderStats()' fails if a null track is provided")

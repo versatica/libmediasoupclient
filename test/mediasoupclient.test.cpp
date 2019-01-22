@@ -163,7 +163,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 			&producerPublicListener,
 			audioTrack,
 			false /* simulcast */,
-			""    /* maxSpatialLayer */,
+			3     /* maxSpatialLayer */,
 			appData
 			)));
 
@@ -184,7 +184,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE(audioProducer->GetKind() == "audio");
 		REQUIRE(audioProducer->GetTrack() == audioTrack);
 		REQUIRE(audioProducer->IsPaused() == true);
-		REQUIRE(audioProducer->GetMaxSpatialLayer().empty());
+		REQUIRE(audioProducer->GetMaxSpatialLayer() == 0);
 		REQUIRE(audioProducer->GetAppData() == appData);
 		REQUIRE(audioProducer->GetRtpParameters()["codecs"].size() == 1);
 
@@ -232,7 +232,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 			&producerPublicListener,
 			videoTrack,
 			true /* simulcast */,
-			"medium"/* maxSpatialLayer */
+			2    /* maxSpatialLayer */
 			)));
 
 		REQUIRE(
@@ -303,7 +303,6 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE(encodings[0].is_object());
 		REQUIRE(encodings[0].find("ssrc") != encodings[0].end());
 		REQUIRE(encodings[0].find("rtx") != encodings[0].end());
-		REQUIRE(encodings[0].find("spatialLayer") != encodings[0].end());
 		REQUIRE(encodings[0]["ssrc"].is_number());
 		REQUIRE(encodings[0]["rtx"].is_object());
 		REQUIRE(encodings[0]["rtx"].find("ssrc") != encodings[0]["rtx"].end());
@@ -314,7 +313,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE(rtcp["cname"].is_string());
 
 		REQUIRE(videoProducer->IsPaused() == false);
-		REQUIRE(videoProducer->GetMaxSpatialLayer() == "medium");
+		REQUIRE(videoProducer->GetMaxSpatialLayer() == 2);
 		REQUIRE(videoProducer->GetAppData() == json::object());
 	}
 
@@ -334,16 +333,6 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 			Exception);
 	}
 
-	SECTION("transport.produce() with invalid maxSpatialLayer throws")
-	{
-		REQUIRE_THROWS_AS(sendTransport->Produce(
-			&producerPublicListener,
-			videoTrack,
-			true,
-			"chicken"),
-			Exception);
-	}
-
 	SECTION("transport.produce() with audio track and maxSpatialLayer throws")
 	{
 		auto audioTrack  = pc->CreateAudioTrack("audio-track-id-2", audioSource);
@@ -352,7 +341,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 			&producerPublicListener,
 			audioTrack,
 			true,
-			"medium"),
+			2),
 			Exception);
 	}
 
@@ -629,18 +618,13 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 	SECTION("'producer->SetMaxSpatialLayer()' succeeds")
 	{
-		REQUIRE_NOTHROW(videoProducer->SetMaxSpatialLayer("low"));
-		REQUIRE(videoProducer->GetMaxSpatialLayer() == "low");
+		REQUIRE_NOTHROW(videoProducer->SetMaxSpatialLayer(1));
+		REQUIRE(videoProducer->GetMaxSpatialLayer() == 1);
 	}
 
 	SECTION("'producer->SetMaxSpatialLayer()' in an audio Producer throws")
 	{
-		REQUIRE_THROWS_AS(audioProducer->SetMaxSpatialLayer("low"), Exception);
-	}
-
-	SECTION("'producer->SetMaxSpatialLayer()' with invalid spatial layer throws")
-	{
-		REQUIRE_THROWS_AS(videoProducer->SetMaxSpatialLayer("invalid"), Exception);
+		REQUIRE_THROWS_AS(audioProducer->SetMaxSpatialLayer(1), Exception);
 	}
 
 	SECTION("'producer->GetStats()' succeeds")

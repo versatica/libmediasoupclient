@@ -20,7 +20,7 @@ public:
 		virtual void OnReplaceTrack(
 		  const Producer* producer, webrtc::MediaStreamTrackInterface* newTrack) = 0;
 		virtual void OnSetMaxSpatialLayer(
-		  const Producer* producer, const std::string& maxSpatialLayer) = 0;
+		  const Producer* producer, const uint8_t maxSpatialLayer) = 0;
 		virtual json OnGetStats(const Producer* producer)  = 0;
 	};
 
@@ -38,14 +38,14 @@ public:
 	  std::string id,
 	  webrtc::MediaStreamTrackInterface* track,
 	  json rtpParameters,
-	  std::string maxSpatialLayer = "",
+	  uint8_t maxSpatialLayer = 0,
 	  json appData = json::object());
 
 	const std::string& GetId() const;
 	std::string GetKind() const;
 	webrtc::MediaStreamTrackInterface* GetTrack() const;
 	const json& GetRtpParameters() const;
-	const std::string& GetMaxSpatialLayer() const;
+	const uint8_t GetMaxSpatialLayer() const;
 	const json& GetAppData() const;
 	json GetStats() const;
 
@@ -57,7 +57,7 @@ public:
 	void Pause();
 	void Resume();
 	void ReplaceTrack(webrtc::MediaStreamTrackInterface* track);
-	void SetMaxSpatialLayer(const std::string& spatialLayer);
+	void SetMaxSpatialLayer(uint8_t spatialLayer);
 
 private:
 	// Listener instance.
@@ -81,8 +81,8 @@ private:
 	// RTP parameters.
 	json rtpParameters;
 
-	// Max spatial layer.
-	std::string maxSpatialLayer{};
+	// Video Max spatial layer.
+	uint8_t maxSpatialLayer{0};
 
 	// App custom data.
 	json appData;
@@ -119,7 +119,7 @@ inline const json& Producer::GetRtpParameters() const
 	return this->rtpParameters;
 }
 
-inline const std::string& Producer::GetMaxSpatialLayer() const
+inline const uint8_t Producer::GetMaxSpatialLayer() const
 {
 	return this->maxSpatialLayer;
 }

@@ -3,7 +3,6 @@
 
 #include "Transport.hpp"
 #include "Logger.hpp"
-#include "VideoLayers.hpp"
 #include "ortc.hpp"
 #include <string>
 #include <utility>
@@ -49,7 +48,7 @@ Producer* SendTransport::Produce(
   Producer::PublicListener* producerPublicListener,
   webrtc::MediaStreamTrackInterface* track,
   bool simulcast,
-  const std::string& maxSpatialLayer,
+  uint8_t maxSpatialLayer,
   json appData)
 {
 	MSC_TRACE();
@@ -62,8 +61,6 @@ Producer* SendTransport::Produce(
 		throw Exception("Track ended");
 	if (simulcast && track->kind() == "audio")
 		throw Exception("Cannot set simulcast with audio track");
-	if (simulcast && !isValidSpatialLayer(maxSpatialLayer))
-		throw Exception("Invalid maxSpatialLayer");
 
 	json rtpParameters;
 	json producerRemoteParameters;
@@ -71,9 +68,7 @@ Producer* SendTransport::Produce(
 	uint8_t numStreams = 1;
 
 	if (simulcast)
-	{
-		numStreams = (maxSpatialLayer == "high") ? 3 : (maxSpatialLayer == "medium") ? 2 : 1;
-	}
+		numStreams = maxSpatialLayer;
 
 	// May throw.
 	rtpParameters = this->handler->Send(track, numStreams);
@@ -149,7 +144,7 @@ void SendTransport::OnReplaceTrack(
 }
 
 void SendTransport::OnSetMaxSpatialLayer(
-  const Producer* producer, const std::string& maxSpatialLayer)
+  const Producer* producer, uint8_t maxSpatialLayer)
 {
 	MSC_TRACE();
 

@@ -297,7 +297,7 @@ void SendHandler::ReplaceTrack(
 }
 
 void SendHandler::SetMaxSpatialLayer(
-  webrtc::MediaStreamTrackInterface* track, const std::string& spatialLayer)
+  webrtc::MediaStreamTrackInterface* track, uint8_t spatialLayer)
 {
 	MSC_TRACE();
 
@@ -305,7 +305,7 @@ void SendHandler::SetMaxSpatialLayer(
 	if (track == nullptr)
 		throw Exception("Track cannot be null");
 
-	MSC_DEBUG("[track->id():%s, spatialLayer:%s]", track->id().c_str(), spatialLayer.c_str());
+	MSC_DEBUG("[track->id():%s, spatialLayer:%d]", track->id().c_str(), spatialLayer);
 
 	// Get the associated RtpSender.
 	auto senders = this->pc->GetSenders();
@@ -343,21 +343,21 @@ void SendHandler::SetMaxSpatialLayer(
 	}
 
 	// Edit encodings.
-	if (spatialLayer == "low")
+	if (spatialLayer == 1u)
 	{
 		hasLowEncoding && (lowEncoding.active = true);
 		hasMediumEncoding && (mediumEncoding.active = false);
 		hasHighEncoding && (highEncoding.active = false);
 	}
 
-	else if (spatialLayer == "medium")
+	else if (spatialLayer == 2u)
 	{
 		hasLowEncoding && (lowEncoding.active = true);
 		hasMediumEncoding && (mediumEncoding.active = true);
 		hasHighEncoding && (highEncoding.active = false);
 	}
 
-	else if (spatialLayer == "high")
+	else if (spatialLayer == 3u)
 	{
 		hasLowEncoding && (lowEncoding.active = true);
 		hasMediumEncoding && (mediumEncoding.active = true);

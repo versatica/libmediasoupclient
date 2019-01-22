@@ -105,7 +105,7 @@ public:
 	  Producer::PublicListener* producerPublicListener,
 	  webrtc::MediaStreamTrackInterface* track,
 	  bool simulcast = false,
-	  const std::string& maxSpatialLayer = "high",
+	  uint8_t maxSpatialLayer = 0,
 	  json appData                       = json::object());
 
 	/* Virtual methods inherited from Transport. */
@@ -118,7 +118,7 @@ public:
 	void OnReplaceTrack(
 	  const Producer* producer, webrtc::MediaStreamTrackInterface* newTrack) override;
 	void OnSetMaxSpatialLayer(
-	  const Producer* producer, const std::string& maxSpatialLayer) override;
+	  const Producer* producer, uint8_t maxSpatialLayer) override;
 	json OnGetStats(const Producer* producer) override;
 
 private:

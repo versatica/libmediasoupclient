@@ -116,12 +116,12 @@ public:
 	webrtc::PeerConnectionInterface::RTCConfiguration GetConfiguration() const;
 	bool SetConfiguration(const webrtc::PeerConnectionInterface::RTCConfiguration& config);
 	json GetNativeRtpCapabilities() const;
-	std::future<std::string> CreateOffer(
+	std::string CreateOffer(
 	  const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions& options);
-	std::future<std::string> CreateAnswer(
+	std::string CreateAnswer(
 	  const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions& options);
-	std::future<void> SetLocalDescription(PeerConnection::SdpType type, const std::string& sdp);
-	std::future<void> SetRemoteDescription(PeerConnection::SdpType type, const std::string& sdp);
+	void SetLocalDescription(PeerConnection::SdpType type, const std::string& sdp);
+	void SetRemoteDescription(PeerConnection::SdpType type, const std::string& sdp);
 	const std::string GetLocalDescription();
 	const std::string GetRemoteDescription();
 	std::vector<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>> GetTransceivers() const;
@@ -138,9 +138,9 @@ public:
 	  const std::string& label, webrtc::VideoTrackSourceInterface* source);
 	std::vector<rtc::scoped_refptr<webrtc::RtpSenderInterface>> GetSenders();
 	bool RemoveTrack(webrtc::RtpSenderInterface* sender);
-	std::future<json> GetStats();
-	std::future<json> GetStats(rtc::scoped_refptr<webrtc::RtpSenderInterface> selector);
-	std::future<json> GetStats(rtc::scoped_refptr<webrtc::RtpReceiverInterface> selector);
+	json GetStats();
+	json GetStats(rtc::scoped_refptr<webrtc::RtpSenderInterface> selector);
+	json GetStats(rtc::scoped_refptr<webrtc::RtpReceiverInterface> selector);
 
 private:
 	// Listener.

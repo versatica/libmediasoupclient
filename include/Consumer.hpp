@@ -4,7 +4,6 @@
 #include "Exception.hpp"
 #include "json.hpp"
 #include "api/mediastreaminterface.h" // MediaStreamTrackInterface
-#include <future>
 #include <string>
 
 using json = nlohmann::json;
@@ -18,7 +17,7 @@ public:
 	{
 	public:
 		virtual void OnClose(Consumer* consumer)                       = 0;
-		virtual std::future<json> OnGetStats(const Consumer* consumer) = 0;
+		virtual json OnGetStats(const Consumer* consumer) = 0;
 	};
 
 	/* Public Listener API */
@@ -44,7 +43,7 @@ public:
 	webrtc::MediaStreamTrackInterface* GetTrack() const;
 	const json& GetRtpParameters() const;
 	const json& GetAppData() const;
-	std::future<json> GetStats() const;
+	json GetStats() const;
 
 	bool IsClosed() const;
 	bool IsPaused() const;
@@ -118,19 +117,10 @@ inline const json& Consumer::GetAppData() const
 	return this->appData;
 }
 
-inline std::future<json> Consumer::GetStats() const
+inline json Consumer::GetStats() const
 {
-	// Returned future's promise.
-	std::promise<json> promise;
-
-	auto reject = [&promise](const Exception& error) {
-		promise.set_exception(std::make_exception_ptr(error));
-
-		return promise.get_future();
-	};
-
 	if (this->closed)
-		return reject(Exception("Invalid state"));
+		throw Exception("Invalid state");
 	else
 		return this->listener->OnGetStats(this);
 }

@@ -55,16 +55,9 @@ Handler::Handler(
 	  ));
 };
 
-std::future<void> Handler::UpdateIceServers(const json& iceServerUris)
+void Handler::UpdateIceServers(const json& iceServerUris)
 {
 	MSC_TRACE();
-
-	// Returned future's promise.
-	std::promise<void> promise;
-
-	auto reject = [&promise](const Exception& error) {
-		promise.set_exception(std::make_exception_ptr(error));
-	};
 
 	auto configuration = this->pc->GetConfiguration();
 
@@ -76,11 +69,9 @@ std::future<void> Handler::UpdateIceServers(const json& iceServerUris)
 	}
 
 	if (this->pc->SetConfiguration(configuration))
-		promise.set_value();
+		return;
 	else
-		reject(Exception("UpdateIceServers failed"));
-
-	return promise.get_future();
+		throw Exception("UpdateIceServers failed");
 };
 
 void Handler::OnIceConnectionChange(webrtc::PeerConnectionInterface::IceConnectionState newState)
@@ -102,16 +93,9 @@ void Handler::SetupTransport(const std::string& localDtlsRole)
 
 	json transportLocalParameters = { { "dtlsParameters", dtlsParameters } };
 
-	try
-	{
-		this->listener->OnConnect(transportLocalParameters).get();
-
-		// TODO: this should mean the the server has created the corresponding transport.
-		this->transportReady = true;
-	}
-	catch (Exception& error)
-	{
-	}
+	// May throw.
+	this->listener->OnConnect(transportLocalParameters);
+	this->transportReady = true;
 };
 
 /* SendHandler methods */
@@ -130,34 +114,21 @@ SendHandler::SendHandler(
 	this->remoteSdp.reset(new Sdp::RemoteSdp(transportRemoteParameters, rtpParametersByKind));
 };
 
-std::future<json> SendHandler::Send(webrtc::MediaStreamTrackInterface* track, uint8_t numStreams)
+json SendHandler::Send(webrtc::MediaStreamTrackInterface* track, uint8_t numStreams)
 {
 	MSC_TRACE();
 
-	// Returned future's promise.
-	std::promise<json> promise;
-
 	webrtc::RtpTransceiverInterface* transceiver{ nullptr };
-
-	auto reject = [&transceiver, &promise](const Exception& error) {
-		// Panic here. Try to undo things.
-		if (transceiver != nullptr)
-			transceiver->SetDirection(webrtc::RtpTransceiverDirection::kInactive);
-
-		promise.set_exception(std::make_exception_ptr(error));
-
-		return promise.get_future();
-	};
 
 	// Check if the track is a null pointer.
 	if (track == nullptr)
-		return reject(Exception("Track cannot be null"));
+		throw Exception("Track cannot be null");
 
 	MSC_DEBUG("[kind:%s, track.id:%s]", track->kind().c_str(), track->id().c_str());
 
 	// Check if the track is alrady handled.
 	if (this->tracks.find(track) != this->tracks.end())
-		return reject(Exception("Track already handled"));
+		throw Exception("Track already handled");
 
 	// Check if there is any inactive transceiver for same kind and reuse it if so.
 	auto transceivers = this->pc->GetTransceivers();
@@ -182,7 +153,7 @@ std::future<json> SendHandler::Send(webrtc::MediaStreamTrackInterface* track, ui
 		transceiver = this->pc->AddTransceiver(track);
 
 		if (transceiver == nullptr)
-			return reject(Exception("Error creating transceiver"));
+			throw Exception("Error creating transceiver");
 	}
 
 	transceiver->SetDirection(webrtc::RtpTransceiverDirection::kSendOnly);
@@ -193,7 +164,7 @@ std::future<json> SendHandler::Send(webrtc::MediaStreamTrackInterface* track, ui
 	{
 		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
 
-		offer = this->pc->CreateOffer(options).get();
+		offer = this->pc->CreateOffer(options);
 
 		if (numStreams > 1)
 		{
@@ -208,11 +179,14 @@ std::future<json> SendHandler::Send(webrtc::MediaStreamTrackInterface* track, ui
 
 		MSC_DEBUG("calling pc->SetLocalDescription() [offer:%s]", offer.c_str());
 
-		this->pc->SetLocalDescription(PeerConnection::SdpType::OFFER, offer).get();
+		this->pc->SetLocalDescription(PeerConnection::SdpType::OFFER, offer);
 	}
 	catch (Exception& error)
 	{
-		return reject(error);
+		// Panic here. Try to undo things.
+		transceiver->SetDirection(webrtc::RtpTransceiverDirection::kInactive);
+
+		throw;
 	}
 
 	// Transport is not ready.
@@ -228,11 +202,14 @@ std::future<json> SendHandler::Send(webrtc::MediaStreamTrackInterface* track, ui
 
 		MSC_DEBUG("calling pc->SetRemoteDescription() [answer:%s]", answer.c_str());
 
-		this->pc->SetRemoteDescription(PeerConnection::SdpType::ANSWER, answer).get();
+		this->pc->SetRemoteDescription(PeerConnection::SdpType::ANSWER, answer);
 	}
 	catch (Exception& error)
 	{
-		return reject(error);
+		// Panic here. Try to undo things.
+		transceiver->SetDirection(webrtc::RtpTransceiverDirection::kInactive);
+
+		throw;
 	}
 
 	auto rtpParameters = this->sendingRtpParametersByKind[track->kind()];
@@ -240,27 +217,16 @@ std::future<json> SendHandler::Send(webrtc::MediaStreamTrackInterface* track, ui
 
 	this->tracks.insert(track);
 
-	promise.set_value(rtpParameters);
-
-	return promise.get_future();
+	return rtpParameters;
 }
 
-std::future<void> SendHandler::StopSending(webrtc::MediaStreamTrackInterface* track)
+void SendHandler::StopSending(webrtc::MediaStreamTrackInterface* track)
 {
 	MSC_TRACE();
 
-	// Returned future's promise.
-	std::promise<void> promise;
-
-	auto reject = [&promise](const Exception& error) {
-		promise.set_exception(std::make_exception_ptr(error));
-
-		return promise.get_future();
-	};
-
 	// Check if the track is a null pointer.
 	if (track == nullptr)
-		return reject(Exception("Track cannot be null"));
+		throw Exception("Track cannot be null");
 
 	MSC_DEBUG("[track->id():%s]", track->id().c_str());
 
@@ -271,24 +237,19 @@ std::future<void> SendHandler::StopSending(webrtc::MediaStreamTrackInterface* tr
 	  });
 
 	if (it == senders.end())
-		return reject(Exception("Local track not found"));
+		throw Exception("Local track not found");
 
 	this->pc->RemoveTrack(*it);
 
-	try
-	{
-		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
+	// May throw.
+	webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
 
-		auto offer = this->pc->CreateOffer(options).get();
+	auto offer = this->pc->CreateOffer(options);
 
-		MSC_DEBUG("calling pc->SetLocalDescription() [offer:%s]", offer.c_str());
+	MSC_DEBUG("calling pc->SetLocalDescription() [offer:%s]", offer.c_str());
 
-		this->pc->SetLocalDescription(PeerConnection::SdpType::OFFER, offer).get();
-	}
-	catch (Exception& error)
-	{
-		return reject(error);
-	}
+	// May throw.
+	this->pc->SetLocalDescription(PeerConnection::SdpType::OFFER, offer);
 
 	auto localSdpObj = sdptransform::parse(this->pc->GetLocalDescription());
 	auto answer      = this->remoteSdp->CreateAnswerSdp(localSdpObj);
@@ -297,42 +258,23 @@ std::future<void> SendHandler::StopSending(webrtc::MediaStreamTrackInterface* tr
 
 	this->tracks.erase(track);
 
-	try
-	{
-		this->pc->SetRemoteDescription(PeerConnection::SdpType::ANSWER, answer).get();
-	}
-	catch (Exception& error)
-	{
-		return reject(error);
-	}
-
-	promise.set_value();
-
-	return promise.get_future();
+	// May throw.
+	this->pc->SetRemoteDescription(PeerConnection::SdpType::ANSWER, answer);
 }
 
-std::future<void> SendHandler::ReplaceTrack(
+void SendHandler::ReplaceTrack(
   webrtc::MediaStreamTrackInterface* track, webrtc::MediaStreamTrackInterface* newTrack)
 {
 	MSC_TRACE();
 
-	// Returned future's promise.
-	std::promise<void> promise;
-
-	auto reject = [&promise](const Exception& error) {
-		promise.set_exception(std::make_exception_ptr(error));
-
-		return promise.get_future();
-	};
-
 	// Check if the track is a null pointer.
 	if (track == nullptr)
-		return reject(Exception("Track cannot be null"));
+		throw Exception("Track cannot be null");
 
 	MSC_DEBUG("[newTrack->id():%s]", newTrack == nullptr ? "nullptr" : newTrack->id().c_str());
 
 	if (this->tracks.find(newTrack) != this->tracks.end())
-		return reject(Exception("Track already handled"));
+		throw Exception("Track already handled");
 
 	// Get the associated RtpSender.
 	auto senders = this->pc->GetSenders();
@@ -342,39 +284,26 @@ std::future<void> SendHandler::ReplaceTrack(
 	  });
 
 	if (it == senders.end())
-		return reject(Exception("Local track not found"));
+		throw Exception("Local track not found");
 
 	auto sender = *it;
 	if (!sender->SetTrack(newTrack))
-		return reject(Exception("Error setting new track"));
+		throw Exception("Error setting new track");
 
 	this->tracks.erase(track);
 
 	if (newTrack != nullptr)
 		this->tracks.insert(newTrack);
-
-	promise.set_value();
-
-	return promise.get_future();
 }
 
-std::future<void> SendHandler::SetMaxSpatialLayer(
+void SendHandler::SetMaxSpatialLayer(
   webrtc::MediaStreamTrackInterface* track, const std::string& spatialLayer)
 {
 	MSC_TRACE();
 
-	// Returned future's promise.
-	std::promise<void> promise;
-
-	auto reject = [&promise](const Exception& error) {
-		promise.set_exception(std::make_exception_ptr(error));
-
-		return promise.get_future();
-	};
-
 	// Check if the track is a null pointer.
 	if (track == nullptr)
-		return reject(Exception("Track cannot be null"));
+		throw Exception("Track cannot be null");
 
 	MSC_DEBUG("[track->id():%s, spatialLayer:%s]", track->id().c_str(), spatialLayer.c_str());
 
@@ -386,7 +315,7 @@ std::future<void> SendHandler::SetMaxSpatialLayer(
 	  });
 
 	if (it == senders.end())
-		return reject(Exception("Local track not found"));
+		throw Exception("Local track not found");
 
 	auto rtpSender = *it;
 
@@ -437,29 +366,16 @@ std::future<void> SendHandler::SetMaxSpatialLayer(
 
 	auto result = rtpSender->SetParameters(parameters);
 	if (!result.ok())
-		return reject(Exception(result.message()));
-
-	promise.set_value();
-
-	return promise.get_future();
+		throw Exception(result.message());
 }
 
-std::future<json> SendHandler::GetSenderStats(webrtc::MediaStreamTrackInterface* track)
+json SendHandler::GetSenderStats(webrtc::MediaStreamTrackInterface* track)
 {
 	MSC_TRACE();
 
-	// Returned future's promise.
-	std::promise<json> promise;
-
-	auto reject = [&promise](const Exception& error) {
-		promise.set_exception(std::make_exception_ptr(error));
-
-		return promise.get_future();
-	};
-
 	// Check if the track is a null pointer.
 	if (track == nullptr)
-		return reject(Exception("Track cannot be null"));
+		throw Exception("Track cannot be null");
 
 	MSC_DEBUG("[track->id():%s]", track->id().c_str());
 
@@ -471,66 +387,43 @@ std::future<json> SendHandler::GetSenderStats(webrtc::MediaStreamTrackInterface*
 	  });
 
 	if (it == senders.end())
-		return reject(Exception("Local track not found"));
+		throw Exception("Local track not found");
 
 	auto rtpSender = *it;
 
-	auto stats = this->pc->GetStats(rtpSender).get();
+	auto stats = this->pc->GetStats(rtpSender);
 
-	promise.set_value(stats);
-
-	return promise.get_future();
+	return stats;
 }
 
-std::future<void> SendHandler::RestartIce(const json& remoteIceParameters)
+void SendHandler::RestartIce(const json& remoteIceParameters)
 {
 	MSC_TRACE();
-
-	// Returned future's promise.
-	std::promise<void> promise;
-
-	auto reject = [&promise](const Exception& error) {
-		promise.set_exception(std::make_exception_ptr(error));
-
-		return promise.get_future();
-	};
 
 	// Provide the remote SDP handler with new remote ICE parameters.
 	this->remoteSdp->UpdateTransportRemoteIceParameters(remoteIceParameters);
 
 	if (!this->transportReady)
-	{
-		promise.set_value();
+		return;
 
-		return promise.get_future();
-	}
+	webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
+	options.ice_restart = true;
 
-	try
-	{
-		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
-		options.ice_restart = true;
+	// May throw.
+	auto offer = this->pc->CreateOffer(options);
 
-		auto offer = this->pc->CreateOffer(options).get();
+	MSC_DEBUG("calling pc->SetLocalDescription() [offer:%s]", offer.c_str());
 
-		MSC_DEBUG("calling pc->SetLocalDescription() [offer:%s]", offer.c_str());
+	// May throw.
+	this->pc->SetLocalDescription(PeerConnection::SdpType::OFFER, offer);
 
-		this->pc->SetLocalDescription(PeerConnection::SdpType::OFFER, offer).get();
+	auto localSdpObj = sdptransform::parse(this->pc->GetLocalDescription());
+	auto answer      = this->remoteSdp->CreateAnswerSdp(localSdpObj);
 
-		auto localSdpObj = sdptransform::parse(this->pc->GetLocalDescription());
-		auto answer      = this->remoteSdp->CreateAnswerSdp(localSdpObj);
+	MSC_DEBUG("calling pc->SetRemoteDescription() [answer:%s]", answer.c_str());
 
-		MSC_DEBUG("calling pc->SetRemoteDescription() [answer:%s]", answer.c_str());
-
-		this->pc->SetRemoteDescription(PeerConnection::SdpType::ANSWER, answer);
-	}
-	catch (Exception& error)
-	{
-		return reject(error);
-	}
-
-	promise.set_value();
-
-	return promise.get_future();
+	// May throw.
+	this->pc->SetRemoteDescription(PeerConnection::SdpType::ANSWER, answer);
 }
 
 /* RecvHandler methods */
@@ -548,24 +441,15 @@ RecvHandler::RecvHandler(
 	this->remoteSdp.reset(new Sdp::RemoteSdp(transportRemoteParameters));
 };
 
-std::future<webrtc::MediaStreamTrackInterface*> RecvHandler::Receive(
+webrtc::MediaStreamTrackInterface* RecvHandler::Receive(
   const std::string& id, const std::string& kind, const json& rtpParameters)
 {
 	MSC_TRACE();
 
 	MSC_DEBUG("[id:%s, kind:%s]", id.c_str(), kind.c_str());
 
-	// Returned future's promise.
-	std::promise<webrtc::MediaStreamTrackInterface*> promise;
-
-	auto reject = [&promise](const Exception& error) {
-		promise.set_exception(std::make_exception_ptr(error));
-
-		return promise.get_future();
-	};
-
 	if (this->receiverInfos.find(id) != this->receiverInfos.end())
-		return reject(Exception("Already receiving this source"));
+		throw Exception("Already receiving this source");
 
 	auto encoding = rtpParameters["encodings"][0];
 	auto cname    = rtpParameters["rtcp"]["cname"];
@@ -606,20 +490,24 @@ std::future<webrtc::MediaStreamTrackInterface*> RecvHandler::Receive(
 
 	try
 	{
-		this->pc->SetRemoteDescription(PeerConnection::SdpType::OFFER, offer).get();
+		// May throw.
+		this->pc->SetRemoteDescription(PeerConnection::SdpType::OFFER, offer);
 
 		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
-		auto answer = this->pc->CreateAnswer(options).get();
+
+		// May throw.
+		auto answer = this->pc->CreateAnswer(options);
 
 		MSC_DEBUG("calling pc->SetLocalDescription() [answer:%s]", answer.c_str());
 
-		this->pc->SetLocalDescription(PeerConnection::SdpType::ANSWER, answer).get();
+		// May throw.
+		this->pc->SetLocalDescription(PeerConnection::SdpType::ANSWER, answer);
 	}
 	catch (Exception& error)
 	{
 		this->receiverInfos.erase(id);
 
-		return reject(error);
+		throw;
 	}
 
 	if (!this->transportReady)
@@ -632,33 +520,22 @@ std::future<webrtc::MediaStreamTrackInterface*> RecvHandler::Receive(
 	  });
 
 	if (transceiverIt == transceivers.end())
-		return reject(Exception("Remote track not found"));
+		throw Exception("Remote track not found");
 
 	auto transceiver = *transceiverIt;
 
-	promise.set_value(transceiver->receiver()->track());
-
-	return promise.get_future();
+	return transceiver->receiver()->track();
 }
 
-std::future<void> RecvHandler::StopReceiving(const std::string& id)
+void RecvHandler::StopReceiving(const std::string& id)
 {
 	MSC_TRACE();
 
 	MSC_DEBUG("[id:%s]", id.c_str());
 
-	// Returned future's promise.
-	std::promise<void> promise;
-
-	auto reject = [&promise](const Exception& error) {
-		promise.set_exception(std::make_exception_ptr(error));
-
-		return promise.get_future();
-	};
-
 	auto it = this->receiverInfos.find(id);
 	if (it == this->receiverInfos.end())
-		return reject(Exception("Receiver not found"));
+		throw Exception("Receiver not found");
 
 	auto receiverInfo      = it->second;
 	receiverInfo["closed"] = true;
@@ -673,45 +550,28 @@ std::future<void> RecvHandler::StopReceiving(const std::string& id)
 
 	MSC_DEBUG("calling pc->setRemoteDescription() [offer:%s]", offer.c_str());
 
-	try
-	{
-		this->pc->SetRemoteDescription(PeerConnection::SdpType::OFFER, offer).get();
+	// May throw.
+	this->pc->SetRemoteDescription(PeerConnection::SdpType::OFFER, offer);
 
-		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
-		auto answer = this->pc->CreateAnswer(options).get();
+	webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
+	// May throw.
+	auto answer = this->pc->CreateAnswer(options);
 
-		MSC_DEBUG("calling pc->SetLocalDescription() [answer:%s]", answer.c_str());
+	MSC_DEBUG("calling pc->SetLocalDescription() [answer:%s]", answer.c_str());
 
-		this->pc->SetLocalDescription(PeerConnection::SdpType::ANSWER, answer).get();
-	}
-	catch (Exception& error)
-	{
-		return reject(error);
-	}
-
-	promise.set_value();
-
-	return promise.get_future();
+	// May throw.
+	this->pc->SetLocalDescription(PeerConnection::SdpType::ANSWER, answer);
 }
 
-std::future<json> RecvHandler::GetReceiverStats(const std::string& id)
+json RecvHandler::GetReceiverStats(const std::string& id)
 {
 	MSC_TRACE();
-
-	// Returned future's promise.
-	std::promise<json> promise;
-
-	auto reject = [&promise](const Exception& error) {
-		promise.set_exception(std::make_exception_ptr(error));
-
-		return promise.get_future();
-	};
 
 	MSC_DEBUG("[id:%s]", id.c_str());
 
 	auto it = this->receiverInfos.find(id);
 	if (it == this->receiverInfos.end())
-		return reject(Exception("Receiver not found"));
+		throw Exception("Receiver not found");
 
 	auto receiverInfo = it->second;
 	auto mid          = receiverInfo["mid"].get<std::string>();
@@ -724,40 +584,26 @@ std::future<json> RecvHandler::GetReceiverStats(const std::string& id)
 	  });
 
 	if (transceiverIt == transceivers.end())
-		return reject(Exception("Transceiver not found"));
+		throw Exception("Transceiver not found");
 
 	auto transceiver = *transceiverIt;
 	auto rtpReceiver = transceiver->receiver();
 
-	auto stats = this->pc->GetStats(rtpReceiver).get();
+	// May throw.
+	auto stats = this->pc->GetStats(rtpReceiver);
 
-	promise.set_value(stats);
-
-	return promise.get_future();
+	return stats;
 }
 
-std::future<void> RecvHandler::RestartIce(const json& remoteIceParameters)
+void RecvHandler::RestartIce(const json& remoteIceParameters)
 {
 	MSC_TRACE();
-
-	// Returned future's promise.
-	std::promise<void> promise;
-
-	auto reject = [&promise](const Exception& error) {
-		promise.set_exception(std::make_exception_ptr(error));
-
-		return promise.get_future();
-	};
 
 	// Provide the remote SDP handler with new remote ICE parameters.
 	this->remoteSdp->UpdateTransportRemoteIceParameters(remoteIceParameters);
 
 	if (!this->transportReady)
-	{
-		promise.set_value();
-
-		return promise.get_future();
-	}
+		return;
 
 	auto receiverInfos = json::array();
 	std::for_each(
@@ -769,24 +615,16 @@ std::future<void> RecvHandler::RestartIce(const json& remoteIceParameters)
 
 	MSC_DEBUG("calling pc->setRemoteDescription() [offer:%s]", offer.c_str());
 
-	try
-	{
-		this->pc->SetRemoteDescription(PeerConnection::SdpType::OFFER, offer).get();
+	// May throw.
+	this->pc->SetRemoteDescription(PeerConnection::SdpType::OFFER, offer);
 
-		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
-		auto answer = this->pc->CreateAnswer(options).get();
+	webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
+	// May throw.
+	auto answer = this->pc->CreateAnswer(options);
 
-		MSC_DEBUG("calling pc->SetLocalDescription() [answer:%s]", answer.c_str());
+	MSC_DEBUG("calling pc->SetLocalDescription() [answer:%s]", answer.c_str());
 
-		this->pc->SetLocalDescription(PeerConnection::SdpType::ANSWER, answer).get();
-	}
-	catch (Exception& error)
-	{
-		return reject(error);
-	}
-
-	promise.set_value();
-
-	return promise.get_future();
+	// May throw.
+	this->pc->SetLocalDescription(PeerConnection::SdpType::ANSWER, answer);
 }
 } // namespace mediasoupclient

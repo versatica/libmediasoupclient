@@ -41,10 +41,16 @@ public:
 		return promise.get_future();
 	};
 
-	void OnConnect(const json& transportLocalParameters) override
+	std::future<void> OnConnect(const json& transportLocalParameters) override
 	{
 		this->onConnectTimesCalled++;
 		this->transportLocalParameters = transportLocalParameters;
+
+		std::promise<void> promise;
+
+		promise.set_value();
+
+		return promise.get_future();
 	};
 
 	void OnConnectionStateChange(const std::string& /*connectionState*/) override
@@ -79,10 +85,16 @@ public:
 		this->onStartConsumerTimesCalled++;
 	};
 
-	void OnConnect(const json& transportLocalParameters) override
+	std::future<void> OnConnect(const json& transportLocalParameters) override
 	{
 		this->transportLocalParameters = transportLocalParameters;
 		this->onConnectTimesCalled++;
+
+		std::promise<void> promise;
+
+		promise.set_value();
+
+		return promise.get_future();
 	};
 
 	void OnConnectionStateChange(const std::string& /*connectionState*/) override

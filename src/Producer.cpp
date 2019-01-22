@@ -87,34 +87,19 @@ void Producer::Resume()
 /**
  * Replaces the current track with a new one.
  */
-std::future<void> Producer::ReplaceTrack(webrtc::MediaStreamTrackInterface* track)
+void Producer::ReplaceTrack(webrtc::MediaStreamTrackInterface* track)
 {
 	MSC_TRACE();
 
-	// Returned future's promise.
-	std::promise<void> promise;
-
-	auto reject = [&promise](const Exception& error) {
-		promise.set_exception(std::make_exception_ptr(error));
-
-		return promise.get_future();
-	};
-
 	if (this->closed)
-		return reject(Exception("Invalid state"));
+		throw Exception("Invalid state");
 	if (track == nullptr)
-		return reject(Exception("Missing track"));
+		throw Exception("Missing track");
 	if (track->state() == webrtc::MediaStreamTrackInterface::TrackState::kEnded)
-		return reject(Exception("Track ended"));
+		throw Exception("Track ended");
 
-	try
-	{
-		this->listener->OnReplaceTrack(this, track).get();
-	}
-	catch (Exception& error)
-	{
-		return reject(error);
-	}
+	// May throw.
+	this->listener->OnReplaceTrack(this, track);
 
 	auto paused = this->IsPaused();
 
@@ -123,55 +108,28 @@ std::future<void> Producer::ReplaceTrack(webrtc::MediaStreamTrackInterface* trac
 
 	// Enable/Disable the new track according to current pause state.
 	this->track->set_enabled(!paused);
-
-	promise.set_value();
-
-	return promise.get_future();
 }
 
 /**
  * Sets the max spatial layer to be sent.
  */
-std::future<void> Producer::SetMaxSpatialLayer(const std::string& spatialLayer)
+void Producer::SetMaxSpatialLayer(const std::string& spatialLayer)
 {
 	MSC_TRACE();
 
-	// Returned future's promise.
-	std::promise<void> promise;
-
-	auto reject = [&promise](const Exception& error) {
-		promise.set_exception(std::make_exception_ptr(error));
-
-		return promise.get_future();
-	};
-
 	if (this->closed)
-		return reject(Exception("Invalid state"));
+		throw Exception("Invalid state");
 	if (this->track->kind() != "video")
-		return reject(Exception("Not a video Producer"));
+		throw Exception("Not a video Producer");
 	if (!isValidSpatialLayer(spatialLayer))
-		return reject(Exception("Invalid spatial layer"));
+		throw Exception("Invalid spatial layer");
 
 	if (spatialLayer == this->maxSpatialLayer)
-	{
-		promise.set_value();
+		return;
 
-		return promise.get_future();
-	}
-
-	try
-	{
-		this->listener->OnSetMaxSpatialLayer(this, spatialLayer).get();
-	}
-	catch (Exception& error)
-	{
-		return reject(error);
-	}
+	// May throw.
+	this->listener->OnSetMaxSpatialLayer(this, spatialLayer);
 
 	this->maxSpatialLayer = spatialLayer;
-
-	promise.set_value();
-
-	return promise.get_future();
 }
 } // namespace mediasoupclient

@@ -2,7 +2,6 @@
 #include "Handler.hpp"
 #include "catch.hpp"
 #include "data/parameters.hpp"
-#include <future>
 #include <memory>
 
 using namespace mediasoupclient;
@@ -16,13 +15,8 @@ static const std::string IceTransportPolicy("all");
 class FakeHandlerListener : public Handler::Listener
 {
 public:
-	std::future<void> OnConnect(json& /*transportLocalParameters*/) override
+	void OnConnect(json& /*transportLocalParameters*/) override
 	{
-		std::promise<void> promise;
-
-		promise.set_value();
-
-		return promise.get_future();
 	};
 
 	void OnConnectionStateChange(
@@ -67,7 +61,7 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 
 	SECTION("'sendHandler.Send()' fails if a null track is provided")
 	{
-		REQUIRE_THROWS_AS(sendHandler.Send(nullptr, false).get(), Exception);
+		REQUIRE_THROWS_AS(sendHandler.Send(nullptr, false), Exception);
 	}
 
 	SECTION("'sendHandler.Send()' succeeds if a track is provided")
@@ -77,75 +71,75 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 
 		json rtpParameters;
 
-		REQUIRE_NOTHROW(rtpParameters = sendHandler.Send(track, false).get());
+		REQUIRE_NOTHROW(rtpParameters = sendHandler.Send(track, false));
 		REQUIRE(rtpParameters["codecs"].size() == 1);
 		REQUIRE(rtpParameters["headerExtensions"].size() == 3);
 	}
 
 	SECTION("'sendHandler.Send()' fails if track is already handled")
 	{
-		REQUIRE_THROWS_AS(sendHandler.Send(track, false).get(), Exception);
+		REQUIRE_THROWS_AS(sendHandler.Send(track, false), Exception);
 	}
 
 	SECTION("'sendHandler.ReplaceTrack()' fails if a null track is provided")
 	{
-		REQUIRE_THROWS_AS(sendHandler.ReplaceTrack(nullptr, nullptr).get(), Exception);
+		REQUIRE_THROWS_AS(sendHandler.ReplaceTrack(nullptr, nullptr), Exception);
 	}
 
 	SECTION("'sendHandler.ReplaceTrack()' succeeds if a new track is provided")
 	{
 		auto newTrack = pc->CreateAudioTrack("test-new-track-id", source);
 
-		REQUIRE_NOTHROW(sendHandler.ReplaceTrack(track, newTrack).get());
+		REQUIRE_NOTHROW(sendHandler.ReplaceTrack(track, newTrack));
 
 		track = newTrack;
 	}
 
 	SECTION("'sendHandler.SetMaxSpatialLayer()' fails if a null track is provided")
 	{
-		REQUIRE_THROWS_AS(sendHandler.SetMaxSpatialLayer(nullptr, "").get(), Exception);
+		REQUIRE_THROWS_AS(sendHandler.SetMaxSpatialLayer(nullptr, ""), Exception);
 	}
 
 	SECTION("'sendHandler.SetMaxSpatialLayer()' succeeds if track is being sent")
 	{
-		REQUIRE_NOTHROW(sendHandler.SetMaxSpatialLayer(track, "").get());
+		REQUIRE_NOTHROW(sendHandler.SetMaxSpatialLayer(track, ""));
 	}
 
 	SECTION("'sendHandler.GetSenderStats()' fails if a null track is provided")
 	{
-		REQUIRE_THROWS_AS(sendHandler.GetSenderStats(nullptr).get(), Exception);
+		REQUIRE_THROWS_AS(sendHandler.GetSenderStats(nullptr), Exception);
 	}
 
 	SECTION("'sendHandler.GetSenderStats()' succeeds if track is being sent")
 	{
-		REQUIRE_NOTHROW(sendHandler.GetSenderStats(track).get());
+		REQUIRE_NOTHROW(sendHandler.GetSenderStats(track));
 	}
 
 	SECTION("'sendHandler.StopSending()' fails if a null track is provided")
 	{
-		REQUIRE_THROWS_AS(sendHandler.StopSending(nullptr).get(), Exception);
+		REQUIRE_THROWS_AS(sendHandler.StopSending(nullptr), Exception);
 	}
 
 	SECTION("'sendHandler.StopSending()' succeeds if track is being sent")
 	{
-		REQUIRE_NOTHROW(sendHandler.StopSending(track).get());
+		REQUIRE_NOTHROW(sendHandler.StopSending(track));
 	}
 
 	SECTION("'sendHandler.StopSending()' fails if track is not being sent")
 	{
-		REQUIRE_THROWS_AS(sendHandler.StopSending(track).get(), Exception);
+		REQUIRE_THROWS_AS(sendHandler.StopSending(track), Exception);
 	}
 
 	SECTION("'sendHandler.RestartIce()' succeeds")
 	{
 		auto remoteIceParameters = TransportRemoteParameters["iceParameters"];
 
-		REQUIRE_NOTHROW(sendHandler.RestartIce(remoteIceParameters).get());
+		REQUIRE_NOTHROW(sendHandler.RestartIce(remoteIceParameters));
 	}
 
 	SECTION("'sendHandler.UpdateIceServers()' succeeds")
 	{
-		REQUIRE_NOTHROW(sendHandler.UpdateIceServers(IceServers).get());
+		REQUIRE_NOTHROW(sendHandler.UpdateIceServers(IceServers));
 	}
 }
 
@@ -164,43 +158,43 @@ TEST_CASE("RecvHandler", "[Handler][RecvHandler]")
 
 	SECTION("'recvHander.Receive()' succeeds if correct rtpParameters are provided")
 	{
-		REQUIRE_NOTHROW(recvHandler.Receive("test", "audio", rtpParameters).get());
+		REQUIRE_NOTHROW(recvHandler.Receive("test", "audio", rtpParameters));
 	}
 
 	SECTION("'recvHandler.Receive()' fails if rtpParameters are already handled")
 	{
-		REQUIRE_THROWS_AS(recvHandler.Receive("test", "audio", rtpParameters).get(), Exception);
+		REQUIRE_THROWS_AS(recvHandler.Receive("test", "audio", rtpParameters), Exception);
 	}
 
 	SECTION("'recvHandler.GetReceiverStats()' fails if unknown receiver id is provided")
 	{
-		REQUIRE_THROWS_AS(recvHandler.GetReceiverStats("unknown").get(), Exception);
+		REQUIRE_THROWS_AS(recvHandler.GetReceiverStats("unknown"), Exception);
 	}
 
 	SECTION("'recvHandler.GetReceiverStats()' succeeds if known receiver id is provided")
 	{
-		REQUIRE_NOTHROW(recvHandler.GetReceiverStats("test").get());
+		REQUIRE_NOTHROW(recvHandler.GetReceiverStats("test"));
 	}
 
 	SECTION("'recvHandler.StopReceiving()' fails if unknown receiver id is provided")
 	{
-		REQUIRE_THROWS_AS(recvHandler.StopReceiving("unknown").get(), Exception);
+		REQUIRE_THROWS_AS(recvHandler.StopReceiving("unknown"), Exception);
 	}
 
 	SECTION("'recvHandler.StopReceiving()' succeeds if known receiver id is provided")
 	{
-		REQUIRE_NOTHROW(recvHandler.StopReceiving("test").get());
+		REQUIRE_NOTHROW(recvHandler.StopReceiving("test"));
 	}
 
 	SECTION("'recvHandler.RestartIce()' succeeds")
 	{
 		auto remoteIceParameters = TransportRemoteParameters["iceParameters"];
 
-		REQUIRE_NOTHROW(recvHandler.RestartIce(remoteIceParameters).get());
+		REQUIRE_NOTHROW(recvHandler.RestartIce(remoteIceParameters));
 	}
 
 	SECTION("'recvHandler.UpdateIceServers()' succeeds")
 	{
-		REQUIRE_NOTHROW(recvHandler.UpdateIceServers(IceServers).get());
+		REQUIRE_NOTHROW(recvHandler.UpdateIceServers(IceServers));
 	}
 }

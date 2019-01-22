@@ -4,7 +4,6 @@
 #include "PeerConnection.hpp"
 #include "sdp/RemoteSdp.hpp"
 #include "json.hpp"
-#include <future>
 #include <memory>
 #include <set>
 #include <string>
@@ -19,14 +18,14 @@ public:
 	class Listener
 	{
 	public:
-		virtual std::future<void> OnConnect(json& transportLocalParameters) = 0;
+		virtual void OnConnect(json& transportLocalParameters) = 0;
 		virtual void OnConnectionStateChange(
 		  webrtc::PeerConnectionInterface::IceConnectionState connectionState) = 0;
 	};
 
 	// Methods to be implemented by child classes.
 public:
-	virtual std::future<void> RestartIce(const json& remoteIceParameters) = 0;
+	virtual void RestartIce(const json& remoteIceParameters) = 0;
 
 public:
 	static json GetNativeRtpCapabilities();
@@ -40,8 +39,8 @@ public:
 	  const json& proprietaryConstraints    = json::object(),
 	  json sendingRtpParametersByKind       = json::array());
 
-	std::future<json> GetTransportStats();
-	std::future<void> UpdateIceServers(const json& iceServerUris);
+	json GetTransportStats();
+	void UpdateIceServers(const json& iceServerUris);
 
 	void Close();
 
@@ -80,17 +79,17 @@ public:
 	  const json& proprietaryConstraints,
 	  const json& rtpParametersByKind);
 
-	std::future<json> Send(webrtc::MediaStreamTrackInterface* track, uint8_t numStreams = 1);
-	std::future<void> StopSending(webrtc::MediaStreamTrackInterface* track);
-	std::future<void> ReplaceTrack(
+	json Send(webrtc::MediaStreamTrackInterface* track, uint8_t numStreams = 1);
+	void StopSending(webrtc::MediaStreamTrackInterface* track);
+	void ReplaceTrack(
 	  webrtc::MediaStreamTrackInterface* track, webrtc::MediaStreamTrackInterface* newTrack);
-	std::future<void> SetMaxSpatialLayer(
+	void SetMaxSpatialLayer(
 	  webrtc::MediaStreamTrackInterface* track, const std::string& spatialLayer);
-	std::future<json> GetSenderStats(webrtc::MediaStreamTrackInterface* track);
+	json GetSenderStats(webrtc::MediaStreamTrackInterface* track);
 
 	/* Methods inherided from Handler. */
 public:
-	std::future<void> RestartIce(const json& remoteIceParameters) override;
+	void RestartIce(const json& remoteIceParameters) override;
 
 private:
 	// Sending tracks.
@@ -107,14 +106,14 @@ public:
 	  const std::string& iceTransportPolicy,
 	  const json& proprietaryConstraints);
 
-	std::future<webrtc::MediaStreamTrackInterface*> Receive(
+	webrtc::MediaStreamTrackInterface* Receive(
 	  const std::string& id, const std::string& kind, const json& rtpParameters);
-	std::future<void> StopReceiving(const std::string& id);
-	std::future<json> GetReceiverStats(const std::string& id);
+	void StopReceiving(const std::string& id);
+	json GetReceiverStats(const std::string& id);
 
 	/* Methods inherided from Handler. */
 public:
-	std::future<void> RestartIce(const json& remoteIceParameters) override;
+	void RestartIce(const json& remoteIceParameters) override;
 
 	/*
 	 * Receiver infos indexed by id.
@@ -133,7 +132,7 @@ public:
 
 /* Inline methods */
 
-inline std::future<json> Handler::GetTransportStats()
+inline json Handler::GetTransportStats()
 {
 	return this->pc->GetStats();
 }

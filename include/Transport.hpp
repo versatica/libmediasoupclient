@@ -24,13 +24,13 @@ public:
 	class Listener
 	{
 	public:
-		virtual void OnConnect(const json& transportLocalParameters)             = 0;
+		virtual std::future<void> OnConnect(const json& transportLocalParameters)             = 0;
 		virtual void OnConnectionStateChange(const std::string& connectionState) = 0;
 	};
 
 	/* Pure virtual methods inherited from Handler::Listener */
 public:
-	std::future<void> OnConnect(json& transportLocalParameters) override;
+	void OnConnect(json& transportLocalParameters) override;
 	void OnConnectionStateChange(
 	  webrtc::PeerConnectionInterface::IceConnectionState connectionState) override;
 
@@ -44,12 +44,12 @@ public:
 	const std::string& GetId() const;
 	const std::string& GetConnectionState() const;
 	const json& GetAppData() const;
-	std::future<json> GetStats() const;
+	json GetStats() const;
 
 	bool IsClosed() const;
 
-	std::future<void> RestartIce(const json& remoteIceParameters);
-	std::future<void> UpdateIceServers(const json& iceServers);
+	void RestartIce(const json& remoteIceParameters);
+	void UpdateIceServers(const json& iceServers);
 	virtual void Close();
 
 protected:
@@ -101,7 +101,7 @@ public:
 	  std::map<std::string, bool> canProduceByKind,
 	  json appData = json::object());
 
-	std::future<Producer*> Produce(
+	Producer* Produce(
 	  Producer::PublicListener* producerPublicListener,
 	  webrtc::MediaStreamTrackInterface* track,
 	  bool simulcast = false,
@@ -115,11 +115,11 @@ public:
 	/* Virtual methods inherited from Producer::Listener. */
 public:
 	void OnClose(Producer* producer) override;
-	std::future<void> OnReplaceTrack(
+	void OnReplaceTrack(
 	  const Producer* producer, webrtc::MediaStreamTrackInterface* newTrack) override;
-	std::future<void> OnSetMaxSpatialLayer(
+	void OnSetMaxSpatialLayer(
 	  const Producer* producer, const std::string& maxSpatialLayer) override;
-	std::future<json> OnGetStats(const Producer* producer) override;
+	json OnGetStats(const Producer* producer) override;
 
 private:
 	// Listener instance.
@@ -156,7 +156,7 @@ public:
 	  const json& extendedRtpCapabilities,
 	  json appData = json::object());
 
-	std::future<Consumer*> Consume(
+	Consumer* Consume(
 	  Consumer::PublicListener* consumerPublicListener,
 	  const json& consumerRemoteParameters,
 	  json appData = json::object());
@@ -168,7 +168,7 @@ public:
 	/* Virtual methods inherited from Consumer::Listener. */
 public:
 	void OnClose(Consumer* consumer) override;
-	std::future<json> OnGetStats(const Consumer* consumer) override;
+	json OnGetStats(const Consumer* consumer) override;
 
 private:
 	// Listener instance.
@@ -202,22 +202,15 @@ inline const std::string& Transport::GetConnectionState() const
 
 inline const json& Transport::GetAppData() const
 {
+	// TODO: what's the compiler warning:
+	// "access of moved variable appData"
 	return this->appData;
 }
 
-inline std::future<json> Transport::GetStats() const
+inline json Transport::GetStats() const
 {
-	// Returned future's promise.
-	std::promise<json> promise;
-
-	auto reject = [&promise](const Exception& error) {
-		promise.set_exception(std::make_exception_ptr(error));
-
-		return promise.get_future();
-	};
-
 	if (this->closed)
-		return reject(Exception("Invalid state"));
+		throw Exception("Invalid state");
 	else
 		return this->handler->GetTransportStats();
 }
@@ -227,36 +220,18 @@ inline bool Transport::IsClosed() const
 	return this->closed;
 }
 
-inline std::future<void> Transport::RestartIce(const json& remoteIceParameters)
+inline void Transport::RestartIce(const json& remoteIceParameters)
 {
-	// Returned future's promise.
-	std::promise<void> promise;
-
-	auto reject = [&promise](const Exception& error) {
-		promise.set_exception(std::make_exception_ptr(error));
-
-		return promise.get_future();
-	};
-
 	if (this->closed)
-		return reject(Exception("Invalid state"));
+		throw Exception("Invalid state");
 	else
 		return this->handler->RestartIce(remoteIceParameters);
 }
 
-inline std::future<void> Transport::UpdateIceServers(const json& iceServers)
+inline void Transport::UpdateIceServers(const json& iceServers)
 {
-	// Returned future's promise.
-	std::promise<void> promise;
-
-	auto reject = [&promise](const Exception& error) {
-		promise.set_exception(std::make_exception_ptr(error));
-
-		return promise.get_future();
-	};
-
 	if (this->closed)
-		return reject(Exception("Invalid state"));
+		throw Exception("Invalid state");
 	else
 		return this->handler->UpdateIceServers(iceServers);
 }

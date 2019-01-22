@@ -165,7 +165,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 			false /* simulcast */,
 			""    /* maxSpatialLayer */,
 			appData
-			).get()));
+			)));
 
 		REQUIRE(
 		  sendTransportListener.onConnectTimesCalled ==
@@ -233,7 +233,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 			videoTrack,
 			true /* simulcast */,
 			"medium"/* maxSpatialLayer */
-			).get()));
+			)));
 
 		REQUIRE(
 		  sendTransportListener.onConnectTimesCalled ==
@@ -322,7 +322,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 	{
 		REQUIRE_THROWS_AS(sendTransport->Produce(
 			&producerPublicListener,
-			nullptr).get(),
+			nullptr),
 			Exception);
 	}
 
@@ -330,7 +330,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 	{
 		REQUIRE_THROWS_AS(sendTransport->Produce(
 			&producerPublicListener,
-			audioTrack).get(),
+			audioTrack),
 			Exception);
 	}
 
@@ -340,7 +340,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 			&producerPublicListener,
 			videoTrack,
 			true,
-			"chicken").get(),
+			"chicken"),
 			Exception);
 	}
 
@@ -352,7 +352,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 			&producerPublicListener,
 			audioTrack,
 			true,
-			"medium").get(),
+			"medium"),
 			Exception);
 	}
 
@@ -378,7 +378,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 						&consumerPublicListener,
 						audioConsumerRemoteParameters,
 						appData
-						).get()));
+						)));
 
 		REQUIRE(
 		  recvTransportListener.onConnectTimesCalled == ++recvTransportListener.onConnectExpectedTimesCalled);
@@ -439,7 +439,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE_NOTHROW(videoConsumer.reset(recvTransport->Consume(
 						&consumerPublicListener,
 						videoConsumerRemoteParameters
-						).get()));
+						)));
 
 		REQUIRE(
 		  recvTransportListener.onConnectTimesCalled == recvTransportListener.onConnectExpectedTimesCalled);
@@ -550,7 +550,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE_THROWS_AS(recvTransport->Consume(
 						&consumerPublicListener,
 						consumerRemoteParameters
-						).get(), Exception);
+						), Exception);
 	}
 
 	SECTION("transport.consume() with duplicated consumerRtpParameters.id throws")
@@ -563,26 +563,26 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE_THROWS_AS(recvTransport->Consume(
 						&consumerPublicListener,
 						consumerRemoteParameters
-						).get(), Exception);
+						), Exception);
 	}
 
 	SECTION("'sendTransport.GetStats()' succeeds")
 	{
-		REQUIRE_NOTHROW(sendTransport->GetStats().get());
+		REQUIRE_NOTHROW(sendTransport->GetStats());
 	}
 
 	SECTION("'sendTransport.RestartIce()' succeeds")
 	{
 		auto remoteIceParameters = TransportRemoteParameters["iceParameters"];
 
-		REQUIRE_NOTHROW(sendTransport->RestartIce(remoteIceParameters).get());
+		REQUIRE_NOTHROW(sendTransport->RestartIce(remoteIceParameters));
 	}
 
 	SECTION("'sendTransport.UpdateIceServers()' succeeds")
 	{
 		auto iceServers = json::array();
 
-		REQUIRE_NOTHROW(sendTransport->UpdateIceServers(iceServers).get());
+		REQUIRE_NOTHROW(sendTransport->UpdateIceServers(iceServers));
 	}
 
 	SECTION("'producer->Pause()' succeeds")
@@ -606,7 +606,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 		auto newAudioTrack = pc->CreateAudioTrack("audio-track-id-2", audioSource);
 
-		REQUIRE_NOTHROW(audioProducer->ReplaceTrack(newAudioTrack).get());
+		REQUIRE_NOTHROW(audioProducer->ReplaceTrack(newAudioTrack));
 		REQUIRE(audioProducer->GetTrack() == newAudioTrack);
 		// Producer was already paused.
 		REQUIRE(audioProducer->IsPaused());
@@ -616,7 +616,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 		auto newVideoTrack = pc->CreateVideoTrack("video-track-id-2", videoSource);
 
-		REQUIRE_NOTHROW(videoProducer->ReplaceTrack(newVideoTrack).get());
+		REQUIRE_NOTHROW(videoProducer->ReplaceTrack(newVideoTrack));
 		REQUIRE(videoProducer->GetTrack() == newVideoTrack);
 		REQUIRE(!videoProducer->IsPaused());
 
@@ -625,33 +625,33 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 	SECTION("'producer->ReplaceTrack()' fails if null track is provided")
 	{
-		REQUIRE_THROWS_AS(videoProducer->ReplaceTrack(nullptr).get(), Exception);
+		REQUIRE_THROWS_AS(videoProducer->ReplaceTrack(nullptr), Exception);
 	}
 
 	SECTION("'producer->ReplaceTrack()' with an already handled track throws")
 	{
-		REQUIRE_THROWS_AS(videoProducer->ReplaceTrack(videoTrack).get(), Exception);
+		REQUIRE_THROWS_AS(videoProducer->ReplaceTrack(videoTrack), Exception);
 	}
 
 	SECTION("'producer->SetMaxSpatialLayer()' succeeds")
 	{
-		REQUIRE_NOTHROW(videoProducer->SetMaxSpatialLayer("low").get());
+		REQUIRE_NOTHROW(videoProducer->SetMaxSpatialLayer("low"));
 		REQUIRE(videoProducer->GetMaxSpatialLayer() == "low");
 	}
 
 	SECTION("'producer->SetMaxSpatialLayer()' in an audio Producer throws")
 	{
-		REQUIRE_THROWS_AS(audioProducer->SetMaxSpatialLayer("low").get(), Exception);
+		REQUIRE_THROWS_AS(audioProducer->SetMaxSpatialLayer("low"), Exception);
 	}
 
 	SECTION("'producer->SetMaxSpatialLayer()' with invalid spatial layer throws")
 	{
-		REQUIRE_THROWS_AS(videoProducer->SetMaxSpatialLayer("invalid").get(), Exception);
+		REQUIRE_THROWS_AS(videoProducer->SetMaxSpatialLayer("invalid"), Exception);
 	}
 
 	SECTION("'producer->GetStats()' succeeds")
 	{
-		REQUIRE_NOTHROW(videoProducer->GetStats().get());
+		REQUIRE_NOTHROW(videoProducer->GetStats());
 	}
 
 	SECTION("'consumer->Resume()' succeeds")
@@ -670,7 +670,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 	SECTION("'consumer->GetStats()' succeeds")
 	{
-		REQUIRE_NOTHROW(videoConsumer->GetStats().get());
+		REQUIRE_NOTHROW(videoConsumer->GetStats());
 	}
 
 	SECTION("'producer->Close()' succeeds")
@@ -682,7 +682,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 	SECTION("producer->getStats() throws if closed")
 	{
-		REQUIRE_THROWS_AS(audioProducer->GetStats().get(), Exception);
+		REQUIRE_THROWS_AS(audioProducer->GetStats(), Exception);
 	}
 
 	SECTION("'consumer->Close()' succeeds")
@@ -694,7 +694,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 	SECTION("consumer->getStats() throws if closed")
 	{
-		REQUIRE_THROWS_AS(audioConsumer->GetStats().get(), Exception);
+		REQUIRE_THROWS_AS(audioConsumer->GetStats(), Exception);
 	}
 
 	SECTION("transport->Close() fires 'OnTransportClose' in live Producers/Consumers")
@@ -724,7 +724,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 	{
 		REQUIRE_THROWS_AS(sendTransport->Produce(
 			&producerPublicListener,
-			audioTrack).get(),
+			audioTrack),
 			Exception);
 	}
 
@@ -735,26 +735,26 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 		REQUIRE_THROWS_AS(recvTransport->Consume(
 					&consumerPublicListener,
-					audioConsumerRemoteParameters).get(),
+					audioConsumerRemoteParameters),
 					Exception);
 	}
 
 	SECTION("transport.getStats() throws if closed")
 	{
-		REQUIRE_THROWS_AS(sendTransport->GetStats().get(), Exception);
+		REQUIRE_THROWS_AS(sendTransport->GetStats(), Exception);
 	}
 
 	SECTION("transport.restartIce() throws if closed")
 	{
 		auto remoteIceParameters = json::object();
 
-		REQUIRE_THROWS_AS(sendTransport->RestartIce(remoteIceParameters).get(), Exception);
+		REQUIRE_THROWS_AS(sendTransport->RestartIce(remoteIceParameters), Exception);
 	}
 
 	SECTION("transport.restartIce() throws if closed")
 	{
 		auto iceServers = json::object();
 
-		REQUIRE_THROWS_AS(sendTransport->UpdateIceServers(iceServers).get(), Exception);
+		REQUIRE_THROWS_AS(sendTransport->UpdateIceServers(iceServers), Exception);
 	}
 }

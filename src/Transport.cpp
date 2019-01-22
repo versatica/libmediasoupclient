@@ -45,7 +45,7 @@ SendTransport::SendTransport(
 /*
  * Produce a track
  */
-std::future<Producer*> SendTransport::Produce(
+Producer* SendTransport::Produce(
   Producer::PublicListener* producerPublicListener,
   webrtc::MediaStreamTrackInterface* track,
   bool simulcast,
@@ -54,43 +54,29 @@ std::future<Producer*> SendTransport::Produce(
 {
 	MSC_TRACE();
 
-	std::promise<Producer*> promise;
-
-	auto reject = [&promise](const Exception& error) {
-		promise.set_exception(std::make_exception_ptr(error));
-
-		return promise.get_future();
-	};
-
 	if (this->closed)
-		return reject(Exception("Invalid state"));
+		throw Exception("Invalid state");
 	if (track == nullptr)
-		return reject(Exception("Track cannot be null"));
+		throw Exception("Track cannot be null");
 	if (track->state() == webrtc::MediaStreamTrackInterface::TrackState::kEnded)
-		return reject(Exception("Track ended"));
+		throw Exception("Track ended");
 	if (simulcast && track->kind() == "audio")
-		return reject(Exception("Cannot set simulcast with audio track"));
+		throw Exception("Cannot set simulcast with audio track");
 	if (simulcast && !isValidSpatialLayer(maxSpatialLayer))
-		return reject(Exception("Invalid maxSpatialLayer"));
+		throw Exception("Invalid maxSpatialLayer");
 
 	json rtpParameters;
 	json producerRemoteParameters;
 
-	try
-	{
-		uint8_t numStreams = 1;
+	uint8_t numStreams = 1;
 
-		if (simulcast)
-		{
-			numStreams = (maxSpatialLayer == "high") ? 3 : (maxSpatialLayer == "medium") ? 2 : 1;
-		}
-
-		rtpParameters = this->handler->Send(track, numStreams).get();
-	}
-	catch (Exception& error)
+	if (simulcast)
 	{
-		return reject(error);
+		numStreams = (maxSpatialLayer == "high") ? 3 : (maxSpatialLayer == "medium") ? 2 : 1;
 	}
+
+	// May throw.
+	rtpParameters = this->handler->Send(track, numStreams);
 
 	try
 	{
@@ -103,13 +89,14 @@ std::future<Producer*> SendTransport::Produce(
 		};
 		/* clang-format on */
 
+		// May throw.
 		producerRemoteParameters = this->listener->OnProduce(producerLocalParameters).get();
 	}
 	catch (Exception& error)
 	{
 		this->handler->StopSending(track);
 
-		return reject(error);
+		throw;
 	}
 
 	auto* producer = new Producer(
@@ -123,35 +110,20 @@ std::future<Producer*> SendTransport::Produce(
 
 	this->producers[producer->GetId()] = producer;
 
-	promise.set_value(producer);
-
-	return promise.get_future();
+	return producer;
 }
 
 /* Handler::Listener methods */
-std::future<void> Transport::OnConnect(json& transportLocalParameters)
+void Transport::OnConnect(json& transportLocalParameters)
 {
 	MSC_TRACE();
 
-	// Returned future's promise.
-	std::promise<void> promise;
-
-	auto reject = [&promise](const Exception& error) {
-		promise.set_exception(std::make_exception_ptr(error));
-
-		return promise.get_future();
-	};
-
 	if (this->closed)
-		return reject(Exception("Invalid state"));
+		throw Exception("Invalid state");
 
 	transportLocalParameters["id"] = this->id;
 
-	this->listener->OnConnect(transportLocalParameters);
-
-	promise.set_value();
-
-	return promise.get_future();
+	return this->listener->OnConnect(transportLocalParameters).get();
 }
 
 /* Producer::Listener methods */
@@ -164,16 +136,11 @@ void SendTransport::OnClose(Producer* producer)
 	if (this->closed)
 		return;
 
-	try
-	{
-		this->handler->StopSending(producer->GetTrack()).get();
-	}
-	catch (Exception& error)
-	{
-	}
+	// May throw.
+	this->handler->StopSending(producer->GetTrack());
 }
 
-std::future<void> SendTransport::OnReplaceTrack(
+void SendTransport::OnReplaceTrack(
   const Producer* producer, webrtc::MediaStreamTrackInterface* newTrack)
 {
 	MSC_TRACE();
@@ -181,7 +148,7 @@ std::future<void> SendTransport::OnReplaceTrack(
 	return this->handler->ReplaceTrack(producer->GetTrack(), newTrack);
 }
 
-std::future<void> SendTransport::OnSetMaxSpatialLayer(
+void SendTransport::OnSetMaxSpatialLayer(
   const Producer* producer, const std::string& maxSpatialLayer)
 {
 	MSC_TRACE();
@@ -189,7 +156,7 @@ std::future<void> SendTransport::OnSetMaxSpatialLayer(
 	return this->handler->SetMaxSpatialLayer(producer->GetTrack(), maxSpatialLayer);
 }
 
-std::future<json> SendTransport::OnGetStats(const Producer* producer)
+json SendTransport::OnGetStats(const Producer* producer)
 {
 	MSC_TRACE();
 
@@ -223,28 +190,20 @@ RecvTransport::RecvTransport(
 /*
  * Consume a remote Producer.
  */
-std::future<Consumer*> RecvTransport::Consume(
+Consumer* RecvTransport::Consume(
   Consumer::PublicListener* consumerPublicListener, const json& consumerRemoteParameters, json appData)
 {
 	MSC_TRACE();
 
-	std::promise<Consumer*> promise;
-
-	auto reject = [&promise](const Exception& error) {
-		promise.set_exception(std::make_exception_ptr(error));
-
-		return promise.get_future();
-	};
-
 	// Check if the track is a null pointer.
 	if (this->closed)
-		return reject(Exception("Invalid state"));
+		throw Exception("Invalid state");
 	if (!consumerRemoteParameters.is_object())
-		return reject(Exception("Missing consumerRemoteParameters"));
+		throw Exception("Missing consumerRemoteParameters");
 	if (consumerRemoteParameters.find("id") == consumerRemoteParameters.end())
-		return reject(Exception("Missing consumerRemoteParameters[\"id\"]"));
+		throw Exception("Missing consumerRemoteParameters[\"id\"]");
 	if (consumerRemoteParameters.find("producerId") == consumerRemoteParameters.end())
-		return reject(Exception("Missing consumerRemoteParameters[\"producerId\"]"));
+		throw Exception("Missing consumerRemoteParameters[\"producerId\"]");
 
 	json consumerParameters = consumerRemoteParameters;
 
@@ -253,23 +212,15 @@ std::future<Consumer*> RecvTransport::Consume(
 	  ortc::canReceive(consumerParameters["rtpParameters"], this->extendedRtpCapabilities);
 
 	if (!canConsume)
-		return reject(Exception("cannot consume this Producer"));
+		throw Exception("cannot consume this Producer");
 
 	webrtc::MediaStreamTrackInterface* track;
 
-	try
-	{
-		track = this->handler
-		          ->Receive(
-		            consumerParameters["id"].get<std::string>(),
-		            consumerParameters["kind"].get<std::string>(),
-		            consumerParameters["rtpParameters"])
-		          .get();
-	}
-	catch (Exception& error)
-	{
-		return reject(error);
-	}
+	// May throw.
+	track = this->handler->Receive(
+	            consumerParameters["id"].get<std::string>(),
+	            consumerParameters["kind"].get<std::string>(),
+	            consumerParameters["rtpParameters"]);
 
 	auto* consumer = new Consumer(
 	  this,
@@ -284,9 +235,7 @@ std::future<Consumer*> RecvTransport::Consume(
 
 	this->listener->OnStartConsumer(consumer);
 
-	promise.set_value(consumer);
-
-	return promise.get_future();
+	return consumer;
 }
 
 /* Consumer::Listener methods */
@@ -299,16 +248,11 @@ void RecvTransport::OnClose(Consumer* consumer)
 	if (this->closed)
 		return;
 
-	try
-	{
-		this->handler->StopReceiving(consumer->GetId()).get();
-	}
-	catch (Exception& error)
-	{
-	}
+	// May throw.
+	this->handler->StopReceiving(consumer->GetId());
 }
 
-std::future<json> RecvTransport::OnGetStats(const Consumer* consumer)
+json RecvTransport::OnGetStats(const Consumer* consumer)
 {
 	MSC_TRACE();
 

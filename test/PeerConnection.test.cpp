@@ -66,46 +66,46 @@ TEST_CASE("PeerConnection", "[PeerConnection]")
 
 	SECTION("'pc.GetStats()' succeeds")
 	{
-		REQUIRE_NOTHROW(pc.GetStats().get());
+		REQUIRE_NOTHROW(pc.GetStats());
 	}
 
 	SECTION("'pc.CreateAnswer()' fails if no remote offer has been provided")
 	{
 		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
 
-		REQUIRE_THROWS_AS(pc.CreateAnswer(options).get(), Exception);
+		REQUIRE_THROWS_AS(pc.CreateAnswer(options), Exception);
 	}
 
 	SECTION("'pc.SetRemoteDescription()' fails if incorrect SDP is provided")
 	{
 		auto sdp = std::string();
 
-		REQUIRE_THROWS_AS(pc.SetLocalDescription(PeerConnection::SdpType::OFFER, sdp).get(), Exception);
+		REQUIRE_THROWS_AS(pc.SetLocalDescription(PeerConnection::SdpType::OFFER, sdp), Exception);
 	}
 
 	SECTION("'pc.SetRemoteDescription()' succeeds if correct SDP is provided")
 	{
 		auto sdp = helpers::readFile("test/sdp/data/webrtc.sdp");
 
-		REQUIRE_NOTHROW(pc.SetRemoteDescription(PeerConnection::SdpType::OFFER, sdp).get());
+		REQUIRE_NOTHROW(pc.SetRemoteDescription(PeerConnection::SdpType::OFFER, sdp));
 	}
 
 	SECTION("'pc.CreateOffer()' succeeds")
 	{
 		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
 
-		REQUIRE_NOTHROW(offer = pc.CreateOffer(options).get());
+		REQUIRE_NOTHROW(offer = pc.CreateOffer(options));
 	}
 
 	SECTION("'pc.SetRemoteDescription()' succeeds")
 	{
-		REQUIRE_NOTHROW(pc.SetRemoteDescription(PeerConnection::SdpType::OFFER, offer).get());
+		REQUIRE_NOTHROW(pc.SetRemoteDescription(PeerConnection::SdpType::OFFER, offer));
 	}
 
 	SECTION("'pc.CreateAnswer()' succeeds if remote offer is provided")
 	{
 		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
 
-		REQUIRE_NOTHROW(pc.CreateAnswer(options).get());
+		REQUIRE_NOTHROW(pc.CreateAnswer(options));
 	}
 }

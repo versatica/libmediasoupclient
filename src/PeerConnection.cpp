@@ -233,7 +233,7 @@ PeerConnection::PeerConnection(PeerConnection::Listener* listener, std::list<std
 	this->pc = peerConnectionFactory->CreatePeerConnection(configuration, nullptr, nullptr, listener);
 }
 
-std::future<std::string> PeerConnection::CreateOffer(
+std::string PeerConnection::CreateOffer(
   const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions& options)
 {
 	MSC_TRACE();
@@ -245,10 +245,10 @@ std::future<std::string> PeerConnection::CreateOffer(
 
 	this->pc->CreateOffer(sessionDescriptionObserver, options);
 
-	return future;
+	return future.get();
 }
 
-std::future<std::string> PeerConnection::CreateAnswer(
+std::string PeerConnection::CreateAnswer(
   const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions& options)
 {
 	MSC_TRACE();
@@ -260,10 +260,10 @@ std::future<std::string> PeerConnection::CreateAnswer(
 
 	this->pc->CreateAnswer(sessionDescriptionObserver, options);
 
-	return future;
+	return future.get();
 }
 
-std::future<void> PeerConnection::SetLocalDescription(
+void PeerConnection::SetLocalDescription(
   PeerConnection::SdpType type, const std::string& sdp)
 {
 	MSC_TRACE();
@@ -286,15 +286,15 @@ std::future<void> PeerConnection::SetLocalDescription(
 
 		observer->Reject(error.description);
 
-		return future;
+		return future.get();
 	}
 
 	this->pc->SetLocalDescription(observer, sessionDescription);
 
-	return future;
+	return future.get();
 }
 
-std::future<void> PeerConnection::SetRemoteDescription(
+void PeerConnection::SetRemoteDescription(
   PeerConnection::SdpType type, const std::string& sdp)
 {
 	MSC_TRACE();
@@ -317,12 +317,12 @@ std::future<void> PeerConnection::SetRemoteDescription(
 
 		observer->Reject(error.description);
 
-		return future;
+		return future.get();
 	}
 
 	this->pc->SetRemoteDescription(observer, sessionDescription);
 
-	return future;
+	return future.get();
 }
 
 const std::string PeerConnection::GetLocalDescription()
@@ -449,7 +449,7 @@ json PeerConnection::GetNativeRtpCapabilities() const
 	return capabilities;
 }
 
-std::future<json> PeerConnection::GetStats()
+json PeerConnection::GetStats()
 {
 	MSC_TRACE();
 
@@ -460,10 +460,10 @@ std::future<json> PeerConnection::GetStats()
 
 	this->pc->GetStats(callback);
 
-	return future;
+	return future.get();
 }
 
-std::future<json> PeerConnection::GetStats(rtc::scoped_refptr<webrtc::RtpSenderInterface> selector)
+json PeerConnection::GetStats(rtc::scoped_refptr<webrtc::RtpSenderInterface> selector)
 {
 	MSC_TRACE();
 
@@ -474,10 +474,10 @@ std::future<json> PeerConnection::GetStats(rtc::scoped_refptr<webrtc::RtpSenderI
 
 	this->pc->GetStats(std::move(selector), callback);
 
-	return future;
+	return future.get();
 }
 
-std::future<json> PeerConnection::GetStats(rtc::scoped_refptr<webrtc::RtpReceiverInterface> selector)
+json PeerConnection::GetStats(rtc::scoped_refptr<webrtc::RtpReceiverInterface> selector)
 {
 	MSC_TRACE();
 
@@ -488,7 +488,7 @@ std::future<json> PeerConnection::GetStats(rtc::scoped_refptr<webrtc::RtpReceive
 
 	this->pc->GetStats(std::move(selector), callback);
 
-	return future;
+	return future.get();
 }
 
 /* PeerConnection::Listener. */

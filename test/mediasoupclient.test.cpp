@@ -162,11 +162,36 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		json encodings;
 		json rtcp;
 
+		/* clang-format off */
+		const json simulcast =
+		{
+			{
+				{ "maxBitrate", 100000 }
+			},
+			{
+				{ "maxBitrate", 500000 }
+			},
+			{
+				{ "maxBitrate", 1500000 }
+			}
+		};
+		/* clang-format on */
+
 		// Pause the audio track before creating its Producer.
 		audioTrack->set_enabled(false);
 
+		REQUIRE_THROWS_AS(
+		  audioProducer.reset(sendTransport->Produce(
+		    &producerPublicListener, audioTrack, simulcast, 0 /* maxSpatialLayer */, appData)),
+		  Exception);
+
+		REQUIRE_THROWS_AS(
+		  audioProducer.reset(sendTransport->Produce(
+		    &producerPublicListener, audioTrack, json::array(), 1 /* maxSpatialLayer */, appData)),
+		  Exception);
+
 		REQUIRE_NOTHROW(audioProducer.reset(sendTransport->Produce(
-		  &producerPublicListener, audioTrack, false /* simulcast */, 3 /* maxSpatialLayer */, appData)));
+		  &producerPublicListener, audioTrack, json::array(), 0 /* maxSpatialLayer */, appData)));
 
 		REQUIRE(
 		  sendTransportListener.onConnectTimesCalled ==
@@ -232,7 +257,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		audioProducer->Resume();
 
 		REQUIRE_NOTHROW(videoProducer.reset(sendTransport->Produce(
-		  &producerPublicListener, videoTrack, true /* simulcast */, 2 /* maxSpatialLayer */
+		  &producerPublicListener, videoTrack, simulcast, 2 /* maxSpatialLayer */
 		  )));
 
 		REQUIRE(
@@ -299,7 +324,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 		encodings = videoProducer->GetRtpParameters()["encodings"];
 		REQUIRE(encodings.is_array());
-		REQUIRE(encodings.size() == 2);
+		REQUIRE(encodings.size() == 3);
 		REQUIRE(encodings[0].is_object());
 		REQUIRE(encodings[0].find("ssrc") != encodings[0].end());
 		REQUIRE(encodings[0].find("rtx") != encodings[0].end());

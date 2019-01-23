@@ -91,6 +91,9 @@ public:
 	};
 
 public:
+	static const json DefaultSimulcast;
+
+public:
 	SendTransport(
 	  Listener* listener,
 	  const json& transportRemoteParameters,
@@ -104,7 +107,7 @@ public:
 	Producer* Produce(
 	  Producer::PublicListener* producerPublicListener,
 	  webrtc::MediaStreamTrackInterface* track,
-	  bool simulcast          = false,
+	  json simulcast          = DefaultSimulcast,
 	  uint8_t maxSpatialLayer = 0,
 	  json appData            = json::object());
 

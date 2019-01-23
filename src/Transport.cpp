@@ -9,6 +9,23 @@
 
 namespace mediasoupclient
 {
+/* SendTransport static variables. */
+
+/* clang-format off */
+const json SendTransport::DefaultSimulcast =
+{
+	{
+		{ "maxBitrate", 100000 }
+	},
+	{
+		{ "maxBitrate", 500000 }
+	},
+	{
+		{ "maxBitrate", 1500000 }
+	}
+};
+/* clang-format on */
+
 /* SendTransport instance methods. */
 
 SendTransport::SendTransport(
@@ -47,7 +64,7 @@ SendTransport::SendTransport(
 Producer* SendTransport::Produce(
   Producer::PublicListener* producerPublicListener,
   webrtc::MediaStreamTrackInterface* track,
-  bool simulcast,
+  json simulcast,
   uint8_t maxSpatialLayer,
   json appData)
 {
@@ -59,19 +76,34 @@ Producer* SendTransport::Produce(
 		throw Exception("Track cannot be null");
 	if (track->state() == webrtc::MediaStreamTrackInterface::TrackState::kEnded)
 		throw Exception("Track ended");
-	if (simulcast && track->kind() == "audio")
-		throw Exception("Cannot set simulcast with audio track");
+	if (!simulcast.is_array())
+		throw Exception("Invalid simulcast");
+	if (track->kind() != "video" && simulcast.size() > 0)
+		throw Exception("Cannot set simulcast on audio track");
+	if (track->kind() != "video" && maxSpatialLayer > 0)
+		throw Exception("Cannot set simulcast on audio track");
 
 	json rtpParameters;
 	json producerRemoteParameters;
 
-	uint8_t numStreams = 1;
+	auto normalizedSimulcast = json::array();
 
-	if (simulcast)
-		numStreams = maxSpatialLayer;
+	if (track->kind() == "video" && simulcast.size() > 1)
+	{
+		std::for_each(simulcast.begin(), simulcast.end(), [&normalizedSimulcast](const json& entry) {
+			auto it = entry.find("maxBitrate");
+			if (it == entry.end())
+				throw Exception("Invalid simulcast entry");
+
+			if (!(*it).is_number())
+				throw Exception("Invalid simulcast entry");
+
+			normalizedSimulcast.push_back({ "maxBitrate", *it });
+		});
+	}
 
 	// May throw.
-	rtpParameters = this->handler->Send(track, numStreams);
+	rtpParameters = this->handler->Send(track, simulcast);
 
 	try
 	{

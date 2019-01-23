@@ -79,7 +79,7 @@ public:
 	  const json& proprietaryConstraints,
 	  const json& rtpParametersByKind);
 
-	json Send(webrtc::MediaStreamTrackInterface* track, uint8_t numStreams = 1);
+	json Send(webrtc::MediaStreamTrackInterface* track, const json& simulcast);
 	void StopSending(webrtc::MediaStreamTrackInterface* track);
 	void ReplaceTrack(
 	  webrtc::MediaStreamTrackInterface* track, webrtc::MediaStreamTrackInterface* newTrack);

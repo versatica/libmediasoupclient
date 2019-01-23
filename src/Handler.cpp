@@ -114,7 +114,7 @@ SendHandler::SendHandler(
 	this->remoteSdp.reset(new Sdp::RemoteSdp(transportRemoteParameters, rtpParametersByKind));
 };
 
-json SendHandler::Send(webrtc::MediaStreamTrackInterface* track, uint8_t numStreams)
+json SendHandler::Send(webrtc::MediaStreamTrackInterface* track, const json& simulcast)
 {
 	MSC_TRACE();
 
@@ -166,6 +166,7 @@ json SendHandler::Send(webrtc::MediaStreamTrackInterface* track, uint8_t numStre
 
 		offer = this->pc->CreateOffer(options);
 
+		auto numStreams = simulcast.size();
 		if (numStreams > 1)
 		{
 			MSC_DEBUG("enabling simulcast");

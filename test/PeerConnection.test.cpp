@@ -10,7 +10,8 @@ TEST_CASE("PeerConnection", "[PeerConnection]")
 {
 	static std::list<std::string> iceServerUris;
 	static PeerConnection::Listener listener;
-	static PeerConnection pc(&listener, iceServerUris);
+	static PeerConnection::Options peerConnectionOptions;
+	static PeerConnection pc(&listener, &peerConnectionOptions);
 
 	static std::string offer;
 
@@ -59,7 +60,7 @@ TEST_CASE("PeerConnection", "[PeerConnection]")
 		configuration.servers.push_back(iceServer);
 
 		PeerConnection::Listener listener;
-		PeerConnection pc(&listener, iceServerUris);
+		PeerConnection pc(&listener, &peerConnectionOptions);
 
 		REQUIRE(!pc.SetConfiguration(configuration));
 	}

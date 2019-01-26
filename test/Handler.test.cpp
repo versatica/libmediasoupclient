@@ -7,10 +7,9 @@
 using namespace mediasoupclient;
 
 static const json TransportRemoteParameters = generateTransportRemoteParameters();
-static const json IceServers                = json::array();
-static const json ProprietaryConstraints    = json::array();
 static const json RtpParametersByKind       = generateRtpParametersByKind();
-static const std::string IceTransportPolicy("all");
+
+static PeerConnection::Options peerConnectionOptions;
 
 class FakeHandlerListener : public Handler::Listener
 {
@@ -48,14 +47,9 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 	static FakeHandlerListener handlerListener;
 
 	static SendHandler sendHandler(
-	  &handlerListener,
-	  TransportRemoteParameters,
-	  IceServers,
-	  IceTransportPolicy,
-	  ProprietaryConstraints,
-	  RtpParametersByKind);
+	  &handlerListener, TransportRemoteParameters, &peerConnectionOptions, RtpParametersByKind);
 
-	static std::unique_ptr<PeerConnection> pc(new PeerConnection(nullptr, {}));
+	static std::unique_ptr<PeerConnection> pc(new PeerConnection(nullptr, &peerConnectionOptions));
 
 	SECTION("'sendHandler.Send()' fails if a null track is provided")
 	{
@@ -137,7 +131,7 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 
 	SECTION("'sendHandler.UpdateIceServers()' succeeds")
 	{
-		REQUIRE_NOTHROW(sendHandler.UpdateIceServers(IceServers));
+		REQUIRE_NOTHROW(sendHandler.UpdateIceServers(json::array()));
 	}
 }
 
@@ -151,8 +145,7 @@ TEST_CASE("RecvHandler", "[Handler][RecvHandler]")
 
 	static FakeHandlerListener handlerListener;
 
-	static RecvHandler recvHandler(
-	  &handlerListener, TransportRemoteParameters, IceServers, IceTransportPolicy, ProprietaryConstraints);
+	static RecvHandler recvHandler(&handlerListener, TransportRemoteParameters, &peerConnectionOptions);
 
 	SECTION("'recvHander.Receive()' succeeds if correct rtpParameters are provided")
 	{
@@ -193,6 +186,6 @@ TEST_CASE("RecvHandler", "[Handler][RecvHandler]")
 
 	SECTION("'recvHandler.UpdateIceServers()' succeeds")
 	{
-		REQUIRE_NOTHROW(recvHandler.UpdateIceServers(IceServers));
+		REQUIRE_NOTHROW(recvHandler.UpdateIceServers(json::array()));
 	}
 }

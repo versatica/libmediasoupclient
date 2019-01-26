@@ -34,10 +34,8 @@ public:
 public:
 	explicit Handler(
 	  Listener* listener,
-	  const json& iceServers                = json::array(),
-	  const std::string& iceTransportPolicy = "all",
-	  const json& proprietaryConstraints    = json::object(),
-	  json sendingRtpParametersByKind       = json::array());
+	  PeerConnection::Options* peerConnectionOptions,
+	  json sendingRtpParametersByKind = json::array());
 
 	json GetTransportStats();
 	void UpdateIceServers(const json& iceServerUris);
@@ -74,9 +72,7 @@ public:
 	SendHandler(
 	  Handler::Listener* listener,
 	  const json& transportRemoteParameters,
-	  const json& iceServers,
-	  const std::string& iceTransportPolicy,
-	  const json& proprietaryConstraints,
+	  PeerConnection::Options* peerConnectionOptions,
 	  const json& rtpParametersByKind);
 
 	json Send(webrtc::MediaStreamTrackInterface* track, const json& simulcast);
@@ -101,9 +97,7 @@ public:
 	RecvHandler(
 	  Handler::Listener* listener,
 	  const json& transportRemoteParameters,
-	  const json& iceServers,
-	  const std::string& iceTransportPolicy,
-	  const json& proprietaryConstraints);
+	  PeerConnection::Options* peerConnectionOptions);
 
 	webrtc::MediaStreamTrackInterface* Receive(
 	  const std::string& id, const std::string& kind, const json& rtpParameters);

@@ -31,7 +31,7 @@ static FakeConsumerPublicListener consumerPublicListener;
 
 static json routerRtpCapabilities;
 
-std::unique_ptr<PeerConnection> pc(new PeerConnection(nullptr, {}));
+std::unique_ptr<PeerConnection> pc(new PeerConnection(nullptr, nullptr));
 
 TEST_CASE("mediasoupclient", "mediasoupclient")
 {
@@ -116,12 +116,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		/* clang-format on */
 
 		REQUIRE_NOTHROW(sendTransport.reset(device->CreateSendTransport(
-		  &sendTransportListener,
-		  TransportRemoteParameters,
-		  json::array() /* iceServers */,
-		  "" /* iceTransportPolicy */,
-		  json::object() /* proprietaryConstraints */,
-		  appData)));
+		  &sendTransportListener, TransportRemoteParameters, nullptr /* PeerConnection::Options */, appData)));
 
 		REQUIRE(sendTransport->GetId() == TransportRemoteParameters["id"].get<std::string>());
 		REQUIRE(sendTransport->IsClosed() == false);

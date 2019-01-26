@@ -19,7 +19,7 @@ namespace mediasoupclient
  */
 json Handler::GetNativeRtpCapabilities()
 {
-	std::unique_ptr<PeerConnection> pc(new PeerConnection(nullptr, {}));
+	std::unique_ptr<PeerConnection> pc(new PeerConnection(nullptr, nullptr));
 
 	return pc->GetNativeRtpCapabilities();
 }
@@ -35,24 +35,12 @@ const std::string& Handler::GetName()
 /* Handler instance methods */
 
 Handler::Handler(
-  Listener* listener,
-  const json& iceServers,
-  const std::string& /*iceTransportPolicy*/,
-  const json& /*proprietaryConstraints*/,
-  json sendingRtpParametersByKind)
+  Listener* listener, PeerConnection::Options* peerConnectionOptions, json sendingRtpParametersByKind)
   : listener(listener), sendingRtpParametersByKind(std::move(sendingRtpParametersByKind))
 {
 	MSC_TRACE();
 
-	this->pc.reset(new PeerConnection(
-	  this, iceServers.get<std::list<std::string>>()
-	  // iceTransportPolicy,
-	  /* The following must go into PeerConnection directly
-	     'max-bundle',
-	     'require',
-	     */
-	  // proprietaryConstraints
-	  ));
+	this->pc.reset(new PeerConnection(this, peerConnectionOptions));
 };
 
 void Handler::UpdateIceServers(const json& iceServerUris)
@@ -103,11 +91,9 @@ void Handler::SetupTransport(const std::string& localDtlsRole)
 SendHandler::SendHandler(
   Handler::Listener* listener,
   const json& transportRemoteParameters,
-  const json& iceServers,
-  const std::string& iceTransportPolicy,
-  const json& proprietaryConstraints,
+  PeerConnection::Options* peerConnectionOptions,
   const json& rtpParametersByKind)
-  : Handler(listener, iceServers, iceTransportPolicy, proprietaryConstraints, rtpParametersByKind)
+  : Handler(listener, peerConnectionOptions, rtpParametersByKind)
 {
 	MSC_TRACE();
 
@@ -431,10 +417,8 @@ void SendHandler::RestartIce(const json& remoteIceParameters)
 RecvHandler::RecvHandler(
   Handler::Listener* listener,
   const json& transportRemoteParameters,
-  const json& iceServers,
-  const std::string& iceTransportPolicy,
-  const json& proprietaryConstraints)
-  : Handler(listener, iceServers, iceTransportPolicy, proprietaryConstraints)
+  PeerConnection::Options* peerConnectionOptions)
+  : Handler(listener, peerConnectionOptions)
 {
 	MSC_TRACE();
 

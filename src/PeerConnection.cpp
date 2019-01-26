@@ -190,47 +190,53 @@ void PeerConnection::ClassCleanup()
 
 /* Instance methods. */
 
-PeerConnection::PeerConnection(PeerConnection::Listener* listener, std::list<std::string> iceServerUris)
+PeerConnection::PeerConnection(PeerConnection::Listener* listener, PeerConnection::Options* options)
   : listener(listener)
 {
-	this->signalingThread = new rtc::Thread();
-	this->workerThread    = new rtc::Thread();
+	MSC_TRACE();
 
-	this->signalingThread->SetName("signaling_thread", nullptr);
-	this->workerThread->SetName("worker_thread", nullptr);
+	webrtc::PeerConnectionInterface::RTCConfiguration config;
 
-	if (!this->signalingThread->Start() || !this->workerThread->Start())
+	if (options)
+		config = options->config;
+
+	// PeerConnection factory provided.
+	if (options && options->factory)
 	{
-		throw Exception("Thread start errored");
+		this->peerConnectionFactory =
+		  rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>(options->factory);
 	}
+	else
+	{
+		this->signalingThread = new rtc::Thread();
+		this->workerThread    = new rtc::Thread();
 
-	this->peerConnectionFactory = webrtc::CreatePeerConnectionFactory(
-	  this->workerThread,
-	  this->workerThread,
-	  this->signalingThread,
-	  /*default_adm=*/nullptr,
-	  webrtc::CreateBuiltinAudioEncoderFactory(),
-	  webrtc::CreateBuiltinAudioDecoderFactory(),
-	  webrtc::CreateBuiltinVideoEncoderFactory(),
-	  webrtc::CreateBuiltinVideoDecoderFactory(),
-	  /*audio_mixer=*/nullptr,
-	  /*audio_processing=*/nullptr);
+		this->signalingThread->SetName("signaling_thread", nullptr);
+		this->workerThread->SetName("worker_thread", nullptr);
 
-	webrtc::PeerConnectionInterface::RTCConfiguration configuration;
+		if (!this->signalingThread->Start() || !this->workerThread->Start())
+		{
+			throw Exception("Thread start errored");
+		}
+
+		this->peerConnectionFactory = webrtc::CreatePeerConnectionFactory(
+		  this->workerThread,
+		  this->workerThread,
+		  this->signalingThread,
+		  /*default_adm=*/nullptr,
+		  webrtc::CreateBuiltinAudioEncoderFactory(),
+		  webrtc::CreateBuiltinAudioDecoderFactory(),
+		  webrtc::CreateBuiltinVideoEncoderFactory(),
+		  webrtc::CreateBuiltinVideoDecoderFactory(),
+		  /*audio_mixer=*/nullptr,
+		  /*audio_processing=*/nullptr);
+	}
 
 	// Set SDP semantics to Unified Plan.
-	configuration.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
-
-	// Fill ICE server URIs.
-	for (auto& iceServerUri : iceServerUris)
-	{
-		webrtc::PeerConnectionInterface::IceServer iceServer;
-		iceServer.uri = iceServerUri;
-		configuration.servers.push_back(iceServer);
-	}
+	config.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
 
 	// Create the webrtc::Peerconnection.
-	this->pc = peerConnectionFactory->CreatePeerConnection(configuration, nullptr, nullptr, listener);
+	this->pc = peerConnectionFactory->CreatePeerConnection(config, nullptr, nullptr, listener);
 }
 
 std::string PeerConnection::CreateOffer(

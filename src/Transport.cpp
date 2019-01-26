@@ -31,9 +31,7 @@ const json SendTransport::DefaultSimulcast =
 SendTransport::SendTransport(
   Listener* listener,
   const json& transportRemoteParameters,
-  const json& iceServers,
-  const std::string& iceTransportPolicy,
-  const json& proprietaryConstraints,
+  PeerConnection::Options* peerConnectionOptions,
   const json& extendedRtpCapabilities,
   std::map<std::string, bool> canProduceByKind,
   json appData)
@@ -48,12 +46,8 @@ SendTransport::SendTransport(
 		{ "video", ortc::getSendingRtpParameters("video", extendedRtpCapabilities) }
 	};
 
-	this->handler.reset(new SendHandler({ this,
-	                                      transportRemoteParameters,
-	                                      iceServers,
-	                                      iceTransportPolicy,
-	                                      proprietaryConstraints,
-	                                      rtpParametersByKind }));
+	this->handler.reset(
+	  new SendHandler(this, transportRemoteParameters, peerConnectionOptions, rtpParametersByKind));
 
 	Transport::SetHandler(this->handler.get());
 }
@@ -196,17 +190,14 @@ json SendTransport::OnGetStats(const Producer* producer)
 RecvTransport::RecvTransport(
   Transport::Listener* listener,
   const json& transportRemoteParameters,
-  const json& iceServers,
-  const std::string& iceTransportPolicy,
-  const json& proprietaryConstraints,
+  PeerConnection::Options* peerConnectionOptions,
   const json& extendedRtpCapabilities,
   json appData)
   : Transport(listener, transportRemoteParameters, extendedRtpCapabilities, std::move(appData))
 {
 	MSC_TRACE();
 
-	this->handler.reset(new RecvHandler(
-	  { this, transportRemoteParameters, iceServers, iceTransportPolicy, proprietaryConstraints }));
+	this->handler.reset(new RecvHandler(this, transportRemoteParameters, peerConnectionOptions));
 
 	Transport::SetHandler(this->handler.get());
 }

@@ -43,9 +43,7 @@ void Device::Load(const json& routerRtpCapabilities)
 SendTransport* Device::CreateSendTransport(
   SendTransport::Listener* listener,
   const json& transportRemoteParameters,
-  const json iceServers,
-  const std::string& iceTransportPolicy,
-  const json proprietaryConstraints,
+  PeerConnection::Options* peerConnectionOptions,
   json appData) const
 {
 	MSC_TRACE();
@@ -61,9 +59,7 @@ SendTransport* Device::CreateSendTransport(
 	auto* transport = new SendTransport(
 	  listener,
 	  transportRemoteParameters,
-	  iceServers,
-	  iceTransportPolicy,
-	  proprietaryConstraints,
+	  peerConnectionOptions,
 	  this->extendedRtpCapabilities,
 	  this->canProduceByKind,
 	  std::move(appData));
@@ -74,9 +70,7 @@ SendTransport* Device::CreateSendTransport(
 RecvTransport* Device::CreateRecvTransport(
   Transport::Listener* listener,
   const json& transportRemoteParameters,
-  const json& iceServers,
-  const std::string& iceTransportPolicy,
-  const json& proprietaryConstraints,
+  PeerConnection::Options* peerConnectionOptions,
   json appData) const
 {
 	MSC_TRACE();
@@ -92,9 +86,7 @@ RecvTransport* Device::CreateRecvTransport(
 	auto* transport = new RecvTransport(
 	  listener,
 	  transportRemoteParameters,
-	  iceServers,
-	  iceTransportPolicy,
-	  proprietaryConstraints,
+	  peerConnectionOptions,
 	  this->extendedRtpCapabilities,
 	  std::move(appData));
 

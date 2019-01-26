@@ -110,7 +110,14 @@ public:
 	};
 
 public:
-	explicit PeerConnection(Listener* listener, std::list<std::string> iceServerUris);
+	struct Options
+	{
+		webrtc::PeerConnectionInterface::RTCConfiguration config;
+		webrtc::PeerConnectionFactoryInterface* factory{ nullptr };
+	};
+
+public:
+	PeerConnection(Listener* listener, Options* options);
 	~PeerConnection() = default;
 
 	webrtc::PeerConnectionInterface::RTCConfiguration GetConfiguration() const;

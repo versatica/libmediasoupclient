@@ -97,9 +97,7 @@ public:
 	SendTransport(
 	  Listener* listener,
 	  const json& transportRemoteParameters,
-	  const json& iceServers,
-	  const std::string& iceTransportPolicy,
-	  const json& proprietaryConstraints,
+	  PeerConnection::Options* peerConnectionOptions,
 	  const json& extendedRtpCapabilities,
 	  std::map<std::string, bool> canProduceByKind,
 	  json appData = json::object());
@@ -143,9 +141,7 @@ public:
 	RecvTransport(
 	  Transport::Listener* listener,
 	  const json& transportRemoteParameters,
-	  const json& iceServers,
-	  const std::string& iceTransportPolicy,
-	  const json& proprietaryConstraints,
+	  PeerConnection::Options* peerConnectionOptions,
 	  const json& extendedRtpCapabilities,
 	  json appData = json::object());
 

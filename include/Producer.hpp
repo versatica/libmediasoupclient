@@ -34,15 +34,6 @@ public:
 	};
 
 public:
-	Producer(
-	  Listener* listener,
-	  PublicListener* publicListener,
-	  std::string id,
-	  webrtc::MediaStreamTrackInterface* track,
-	  json rtpParameters,
-	  uint8_t maxSpatialLayer = 0,
-	  json appData            = json::object());
-
 	const std::string& GetId() const;
 	std::string GetKind() const;
 	webrtc::MediaStreamTrackInterface* GetTrack() const;
@@ -61,9 +52,18 @@ public:
 	void SetMaxSpatialLayer(uint8_t spatialLayer);
 
 private:
+	Producer(
+	  Listener* listener,
+	  PublicListener* publicListener,
+	  std::string id,
+	  webrtc::MediaStreamTrackInterface* track,
+	  json rtpParameters,
+	  uint8_t maxSpatialLayer = 0,
+	  json appData            = json::object());
+
 	void TransportClosed();
 
-	/* SendTransport will call private member TransporClosed */
+	/* SendTransport will create instances and call private member TransporClosed */
 	friend SendTransport;
 
 private:

@@ -1,8 +1,6 @@
 #include "Transport.hpp"
 #include "data/parameters.hpp"
-#include "Logger.hpp"
 #include "catch.hpp"
-#include <stdexcept>
 
 using namespace mediasoupclient;
 

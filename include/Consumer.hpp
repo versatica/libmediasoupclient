@@ -31,15 +31,6 @@ public:
 	};
 
 public:
-	Consumer(
-	  Listener* listener,
-	  PublicListener* publicListener,
-	  std::string id,
-	  std::string producerId,
-	  webrtc::MediaStreamTrackInterface* track,
-	  json rtpParameters,
-	  json appData);
-
 	const std::string& GetId() const;
 	const std::string& GetProducerId() const;
 	const std::string GetKind() const;
@@ -56,9 +47,18 @@ public:
 	void Resume();
 
 private:
+	Consumer(
+	  Listener* listener,
+	  PublicListener* publicListener,
+	  std::string id,
+	  std::string producerId,
+	  webrtc::MediaStreamTrackInterface* track,
+	  json rtpParameters,
+	  json appData);
+
 	void TransportClosed();
 
-	/* RecvTransport will call private member TransporClosed */
+	/* RecvTransport will create instances and call private member TransporClosed */
 	friend RecvTransport;
 
 private:

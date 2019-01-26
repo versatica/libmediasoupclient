@@ -10,6 +10,9 @@ using json = nlohmann::json;
 
 namespace mediasoupclient
 {
+// Fast forward declarations.
+class SendTransport;
+
 class Producer
 {
 public:
@@ -52,11 +55,16 @@ public:
 	bool IsPaused() const;
 
 	void Close();
-	void TransportClosed();
 	void Pause();
 	void Resume();
 	void ReplaceTrack(webrtc::MediaStreamTrackInterface* track);
 	void SetMaxSpatialLayer(uint8_t spatialLayer);
+
+private:
+	void TransportClosed();
+
+	/* SendTransport will call private member TransporClosed */
+	friend SendTransport;
 
 private:
 	// Listener instance.

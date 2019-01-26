@@ -10,6 +10,9 @@ using json = nlohmann::json;
 
 namespace mediasoupclient
 {
+// Fast forward declarations.
+class RecvTransport;
+
 class Consumer
 {
 public:
@@ -49,9 +52,14 @@ public:
 	bool IsPaused() const;
 
 	void Close();
-	void TransportClosed();
 	void Pause();
 	void Resume();
+
+private:
+	void TransportClosed();
+
+	/* RecvTransport will call private member TransporClosed */
+	friend RecvTransport;
 
 private:
 	// Listener instance.

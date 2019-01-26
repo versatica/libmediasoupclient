@@ -23,9 +23,9 @@ TEST_CASE("Device", "[Device]")
 		REQUIRE_NOTHROW(device->GetHandlerName());
 	}
 
-	SECTION("'device->Loaded()' is false if not loaded")
+	SECTION("'device->IsLoaded()' is false if not loaded")
 	{
-		REQUIRE(!device->Loaded());
+		REQUIRE(!device->IsLoaded());
 	}
 
 	SECTION("'device->GetRtpCapabilities()' throws if not loaded")
@@ -56,7 +56,7 @@ TEST_CASE("Device", "[Device]")
 		routerRtpCapabilities = generateRouterRtpCapabilities();
 
 		REQUIRE_NOTHROW(device->Load(routerRtpCapabilities));
-		REQUIRE(device->Loaded());
+		REQUIRE(device->IsLoaded());
 	}
 
 	SECTION("'device->Load()' fails if already loaded")

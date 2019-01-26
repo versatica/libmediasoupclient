@@ -19,7 +19,7 @@ public:
 	~Device() = default;
 
 	const std::string& GetHandlerName() const;
-	bool Loaded() const;
+	bool IsLoaded() const;
 	const json& GetRtpCapabilities() const;
 	void Load(const json& routerRtpCapabilities);
 	bool CanProduce(const std::string& kind);
@@ -64,7 +64,7 @@ inline const std::string& Device::GetHandlerName() const
 /**
  * Whether the Device is loaded.
  */
-inline bool Device::Loaded() const
+inline bool Device::IsLoaded() const
 {
 	return this->loaded;
 }

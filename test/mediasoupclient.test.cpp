@@ -46,7 +46,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE_NOTHROW(device.reset(new Device()));
 
 		REQUIRE_NOTHROW(device->GetHandlerName());
-		REQUIRE(!device->Loaded());
+		REQUIRE(!device->IsLoaded());
 	}
 
 	SECTION("device->GetRtpCapabilities throws if not loaded")
@@ -73,7 +73,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 	  routerRtpCapabilities = json::object();
 
 	  REQUIRE_NOTHROW(device->Load(routerRtpCapabilities));
-	  REQUIRE(device->Loaded() == false);
+	  REQUIRE(device->IsLoaded() == false);
 	}
 	*/
 
@@ -82,7 +82,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		routerRtpCapabilities = generateRouterRtpCapabilities();
 
 		REQUIRE_NOTHROW(device->Load(routerRtpCapabilities));
-		REQUIRE(device->Loaded());
+		REQUIRE(device->IsLoaded());
 	}
 
 	SECTION("device->load() rejects if already loaded")

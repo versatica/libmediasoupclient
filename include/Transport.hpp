@@ -17,6 +17,9 @@ using json = nlohmann::json;
 
 namespace mediasoupclient
 {
+// Fast forward declarations.
+class Device;
+
 class Transport : public Handler::Listener
 {
 public:
@@ -35,12 +38,6 @@ public:
 	  webrtc::PeerConnectionInterface::IceConnectionState connectionState) override;
 
 public:
-	Transport(
-	  Listener* listener,
-	  const json& transportRemoteParameters,
-	  json extendedRtpCapabilities,
-	  json appData);
-
 	const std::string& GetId() const;
 	const std::string& GetConnectionState() const;
 	const json& GetAppData() const;
@@ -51,6 +48,14 @@ public:
 	void RestartIce(const json& remoteIceParameters);
 	void UpdateIceServers(const json& iceServers);
 	virtual void Close();
+
+	/* Only child classes will create transport intances */
+protected:
+	Transport(
+	  Listener* listener,
+	  const json& transportRemoteParameters,
+	  json extendedRtpCapabilities,
+	  json appData);
 
 protected:
 	void SetHandler(Handler* handler);
@@ -94,14 +99,6 @@ public:
 	static const json DefaultSimulcast;
 
 public:
-	SendTransport(
-	  Listener* listener,
-	  const json& transportRemoteParameters,
-	  PeerConnection::Options* peerConnectionOptions,
-	  const json& extendedRtpCapabilities,
-	  std::map<std::string, bool> canProduceByKind,
-	  json appData = json::object());
-
 	Producer* Produce(
 	  Producer::PublicListener* producerPublicListener,
 	  webrtc::MediaStreamTrackInterface* track,
@@ -121,6 +118,18 @@ public:
 	json OnGetStats(const Producer* producer) override;
 
 private:
+	SendTransport(
+	  Listener* listener,
+	  const json& transportRemoteParameters,
+	  PeerConnection::Options* peerConnectionOptions,
+	  const json& extendedRtpCapabilities,
+	  std::map<std::string, bool> canProduceByKind,
+	  json appData = json::object());
+
+	/* Device is the only one constructing Transports */
+	friend Device;
+
+private:
 	// Listener instance.
 	Listener* listener;
 
@@ -138,13 +147,6 @@ private:
 class RecvTransport : public Transport, public Consumer::Listener
 {
 public:
-	RecvTransport(
-	  Transport::Listener* listener,
-	  const json& transportRemoteParameters,
-	  PeerConnection::Options* peerConnectionOptions,
-	  const json& extendedRtpCapabilities,
-	  json appData = json::object());
-
 	Consumer* Consume(
 	  Consumer::PublicListener* consumerPublicListener,
 	  const json& consumerRemoteParameters,
@@ -158,6 +160,17 @@ public:
 public:
 	void OnClose(Consumer* consumer) override;
 	json OnGetStats(const Consumer* consumer) override;
+
+private:
+	RecvTransport(
+	  Transport::Listener* listener,
+	  const json& transportRemoteParameters,
+	  PeerConnection::Options* peerConnectionOptions,
+	  const json& extendedRtpCapabilities,
+	  json appData = json::object());
+
+	/* Device is the only one constructing Transports */
+	friend Device;
 
 private:
 	// Map of Consumers indexed by id.

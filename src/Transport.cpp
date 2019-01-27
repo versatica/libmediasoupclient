@@ -106,7 +106,7 @@ Producer* SendTransport::Produce(
 			if (it == entry.end())
 				throw Exception("Invalid simulcast entry");
 
-			if (!(*it).is_number())
+			if (!it->is_number())
 				throw Exception("Invalid simulcast entry");
 
 			normalizedSimulcast.push_back({ "maxBitrate", *it });

@@ -33,13 +33,18 @@ cmake --build build
 
 Follow the [official instructions](https://webrtc.org/native-code/development/).
 
-Make sure you compile the branch `remotes/branch-heads/70`.
+Make sure you compile the branch `remotes/branch-heads/72`.
 
 Copy or link the header files into `deps/libwebrtc/include`:
 
 ```bash
-mkdir -p ${libmediasoupclient_path}/deps/libwebrtc/include
 ln -s ${webrtc-checkout}/src ${libmediasoupclient_path}/deps/libwebrtc/include
+```
+
+Copy or link the absl directory:
+
+```bash
+ln -s ${webrtc-checkout}/src/third_party/abseil-cpp/absl ${libmediasoupclient_path}/deps/libwebrtc/include/absl
 ```
 
 Copy or link the binary file into `deps/libwebrtc/lib`:

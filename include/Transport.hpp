@@ -54,7 +54,7 @@ protected:
 	Transport(
 	  Listener* listener,
 	  const json& transportRemoteParameters,
-	  json extendedRtpCapabilities,
+	  const json& extendedRtpCapabilities,
 	  json appData);
 
 protected:
@@ -65,7 +65,7 @@ protected:
 	bool closed{ false };
 
 	// Extended RTP capabilities.
-	json extendedRtpCapabilities;
+	const json& extendedRtpCapabilities;
 
 private:
 	// Id.
@@ -188,9 +188,9 @@ private:
 /* Transport instance inline methods */
 
 inline Transport::Transport(
-  Listener* listener, const json& transportRemoteParameters, json extendedRtpCapabilities, json appData)
+  Listener* listener, const json& transportRemoteParameters, const json& extendedRtpCapabilities, json appData)
   : listener(listener), id(transportRemoteParameters["id"].get<std::string>()),
-    extendedRtpCapabilities(std::move(extendedRtpCapabilities)), appData(std::move(appData))
+    extendedRtpCapabilities(extendedRtpCapabilities), appData(std::move(appData))
 {
 }
 

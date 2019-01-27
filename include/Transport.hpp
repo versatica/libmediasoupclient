@@ -102,9 +102,14 @@ public:
 	Producer* Produce(
 	  Producer::PublicListener* producerPublicListener,
 	  webrtc::MediaStreamTrackInterface* track,
-	  json simulcast          = DefaultSimulcast,
-	  uint8_t maxSpatialLayer = 0,
-	  json appData            = json::object());
+	  json appData = json::object());
+
+	Producer* Produce(
+	  Producer::PublicListener* producerPublicListener,
+	  webrtc::MediaStreamTrackInterface* track,
+	  json simulcast,
+	  uint8_t maxSpatialLayer,
+	  json appData = json::object());
 
 	/* Virtual methods inherited from Transport. */
 public:

@@ -186,7 +186,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		  Exception);
 
 		REQUIRE_NOTHROW(audioProducer.reset(sendTransport->Produce(
-		  &producerPublicListener, audioTrack, json::array(), 0 /* maxSpatialLayer */, appData)));
+		  &producerPublicListener, audioTrack, appData)));
 
 		REQUIRE(
 		  sendTransportListener.onConnectTimesCalled ==

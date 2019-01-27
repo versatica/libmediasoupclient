@@ -58,6 +58,19 @@ SendTransport::SendTransport(
 Producer* SendTransport::Produce(
   Producer::PublicListener* producerPublicListener,
   webrtc::MediaStreamTrackInterface* track,
+  json appData)
+{
+	MSC_TRACE();
+
+	return this->Produce(producerPublicListener, track, json::array(), 0, appData);
+}
+
+/*
+ * Produce a track
+ */
+Producer* SendTransport::Produce(
+  Producer::PublicListener* producerPublicListener,
+  webrtc::MediaStreamTrackInterface* track,
   json simulcast,
   uint8_t maxSpatialLayer,
   json appData)

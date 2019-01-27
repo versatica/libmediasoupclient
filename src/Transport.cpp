@@ -79,15 +79,15 @@ Producer* SendTransport::Produce(
 
 	if (this->closed)
 		throw Exception("Invalid state");
-	if (track == nullptr)
+	else if (track == nullptr)
 		throw Exception("Track cannot be null");
-	if (track->state() == webrtc::MediaStreamTrackInterface::TrackState::kEnded)
+	else if (track->state() == webrtc::MediaStreamTrackInterface::TrackState::kEnded)
 		throw Exception("Track ended");
-	if (!simulcast.is_array())
+	else if (!simulcast.is_array())
 		throw Exception("Invalid simulcast");
-	if (track->kind() != "video" && simulcast.size() > 0)
+	else if (track->kind() != "video" && simulcast.size() > 0)
 		throw Exception("Cannot set simulcast on audio track");
-	if (track->kind() != "video" && maxSpatialLayer > 0)
+	else if (track->kind() != "video" && maxSpatialLayer > 0)
 		throw Exception("Cannot set simulcast on audio track");
 
 	json rtpParameters;

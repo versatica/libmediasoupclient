@@ -104,10 +104,10 @@ Producer* SendTransport::Produce(
 		std::for_each(simulcast.begin(), simulcast.end(), [&normalizedSimulcast](const json& entry) {
 			auto it = entry.find("maxBitrate");
 			if (it == entry.end())
-				throw Exception("Invalid simulcast entry");
+				throw Exception("Invalid simulcast entry, missing 'maxBitrate'");
 
 			if (!it->is_number())
-				throw Exception("Invalid simulcast entry");
+				throw Exception("Invalid simulcast entry, 'maxBitrate' must be a number");
 
 			normalizedSimulcast.push_back({ "maxBitrate", *it });
 		});

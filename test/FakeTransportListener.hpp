@@ -1,10 +1,8 @@
-#include "Transport.hpp"
+#include "mediasoupclient.hpp"
 #include "data/parameters.hpp"
 #include "catch.hpp"
 
-using namespace mediasoupclient;
-
-class FakeSendTransportListener : public SendTransport::Listener
+class FakeSendTransportListener : public mediasoupclient::SendTransport::Listener
 {
 public:
 	std::future<json> OnProduce(const json& producerLocalParameters) override
@@ -73,7 +71,7 @@ public:
 	size_t onConnectionStateChangeExpectedTimesCalled{ 0 };
 };
 
-class FakeRecvTransportListener : public Transport::Listener
+class FakeRecvTransportListener : public mediasoupclient::Transport::Listener
 {
 public:
 	std::future<void> OnConnect(const json& transportLocalParameters) override
@@ -103,7 +101,7 @@ public:
 	size_t onConnectionStateChangeExpectedTimesCalled{ 0 };
 };
 
-class FakeProducerPublicListener : public Producer::PublicListener
+class FakeProducerPublicListener : public mediasoupclient::Producer::PublicListener
 {
 	public:
 		void OnTransportClose() override
@@ -116,7 +114,7 @@ class FakeProducerPublicListener : public Producer::PublicListener
 		size_t onTransportCloseExpetecTimesCalled{ 0 };
 };
 
-class FakeConsumerPublicListener : public Consumer::PublicListener
+class FakeConsumerPublicListener : public mediasoupclient::Consumer::PublicListener
 {
 	public:
 		void OnTransportClose() override

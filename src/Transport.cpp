@@ -83,12 +83,16 @@ Producer* SendTransport::Produce(
 		throw Exception("Track cannot be null");
 	else if (track->state() == webrtc::MediaStreamTrackInterface::TrackState::kEnded)
 		throw Exception("Track ended");
+	else if (this->canProduceByKind.find(track->kind()) == this->canProduceByKind.end())
+		throw Exception("Cannot produce track kind");
 	else if (!simulcast.is_array())
 		throw Exception("Invalid simulcast");
 	else if (track->kind() != "video" && simulcast.size() > 0)
 		throw Exception("Cannot set simulcast on audio track");
 	else if (track->kind() != "video" && maxSpatialLayer > 0)
 		throw Exception("Cannot set simulcast on audio track");
+	else if (!appData.is_object())
+		throw Exception("appData must be an object");
 
 	json rtpParameters;
 	json producerRemoteParameters;

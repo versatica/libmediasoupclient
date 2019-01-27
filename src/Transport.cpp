@@ -102,6 +102,9 @@ Producer* SendTransport::Produce(
 	if (track->kind() == "video" && simulcast.size() > 1)
 	{
 		std::for_each(simulcast.begin(), simulcast.end(), [&normalizedSimulcast](const json& entry) {
+			auto normalizedEntry = json::object();
+
+			// Normalize 'maxBitrate'.
 			auto it = entry.find("maxBitrate");
 			if (it == entry.end())
 				throw Exception("Invalid simulcast entry, missing 'maxBitrate'");
@@ -109,7 +112,9 @@ Producer* SendTransport::Produce(
 			if (!it->is_number())
 				throw Exception("Invalid simulcast entry, 'maxBitrate' must be a number");
 
-			normalizedSimulcast.push_back({ "maxBitrate", *it });
+			normalizedEntry["maxBitrate"] = *it;
+
+			normalizedSimulcast.push_back(normalizedEntry);
 		});
 	}
 

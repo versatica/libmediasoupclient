@@ -3,4 +3,10 @@
 
 #include "Device.hpp"
 
+namespace mediasoupclient
+{
+	// Expose 'json' namespace.
+	using json = nlohmann::json;
+}
+
 #endif

@@ -4,6 +4,7 @@
 #include "data/parameters.hpp"
 #include "media/base/fakevideocapturer.h"
 #include "mediasoupclient.hpp"
+#include <vector>
 
 using namespace mediasoupclient;
 
@@ -143,6 +144,11 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 			{ "baz", "BAZ" }
 		};
 
+		std::vector<webrtc::RtpEncodingParameters> encodings;
+		encodings.emplace_back(webrtc::RtpEncodingParameters());
+		encodings.emplace_back(webrtc::RtpEncodingParameters());
+		encodings.emplace_back(webrtc::RtpEncodingParameters());
+
 		/* clang-format on */
 		std::unique_ptr<cricket::FakeVideoCapturer> capturer(new cricket::FakeVideoCapturer());
 
@@ -154,36 +160,10 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 		json codecs;
 		json headerExtensions;
-		json encodings;
 		json rtcp;
-
-		/* clang-format off */
-		const json simulcast =
-		{
-			{
-				{ "maxBitrate", 100000 }
-			},
-			{
-				{ "maxBitrate", 500000 }
-			},
-			{
-				{ "maxBitrate", 1500000 }
-			}
-		};
-		/* clang-format on */
 
 		// Pause the audio track before creating its Producer.
 		audioTrack->set_enabled(false);
-
-		REQUIRE_THROWS_AS(
-		  audioProducer.reset(sendTransport->Produce(
-		    &producerPublicListener, audioTrack, simulcast, 0 /* maxSpatialLayer */, appData)),
-		  Exception);
-
-		REQUIRE_THROWS_AS(
-		  audioProducer.reset(sendTransport->Produce(
-		    &producerPublicListener, audioTrack, json::array(), 1 /* maxSpatialLayer */, appData)),
-		  Exception);
 
 		REQUIRE_NOTHROW(
 		  audioProducer.reset(sendTransport->Produce(&producerPublicListener, audioTrack, appData)));
@@ -238,12 +218,12 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 			}
 		])"_json);
 
-		encodings = audioProducer->GetRtpParameters()["encodings"];
-		REQUIRE(encodings.is_array());
-		REQUIRE(encodings.size() == 1);
-		REQUIRE(encodings[0].is_object());
-		REQUIRE(encodings[0].find("ssrc") != encodings[0].end());
-		REQUIRE(encodings[0]["ssrc"].is_number());
+		auto enc = audioProducer->GetRtpParameters()["encodings"];
+		REQUIRE(enc.is_array());
+		REQUIRE(enc.size() == 1);
+		REQUIRE(enc[0].is_object());
+		REQUIRE(enc[0].find("ssrc") != enc[0].end());
+		REQUIRE(enc[0]["ssrc"].is_number());
 
 		rtcp = audioProducer->GetRtpParameters()["rtcp"];
 		REQUIRE(rtcp.is_object());
@@ -251,9 +231,8 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 		audioProducer->Resume();
 
-		REQUIRE_NOTHROW(videoProducer.reset(sendTransport->Produce(
-		  &producerPublicListener, videoTrack, simulcast, 2 /* maxSpatialLayer */
-		  )));
+		REQUIRE_NOTHROW(
+		  videoProducer.reset(sendTransport->Produce(&producerPublicListener, videoTrack, encodings)));
 
 		REQUIRE(
 		  sendTransportListener.onConnectTimesCalled ==
@@ -317,21 +296,22 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 			}
 		])"_json);
 
-		encodings = videoProducer->GetRtpParameters()["encodings"];
-		REQUIRE(encodings.is_array());
-		REQUIRE(encodings.size() == 3);
-		REQUIRE(encodings[0].is_object());
-		REQUIRE(encodings[0].find("ssrc") != encodings[0].end());
-		REQUIRE(encodings[0].find("rtx") != encodings[0].end());
-		REQUIRE(encodings[0]["ssrc"].is_number());
-		REQUIRE(encodings[0]["rtx"].is_object());
-		REQUIRE(encodings[0]["rtx"].find("ssrc") != encodings[0]["rtx"].end());
-		REQUIRE(encodings[0]["rtx"]["ssrc"].is_number());
+		enc = videoProducer->GetRtpParameters()["encodings"];
+		REQUIRE(enc.is_array());
+		REQUIRE(enc.size() == 3);
+		REQUIRE(enc[0].is_object());
+		REQUIRE(enc[0].find("ssrc") != enc[0].end());
+		REQUIRE(enc[0].find("rtx") != enc[0].end());
+		REQUIRE(enc[0]["ssrc"].is_number());
+		REQUIRE(enc[0]["rtx"].is_object());
+		REQUIRE(enc[0]["rtx"].find("ssrc") != enc[0]["rtx"].end());
+		REQUIRE(enc[0]["rtx"]["ssrc"].is_number());
 
 		rtcp = videoProducer->GetRtpParameters()["rtcp"];
 		REQUIRE(rtcp.is_object());
 		REQUIRE(rtcp["cname"].is_string());
 
+		videoProducer->SetMaxSpatialLayer(2);
 		REQUIRE(videoProducer->IsPaused() == false);
 		REQUIRE(videoProducer->GetMaxSpatialLayer() == 2);
 		REQUIRE(videoProducer->GetAppData() == json::object());
@@ -345,13 +325,6 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 	SECTION("transport.produce() with an already handled track throws")
 	{
 		REQUIRE_THROWS_AS(sendTransport->Produce(&producerPublicListener, audioTrack), Exception);
-	}
-
-	SECTION("transport.produce() with audio track and maxSpatialLayer throws")
-	{
-		auto audioTrack = pc->CreateAudioTrack("audio-track-id-2", audioSource);
-
-		REQUIRE_THROWS_AS(sendTransport->Produce(&producerPublicListener, audioTrack, true, 2), Exception);
 	}
 
 	SECTION("transport.consume() succeeds")

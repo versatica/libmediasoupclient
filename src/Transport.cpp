@@ -11,21 +11,6 @@ namespace mediasoupclient
 {
 /* SendTransport static variables. */
 
-/* clang-format off */
-const json SendTransport::DefaultSimulcast =
-{
-	{
-		{ "maxBitrate", 100000 }
-	},
-	{
-		{ "maxBitrate", 500000 }
-	},
-	{
-		{ "maxBitrate", 1500000 }
-	}
-};
-/* clang-format on */
-
 /* SendTransport instance methods. */
 
 SendTransport::SendTransport(
@@ -62,7 +47,9 @@ Producer* SendTransport::Produce(
 {
 	MSC_TRACE();
 
-	return this->Produce(producerPublicListener, track, json::array(), 0, appData);
+	static const std::vector<webrtc::RtpEncodingParameters> encodings;
+
+	return this->Produce(producerPublicListener, track, encodings, appData);
 }
 
 /*
@@ -71,8 +58,7 @@ Producer* SendTransport::Produce(
 Producer* SendTransport::Produce(
   Producer::PublicListener* producerPublicListener,
   webrtc::MediaStreamTrackInterface* track,
-  json simulcast,
-  uint8_t maxSpatialLayer,
+  const std::vector<webrtc::RtpEncodingParameters>& encodings,
   json appData)
 {
 	MSC_TRACE();
@@ -85,41 +71,32 @@ Producer* SendTransport::Produce(
 		throw Exception("Track ended");
 	else if (this->canProduceByKind.find(track->kind()) == this->canProduceByKind.end())
 		throw Exception("Cannot produce track kind");
-	else if (!simulcast.is_array())
-		throw Exception("Invalid simulcast");
-	else if (track->kind() != "video" && simulcast.size() > 0)
-		throw Exception("Cannot set simulcast on audio track");
-	else if (track->kind() != "video" && maxSpatialLayer > 0)
-		throw Exception("Cannot set simulcast on audio track");
 	else if (!appData.is_object())
 		throw Exception("appData must be an object");
 
 	json rtpParameters;
 	json producerRemoteParameters;
 
-	auto normalizedSimulcast = json::array();
+	std::vector<webrtc::RtpEncodingParameters> normalizedEncodings;
 
-	if (track->kind() == "video" && simulcast.size() > 1)
-	{
-		std::for_each(simulcast.begin(), simulcast.end(), [&normalizedSimulcast](const json& entry) {
-			auto normalizedEntry = json::object();
+	std::for_each(
+	  encodings.begin(),
+	  encodings.end(),
+	  [&normalizedEncodings](const webrtc::RtpEncodingParameters& entry) {
+		  webrtc::RtpEncodingParameters encoding;
 
-			// Normalize 'maxBitrate'.
-			auto it = entry.find("maxBitrate");
-			if (it == entry.end())
-				throw Exception("Invalid simulcast entry, missing 'maxBitrate'");
+		  encoding.active                   = entry.active;
+		  encoding.dtx                      = entry.dtx;
+		  encoding.max_bitrate_bps          = entry.max_bitrate_bps;
+		  encoding.max_framerate            = entry.max_framerate;
+		  encoding.scale_framerate_down_by  = entry.scale_framerate_down_by;
+		  encoding.scale_resolution_down_by = entry.scale_resolution_down_by;
 
-			if (!it->is_number())
-				throw Exception("Invalid simulcast entry, 'maxBitrate' must be a number");
-
-			normalizedEntry["maxBitrate"] = *it;
-
-			normalizedSimulcast.push_back(normalizedEntry);
-		});
-	}
+		  normalizedEncodings.push_back(encoding);
+	  });
 
 	// May throw.
-	rtpParameters = this->handler->Send(track, simulcast);
+	rtpParameters = this->handler->Send(track, normalizedEncodings);
 
 	try
 	{
@@ -148,7 +125,6 @@ Producer* SendTransport::Produce(
 	  producerRemoteParameters["id"].get<std::string>(),
 	  track,
 	  rtpParameters,
-	  maxSpatialLayer,
 	  appData);
 
 	this->producers[producer->GetId()] = producer;

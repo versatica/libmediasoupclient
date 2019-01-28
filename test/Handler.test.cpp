@@ -51,9 +51,11 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 
 	static std::unique_ptr<PeerConnection> pc(new PeerConnection(nullptr, &peerConnectionOptions));
 
+	static const std::vector<webrtc::RtpEncodingParameters> encodings;
+
 	SECTION("'sendHandler.Send()' fails if a null track is provided")
 	{
-		REQUIRE_THROWS_AS(sendHandler.Send(nullptr, false), Exception);
+		REQUIRE_THROWS_AS(sendHandler.Send(nullptr, encodings), Exception);
 	}
 
 	SECTION("'sendHandler.Send()' succeeds if a track is provided")
@@ -63,14 +65,14 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 
 		json rtpParameters;
 
-		REQUIRE_NOTHROW(rtpParameters = sendHandler.Send(track, false));
+		REQUIRE_NOTHROW(rtpParameters = sendHandler.Send(track, encodings));
 		REQUIRE(rtpParameters["codecs"].size() == 1);
 		REQUIRE(rtpParameters["headerExtensions"].size() == 3);
 	}
 
 	SECTION("'sendHandler.Send()' fails if track is already handled")
 	{
-		REQUIRE_THROWS_AS(sendHandler.Send(track, false), Exception);
+		REQUIRE_THROWS_AS(sendHandler.Send(track, encodings), Exception);
 	}
 
 	SECTION("'sendHandler.ReplaceTrack()' fails if a null track is provided")

@@ -107,8 +107,7 @@ public:
 	Producer* Produce(
 	  Producer::PublicListener* producerPublicListener,
 	  webrtc::MediaStreamTrackInterface* track,
-	  json simulcast,
-	  uint8_t maxSpatialLayer,
+	  const std::vector<webrtc::RtpEncodingParameters>& encodings,
 	  json appData = json::object());
 
 	/* Virtual methods inherited from Transport. */
@@ -188,7 +187,10 @@ private:
 /* Transport instance inline methods */
 
 inline Transport::Transport(
-  Listener* listener, const json& transportRemoteParameters, const json& extendedRtpCapabilities, json appData)
+  Listener* listener,
+  const json& transportRemoteParameters,
+  const json& extendedRtpCapabilities,
+  json appData)
   : listener(listener), id(transportRemoteParameters["id"].get<std::string>()),
     extendedRtpCapabilities(extendedRtpCapabilities), appData(std::move(appData))
 {

@@ -35,7 +35,9 @@ const std::string& Handler::GetName()
 /* Handler instance methods */
 
 Handler::Handler(
-  Listener* listener, PeerConnection::Options* peerConnectionOptions, const json& sendingRtpParametersByKind)
+  Listener* listener,
+  PeerConnection::Options* peerConnectionOptions,
+  const json& sendingRtpParametersByKind)
   : listener(listener), sendingRtpParametersByKind(std::move(sendingRtpParametersByKind))
 {
 	MSC_TRACE();
@@ -100,11 +102,11 @@ SendHandler::SendHandler(
 	this->remoteSdp.reset(new Sdp::RemoteSdp(transportRemoteParameters, rtpParametersByKind));
 };
 
-json SendHandler::Send(webrtc::MediaStreamTrackInterface* track, const json& simulcast)
+json SendHandler::Send(
+  webrtc::MediaStreamTrackInterface* track,
+  const std::vector<webrtc::RtpEncodingParameters>& encodings)
 {
 	MSC_TRACE();
-
-	webrtc::RtpTransceiverInterface* transceiver{ nullptr };
 
 	// Check if the track is a null pointer.
 	if (track == nullptr)
@@ -116,31 +118,12 @@ json SendHandler::Send(webrtc::MediaStreamTrackInterface* track, const json& sim
 	if (this->tracks.find(track) != this->tracks.end())
 		throw Exception("Track already handled");
 
-	// Check if there is any inactive transceiver for same kind and reuse it if so.
-	auto transceivers = this->pc->GetTransceivers();
-	auto it           = std::find_if(
-    transceivers.begin(), transceivers.end(), [&track](webrtc::RtpTransceiverInterface* transceiver) {
-      return (
-        transceiver->receiver()->track()->kind() == track->kind() &&
-        transceiver->direction() == webrtc::RtpTransceiverDirection::kInactive);
-    });
+	// https://bugs.chromium.org/p/webrtc/issues/detail?id=7600
+	// Once the issue is solved, no SDP will be required to enable simulcast.
+	webrtc::RtpTransceiverInterface* transceiver = this->pc->AddTransceiver(track);
 
-	if (it != transceivers.end())
-	{
-		MSC_DEBUG("reusing an inactive transceiver");
-
-		transceiver = *it;
-		transceiver->sender()->SetTrack(track);
-	}
-	else
-	{
-		// https://bugs.chromium.org/p/webrtc/issues/detail?id=7600
-		// Once the issue is solved, no SDP will be required to enable simulcast.
-		transceiver = this->pc->AddTransceiver(track);
-
-		if (transceiver == nullptr)
-			throw Exception("Error creating transceiver");
-	}
+	if (transceiver == nullptr)
+		throw Exception("Error creating transceiver");
 
 	transceiver->SetDirection(webrtc::RtpTransceiverDirection::kSendOnly);
 
@@ -152,14 +135,13 @@ json SendHandler::Send(webrtc::MediaStreamTrackInterface* track, const json& sim
 
 		offer = this->pc->CreateOffer(options);
 
-		auto numStreams = simulcast.size();
-		if (numStreams > 1)
+		if (encodings.size() > 1)
 		{
 			MSC_DEBUG("enabling simulcast");
 
 			auto sdpObject = sdptransform::parse(offer);
 
-			Sdp::Utils::addLegacySimulcast(sdpObject, track, numStreams);
+			Sdp::Utils::addLegacySimulcast(sdpObject, track, encodings.size());
 
 			offer = sdptransform::write(sdpObject);
 		}
@@ -172,6 +154,7 @@ json SendHandler::Send(webrtc::MediaStreamTrackInterface* track, const json& sim
 	{
 		// Panic here. Try to undo things.
 		transceiver->SetDirection(webrtc::RtpTransceiverDirection::kInactive);
+		transceiver->sender()->SetTrack(nullptr);
 
 		throw;
 	}

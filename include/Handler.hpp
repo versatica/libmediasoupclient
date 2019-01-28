@@ -75,7 +75,9 @@ public:
 	  PeerConnection::Options* peerConnectionOptions,
 	  const json& rtpParametersByKind);
 
-	json Send(webrtc::MediaStreamTrackInterface* track, const json& simulcast);
+	json Send(
+	  webrtc::MediaStreamTrackInterface* track,
+	  const std::vector<webrtc::RtpEncodingParameters>& encodings);
 	void StopSending(webrtc::MediaStreamTrackInterface* track);
 	void ReplaceTrack(
 	  webrtc::MediaStreamTrackInterface* track, webrtc::MediaStreamTrackInterface* newTrack);

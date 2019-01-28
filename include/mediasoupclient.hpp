@@ -5,8 +5,8 @@
 
 namespace mediasoupclient
 {
-	// Expose 'json' namespace.
-	using json = nlohmann::json;
-}
+// Expose 'json' namespace.
+using json = nlohmann::json;
+} // namespace mediasoupclient
 
 #endif

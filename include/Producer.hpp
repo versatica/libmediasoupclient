@@ -58,8 +58,7 @@ private:
 	  std::string id,
 	  webrtc::MediaStreamTrackInterface* track,
 	  json rtpParameters,
-	  uint8_t maxSpatialLayer = 0,
-	  json appData            = json::object());
+	  json appData = json::object());
 
 	void TransportClosed();
 

@@ -38,7 +38,7 @@ Handler::Handler(
   Listener* listener,
   PeerConnection::Options* peerConnectionOptions,
   const json& sendingRtpParametersByKind)
-  : listener(listener), sendingRtpParametersByKind(std::move(sendingRtpParametersByKind))
+  : listener(listener), sendingRtpParametersByKind(sendingRtpParametersByKind)
 {
 	MSC_TRACE();
 
@@ -60,8 +60,8 @@ void Handler::UpdateIceServers(const json& iceServerUris)
 
 	if (this->pc->SetConfiguration(configuration))
 		return;
-	else
-		throw Exception("UpdateIceServers failed");
+
+	throw Exception("UpdateIceServers failed");
 };
 
 void Handler::OnIceConnectionChange(webrtc::PeerConnectionInterface::IceConnectionState newState)

@@ -21,9 +21,9 @@ public:
 	public:
 		virtual void OnClose(Producer* producer) = 0;
 		virtual void OnReplaceTrack(
-		  const Producer* producer, webrtc::MediaStreamTrackInterface* newTrack)                   = 0;
-		virtual void OnSetMaxSpatialLayer(const Producer* producer, const uint8_t maxSpatialLayer) = 0;
-		virtual json OnGetStats(const Producer* producer)                                          = 0;
+		  const Producer* producer, webrtc::MediaStreamTrackInterface* newTrack)             = 0;
+		virtual void OnSetMaxSpatialLayer(const Producer* producer, uint8_t maxSpatialLayer) = 0;
+		virtual json OnGetStats(const Producer* producer)                                    = 0;
 	};
 
 	/* Public Listener API */

@@ -152,7 +152,7 @@ namespace Sdp
 				ssrcs.insert(ssrc);
 
 				if (firstSsrc.empty())
-					firstSsrc = ssrc;
+					firstSsrc = std::to_string(ssrc);
 			}
 
 			MSC_ASSERT(!ssrcs.empty(), "no a=ssrc lines found");
@@ -296,9 +296,9 @@ namespace Sdp
 					{ "ssrcs",     ssrcsLine },
 				});
 
-			for (uint8_t i = 0; i < ssrcs.size(); ++i)
+			for (auto &i : ssrcs)
 			{
-				auto ssrc = ssrcs[i].get<uint32_t>();
+				auto ssrc = i.get<uint32_t>();
 
 				mSection["ssrcs"].push_back(
 					{

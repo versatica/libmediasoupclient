@@ -49,7 +49,7 @@ Producer* SendTransport::Produce(
 
 	static const std::vector<webrtc::RtpEncodingParameters> Encodings;
 
-	return this->Produce(producerPublicListener, track, Encodings, appData);
+	return this->Produce(producerPublicListener, track, Encodings, std::move(appData));
 }
 
 /*

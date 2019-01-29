@@ -37,8 +37,8 @@ const std::string& Handler::GetName()
 Handler::Handler(
   Listener* listener,
   PeerConnection::Options* peerConnectionOptions,
-  const json& sendingRtpParametersByKind)
-  : listener(listener), sendingRtpParametersByKind(sendingRtpParametersByKind)
+  json  sendingRtpParametersByKind)
+  : listener(listener), sendingRtpParametersByKind(std::move(sendingRtpParametersByKind))
 {
 	MSC_TRACE();
 

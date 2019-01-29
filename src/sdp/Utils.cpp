@@ -276,7 +276,7 @@ namespace Sdp
 			{
 				ssrcs.push_back(firstSsrc + i);
 
-				if (firstRtxSsrc)
+				if (firstRtxSsrc != 0u)
 					rtxSsrcs.push_back(firstRtxSsrc + i);
 			}
 

@@ -66,7 +66,7 @@ namespace Utils
 
 		s.reserve(len);
 
-		while (len--)
+		while ((len--) != 0u)
 			s += chars[dis(rng)];
 
 		return s;

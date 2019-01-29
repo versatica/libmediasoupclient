@@ -198,11 +198,11 @@ PeerConnection::PeerConnection(PeerConnection::Listener* listener, PeerConnectio
 
 	webrtc::PeerConnectionInterface::RTCConfiguration config;
 
-	if (options)
+	if (options != nullptr)
 		config = options->config;
 
 	// PeerConnection factory provided.
-	if (options && options->factory)
+	if ((options != nullptr) && (options->factory != nullptr))
 	{
 		this->peerConnectionFactory =
 		  rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>(options->factory);

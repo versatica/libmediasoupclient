@@ -606,7 +606,7 @@ std::string Sdp::RemoteSdp::CreateOfferSdp(const json& receiverInfos)
 				});
 				/* clang-format on */
 
-				if (rtxSsrc)
+				if (rtxSsrc != 0u)
 				{
 					/* clang-format off */
 					remoteMediaObj["ssrcs"].push_back(

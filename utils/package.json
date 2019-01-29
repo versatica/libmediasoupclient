@@ -1,0 +1,12 @@
+{
+  "name": "utils",
+  "version": "0.0.1",
+  "private": true,
+  "os": [
+    "!win32"
+  ],
+  "dependencies": {
+    "clang-tools-prebuilt": "^0.1.4",
+    "clang-format": "^1.2.4"
+  }
+}

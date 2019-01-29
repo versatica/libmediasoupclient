@@ -7,8 +7,8 @@ PROJECT_PWD=${PWD}
 # Import utils // OS, NUM_CORES
 . scripts/common.sh
 
-if [ "${OS}" != "Darwin" ] ; then
-	echo "Only available for MacOS"
+if [ "${OS}" != "Darwin" ] && [ "${OS}" != "Linux" ] ; then
+	echo "Only available for MacOS and Linux"
 	exit 1;
 fi
 
@@ -46,12 +46,12 @@ fi
 # Whether replacements should be done.
 FIX=${MSC_TIDY_FIX:=}
 if [ ! -z ${MSC_TIDY_FIX} ] ; then
-	FIX="-fix -format"
+	FIX="-fix"
 fi
 
 HEADER_FILTER_REGEX="(Consumer.hpp|Device.hpp|Exception.hpp|Handler.hpp|Logger.hpp|PeerConnection.hpp|Producer.hpp|Transport.hpp|Utils.hpp|ortc.hpp|sdp/RemoteSdp.hpp|sdp/Utils.hpp)"
 
-BIN_PATH="utils/clang/bin"
+BIN_PATH="utils/node_modules/.bin"
 
 # Generate compile_commands.json.
 pushd build

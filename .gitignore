@@ -1,5 +1,6 @@
 /deps/
 /build/
+/utils/node_modules/
 
 compile_commands.json
 

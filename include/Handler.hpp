@@ -35,7 +35,7 @@ public:
 	explicit Handler(
 	  Listener* listener,
 	  PeerConnection::Options* peerConnectionOptions,
-	  json  sendingRtpParametersByKind = json::array());
+	  json sendingRtpParametersByKind = json::array());
 
 	json GetTransportStats();
 	void UpdateIceServers(const json& iceServerUris);

@@ -96,9 +96,6 @@ public:
 	};
 
 public:
-	static const json DefaultSimulcast;
-
-public:
 	Producer* Produce(
 	  Producer::PublicListener* producerPublicListener,
 	  webrtc::MediaStreamTrackInterface* track,

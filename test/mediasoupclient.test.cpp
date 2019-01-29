@@ -8,34 +8,34 @@
 
 using namespace mediasoupclient;
 
-static const json TransportRemoteParameters = generateTransportRemoteParameters();
-
-static FakeSendTransportListener sendTransportListener;
-static FakeRecvTransportListener recvTransportListener;
-
-static std::unique_ptr<Device> device;
-static std::unique_ptr<SendTransport> sendTransport;
-static std::unique_ptr<RecvTransport> recvTransport;
-static std::unique_ptr<Producer> audioProducer;
-static std::unique_ptr<Producer> videoProducer;
-static std::unique_ptr<Consumer> audioConsumer;
-static std::unique_ptr<Consumer> videoConsumer;
-
-static rtc::scoped_refptr<webrtc::AudioSourceInterface> audioSource;
-static rtc::scoped_refptr<webrtc::AudioTrackInterface> audioTrack;
-
-static rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource;
-static rtc::scoped_refptr<webrtc::VideoTrackInterface> videoTrack;
-
-static FakeProducerPublicListener producerPublicListener;
-static FakeConsumerPublicListener consumerPublicListener;
-
-static json routerRtpCapabilities;
-
-std::unique_ptr<PeerConnection> pc(new PeerConnection(nullptr, nullptr));
-
 TEST_CASE("mediasoupclient", "mediasoupclient")
 {
+	static const json TransportRemoteParameters = generateTransportRemoteParameters();
+
+	static FakeSendTransportListener sendTransportListener;
+	static FakeRecvTransportListener recvTransportListener;
+
+	static std::unique_ptr<Device> device;
+	static std::unique_ptr<SendTransport> sendTransport;
+	static std::unique_ptr<RecvTransport> recvTransport;
+	static std::unique_ptr<Producer> audioProducer;
+	static std::unique_ptr<Producer> videoProducer;
+	static std::unique_ptr<Consumer> audioConsumer;
+	static std::unique_ptr<Consumer> videoConsumer;
+
+	static rtc::scoped_refptr<webrtc::AudioSourceInterface> audioSource;
+	static rtc::scoped_refptr<webrtc::AudioTrackInterface> audioTrack;
+
+	static rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource;
+	static rtc::scoped_refptr<webrtc::VideoTrackInterface> videoTrack;
+
+	static FakeProducerPublicListener producerPublicListener;
+	static FakeConsumerPublicListener consumerPublicListener;
+
+	static json routerRtpCapabilities;
+
+	static std::unique_ptr<PeerConnection> pc(new PeerConnection(nullptr, nullptr));
+
 	// SECTION("mediasoup-client exposes a version property")
 	// {
 	// expect(version).toBeType("string");

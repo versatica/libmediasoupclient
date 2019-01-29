@@ -120,7 +120,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		  &sendTransportListener, TransportRemoteParameters, nullptr /* PeerConnection::Options */, appData)));
 
 		REQUIRE(sendTransport->GetId() == TransportRemoteParameters["id"].get<std::string>());
-		REQUIRE(sendTransport->IsClosed() == false);
+		REQUIRE(!sendTransport->IsClosed());
 		REQUIRE(sendTransport->GetConnectionState() == "new");
 		REQUIRE(sendTransport->GetAppData() == appData);
 	}
@@ -131,7 +131,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		  device->CreateRecvTransport(&recvTransportListener, TransportRemoteParameters)));
 
 		REQUIRE(recvTransport->GetId() == TransportRemoteParameters["id"].get<std::string>());
-		REQUIRE(recvTransport->IsClosed() == false);
+		REQUIRE(!recvTransport->IsClosed());
 		REQUIRE(recvTransport->GetConnectionState() == "new");
 		REQUIRE(recvTransport->GetAppData().empty());
 	}
@@ -183,10 +183,10 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE(sendTransportListener.audioProducerLocalParameters["appData"] == appData);
 
 		REQUIRE(audioProducer->GetId() == sendTransportListener.audioProducerRemoteParameters["id"]);
-		REQUIRE(audioProducer->IsClosed() == false);
+		REQUIRE(!audioProducer->IsClosed());
 		REQUIRE(audioProducer->GetKind() == "audio");
 		REQUIRE(audioProducer->GetTrack() == audioTrack);
-		REQUIRE(audioProducer->IsPaused() == true);
+		REQUIRE(audioProducer->IsPaused());
 		REQUIRE(audioProducer->GetMaxSpatialLayer() == 0);
 		REQUIRE(audioProducer->GetAppData() == appData);
 		REQUIRE(audioProducer->GetRtpParameters()["codecs"].size() == 1);
@@ -243,7 +243,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		  ++sendTransportListener.onProduceExpectedTimesCalled);
 
 		REQUIRE(videoProducer->GetId() == sendTransportListener.videoProducerRemoteParameters["id"]);
-		REQUIRE(videoProducer->IsClosed() == false);
+		REQUIRE(!videoProducer->IsClosed());
 		REQUIRE(videoProducer->GetKind() == "video");
 		REQUIRE(videoProducer->GetTrack() == videoTrack);
 		REQUIRE(videoProducer->GetRtpParameters()["codecs"].size() == 1);
@@ -312,7 +312,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE(rtcp["cname"].is_string());
 
 		videoProducer->SetMaxSpatialLayer(2);
-		REQUIRE(videoProducer->IsPaused() == false);
+		REQUIRE(!videoProducer->IsPaused());
 		REQUIRE(videoProducer->GetMaxSpatialLayer() == 2);
 		REQUIRE(videoProducer->GetAppData() == json::object());
 	}
@@ -401,7 +401,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE(rtcp.is_object());
 		REQUIRE(rtcp["cname"].is_string());
 
-		REQUIRE(audioConsumer->IsPaused() == false);
+		REQUIRE(!audioConsumer->IsPaused());
 		REQUIRE(audioConsumer->GetAppData() == appData);
 
 		REQUIRE_NOTHROW(videoConsumer.reset(recvTransport->Consume(
@@ -503,7 +503,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE(rtcp.is_object());
 		REQUIRE(rtcp["cname"].is_string());
 
-		REQUIRE(videoConsumer->IsPaused() == false);
+		REQUIRE(!videoConsumer->IsPaused());
 		REQUIRE(videoConsumer->GetAppData() == json::object());
 	}
 

@@ -47,9 +47,9 @@ Producer* SendTransport::Produce(
 {
 	MSC_TRACE();
 
-	static const std::vector<webrtc::RtpEncodingParameters> encodings;
+	static const std::vector<webrtc::RtpEncodingParameters> Encodings;
 
-	return this->Produce(producerPublicListener, track, encodings, appData);
+	return this->Produce(producerPublicListener, track, Encodings, appData);
 }
 
 /*

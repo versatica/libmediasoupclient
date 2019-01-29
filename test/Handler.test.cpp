@@ -9,7 +9,7 @@ using namespace mediasoupclient;
 static const json TransportRemoteParameters = generateTransportRemoteParameters();
 static const json RtpParametersByKind       = generateRtpParametersByKind();
 
-static PeerConnection::Options peerConnectionOptions;
+static PeerConnection::Options PeerConnectionOptions;
 
 class FakeHandlerListener : public Handler::Listener
 {
@@ -47,15 +47,15 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 	static FakeHandlerListener handlerListener;
 
 	static SendHandler sendHandler(
-	  &handlerListener, TransportRemoteParameters, &peerConnectionOptions, RtpParametersByKind);
+	  &handlerListener, TransportRemoteParameters, &PeerConnectionOptions, RtpParametersByKind);
 
-	static std::unique_ptr<PeerConnection> pc(new PeerConnection(nullptr, &peerConnectionOptions));
+	static std::unique_ptr<PeerConnection> pc(new PeerConnection(nullptr, &PeerConnectionOptions));
 
-	static const std::vector<webrtc::RtpEncodingParameters> encodings;
+	static const std::vector<webrtc::RtpEncodingParameters> Encodings;
 
 	SECTION("'sendHandler.Send()' fails if a null track is provided")
 	{
-		REQUIRE_THROWS_AS(sendHandler.Send(nullptr, encodings), Exception);
+		REQUIRE_THROWS_AS(sendHandler.Send(nullptr, Encodings), Exception);
 	}
 
 	SECTION("'sendHandler.Send()' succeeds if a track is provided")
@@ -65,14 +65,14 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 
 		json rtpParameters;
 
-		REQUIRE_NOTHROW(rtpParameters = sendHandler.Send(track, encodings));
+		REQUIRE_NOTHROW(rtpParameters = sendHandler.Send(track, Encodings));
 		REQUIRE(rtpParameters["codecs"].size() == 1);
 		REQUIRE(rtpParameters["headerExtensions"].size() == 3);
 	}
 
 	SECTION("'sendHandler.Send()' fails if track is already handled")
 	{
-		REQUIRE_THROWS_AS(sendHandler.Send(track, encodings), Exception);
+		REQUIRE_THROWS_AS(sendHandler.Send(track, Encodings), Exception);
 	}
 
 	SECTION("'sendHandler.ReplaceTrack()' fails if a null track is provided")
@@ -147,7 +147,7 @@ TEST_CASE("RecvHandler", "[Handler][RecvHandler]")
 
 	static FakeHandlerListener handlerListener;
 
-	static RecvHandler recvHandler(&handlerListener, TransportRemoteParameters, &peerConnectionOptions);
+	static RecvHandler recvHandler(&handlerListener, TransportRemoteParameters, &PeerConnectionOptions);
 
 	SECTION("'recvHander.Receive()' succeeds if correct rtpParameters are provided")
 	{

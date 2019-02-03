@@ -7,8 +7,6 @@
 #include <future> // std::promise, std::future
 #include <list>
 
-using json = nlohmann::json;
-
 static std::string Name("webrtc70");
 
 namespace mediasoupclient
@@ -99,14 +97,14 @@ public:
 		RTCStatsCollectorCallback()           = default;
 		~RTCStatsCollectorCallback() override = default;
 
-		std::future<json> GetFuture();
+		std::future<nlohmann::json> GetFuture();
 
 		/* Virtual methods inherited from webrtc::RTCStatsCollectorCallback. */
 	public:
 		void OnStatsDelivered(const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) override;
 
 	private:
-		std::promise<json> promise;
+		std::promise<nlohmann::json> promise;
 	};
 
 public:
@@ -122,7 +120,7 @@ public:
 
 	webrtc::PeerConnectionInterface::RTCConfiguration GetConfiguration() const;
 	bool SetConfiguration(const webrtc::PeerConnectionInterface::RTCConfiguration& config);
-	json GetNativeRtpCapabilities() const;
+	nlohmann::json GetNativeRtpCapabilities() const;
 	std::string CreateOffer(const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions& options);
 	std::string CreateAnswer(const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions& options);
 	void SetLocalDescription(PeerConnection::SdpType type, const std::string& sdp);
@@ -143,9 +141,9 @@ public:
 	  const std::string& label, webrtc::VideoTrackSourceInterface* source);
 	std::vector<rtc::scoped_refptr<webrtc::RtpSenderInterface>> GetSenders();
 	bool RemoveTrack(webrtc::RtpSenderInterface* sender);
-	json GetStats();
-	json GetStats(rtc::scoped_refptr<webrtc::RtpSenderInterface> selector);
-	json GetStats(rtc::scoped_refptr<webrtc::RtpReceiverInterface> selector);
+	nlohmann::json GetStats();
+	nlohmann::json GetStats(rtc::scoped_refptr<webrtc::RtpSenderInterface> selector);
+	nlohmann::json GetStats(rtc::scoped_refptr<webrtc::RtpReceiverInterface> selector);
 
 private:
 	// Listener.
@@ -267,12 +265,12 @@ inline void PeerConnection::RTCStatsCollectorCallback::OnStatsDelivered(
 
 	// RtpReceiver stats JSON string is sometimes empty.
 	if (s.empty())
-		this->promise.set_value(json::array());
+		this->promise.set_value(nlohmann::json::array());
 	else
-		this->promise.set_value(json::parse(s));
+		this->promise.set_value(nlohmann::json::parse(s));
 };
 
-inline std::future<json> PeerConnection::RTCStatsCollectorCallback::GetFuture()
+inline std::future<nlohmann::json> PeerConnection::RTCStatsCollectorCallback::GetFuture()
 {
 	return this->promise.get_future();
 }

@@ -8,6 +8,8 @@
 #include "Utils.hpp"
 #include <utility>
 
+using json = nlohmann::json;
+
 namespace mediasoupclient
 {
 Consumer::Consumer(

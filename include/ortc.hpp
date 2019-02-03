@@ -4,17 +4,17 @@
 #include "json.hpp"
 #include <string>
 
-using json = nlohmann::json;
-
 namespace mediasoupclient
 {
 namespace ortc
 {
-	json getExtendedCapabilities(const json& localCaps, const json& remoteCaps);
-	json getRecvRtpCapabilities(const json& extendedRtpCapabilities);
-	json getSendingRtpParameters(const std::string& kind, const json& extendedRtpCapabilities);
-	bool canSend(const std::string& kind, const json& extendedRtpCapabilities);
-	bool canReceive(const json& rtpParameters, const json& extendedRtpCapabilities);
+	nlohmann::json getExtendedCapabilities(
+	  const nlohmann::json& localCaps, const nlohmann::json& remoteCaps);
+	nlohmann::json getRecvRtpCapabilities(const nlohmann::json& extendedRtpCapabilities);
+	nlohmann::json getSendingRtpParameters(
+	  const std::string& kind, const nlohmann::json& extendedRtpCapabilities);
+	bool canSend(const std::string& kind, const nlohmann::json& extendedRtpCapabilities);
+	bool canReceive(const nlohmann::json& rtpParameters, const nlohmann::json& extendedRtpCapabilities);
 } // namespace ortc
 } // namespace mediasoupclient
 

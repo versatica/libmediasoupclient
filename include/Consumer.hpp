@@ -6,8 +6,6 @@
 #include "api/mediastreaminterface.h" // MediaStreamTrackInterface
 #include <string>
 
-using json = nlohmann::json;
-
 namespace mediasoupclient
 {
 // Fast forward declarations.
@@ -19,8 +17,8 @@ public:
 	class Listener
 	{
 	public:
-		virtual void OnClose(Consumer* consumer)          = 0;
-		virtual json OnGetStats(const Consumer* consumer) = 0;
+		virtual void OnClose(Consumer* consumer)                    = 0;
+		virtual nlohmann::json OnGetStats(const Consumer* consumer) = 0;
 	};
 
 	/* Public Listener API */
@@ -35,9 +33,9 @@ public:
 	const std::string& GetProducerId() const;
 	const std::string GetKind() const;
 	webrtc::MediaStreamTrackInterface* GetTrack() const;
-	const json& GetRtpParameters() const;
-	const json& GetAppData() const;
-	json GetStats() const;
+	const nlohmann::json& GetRtpParameters() const;
+	const nlohmann::json& GetAppData() const;
+	nlohmann::json GetStats() const;
 
 	bool IsClosed() const;
 	bool IsPaused() const;
@@ -53,8 +51,8 @@ private:
 	  std::string id,
 	  std::string producerId,
 	  webrtc::MediaStreamTrackInterface* track,
-	  json rtpParameters,
-	  json appData);
+	  nlohmann::json rtpParameters,
+	  nlohmann::json appData);
 
 	void TransportClosed();
 
@@ -84,13 +82,13 @@ private:
 	webrtc::MediaStreamTrackInterface* track;
 
 	// RTP parameters.
-	json rtpParameters;
+	nlohmann::json rtpParameters;
 
 	// Max spatial layer.
 	std::string maxSpatialLayer{};
 
 	// App custom data.
-	json appData{};
+	nlohmann::json appData{};
 };
 
 /* Inline methods */
@@ -115,17 +113,17 @@ inline webrtc::MediaStreamTrackInterface* Consumer::GetTrack() const
 	return this->track;
 }
 
-inline const json& Consumer::GetRtpParameters() const
+inline const nlohmann::json& Consumer::GetRtpParameters() const
 {
 	return this->rtpParameters;
 }
 
-inline const json& Consumer::GetAppData() const
+inline const nlohmann::json& Consumer::GetAppData() const
 {
 	return this->appData;
 }
 
-inline json Consumer::GetStats() const
+inline nlohmann::json Consumer::GetStats() const
 {
 	if (this->closed)
 		throw Exception("Invalid state");

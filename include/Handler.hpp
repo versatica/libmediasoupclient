@@ -8,8 +8,6 @@
 #include <set>
 #include <string>
 
-using json = nlohmann::json;
-
 namespace mediasoupclient
 {
 class Handler : public PeerConnection::Listener
@@ -18,27 +16,27 @@ public:
 	class Listener
 	{
 	public:
-		virtual void OnConnect(json& transportLocalParameters) = 0;
+		virtual void OnConnect(nlohmann::json& transportLocalParameters) = 0;
 		virtual void OnConnectionStateChange(
 		  webrtc::PeerConnectionInterface::IceConnectionState connectionState) = 0;
 	};
 
 	// Methods to be implemented by child classes.
 public:
-	virtual void RestartIce(const json& remoteIceParameters) = 0;
+	virtual void RestartIce(const nlohmann::json& remoteIceParameters) = 0;
 
 public:
-	static json GetNativeRtpCapabilities();
+	static nlohmann::json GetNativeRtpCapabilities();
 	static const std::string& GetName();
 
 public:
 	explicit Handler(
 	  Listener* listener,
 	  PeerConnection::Options* peerConnectionOptions,
-	  json sendingRtpParametersByKind = json::array());
+	  nlohmann::json sendingRtpParametersByKind = nlohmann::json::array());
 
-	json GetTransportStats();
-	void UpdateIceServers(const json& iceServerUris);
+	nlohmann::json GetTransportStats();
+	void UpdateIceServers(const nlohmann::json& iceServerUris);
 
 	void Close();
 
@@ -54,7 +52,7 @@ protected:
 	Listener* listener{ nullptr };
 
 	// Generic sending RTP parameters for audio and video.
-	json sendingRtpParametersByKind;
+	nlohmann::json sendingRtpParametersByKind;
 
 	// Remote SDP instance.
 	std::unique_ptr<Sdp::RemoteSdp> remoteSdp;
@@ -71,22 +69,22 @@ class SendHandler : public Handler
 public:
 	SendHandler(
 	  Handler::Listener* listener,
-	  const json& transportRemoteParameters,
+	  const nlohmann::json& transportRemoteParameters,
 	  PeerConnection::Options* peerConnectionOptions,
-	  const json& rtpParametersByKind);
+	  const nlohmann::json& rtpParametersByKind);
 
-	json Send(
+	nlohmann::json Send(
 	  webrtc::MediaStreamTrackInterface* track,
 	  const std::vector<webrtc::RtpEncodingParameters>& encodings);
 	void StopSending(webrtc::MediaStreamTrackInterface* track);
 	void ReplaceTrack(
 	  webrtc::MediaStreamTrackInterface* track, webrtc::MediaStreamTrackInterface* newTrack);
 	void SetMaxSpatialLayer(webrtc::MediaStreamTrackInterface* track, uint8_t spatialLayer);
-	json GetSenderStats(webrtc::MediaStreamTrackInterface* track);
+	nlohmann::json GetSenderStats(webrtc::MediaStreamTrackInterface* track);
 
 	/* Methods inherided from Handler. */
 public:
-	void RestartIce(const json& remoteIceParameters) override;
+	void RestartIce(const nlohmann::json& remoteIceParameters) override;
 
 private:
 	// Sending tracks.
@@ -98,17 +96,17 @@ class RecvHandler : public Handler
 public:
 	RecvHandler(
 	  Handler::Listener* listener,
-	  const json& transportRemoteParameters,
+	  const nlohmann::json& transportRemoteParameters,
 	  PeerConnection::Options* peerConnectionOptions);
 
 	webrtc::MediaStreamTrackInterface* Receive(
-	  const std::string& id, const std::string& kind, const json& rtpParameters);
+	  const std::string& id, const std::string& kind, const nlohmann::json& rtpParameters);
 	void StopReceiving(const std::string& id);
-	json GetReceiverStats(const std::string& id);
+	nlohmann::json GetReceiverStats(const std::string& id);
 
 	/* Methods inherided from Handler. */
 public:
-	void RestartIce(const json& remoteIceParameters) override;
+	void RestartIce(const nlohmann::json& remoteIceParameters) override;
 
 	/*
 	 * Receiver infos indexed by id.
@@ -122,12 +120,12 @@ public:
 	 * - rtxSsrc {Number}
 	 * - cname {String}
 	 */
-	std::map<const std::string, json> receiverInfos;
+	std::map<const std::string, nlohmann::json> receiverInfos;
 };
 
 /* Inline methods */
 
-inline json Handler::GetTransportStats()
+inline nlohmann::json Handler::GetTransportStats()
 {
 	return this->pc->GetStats();
 }

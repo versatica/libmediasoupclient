@@ -8,6 +8,8 @@
 #include "sdptransform.hpp"
 #include <utility>
 
+using json = nlohmann::json;
+
 namespace mediasoupclient
 {
 /* Sdp::RemoteSdp methods */

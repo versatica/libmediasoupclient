@@ -7,6 +7,8 @@
 #include "ortc.hpp"
 #include <utility>
 
+using json = nlohmann::json;
+
 namespace mediasoupclient
 {
 /**

@@ -13,8 +13,6 @@
 #include <string>
 #include <utility>
 
-using json = nlohmann::json;
-
 namespace mediasoupclient
 {
 // Fast forward declarations.
@@ -27,35 +25,35 @@ public:
 	class Listener
 	{
 	public:
-		virtual std::future<void> OnConnect(const json& transportLocalParameters) = 0;
-		virtual void OnConnectionStateChange(const std::string& connectionState)  = 0;
+		virtual std::future<void> OnConnect(const nlohmann::json& transportLocalParameters) = 0;
+		virtual void OnConnectionStateChange(const std::string& connectionState)            = 0;
 	};
 
 	/* Pure virtual methods inherited from Handler::Listener */
 public:
-	void OnConnect(json& transportLocalParameters) override;
+	void OnConnect(nlohmann::json& transportLocalParameters) override;
 	void OnConnectionStateChange(
 	  webrtc::PeerConnectionInterface::IceConnectionState connectionState) override;
 
 public:
 	const std::string& GetId() const;
 	const std::string& GetConnectionState() const;
-	const json& GetAppData() const;
-	json GetStats() const;
+	const nlohmann::json& GetAppData() const;
+	nlohmann::json GetStats() const;
 
 	bool IsClosed() const;
 
-	void RestartIce(const json& remoteIceParameters);
-	void UpdateIceServers(const json& iceServers);
+	void RestartIce(const nlohmann::json& remoteIceParameters);
+	void UpdateIceServers(const nlohmann::json& iceServers);
 	virtual void Close();
 
 	/* Only child classes will create transport intances */
 protected:
 	Transport(
 	  Listener* listener,
-	  const json& transportRemoteParameters,
-	  const json& extendedRtpCapabilities,
-	  json appData);
+	  const nlohmann::json& transportRemoteParameters,
+	  const nlohmann::json& extendedRtpCapabilities,
+	  nlohmann::json appData);
 
 protected:
 	void SetHandler(Handler* handler);
@@ -65,7 +63,7 @@ protected:
 	bool closed{ false };
 
 	// Extended RTP capabilities.
-	const json& extendedRtpCapabilities;
+	const nlohmann::json& extendedRtpCapabilities;
 
 private:
 	// Id.
@@ -82,7 +80,7 @@ private:
 	};
 
 	// App custom data.
-	json appData{};
+	nlohmann::json appData{};
 };
 
 class SendTransport : public Transport, public Producer::Listener
@@ -92,20 +90,20 @@ public:
 	class Listener : public Transport::Listener
 	{
 	public:
-		virtual std::future<json> OnProduce(const json& producerLocalParameters) = 0;
+		virtual std::future<nlohmann::json> OnProduce(const nlohmann::json& producerLocalParameters) = 0;
 	};
 
 public:
 	Producer* Produce(
 	  Producer::PublicListener* producerPublicListener,
 	  webrtc::MediaStreamTrackInterface* track,
-	  json appData = json::object());
+	  nlohmann::json appData = nlohmann::json::object());
 
 	Producer* Produce(
 	  Producer::PublicListener* producerPublicListener,
 	  webrtc::MediaStreamTrackInterface* track,
 	  const std::vector<webrtc::RtpEncodingParameters>& encodings,
-	  json appData = json::object());
+	  nlohmann::json appData = nlohmann::json::object());
 
 	/* Virtual methods inherited from Transport. */
 public:
@@ -116,16 +114,16 @@ public:
 	void OnClose(Producer* producer) override;
 	void OnReplaceTrack(const Producer* producer, webrtc::MediaStreamTrackInterface* newTrack) override;
 	void OnSetMaxSpatialLayer(const Producer* producer, uint8_t maxSpatialLayer) override;
-	json OnGetStats(const Producer* producer) override;
+	nlohmann::json OnGetStats(const Producer* producer) override;
 
 private:
 	SendTransport(
 	  Listener* listener,
-	  const json& transportRemoteParameters,
+	  const nlohmann::json& transportRemoteParameters,
 	  PeerConnection::Options* peerConnectionOptions,
-	  const json& extendedRtpCapabilities,
+	  const nlohmann::json& extendedRtpCapabilities,
 	  std::map<std::string, bool> canProduceByKind,
-	  json appData = json::object());
+	  nlohmann::json appData = nlohmann::json::object());
 
 	/* Device is the only one constructing Transports */
 	friend Device;
@@ -150,8 +148,8 @@ class RecvTransport : public Transport, public Consumer::Listener
 public:
 	Consumer* Consume(
 	  Consumer::PublicListener* consumerPublicListener,
-	  const json& consumerRemoteParameters,
-	  json appData = json::object());
+	  const nlohmann::json& consumerRemoteParameters,
+	  nlohmann::json appData = nlohmann::json::object());
 
 	/* Virtual methods inherited from Transport. */
 public:
@@ -160,15 +158,15 @@ public:
 	/* Virtual methods inherited from Consumer::Listener. */
 public:
 	void OnClose(Consumer* consumer) override;
-	json OnGetStats(const Consumer* consumer) override;
+	nlohmann::json OnGetStats(const Consumer* consumer) override;
 
 private:
 	RecvTransport(
 	  Transport::Listener* listener,
-	  const json& transportRemoteParameters,
+	  const nlohmann::json& transportRemoteParameters,
 	  PeerConnection::Options* peerConnectionOptions,
-	  const json& extendedRtpCapabilities,
-	  json appData = json::object());
+	  const nlohmann::json& extendedRtpCapabilities,
+	  nlohmann::json appData = nlohmann::json::object());
 
 	/* Device is the only one constructing Transports */
 	friend Device;
@@ -185,9 +183,9 @@ private:
 
 inline Transport::Transport(
   Listener* listener,
-  const json& transportRemoteParameters,
-  const json& extendedRtpCapabilities,
-  json appData)
+  const nlohmann::json& transportRemoteParameters,
+  const nlohmann::json& extendedRtpCapabilities,
+  nlohmann::json appData)
   : listener(listener), id(transportRemoteParameters["id"].get<std::string>()),
     extendedRtpCapabilities(extendedRtpCapabilities), appData(std::move(appData))
 {
@@ -203,14 +201,14 @@ inline const std::string& Transport::GetConnectionState() const
 	return PeerConnection::iceConnectionState2String[this->connectionState];
 }
 
-inline const json& Transport::GetAppData() const
+inline const nlohmann::json& Transport::GetAppData() const
 {
 	// TODO: what's the compiler warning:
 	// "access of moved variable appData"
 	return this->appData;
 }
 
-inline json Transport::GetStats() const
+inline nlohmann::json Transport::GetStats() const
 {
 	if (this->closed)
 		throw Exception("Invalid state");
@@ -223,7 +221,7 @@ inline bool Transport::IsClosed() const
 	return this->closed;
 }
 
-inline void Transport::RestartIce(const json& remoteIceParameters)
+inline void Transport::RestartIce(const nlohmann::json& remoteIceParameters)
 {
 	if (this->closed)
 		throw Exception("Invalid state");
@@ -231,7 +229,7 @@ inline void Transport::RestartIce(const json& remoteIceParameters)
 		return this->handler->RestartIce(remoteIceParameters);
 }
 
-inline void Transport::UpdateIceServers(const json& iceServers)
+inline void Transport::UpdateIceServers(const nlohmann::json& iceServers)
 {
 	if (this->closed)
 		throw Exception("Invalid state");

@@ -10,6 +10,8 @@
 #include <list>
 #include <utility>
 
+using json = nlohmann::json;
+
 namespace mediasoupclient
 {
 /* Handler static methods */

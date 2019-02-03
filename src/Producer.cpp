@@ -7,6 +7,8 @@
 #include "Logger.hpp"
 #include <utility>
 
+using json = nlohmann::json;
+
 namespace mediasoupclient
 {
 Producer::Producer(

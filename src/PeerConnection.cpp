@@ -12,6 +12,8 @@
 #include "rtc_base/ssladapter.h"
 #include <utility>
 
+using json = nlohmann::json;
+
 namespace mediasoupclient
 {
 /*

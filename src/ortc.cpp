@@ -6,6 +6,8 @@
 #include <algorithm> // std::find_if
 #include <string>
 
+using json = nlohmann::json;
+
 namespace mediasoupclient
 {
 namespace ortc

@@ -8,8 +8,6 @@
 #include <map>
 #include <string>
 
-using json = nlohmann::json;
-
 namespace mediasoupclient
 {
 class Device
@@ -20,31 +18,31 @@ public:
 
 	const std::string& GetHandlerName() const;
 	bool IsLoaded() const;
-	const json& GetRtpCapabilities() const;
-	void Load(const json& routerRtpCapabilities);
+	const nlohmann::json& GetRtpCapabilities() const;
+	void Load(const nlohmann::json& routerRtpCapabilities);
 	bool CanProduce(const std::string& kind);
 
 	SendTransport* CreateSendTransport(
 	  SendTransport::Listener* listener,
-	  const json& transportRemoteParameters,
+	  const nlohmann::json& transportRemoteParameters,
 	  PeerConnection::Options* peerConnectionOptions = nullptr,
-	  json appData                                   = json::object()) const;
+	  nlohmann::json appData                         = nlohmann::json::object()) const;
 
 	RecvTransport* CreateRecvTransport(
 	  Transport::Listener* listener,
-	  const json& transportRemoteParameters,
+	  const nlohmann::json& transportRemoteParameters,
 	  PeerConnection::Options* peerConnectionOptions = nullptr,
-	  json appData                                   = json::object()) const;
+	  nlohmann::json appData                         = nlohmann::json::object()) const;
 
 private:
 	// Loaded flag.
 	bool loaded{ false };
 
 	// Extended RTP capabilities.
-	json extendedRtpCapabilities;
+	nlohmann::json extendedRtpCapabilities;
 
 	// Local RTP capabilities for receiving media.
-	json recvRtpCapabilities;
+	nlohmann::json recvRtpCapabilities;
 
 	// Whether we can produce audio/video based on computed extended RTP
 	// capabilities.
@@ -72,7 +70,7 @@ inline bool Device::IsLoaded() const
 /**
  * RTP capabilities of the Device for receiving media.
  */
-inline const json& Device::GetRtpCapabilities() const
+inline const nlohmann::json& Device::GetRtpCapabilities() const
 {
 	if (!this->loaded)
 		throw Exception("Not loaded");

@@ -6,8 +6,6 @@
 #include "api/mediastreaminterface.h" // MediaStreamTrackInterface
 #include <string>
 
-using json = nlohmann::json;
-
 namespace mediasoupclient
 {
 // Fast forward declarations.
@@ -23,7 +21,7 @@ public:
 		virtual void OnReplaceTrack(
 		  const Producer* producer, webrtc::MediaStreamTrackInterface* newTrack)             = 0;
 		virtual void OnSetMaxSpatialLayer(const Producer* producer, uint8_t maxSpatialLayer) = 0;
-		virtual json OnGetStats(const Producer* producer)                                    = 0;
+		virtual nlohmann::json OnGetStats(const Producer* producer)                          = 0;
 	};
 
 	/* Public Listener API */
@@ -37,10 +35,10 @@ public:
 	const std::string& GetId() const;
 	std::string GetKind() const;
 	webrtc::MediaStreamTrackInterface* GetTrack() const;
-	const json& GetRtpParameters() const;
+	const nlohmann::json& GetRtpParameters() const;
 	const uint8_t GetMaxSpatialLayer() const;
-	const json& GetAppData() const;
-	json GetStats() const;
+	const nlohmann::json& GetAppData() const;
+	nlohmann::json GetStats() const;
 
 	bool IsClosed() const;
 	bool IsPaused() const;
@@ -57,8 +55,8 @@ private:
 	  PublicListener* publicListener,
 	  std::string id,
 	  webrtc::MediaStreamTrackInterface* track,
-	  json rtpParameters,
-	  json appData = json::object());
+	  nlohmann::json rtpParameters,
+	  nlohmann::json appData = nlohmann::json::object());
 
 	void TransportClosed();
 
@@ -85,13 +83,13 @@ private:
 	webrtc::MediaStreamTrackInterface* track;
 
 	// RTP parameters.
-	json rtpParameters;
+	nlohmann::json rtpParameters;
 
 	// Video Max spatial layer.
 	uint8_t maxSpatialLayer{ 0 };
 
 	// App custom data.
-	json appData;
+	nlohmann::json appData;
 };
 
 /* Inline methods */
@@ -120,7 +118,7 @@ inline webrtc::MediaStreamTrackInterface* Producer::GetTrack() const
 	return this->track;
 }
 
-inline const json& Producer::GetRtpParameters() const
+inline const nlohmann::json& Producer::GetRtpParameters() const
 {
 	return this->rtpParameters;
 }
@@ -130,12 +128,12 @@ inline const uint8_t Producer::GetMaxSpatialLayer() const
 	return this->maxSpatialLayer;
 }
 
-inline const json& Producer::GetAppData() const
+inline const nlohmann::json& Producer::GetAppData() const
 {
 	return this->appData;
 }
 
-inline json Producer::GetStats() const
+inline nlohmann::json Producer::GetStats() const
 {
 	if (this->closed)
 		throw Exception("Invalid state");

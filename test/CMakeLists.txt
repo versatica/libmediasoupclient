@@ -1,6 +1,3 @@
-include_directories(${mediasoupclient_SOURCE_DIR}/include)
-include_directories(include)
-
 set(
 	SOURCE_FILES
 	Device.test.cpp
@@ -15,6 +12,14 @@ set(
 	tests.cpp
 )
 
+# Create taget.
 add_executable(test_mediasoupclient ${SOURCE_FILES})
 
-target_link_libraries(test_mediasoupclient mediasoupclient)
+# Private (implementation) header files.
+target_include_directories(test_mediasoupclient PRIVATE
+	${mediasoupclient_SOURCE_DIR}/include
+	include
+)
+
+# Private dependencies.
+target_link_libraries(test_mediasoupclient PRIVATE mediasoupclient)

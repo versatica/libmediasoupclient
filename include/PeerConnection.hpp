@@ -146,9 +146,6 @@ public:
 	nlohmann::json GetStats(rtc::scoped_refptr<webrtc::RtpReceiverInterface> selector);
 
 private:
-	// Listener.
-	Listener* listener;
-
 	// Signaling and worker threads.
 	rtc::Thread* signalingThread;
 	rtc::Thread* workerThread;

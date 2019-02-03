@@ -66,12 +66,13 @@ protected:
 	const nlohmann::json& extendedRtpCapabilities;
 
 private:
-	// Id.
-	std::string id{};
-
 	// Listener.
 	Listener* listener{ nullptr };
 
+	// Id.
+	std::string id{};
+
+	// Handler.
 	Handler* handler{ nullptr };
 
 	// Transport (IceConneciton) connection state.
@@ -186,8 +187,8 @@ inline Transport::Transport(
   const nlohmann::json& transportRemoteParameters,
   const nlohmann::json& extendedRtpCapabilities,
   nlohmann::json appData)
-  : listener(listener), id(transportRemoteParameters["id"].get<std::string>()),
-    extendedRtpCapabilities(extendedRtpCapabilities), appData(std::move(appData))
+  : extendedRtpCapabilities(extendedRtpCapabilities), listener(listener),
+    id(transportRemoteParameters["id"].get<std::string>()), appData(std::move(appData))
 {
 }
 

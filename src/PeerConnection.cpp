@@ -194,7 +194,6 @@ void PeerConnection::ClassCleanup()
 /* Instance methods. */
 
 PeerConnection::PeerConnection(PeerConnection::Listener* listener, PeerConnection::Options* options)
-  : listener(listener)
 {
 	MSC_TRACE();
 

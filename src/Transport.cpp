@@ -22,9 +22,9 @@ SendTransport::SendTransport(
   const json& extendedRtpCapabilities,
   std::map<std::string, bool> canProduceByKind,
   json appData)
-  : listener(listener),
-    Transport(listener, transportRemoteParameters, extendedRtpCapabilities, std::move(appData)),
-    canProduceByKind(std::move(canProduceByKind))
+
+  : Transport(listener, transportRemoteParameters, extendedRtpCapabilities, std::move(appData)),
+    listener(listener), canProduceByKind(std::move(canProduceByKind))
 {
 	MSC_TRACE();
 

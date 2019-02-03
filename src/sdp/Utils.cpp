@@ -242,7 +242,7 @@ namespace Sdp
 			{
 				auto ssrcGroups = *it;
 
-				auto it = std::find_if(
+				std::find_if(
 				  ssrcGroups.begin(), ssrcGroups.end(), [&firstSsrc, &firstRtxSsrc](const json& line) {
 					  if (line["semantics"].get<std::string>() != "FID")
 						  return false;

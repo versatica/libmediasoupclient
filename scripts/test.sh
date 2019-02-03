@@ -12,7 +12,7 @@ fi
 
 if [ "$1" == "build" ]; then
 	# Rebuild.
-	rm -rf build/ bin/
+	rm -rf build/
 	cmake . -Bbuild
 fi
 

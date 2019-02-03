@@ -1,45 +1,28 @@
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.5)
 
-project(mediasoupclient VERSION 0.0.1)
+project(mediasoupclient LANGUAGES CXX)
 
+# Set version number.
+set(mediasoupclient_VERSION_MAJOR 0)
+set(mediasoupclient_VERSION_MINOR 1)
+
+# C++ standard requirements.
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -std=c++11")
+# Project options.
+option(BUILD_TESTS "Build unit tests" ON)
+option(LOG_TRACE   "Enable MSC_LOG_TRACE (See Logger.hpp)" OFF)
 
-# Disable rtti in order to avoi issues inheriting from pure virtual classes in libwebrtc.
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
+if (${BUILD_TESTS})
+	subdirs(test)
+endif()
 
-# Enable MSC_LOG_TRACE (See Logger.hpp).
-if(${MSC_LOG_TRACE})
+if(${LOG_TRACE})
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMSC_LOG_TRACE")
 endif()
 
-# Enable MSC_LOG_DEV in all files (See Logger.hpp). Useful for clang-tidy.
-if(${MSC_LOG_DEV})
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMSC_LOG_DEV")
-endif()
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DWEBRTC_POSIX")
-
-if(APPLE)
-	find_library(APPLICATION_SERVICES ApplicationServices)
-	find_library(AUDIOTOOLBOX_LIBRARY AudioToolbox)
-	find_library(COREAUDIO_LIBRARY CoreAudio)
-	find_library(CORE_FOUNDATION Foundation)
-	find_library(CORE_SERVICES CoreServices)
-
-	set(EXTRA_LIBS ${APPLICATION_SERVICES} ${AUDIOTOOLBOX_LIBRARY} ${COREAUDIO_LIBRARY} ${CORE_FOUNDATION} ${CORE_SERVICES})
-
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DWEBRTC_MAC")
-endif(APPLE)
-
-subdirs(test)
-
-include_directories(${mediasoupclient_SOURCE_DIR}/include)
-
-set(
-	SOURCE_FILES
+set(SOURCE_FILES
 	src/Consumer.cpp
 	src/Device.cpp
 	src/Handler.cpp
@@ -52,22 +35,62 @@ set(
 	src/sdp/Utils.cpp
 )
 
-set(
-	HEADER_FILES
+set(HEADER_FILES
 	include/mediasoupclient.hpp
-	deps/libsdptransform/include/json.hpp
 )
 
-add_library(mediasoupclient STATIC ${SOURCE_FILES} ${HEADER_FILES})
+if(APPLE)
+	find_library(APPLICATION_SERVICES ApplicationServices)
+	find_library(AUDIOTOOLBOX_LIBRARY AudioToolbox)
+	find_library(COREAUDIO_LIBRARY CoreAudio)
+	find_library(CORE_FOUNDATION Foundation)
+	find_library(CORE_SERVICES CoreServices)
 
-# Add dependencies.
-include_directories("${CMAKE_SOURCE_DIR}/deps/libsdptransform/include")
-include_directories("${CMAKE_SOURCE_DIR}/deps/libwebrtc/include")
+	set(EXTRA_LIBS
+		${APPLICATION_SERVICES}
+		${AUDIOTOOLBOX_LIBRARY}
+		${COREAUDIO_LIBRARY}
+		${CORE_FOUNDATION}
+		${CORE_SERVICES}
+	)
+endif(APPLE)
 
-target_link_libraries(${PROJECT_NAME}
-	${CMAKE_SOURCE_DIR}/deps/libsdptransform/build/libsdptransform.a
-	${CMAKE_SOURCE_DIR}/deps/libwebrtc/lib/libwebrtc.a
+# Add some compile flags to our source files.
+if (MSVC)
+	set_source_files_properties(${SOURCE_FILES}
+		PROPERTIES COMPILE_FLAGS /W3 /WX)
+else ()
+	set_source_files_properties(${SOURCE_FILES}
+		PROPERTIES COMPILE_FLAGS -Wall -Wextra -Wpedantic)
+endif()
+
+# Create target.
+add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES} ${HEADER_FILES})
+
+# Source Dependencies.
+add_subdirectory(deps/libsdptransform "${CMAKE_CURRENT_BINARY_DIR}/libsdptransform")
+
+# Private (implementation) header files.
+target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/include)
+
+# Public (interface) headers from dependencies.
+target_include_directories(${PROJECT_NAME} PUBLIC
+	"${PROJECT_SOURCE_DIR}/deps/libsdptransform/include"
+	"${PROJECT_SOURCE_DIR}/deps/libwebrtc/include"
+)
+
+# Public (interface) dependencies.
+target_link_libraries(${PROJECT_NAME} PUBLIC
+	sdptransform
+	${PROJECT_SOURCE_DIR}/deps/libwebrtc/lib/libwebrtc.a
 	${EXTRA_LIBS}
+)
+
+# Compile definitions for libwebrtc.
+target_compile_definitions(${PROJECT_NAME} PUBLIC
+	$<$<NOT:$<PLATFORM_ID:Windows>>:WEBRTC_POSIX>
+	$<$<PLATFORM_ID:Windows>:WEBRTC_WIN>
+	$<$<PLATFORM_ID:Darwin>:WEBRTC_MAC>
 )
 
 install(TARGETS mediasoupclient DESTINATION lib)

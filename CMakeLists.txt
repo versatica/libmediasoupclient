@@ -13,6 +13,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Project options.
 option(BUILD_TESTS "Build unit tests" ON)
 option(LOG_TRACE   "Enable MSC_LOG_TRACE (See Logger.hpp)" OFF)
+option(LOG_DEV     "Enable MSC_LOG_DEV (See Logger.hpp)" OFF)
 
 if (${BUILD_TESTS})
 	subdirs(test)
@@ -20,6 +21,10 @@ endif()
 
 if(${LOG_TRACE})
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMSC_LOG_TRACE")
+endif()
+
+if(${LOG_DEV})
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMSC_LOG_DEV")
 endif()
 
 set(SOURCE_FILES

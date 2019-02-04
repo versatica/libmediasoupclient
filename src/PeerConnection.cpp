@@ -225,13 +225,13 @@ PeerConnection::PeerConnection(PeerConnection::Listener* listener, PeerConnectio
 		  this->workerThread,
 		  this->workerThread,
 		  this->signalingThread,
-		  /*default_adm=*/nullptr,
+		  nullptr /*default_adm*/,
 		  webrtc::CreateBuiltinAudioEncoderFactory(),
 		  webrtc::CreateBuiltinAudioDecoderFactory(),
 		  webrtc::CreateBuiltinVideoEncoderFactory(),
 		  webrtc::CreateBuiltinVideoDecoderFactory(),
-		  /*audio_mixer=*/nullptr,
-		  /*audio_processing=*/nullptr);
+		  nullptr /*audio_mixer*/,
+		  nullptr /*audio_processing*/);
 	}
 
 	// Set SDP semantics to Unified Plan.

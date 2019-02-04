@@ -18,6 +18,8 @@ Sdp::RemoteSdp::RemoteSdp(json transportRemoteParameters, json sendingRtpParamet
   : transportRemoteParameters(std::move(transportRemoteParameters)),
     sendingRtpParametersByKind(std::move(sendingRtpParametersByKind))
 {
+	MSC_TRACE();
+
 	/* clang-format off */
 	this->sdpGlobalFields =
 	{

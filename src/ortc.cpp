@@ -14,6 +14,8 @@ namespace ortc
 {
 	static std::string getH264PacketizationMode(const json& codec)
 	{
+		MSC_TRACE();
+
 		auto it = codec.find("parameters");
 		if (it == codec.end())
 			return "0";
@@ -28,6 +30,8 @@ namespace ortc
 
 	static json::const_iterator findMatchingRtxCodec(const json& codecs, const json& extendedCodec)
 	{
+		MSC_TRACE();
+
 		return std::find_if(codecs.begin(), codecs.end(), [&extendedCodec](const json& codec) {
 			if ("rtx" != codec["name"].get<std::string>())
 				return false;
@@ -49,6 +53,8 @@ namespace ortc
 
 	static bool matchCapCodecs(const json& aCodec, const json& bCodec)
 	{
+		MSC_TRACE();
+
 		auto aMimeType = aCodec["mimeType"].get<std::string>();
 		auto bMimeType = bCodec["mimeType"].get<std::string>();
 
@@ -88,6 +94,8 @@ namespace ortc
 
 	static bool matchHeaderExtensions(const json& aExt, const json& bExt)
 	{
+		MSC_TRACE();
+
 		if (aExt["kind"] != bExt["kind"])
 			return false;
 
@@ -96,6 +104,8 @@ namespace ortc
 
 	static json reduceRtcpFeedback(const json& codecA, const json& codecB)
 	{
+		MSC_TRACE();
+
 		auto reducedRtcpFeedback = json::array();
 
 		auto aFbs = codecA["rtcpFeedback"];
@@ -134,6 +144,8 @@ namespace ortc
 	 */
 	json getExtendedCapabilities(const json& localCaps, const json& remoteCaps)
 	{
+		MSC_TRACE();
+
 		/* clang-format off */
 		json extendedCaps =
 		{
@@ -248,6 +260,8 @@ namespace ortc
 	 */
 	json getRecvRtpCapabilities(const json& extendedRtpCapabilities)
 	{
+		MSC_TRACE();
+
 		/* clang-format off */
 		json caps =
 		{
@@ -337,6 +351,8 @@ namespace ortc
 	 */
 	json getSendingRtpParameters(const std::string& kind, const json& extendedRtpCapabilities)
 	{
+		MSC_TRACE();
+
 		/* clang-format off */
 		json params =
 		{
@@ -430,6 +446,8 @@ namespace ortc
 	 */
 	bool canSend(const std::string& kind, const json& extendedRtpCapabilities)
 	{
+		MSC_TRACE();
+
 		auto codecs = extendedRtpCapabilities["codecs"];
 
 		auto it = std::find_if(codecs.begin(), codecs.end(), [&kind](const json& codec) {
@@ -445,6 +463,8 @@ namespace ortc
 	 */
 	bool canReceive(const json& rtpParameters, const json& extendedRtpCapabilities)
 	{
+		MSC_TRACE();
+
 		if (rtpParameters["codecs"].empty())
 			return false;
 

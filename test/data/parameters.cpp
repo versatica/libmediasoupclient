@@ -21,7 +21,7 @@ json generateRouterRtpCapabilities()
 			"rtcpFeedback"         : [],
 			"parameters"           :
 			{
-				"useinbandfec" : "1"
+				"useinbandfec" : 1
 			}
 		},
 		{
@@ -54,7 +54,7 @@ json generateRouterRtpCapabilities()
 			"rtcpFeedback"         : [],
 			"parameters"           :
 			{
-				"apt" : "101"
+				"apt" : 101
 			}
 		},
 		{
@@ -75,8 +75,8 @@ json generateRouterRtpCapabilities()
 			],
 			"parameters" :
 			{
-				"level-asymmetry-allowed" : "1",
-				"packetization-mode"      : "1",
+				"level-asymmetry-allowed" : 1,
+				"packetization-mode"      : 1,
 				"profile-level-id"        : "42e01f"
 			}
 		},
@@ -89,7 +89,7 @@ json generateRouterRtpCapabilities()
 			"rtcpFeedback"         : [],
 			"parameters"           :
 			{
-				"apt" : "103"
+				"apt" : 103
 			}
 		}
 	])"_json;

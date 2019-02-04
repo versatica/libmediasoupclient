@@ -174,7 +174,7 @@ TEST_CASE("ortc::canReceive", "[ortc::canReceive]")
 					"rtcpFeedback" : [],
 					"parameters"   :
 					{
-						"useinbandfec" : "1"
+						"useinbandfec" : 1
 					}
 				}
 			]

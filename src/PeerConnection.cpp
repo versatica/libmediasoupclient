@@ -4,6 +4,7 @@
 #include "PeerConnection.hpp"
 #include "Exception.hpp"
 #include "Logger.hpp"
+#include "Utils.hpp"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
 #include "api/create_peerconnection_factory.h"
@@ -49,7 +50,14 @@ void webrtcRtpCapabilities2Json(
 			codec["channels"] = nativeCodec.num_channels.value();
 
 		for (auto& kv : nativeCodec.parameters)
-			codec["parameters"].push_back({ kv.first, kv.second });
+		{
+			if (Utils::isInt(kv.second))
+				codec["parameters"].push_back({ kv.first, Utils::toInt(kv.second) });
+			else if (Utils::isFloat(kv.second))
+				codec["parameters"].push_back({ kv.first, Utils::toFloat(kv.second) });
+			else
+				codec["parameters"].push_back({ kv.first, kv.second });
+		}
 
 		for (auto& nativeRtcpFeedback : nativeCodec.rtcp_feedback)
 		{

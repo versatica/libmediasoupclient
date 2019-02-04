@@ -12,20 +12,20 @@ namespace mediasoupclient
 {
 namespace ortc
 {
-	static std::string getH264PacketizationMode(const json& codec)
+	static uint8_t getH264PacketizationMode(const json& codec)
 	{
 		MSC_TRACE();
 
 		auto it = codec.find("parameters");
 		if (it == codec.end())
-			return "0";
+			return 0;
 
 		auto parameters = *it;
 		it              = parameters.find("packetization-mode");
-		if (it == parameters.end())
-			return "0";
+		if (it == parameters.end() || !it->is_number())
+			return 0;
 
-		return (*it).get<std::string>();
+		return it->get<uint8_t>();
 	}
 
 	static json::const_iterator findMatchingRtxCodec(const json& codecs, const json& extendedCodec)
@@ -45,8 +45,8 @@ namespace ortc
 			if (it == parameters.end())
 				return false;
 
-			auto apt             = (*it).get<std::string>();
-			auto recvPayloadType = std::to_string(extendedCodec["recvPayloadType"].get<uint8_t>());
+			auto apt             = it->get<uint8_t>();
+			auto recvPayloadType = extendedCodec["recvPayloadType"].get<uint8_t>();
 			return apt == recvPayloadType;
 		});
 	}
@@ -313,7 +313,7 @@ namespace ortc
 					{
 						"parameters",
 						{
-							{ "apt", std::to_string(capCodec["recvPayloadType"].get<uint8_t>()) }
+							{ "apt", capCodec["recvPayloadType"].get<uint8_t>() }
 						}
 					}
 				};
@@ -408,7 +408,7 @@ namespace ortc
 					{
 						"parameters",
 						{
-							{ "apt", std::to_string(capCodec["sendPayloadType"].get<uint8_t>()) }
+							{ "apt", capCodec["sendPayloadType"].get<uint8_t>() }
 						}
 					}
 				};

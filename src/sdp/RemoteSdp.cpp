@@ -218,22 +218,26 @@ std::string Sdp::RemoteSdp::CreateAnswerSdp(const json& localSdpObj)
 				};
 				/* clang-format on */
 
-				std::string config;
-
-				auto parameters = (*it).get<std::map<std::string, std::string>>();
-				for (auto& kv : parameters)
+				std::ostringstream config;
+				auto& parameters = *it;
+				for (auto& item : parameters.items())
 				{
-					if (!config.empty())
-						config.append(";");
+					if (!config.str().empty())
+						config << ";";
 
-					config.append(kv.first);
-					config.append("=");
-					config.append(kv.second);
+					config << item.key();
+					config << "=";
+					if (item.value().is_string())
+						config << item.value().get<std::string>();
+					else if (item.value().is_number_float())
+						config << item.value().get<float>();
+					else if (item.value().is_number())
+						config << item.value().get<int>();
 				}
 
-				if (!config.empty())
+				if (!config.str().empty())
 				{
-					paramFmtp["config"] = config;
+					paramFmtp["config"] = config.str();
 					remoteMediaObj["fmtp"].push_back(paramFmtp);
 				}
 			}

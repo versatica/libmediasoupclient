@@ -202,8 +202,8 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 			"name":        "opus",
 			"parameters":
 			{
-				"minptime":     "10",
-				"useinbandfec": "1"
+				"minptime":     10,
+				"useinbandfec": 1
 			},
 			"payloadType":  100,
 			"rtcpFeedback": []

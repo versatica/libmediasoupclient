@@ -21,6 +21,12 @@ namespace Utils
 	std::string join(const std::vector<std::string>& v, char delimiter);
 	std::string join(const std::vector<uint32_t>& v, char delimiter);
 
+	// https://stackoverflow.com/a/447307/4827838.
+	bool isInt(const std::string& str);
+	bool isFloat(const std::string& str);
+	int toInt(const std::string str);
+	float toFloat(const std::string str);
+
 	/* Inline utils implementations */
 
 	template<typename T>
@@ -112,6 +118,52 @@ namespace Utils
 		}
 
 		return s;
+	}
+
+	inline bool isInt(const std::string& str)
+	{
+		std::istringstream iss(str);
+		long l;
+
+		iss >> std::noskipws >> l;
+
+		return iss.eof() && !iss.fail();
+	}
+
+	inline bool isFloat(const std::string& str)
+	{
+		std::istringstream iss(str);
+		float f;
+
+		iss >> std::noskipws >> f;
+
+		return iss.eof() && !iss.fail();
+	}
+
+	inline int toInt(const std::string str)
+	{
+		std::istringstream iss(str);
+		long long ll;
+
+		iss >> std::noskipws >> ll;
+
+		if (iss.eof() && !iss.fail())
+			return std::stoll(str);
+		else
+			return 0;
+	}
+
+	inline float toFloat(const std::string str)
+	{
+		std::istringstream iss(str);
+		double d;
+
+		iss >> std::noskipws >> d;
+
+		if (iss.eof() && !iss.fail())
+			return std::stod(str);
+		else
+			return 0.0f;
 	}
 } // namespace Utils
 } // namespace mediasoupclient

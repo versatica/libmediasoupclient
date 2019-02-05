@@ -15,6 +15,26 @@ option(BUILD_TESTS "Build unit tests" ON)
 option(LOG_TRACE   "Enable MSC_LOG_TRACE (See Logger.hpp)" OFF)
 option(LOG_DEV     "Enable MSC_LOG_DEV (See Logger.hpp)" OFF)
 
+# Project configuration.
+set(LIBWEBRTC_INCLUDE_PATH "" CACHE STRING "libwebrtc include path")
+set(LIBWEBRTC_BINARY_PATH "" CACHE STRING "libwebrtc binary path")
+
+if(NOT LIBWEBRTC_INCLUDE_PATH)
+	message(FATAL_ERROR "LIBWEBRTC_INCLUDE_PATH not provided")
+endif()
+
+if(NOT LIBWEBRTC_BINARY_PATH)
+	message(FATAL_ERROR "LIBWEBRTC_BINARY_PATH not provided")
+endif()
+
+message ("\n=========== libmediasoupclient Build Configuration =============\n")
+message (STATUS "BUILD_TESTS            = " ${BUILD_TESTS})
+message (STATUS "LOG_TRACE              = " ${LOG_TRACE})
+message (STATUS "LOG_DEV                = " ${LOG_DEV})
+message (STATUS "LIBWEBRTC_INCLUDE_PATH = " ${LIBWEBRTC_INCLUDE_PATH})
+message (STATUS "LIBWEBRTC_BINARY_PATH  = " ${LIBWEBRTC_BINARY_PATH})
+message ("")
+
 if (${BUILD_TESTS})
 	subdirs(test)
 endif()
@@ -26,19 +46,6 @@ endif()
 if(${LOG_DEV})
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMSC_LOG_DEV")
 endif()
-
-set(SOURCE_FILES
-	src/Consumer.cpp
-	src/Device.cpp
-	src/Handler.cpp
-	src/Logger.cpp
-	src/PeerConnection.cpp
-	src/Producer.cpp
-	src/Transport.cpp
-	src/ortc.cpp
-	src/sdp/RemoteSdp.cpp
-	src/sdp/Utils.cpp
-)
 
 set(HEADER_FILES
 	include/mediasoupclient.hpp
@@ -61,19 +68,32 @@ if(APPLE)
 endif(APPLE)
 
 # Add some compile flags to our source files.
-if (MSVC)
+if(MSVC)
 	set_source_files_properties(${SOURCE_FILES}
 		PROPERTIES COMPILE_FLAGS /W3 /WX)
-else ()
+else()
 	set_source_files_properties(${SOURCE_FILES}
 		PROPERTIES COMPILE_FLAGS -Wall -Wextra -Wpedantic)
 endif()
 
 # Create target.
-add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES} ${HEADER_FILES})
+add_library(${PROJECT_NAME} STATIC ${SOURCES})
 
 # Source Dependencies.
 add_subdirectory(deps/libsdptransform "${CMAKE_CURRENT_BINARY_DIR}/libsdptransform")
+
+target_sources(${PROJECT_NAME} PRIVATE
+	src/Consumer.cpp
+	src/Device.cpp
+	src/Handler.cpp
+	src/Logger.cpp
+	src/PeerConnection.cpp
+	src/Producer.cpp
+	src/Transport.cpp
+	src/ortc.cpp
+	src/sdp/RemoteSdp.cpp
+	src/sdp/Utils.cpp
+)
 
 # Private (implementation) header files.
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/include)
@@ -81,16 +101,13 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/include
 # Public (interface) headers from dependencies.
 target_include_directories(${PROJECT_NAME} PUBLIC
 	"${PROJECT_SOURCE_DIR}/deps/libsdptransform/include"
-	"${PROJECT_SOURCE_DIR}/deps/libwebrtc/include"
+	${LIBWEBRTC_INCLUDE_PATH}
 )
-
-set(LIBWEBRTC_BINARY_PATH ${PROJECT_SOURCE_DIR}/deps/libwebrtc/lib)
 
 # Public (interface) dependencies.
 target_link_libraries(${PROJECT_NAME} PUBLIC
 	sdptransform
-	$<$<PLATFORM_ID:Windows>:${LIBWEBRTC_BINARY_PATH}/libwebrtc.lib>
-	$<$<NOT:$<PLATFORM_ID:Windows>>:${LIBWEBRTC_BINARY_PATH}/libwebrtc.a>
+	${LIBWEBRTC_BINARY_PATH}/libwebrtc${CMAKE_STATIC_LIBRARY_SUFFIX}
 	$<$<PLATFORM_ID:Darwin>:${APPLE_EXTRA_LIBS}>
 )
 

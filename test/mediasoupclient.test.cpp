@@ -192,22 +192,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE(audioProducer->GetRtpParameters()["codecs"].size() == 1);
 
 		codecs = audioProducer->GetRtpParameters()["codecs"];
-		// NOTE: This may change in the future if webrtc peerconneciton changes.
-		REQUIRE(codecs[0] == R"(
-		{
-			"channels":    2,
-			"clockRate":   48000,
-			"kind":        "audio",
-			"mimeType":    "audio/opus",
-			"name":        "opus",
-			"parameters":
-			{
-				"minptime":     10,
-				"useinbandfec": 1
-			},
-			"payloadType":  100,
-			"rtcpFeedback": []
-		})"_json);
+		REQUIRE(codecs[0].is_object());
 
 		headerExtensions = audioProducer->GetRtpParameters()["headerExtensions"];
 		REQUIRE(headerExtensions.is_array());
@@ -240,36 +225,10 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE(!videoProducer->IsClosed());
 		REQUIRE(videoProducer->GetKind() == "video");
 		REQUIRE(videoProducer->GetTrack() == videoTrack);
-		REQUIRE(videoProducer->GetRtpParameters()["codecs"].size() == 1);
+		REQUIRE(videoProducer->GetRtpParameters()["codecs"].size() > 0);
 
 		codecs = videoProducer->GetRtpParameters()["codecs"];
-		// NOTE: This may change in the future if webrtc peerconneciton changes.
-		REQUIRE(codecs[0] == R"(
-		{
-			"clockRate":    90000,
-			"kind":         "video",
-			"mimeType":     "video/VP8",
-			"name":         "VP8",
-			"parameters":   {},
-			"payloadType":  101,
-			"rtcpFeedback":
-			[
-				{
-				  "type": "goog-remb"
-				},
-				{
-				  "parameter": "fir",
-				  "type":      "ccm"
-				},
-				{
-				  "type": "nack"
-				},
-				{
-				  "parameter": "pli",
-				  "type":      "nack"
-				}
-			]
-		})"_json);
+		REQUIRE(codecs[0].is_object());
 
 		headerExtensions = videoProducer->GetRtpParameters()["headerExtensions"];
 		REQUIRE(headerExtensions.is_array());

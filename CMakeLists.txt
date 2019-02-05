@@ -51,7 +51,7 @@ if(APPLE)
 	find_library(CORE_FOUNDATION Foundation)
 	find_library(CORE_SERVICES CoreServices)
 
-	set(EXTRA_LIBS
+	set(APPLE_EXTRA_LIBS
 		${APPLICATION_SERVICES}
 		${AUDIOTOOLBOX_LIBRARY}
 		${COREAUDIO_LIBRARY}
@@ -84,11 +84,14 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	"${PROJECT_SOURCE_DIR}/deps/libwebrtc/include"
 )
 
+set(LIBWEBRTC_BINARY_PATH ${PROJECT_SOURCE_DIR}/deps/libwebrtc/lib)
+
 # Public (interface) dependencies.
 target_link_libraries(${PROJECT_NAME} PUBLIC
 	sdptransform
-	${PROJECT_SOURCE_DIR}/deps/libwebrtc/lib/libwebrtc.a
-	${EXTRA_LIBS}
+	$<$<PLATFORM_ID:Windows>:${LIBWEBRTC_BINARY_PATH}/libwebrtc.lib>
+	$<$<NOT:$<PLATFORM_ID:Windows>>:${LIBWEBRTC_BINARY_PATH}/libwebrtc.a>
+	$<$<PLATFORM_ID:Darwin>:${APPLE_EXTRA_LIBS}>
 )
 
 # Compile definitions for libwebrtc.

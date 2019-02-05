@@ -5,7 +5,7 @@
 class FakeSendTransportListener : public mediasoupclient::SendTransport::Listener
 {
 public:
-	std::future<json> OnProduce(const json& producerLocalParameters) override
+	std::future<json> OnProduce(json producerLocalParameters) override
 	{
 		this->onProduceTimesCalled++;
 

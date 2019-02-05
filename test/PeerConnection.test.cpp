@@ -20,26 +20,6 @@ TEST_CASE("PeerConnection", "[PeerConnection]")
 		auto configuration = pc.GetConfiguration();
 	}
 
-	SECTION("'pc.GetNativeRtpCapabilities()' succeeds")
-	{
-		auto capabilities = pc.GetNativeRtpCapabilities();
-
-		REQUIRE(capabilities.at("codecs").is_array());
-
-		auto& codecs = capabilities.at("codecs");
-
-		REQUIRE(codecs.size());
-
-		REQUIRE_NOTHROW(codecs[0].at("channels").get<uint8_t>());
-		REQUIRE_NOTHROW(codecs[0].at("clockRate").get<uint16_t>());
-		REQUIRE_NOTHROW(codecs[0].at("kind").get<std::string>());
-		REQUIRE_NOTHROW(codecs[0].at("mimeType").get<std::string>());
-		REQUIRE_NOTHROW(codecs[0].at("name").get<std::string>());
-		REQUIRE_NOTHROW(codecs[0].at("preferredPayloadType").get<uint8_t>());
-		REQUIRE_NOTHROW(codecs[0].at("parameters").is_object());
-		REQUIRE_NOTHROW(codecs[0].at("rtcpFeedback").is_array());
-	}
-
 	/*
 	 * NOTE: Fails if peerconnection is created with Unified Plan SDP semantics.
 	 * See: src/PeerConnection.cpp (constructor).

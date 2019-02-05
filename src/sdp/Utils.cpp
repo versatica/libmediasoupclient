@@ -16,6 +16,140 @@ namespace Sdp
 {
 	namespace Utils
 	{
+		json extractRtpCapabilities(const json& sdpObj)
+		{
+			// Map of RtpCodecParameters indexed by payload type.
+			std::map<uint8_t, json> codecsMap;
+
+			// Array of RtpHeaderExtensions.
+			auto headerExtensions = json::array();
+
+			// Whether a m=audio/video section has been already found.
+			bool gotAudio = false;
+			bool gotVideo = false;
+
+			for (auto& m : sdpObj["media"])
+			{
+				auto kind = m["type"].get<std::string>();
+
+				if (kind == "audio")
+				{
+					if (gotAudio)
+						continue;
+
+					gotAudio = true;
+				}
+				else if (kind == "video")
+				{
+					if (gotVideo)
+						continue;
+
+					gotVideo = true;
+				}
+				else
+				{
+					continue;
+				}
+
+				// Get codecs.
+				for (auto& rtp : m["rtp"])
+				{
+					std::string mimeType(kind);
+					mimeType.append("/").append(rtp["codec"].get<std::string>());
+
+					/* clang-format off */
+					json codec =
+					{
+						{ "name",                 rtp["codec"]   },
+						{ "mimeType",             mimeType       },
+						{ "kind",                 kind           },
+						{ "clockRate",            rtp["rate"]    },
+						{ "preferredPayloadType", rtp["payload"] },
+						{ "rtcpFeedback",         json::array()  },
+						{ "parameters",           json::object() }
+					};
+					/* clang-format on */
+
+					if (kind == "audio")
+					{
+						auto it = rtp.find("encoding");
+						if (it != rtp.end())
+							codec["channels"] = std::stoi(it->get<std::string>());
+						else
+							codec["channels"] = 1;
+					}
+
+					codecsMap[codec["preferredPayloadType"].get<uint8_t>()] = codec;
+				}
+
+				// Get codec parameters.
+				for (auto& fmtp : m["fmtp"])
+				{
+					auto parameters = sdptransform::parseParams(fmtp["config"]);
+
+					auto it = codecsMap.find(fmtp["payload"]);
+					if (it == codecsMap.end())
+						continue;
+
+					auto& codec = it->second;
+
+					codec["parameters"] = parameters;
+				}
+
+				// Get RTCP feedback for each codec.
+				for (auto& fb : m["rtcpFb"])
+				{
+					auto itCodec = codecsMap.find(std::stoi(fb["payload"].get<std::string>()));
+					if (itCodec == codecsMap.end())
+						continue;
+
+					auto& codec = itCodec->second;
+
+					/* clang-format off */
+					json feedback =
+					{
+						{"type", fb["type"]}
+					};
+					/* clang-format on */
+
+					auto it = fb.find("subtype");
+					if (it != fb.end())
+						feedback["parameter"] = *it;
+
+					codec["rtcpFeedback"].push_back(feedback);
+				}
+
+				// Get RTP header extensions.
+				for (auto& ext : m["ext"])
+				{
+					/* clang-format off */
+					json headerExtension =
+					{
+							{ "kind",        kind },
+							{ "uri",         ext["uri"] },
+							{ "preferredId", ext["value"] }
+					};
+					/* clang-format on */
+
+					headerExtensions.push_back(headerExtension);
+				}
+			}
+
+			/* clang-format off */
+			json rtpCapabilities =
+			{
+				{ "headerExtensions", headerExtensions },
+				{ "codecs",           json::array() },
+				{ "fecMechanisms",    json::array() } // TODO
+			};
+			/* clang-format on */
+
+			for (auto& kv : codecsMap)
+				rtpCapabilities["codecs"].push_back(kv.second);
+
+			return rtpCapabilities;
+		}
+
 		json extractDtlsParameters(const json& sdpObj)
 		{
 			json m, fingerprint;

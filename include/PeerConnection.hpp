@@ -120,7 +120,6 @@ public:
 
 	webrtc::PeerConnectionInterface::RTCConfiguration GetConfiguration() const;
 	bool SetConfiguration(const webrtc::PeerConnectionInterface::RTCConfiguration& config);
-	nlohmann::json GetNativeRtpCapabilities() const;
 	std::string CreateOffer(const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions& options);
 	std::string CreateAnswer(const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions& options);
 	void SetLocalDescription(PeerConnection::SdpType type, const std::string& sdp);
@@ -128,6 +127,7 @@ public:
 	const std::string GetLocalDescription();
 	const std::string GetRemoteDescription();
 	std::vector<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>> GetTransceivers() const;
+	rtc::scoped_refptr<webrtc::RtpTransceiverInterface> AddTransceiver(cricket::MediaType media_type);
 	rtc::scoped_refptr<webrtc::RtpTransceiverInterface> AddTransceiver(
 	  rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track);
 	void Close();

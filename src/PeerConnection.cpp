@@ -17,129 +17,6 @@ using json = nlohmann::json;
 
 namespace mediasoupclient
 {
-/*
- * Helper to convert webrtc::RtpCapabilities to nlohmann::json
- */
-void webrtcRtpCapabilities2Json(
-  cricket::MediaType type, webrtc::RtpCapabilities nativeCapabilities, json& capabilities)
-{
-	if (type != cricket::MEDIA_TYPE_AUDIO && type != cricket::MEDIA_TYPE_VIDEO)
-		return;
-
-	auto kind = cricket::MediaTypeToString(type);
-
-	for (auto& nativeCodec : nativeCapabilities.codecs)
-	{
-		if (nativeCodec.kind != cricket::MEDIA_TYPE_AUDIO && nativeCodec.kind != cricket::MEDIA_TYPE_VIDEO)
-			continue;
-
-		// clang-format off
-		json codec =
-		{
-			{ "name",                 nativeCodec.name                           },
-			{ "mimeType",             nativeCodec.mime_type()                    },
-			{ "kind",                 kind                                       },
-			{ "clockRate",            nativeCodec.clock_rate.value()             },
-			{ "preferredPayloadType", nativeCodec.preferred_payload_type.value() },
-			{ "rtcpFeedback",         json::array()                              },
-			{ "parameters",           json::object()                             }
-		};
-		// clang-format on
-
-		if (nativeCodec.num_channels && nativeCodec.num_channels > 1)
-			codec["channels"] = nativeCodec.num_channels.value();
-
-		for (auto& kv : nativeCodec.parameters)
-		{
-			if (Utils::isInt(kv.second))
-				codec["parameters"].push_back({ kv.first, Utils::toInt(kv.second) });
-			else if (Utils::isFloat(kv.second))
-				codec["parameters"].push_back({ kv.first, Utils::toFloat(kv.second) });
-			else
-				codec["parameters"].push_back({ kv.first, kv.second });
-		}
-
-		for (auto& nativeRtcpFeedback : nativeCodec.rtcp_feedback)
-		{
-			json rtcpFeedback = json::object();
-			std::string type;
-			std::string messageType;
-
-			switch (nativeRtcpFeedback.type)
-			{
-				case webrtc::RtcpFeedbackType::CCM:
-				{
-					type = "ccm";
-					break;
-				}
-				case webrtc::RtcpFeedbackType::NACK:
-				{
-					type = "nack";
-					break;
-				}
-				case webrtc::RtcpFeedbackType::REMB:
-				{
-					type = "goog-remb";
-					break;
-				}
-				case webrtc::RtcpFeedbackType::TRANSPORT_CC:
-				{
-					break;
-				}
-			}
-
-			if (type.empty())
-				continue;
-
-			rtcpFeedback["type"] = type;
-
-			if (nativeRtcpFeedback.message_type)
-			{
-				switch (nativeRtcpFeedback.message_type.value())
-				{
-					case webrtc::RtcpFeedbackMessageType::GENERIC_NACK:
-					{
-						break;
-					}
-					case webrtc::RtcpFeedbackMessageType::PLI:
-					{
-						messageType = "pli";
-						break;
-					}
-					case webrtc::RtcpFeedbackMessageType::FIR:
-					{
-						messageType = "fir";
-						break;
-					}
-				}
-			}
-
-			if (!messageType.empty())
-				rtcpFeedback["parameter"] = messageType;
-
-			codec["rtcpFeedback"].push_back(rtcpFeedback);
-		}
-
-		capabilities["codecs"].push_back(codec);
-	}
-
-	for (auto& nativeHeaderExtension : nativeCapabilities.header_extensions)
-	{
-		/* clang-format off */
-		json headerExtension =
-		{
-			{ "kind", kind                      },
-			{ "uri",  nativeHeaderExtension.uri }
-		};
-		/* clang-format on */
-
-		if (nativeHeaderExtension.preferred_id)
-			headerExtension["preferredId"] = nativeHeaderExtension.preferred_id.value();
-
-		capabilities["headerExtensions"].push_back(headerExtension);
-	}
-}
-
 /* Static. */
 
 /* clang-format off */
@@ -364,6 +241,23 @@ const std::string PeerConnection::GetRemoteDescription()
 }
 
 rtc::scoped_refptr<webrtc::RtpTransceiverInterface> PeerConnection::AddTransceiver(
+  cricket::MediaType mediaType)
+{
+	MSC_TRACE();
+
+	auto result = this->pc->AddTransceiver(mediaType);
+
+	if (!result.ok())
+	{
+		rtc::scoped_refptr<webrtc::RtpTransceiverInterface> transceiver = nullptr;
+
+		return transceiver;
+	}
+
+	return result.value();
+}
+
+rtc::scoped_refptr<webrtc::RtpTransceiverInterface> PeerConnection::AddTransceiver(
   rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track)
 {
 	MSC_TRACE();
@@ -435,32 +329,6 @@ bool PeerConnection::SetConfiguration(const webrtc::PeerConnectionInterface::RTC
 	  error.message());
 
 	return false;
-}
-
-json PeerConnection::GetNativeRtpCapabilities() const
-{
-	/* clang-format off */
-	json capabilities =
-	{
-		{ "codecs",           json::array() },
-		{ "headerExtensions", json::array() },
-		{ "fecMechanisms",    json::array() } // TODO.
-	};
-	/* clang-format on */
-
-	// Get audio capabilities.
-	webrtcRtpCapabilities2Json(
-	  cricket::MEDIA_TYPE_AUDIO,
-	  this->peerConnectionFactory->GetRtpSenderCapabilities(cricket::MEDIA_TYPE_AUDIO),
-	  capabilities);
-
-	// Get video capabilities.
-	webrtcRtpCapabilities2Json(
-	  cricket::MEDIA_TYPE_VIDEO,
-	  this->peerConnectionFactory->GetRtpSenderCapabilities(cricket::MEDIA_TYPE_VIDEO),
-	  capabilities);
-
-	return capabilities;
 }
 
 json PeerConnection::GetStats()

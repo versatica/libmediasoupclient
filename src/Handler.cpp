@@ -16,16 +16,25 @@ namespace mediasoupclient
 {
 /* Handler static methods */
 
-/*
- * Get PeerConnection RTP capabilities.
- */
 json Handler::GetNativeRtpCapabilities()
 {
-	std::unique_ptr<PeerConnection> pc(new PeerConnection(nullptr, nullptr));
+	MSC_TRACE();
 
-	return pc->GetNativeRtpCapabilities();
+	std::unique_ptr<PeerConnection::Listener> listener(new PeerConnection::Listener());
+	std::unique_ptr<PeerConnection> pc(new PeerConnection(listener.get(), nullptr));
+
+	(void)pc->AddTransceiver(cricket::MediaType::MEDIA_TYPE_AUDIO);
+	(void)pc->AddTransceiver(cricket::MediaType::MEDIA_TYPE_VIDEO);
+
+	// May throw.
+	webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
+	auto offer = pc->CreateOffer(options);
+
+	auto sdpObj                = sdptransform::parse(offer);
+	auto nativeRtpCapabilities = Sdp::Utils::extractRtpCapabilities(sdpObj);
+
+	return nativeRtpCapabilities;
 }
-
 /*
  * Get PeerConnection name
  */

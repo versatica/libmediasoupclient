@@ -28,29 +28,6 @@ namespace ortc
 		return it->get<uint8_t>();
 	}
 
-	static json::const_iterator findMatchingRtxCodec(const json& codecs, const json& extendedCodec)
-	{
-		MSC_TRACE();
-
-		return std::find_if(codecs.begin(), codecs.end(), [&extendedCodec](const json& codec) {
-			if ("rtx" != codec["name"].get<std::string>())
-				return false;
-
-			auto it = codec.find("parameters");
-			if (it == codec.end())
-				return false;
-
-			auto parameters = *it;
-			it              = parameters.find("apt");
-			if (it == parameters.end())
-				return false;
-
-			auto apt             = it->get<uint8_t>();
-			auto recvPayloadType = extendedCodec["recvPayloadType"].get<uint8_t>();
-			return apt == recvPayloadType;
-		});
-	}
-
 	static bool matchCapCodecs(const json& aCodec, const json& bCodec)
 	{
 		MSC_TRACE();
@@ -206,14 +183,24 @@ namespace ortc
 		for (json& extendedCodec : extendedCodecs)
 		{
 			auto localCodecs = localCaps["codecs"];
-			auto it          = findMatchingRtxCodec(localCodecs, extendedCodec);
+			auto it          = std::find_if(
+        localCodecs.begin(), localCodecs.end(), [&extendedCodec](const json& localCodec) {
+          return "rtx" == localCodec["name"].get<std::string>() &&
+                 localCodec["parameters"]["apt"] == extendedCodec["sendPayloadType"];
+        });
+
 			if (it == localCodecs.end())
 				continue;
 
 			auto matchingLocalRtxCodec = *it;
 
 			auto remoteCodecs = remoteCaps["codecs"];
-			it                = findMatchingRtxCodec(remoteCodecs, extendedCodec);
+			it                = std::find_if(
+        remoteCodecs.begin(), remoteCodecs.end(), [&extendedCodec](const json& remoteCodec) {
+          return "rtx" == remoteCodec["name"].get<std::string>() &&
+                 remoteCodec["parameters"]["apt"] == extendedCodec["recvPayloadType"];
+        });
+
 			if (it == remoteCodecs.end())
 				continue;
 
@@ -376,7 +363,7 @@ namespace ortc
 				{ "mimeType",             capCodec["mimeType"] },
 				{ "kind",                 capCodec["kind"] },
 				{ "clockRate",            capCodec["clockRate"] },
-				{ "payloadType",          capCodec["recvPayloadType"] },
+				{ "payloadType",          capCodec["sendPayloadType"] },
 				{ "rtcpFeedback",         capCodec["rtcpFeedback"] },
 				{ "parameters",           capCodec["parameters"] }
 			};

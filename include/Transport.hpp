@@ -91,7 +91,7 @@ public:
 	class Listener : public Transport::Listener
 	{
 	public:
-		virtual std::future<nlohmann::json> OnProduce(const nlohmann::json& producerLocalParameters) = 0;
+		virtual std::future<nlohmann::json> OnProduce(nlohmann::json producerLocalParameters) = 0;
 	};
 
 public:

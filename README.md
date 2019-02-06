@@ -62,7 +62,7 @@ Depending on the host, it will generate the following static lib and header file
 ## Testing
 
 ```bash
-./scripts/run-test.sh
+./scripts/test.sh
 ```
 
 

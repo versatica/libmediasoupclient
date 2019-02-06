@@ -44,6 +44,10 @@ cmake . -Bbuild \
 -DLIBWEBRTC_INCLUDE_PATH:PATH=${PATH_TO_LIBWEBRTC_SOURCES} \
 -DLIBWEBRTC_BINARY_PATH:PATH=${PATH_TO_LIBWEBRTC_BINARY}
 
+# Compile.
+make -C build/ # or: cd build/ && make
+
+# Optionally install.
 make install -C build/ # or: cd build/ && make install
 ```
 

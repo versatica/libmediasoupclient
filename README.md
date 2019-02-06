@@ -10,65 +10,40 @@ Once installed (see *Installation* below):
 #include "libmediasoupclient/mediasoupclient.hpp"
 ```
 
-The **libmediasoupclient** API is exposed in the `mediasoupclient` C++ namespace.
+The **libmediasoupclient** API is exposed under the `mediasoupclient` C++ namespace.
 
-**libmediasoupclient** integrates the [JSON for Modern C++](https://github.com/nlohmann/json/) library and exposes it under the `json` C++ namespace.
+**libmediasoupclient** integrates the [JSON for Modern C++](https://github.com/nlohmann/json/) library.
 
 
 ## Dependencies
 
 ### [libsdptransform](https://github.com/ibc/libsdptransform)
 
-```bash
-# Retrive the code.
-scripts/get-dep.sh libsdptransform
-
-# Install.
-cd deps/libsdptransform
-cmake . -Bbuild
-cmake --build build
-```
+Automatically added during *Installation*.
 
 ### [libwebrtc](https://webrtc.org)
 
-Follow the [official instructions](https://webrtc.org/native-code/development/).
+**libwebrtc** must be downloaded and compiled in the system. Follow the [official instructions](https://webrtc.org/native-code/development/).
 
-Make sure you compile the branch `remotes/branch-heads/72`.
-
-Copy or link the header files into `deps/libwebrtc/include`:
-
-```bash
-ln -s ${webrtc-checkout}/src ${libmediasoupclient_path}/deps/libwebrtc/include
-```
-
-Copy or link the absl directory:
-
-```bash
-ln -s ${webrtc-checkout}/src/third_party/abseil-cpp/absl ${libmediasoupclient_path}/deps/libwebrtc/include/absl
-```
-
-Copy or link the binary file into `deps/libwebrtc/lib`:
-
-```bash
-mkdir -p ${libmediasoupclient_path}/deps/libwebrtc/lib
-ln -s ${webrtc-checkout}/src/out/${target}/obj/libwebrtc.a ${libmediasoupclient_path}/deps/libwebrtc/lib
-```
+Make sure branch `remotes/branch-heads/72` is checked-out and compiled.
 
 ## Developement dependencies
 
 ### [Catch2](https://github.com/catchorg/Catch2)
 
-```bash
-# Retrive the code (single header).
-scripts/get-dep.sh catch
-```
+Already integrated in this repository.
 
 ## Installation
 
 ```bash
 git clone https://github.com/jmillan/libmediasoupclient.git
+
 cd libmediasoupclient/
-cmake . -Bbuild
+
+cmake . -Bbuild \
+-DLIBWEBRTC_INCLUDE_PATH:PATH=${PATH_TO_LIBWEBRTC_SOURCES} \
+-DLIBWEBRTC_BINARY_PATH:PATH=${PATH_TO_LIBWEBRTC_BINARY}
+
 make install -C build/ # or: cd build/ && make install
 ```
 
@@ -77,22 +52,13 @@ Depending on the host, it will generate the following static lib and header file
 ```
 -- Installing: /usr/local/lib/libmediasoupclient.a
 -- Up-to-date: /usr/local/include/mediasoupclient/mediasoupclient.hpp
--- Up-to-date: /usr/local/include/mediasoupclient/json.hpp
 ```
 
 
-## Development
-
-* Build the lib:
+## Testing
 
 ```bash
-$ cmake . -Bbuild
-```
-
-* Run test units:
-
-```bash
-$ ./scripts/run-test.sh
+./scripts/run-test.sh
 ```
 
 

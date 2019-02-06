@@ -2,6 +2,7 @@
 #include "Handler.hpp"
 #include "catch.hpp"
 #include "data/parameters.hpp"
+#include "peerConnectionUtils.hpp"
 #include <memory>
 
 using namespace mediasoupclient;
@@ -41,7 +42,6 @@ TEST_CASE("Handler", "[Handler]")
 
 TEST_CASE("SendHandler", "[Handler][SendHandler]")
 {
-	static rtc::scoped_refptr<webrtc::AudioSourceInterface> source;
 	static rtc::scoped_refptr<webrtc::AudioTrackInterface> track;
 
 	static FakeHandlerListener handlerListener;
@@ -60,8 +60,7 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 
 	SECTION("'sendHandler.Send()' succeeds if a track is provided")
 	{
-		auto source = pc->CreateAudioSource();
-		track       = pc->CreateAudioTrack("test-track-id", source);
+		track = createAudioTrack("test-track-id");
 
 		json rtpParameters;
 
@@ -82,7 +81,7 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 
 	SECTION("'sendHandler.ReplaceTrack()' succeeds if a new track is provided")
 	{
-		auto newTrack = pc->CreateAudioTrack("test-new-track-id", source);
+		auto newTrack = createAudioTrack("test-new-track-id");
 
 		REQUIRE_NOTHROW(sendHandler.ReplaceTrack(track, newTrack));
 

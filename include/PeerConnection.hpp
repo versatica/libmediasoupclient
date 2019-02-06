@@ -131,14 +131,6 @@ public:
 	rtc::scoped_refptr<webrtc::RtpTransceiverInterface> AddTransceiver(
 	  rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track);
 	void Close();
-	rtc::scoped_refptr<webrtc::AudioSourceInterface> CreateAudioSource();
-	rtc::scoped_refptr<webrtc::AudioTrackInterface> CreateAudioTrack(
-	  const std::string& label, webrtc::AudioSourceInterface* source);
-	rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> CreateVideoSource(
-	  std::unique_ptr<cricket::VideoCapturer> capturer,
-	  const webrtc::MediaConstraintsInterface* constraints = nullptr);
-	rtc::scoped_refptr<webrtc::VideoTrackInterface> CreateVideoTrack(
-	  const std::string& label, webrtc::VideoTrackSourceInterface* source);
 	std::vector<rtc::scoped_refptr<webrtc::RtpSenderInterface>> GetSenders();
 	bool RemoveTrack(webrtc::RtpSenderInterface* sender);
 	nlohmann::json GetStats();
@@ -172,32 +164,6 @@ inline webrtc::PeerConnectionInterface::RTCConfiguration PeerConnection::GetConf
 inline std::vector<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>> PeerConnection::GetTransceivers() const
 {
 	return this->pc->GetTransceivers();
-}
-
-inline rtc::scoped_refptr<webrtc::AudioSourceInterface> PeerConnection::CreateAudioSource()
-{
-	cricket::AudioOptions options;
-
-	return this->peerConnectionFactory->CreateAudioSource(options);
-}
-
-inline rtc::scoped_refptr<webrtc::AudioTrackInterface> PeerConnection::CreateAudioTrack(
-  const std::string& label, webrtc::AudioSourceInterface* source)
-{
-	return this->peerConnectionFactory->CreateAudioTrack(label, source);
-}
-
-inline rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> PeerConnection::CreateVideoSource(
-  std::unique_ptr<cricket::VideoCapturer> capturer,
-  const webrtc::MediaConstraintsInterface* constraints)
-{
-	return this->peerConnectionFactory->CreateVideoSource(std::move(capturer), constraints);
-}
-
-inline rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnection::CreateVideoTrack(
-  const std::string& label, webrtc::VideoTrackSourceInterface* source)
-{
-	return this->peerConnectionFactory->CreateVideoTrack(label, source);
 }
 
 inline std::vector<rtc::scoped_refptr<webrtc::RtpSenderInterface>> PeerConnection::GetSenders()

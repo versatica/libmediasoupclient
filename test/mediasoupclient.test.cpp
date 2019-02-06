@@ -4,6 +4,7 @@
 #include "data/parameters.hpp"
 #include "media/base/fakevideocapturer.h"
 #include "mediasoupclient.hpp"
+#include "peerConnectionUtils.hpp"
 #include <vector>
 
 using namespace mediasoupclient;
@@ -23,10 +24,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 	static std::unique_ptr<Consumer> audioConsumer;
 	static std::unique_ptr<Consumer> videoConsumer;
 
-	static rtc::scoped_refptr<webrtc::AudioSourceInterface> audioSource;
 	static rtc::scoped_refptr<webrtc::AudioTrackInterface> audioTrack;
-
-	static rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource;
 	static rtc::scoped_refptr<webrtc::VideoTrackInterface> videoTrack;
 
 	static FakeProducerPublicListener producerPublicListener;
@@ -152,11 +150,8 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		/* clang-format on */
 		std::unique_ptr<cricket::FakeVideoCapturer> capturer(new cricket::FakeVideoCapturer());
 
-		audioSource = pc->CreateAudioSource();
-		audioTrack  = pc->CreateAudioTrack("audio-track-id", audioSource);
-
-		videoSource = pc->CreateVideoSource(std::move(capturer), nullptr);
-		videoTrack  = pc->CreateVideoTrack("video-track-id", videoSource);
+		audioTrack = createAudioTrack("audio-track-id");
+		videoTrack = createVideoTrack("video-track-id");
 
 		json codecs;
 		json headerExtensions;
@@ -506,7 +501,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		// Have the audio Producer paused.
 		audioProducer->Pause();
 
-		auto newAudioTrack = pc->CreateAudioTrack("audio-track-id-2", audioSource);
+		auto newAudioTrack = createAudioTrack("audio-track-id-2");
 
 		REQUIRE_NOTHROW(audioProducer->ReplaceTrack(newAudioTrack));
 		REQUIRE(audioProducer->GetTrack() == newAudioTrack);
@@ -516,7 +511,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		// Reset the audio paused state.
 		audioProducer->Resume();
 
-		auto newVideoTrack = pc->CreateVideoTrack("video-track-id-2", videoSource);
+		auto newVideoTrack = createVideoTrack("video-track-id-2");
 
 		REQUIRE_NOTHROW(videoProducer->ReplaceTrack(newVideoTrack));
 		REQUIRE(videoProducer->GetTrack() == newVideoTrack);

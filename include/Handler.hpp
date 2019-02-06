@@ -16,7 +16,7 @@ public:
 	class Listener
 	{
 	public:
-		virtual void OnConnect(nlohmann::json& transportLocalParameters) = 0;
+		virtual void OnConnect(nlohmann::json& dtlsParameters) = 0;
 		virtual void OnConnectionStateChange(
 		  webrtc::PeerConnectionInterface::IceConnectionState connectionState) = 0;
 	};
@@ -69,7 +69,9 @@ class SendHandler : public Handler
 public:
 	SendHandler(
 	  Handler::Listener* listener,
-	  const nlohmann::json& transportRemoteParameters,
+	  const nlohmann::json& iceParameters,
+	  const nlohmann::json& iceCandidates,
+	  const nlohmann::json& dtlsParameters,
 	  PeerConnection::Options* peerConnectionOptions,
 	  const nlohmann::json& rtpParametersByKind);
 
@@ -96,7 +98,9 @@ class RecvHandler : public Handler
 public:
 	RecvHandler(
 	  Handler::Listener* listener,
-	  const nlohmann::json& transportRemoteParameters,
+	  const nlohmann::json& iceParameters,
+	  const nlohmann::json& iceCandidates,
+	  const nlohmann::json& dtlsParameters,
 	  PeerConnection::Options* peerConnectionOptions);
 
 	webrtc::MediaStreamTrackInterface* Receive(

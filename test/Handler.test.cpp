@@ -47,7 +47,12 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 	static FakeHandlerListener handlerListener;
 
 	static SendHandler sendHandler(
-	  &handlerListener, TransportRemoteParameters, &PeerConnectionOptions, RtpParametersByKind);
+	  &handlerListener,
+	  TransportRemoteParameters["iceParameters"],
+	  TransportRemoteParameters["iceCandidates"],
+	  TransportRemoteParameters["dtlsParameters"],
+	  &PeerConnectionOptions,
+	  RtpParametersByKind);
 
 	static std::unique_ptr<PeerConnection> pc(new PeerConnection(nullptr, &PeerConnectionOptions));
 
@@ -146,7 +151,12 @@ TEST_CASE("RecvHandler", "[Handler][RecvHandler]")
 
 	static FakeHandlerListener handlerListener;
 
-	static RecvHandler recvHandler(&handlerListener, TransportRemoteParameters, &PeerConnectionOptions);
+	static RecvHandler recvHandler(
+	  &handlerListener,
+	  TransportRemoteParameters["iceParameters"],
+	  TransportRemoteParameters["iceCandidates"],
+	  TransportRemoteParameters["dtlsParameters"],
+	  &PeerConnectionOptions);
 
 	SECTION("'recvHander.Receive()' succeeds if correct rtpParameters are provided")
 	{

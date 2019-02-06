@@ -83,10 +83,8 @@ void Handler::SetupTransport(const std::string& localDtlsRole)
 	// Set our DTLS role.
 	dtlsParameters["role"] = localDtlsRole;
 
-	json transportLocalParameters = { { "dtlsParameters", dtlsParameters } };
-
 	// May throw.
-	this->listener->OnConnect(transportLocalParameters);
+	this->listener->OnConnect(dtlsParameters);
 	this->transportReady = true;
 };
 
@@ -94,14 +92,17 @@ void Handler::SetupTransport(const std::string& localDtlsRole)
 
 SendHandler::SendHandler(
   Handler::Listener* listener,
-  const json& transportRemoteParameters,
+  const json& iceParameters,
+  const json& iceCandidates,
+  const json& dtlsParameters,
   PeerConnection::Options* peerConnectionOptions,
   const json& rtpParametersByKind)
   : Handler(listener, peerConnectionOptions, rtpParametersByKind)
 {
 	MSC_TRACE();
 
-	this->remoteSdp.reset(new Sdp::RemoteSdp(transportRemoteParameters, rtpParametersByKind));
+	this->remoteSdp.reset(
+	  new Sdp::RemoteSdp(iceParameters, iceCandidates, dtlsParameters, rtpParametersByKind));
 };
 
 json SendHandler::Send(
@@ -401,13 +402,15 @@ void SendHandler::RestartIce(const json& remoteIceParameters)
 
 RecvHandler::RecvHandler(
   Handler::Listener* listener,
-  const json& transportRemoteParameters,
+  const json& iceParameters,
+  const json& iceCandidates,
+  const json& dtlsParameters,
   PeerConnection::Options* peerConnectionOptions)
   : Handler(listener, peerConnectionOptions)
 {
 	MSC_TRACE();
 
-	this->remoteSdp.reset(new Sdp::RemoteSdp(transportRemoteParameters));
+	this->remoteSdp.reset(new Sdp::RemoteSdp(iceParameters, iceCandidates, dtlsParameters));
 };
 
 webrtc::MediaStreamTrackInterface* RecvHandler::Receive(

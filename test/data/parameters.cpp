@@ -278,14 +278,9 @@ json generateTransportRemoteParameters()
 	})"_json;
 };
 
-json generateProducerRemoteParameters()
+std::string generateProducerRemoteId()
 {
-	json parameters =
-	{
-		{ "id", mediasoupclient::Utils::getRandomString(20) }
-	};
-
-	return parameters;
+	return mediasoupclient::Utils::getRandomString(20);
 };
 
 json generateConsumerRemoteParameters(const std::string& codecMimeType)

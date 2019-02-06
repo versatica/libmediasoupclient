@@ -44,7 +44,10 @@ void Device::Load(const json& routerRtpCapabilities)
 
 SendTransport* Device::CreateSendTransport(
   SendTransport::Listener* listener,
-  const json& transportRemoteParameters,
+  const std::string& id,
+  const json& iceParameters,
+  const json& iceCandidates,
+  const json& dtlsParameters,
   PeerConnection::Options* peerConnectionOptions,
   json appData) const
 {
@@ -52,15 +55,14 @@ SendTransport* Device::CreateSendTransport(
 
 	if (!this->loaded)
 		throw Exception("not loaded");
-	else if (!transportRemoteParameters.is_object())
-		throw Exception("missing transportRemoteParameters");
-	else if (transportRemoteParameters.find("id") == transportRemoteParameters.end())
-		throw Exception("missing transportRemoteParameters[\"id\"]");
 
 	// Create a new Transport.
 	auto* transport = new SendTransport(
 	  listener,
-	  transportRemoteParameters,
+	  id,
+	  iceParameters,
+	  iceCandidates,
+	  dtlsParameters,
 	  peerConnectionOptions,
 	  this->extendedRtpCapabilities,
 	  this->canProduceByKind,
@@ -71,7 +73,10 @@ SendTransport* Device::CreateSendTransport(
 
 RecvTransport* Device::CreateRecvTransport(
   Transport::Listener* listener,
-  const json& transportRemoteParameters,
+  const std::string& id,
+  const json& iceParameters,
+  const json& iceCandidates,
+  const json& dtlsParameters,
   PeerConnection::Options* peerConnectionOptions,
   json appData) const
 {
@@ -79,15 +84,14 @@ RecvTransport* Device::CreateRecvTransport(
 
 	if (!this->loaded)
 		throw Exception("not loaded");
-	else if (!transportRemoteParameters.is_object())
-		throw Exception("missing transportRemoteParameters");
-	else if (transportRemoteParameters.find("id") == transportRemoteParameters.end())
-		throw Exception("missing transportRemoteParameters[\"id\"]");
 
 	// Create a new Transport.
 	auto* transport = new RecvTransport(
 	  listener,
-	  transportRemoteParameters,
+	  id,
+	  iceParameters,
+	  iceCandidates,
+	  dtlsParameters,
 	  peerConnectionOptions,
 	  this->extendedRtpCapabilities,
 	  std::move(appData));

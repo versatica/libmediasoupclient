@@ -25,8 +25,8 @@ public:
 	class Listener
 	{
 	public:
-		virtual std::future<void> OnConnect(const nlohmann::json& transportLocalParameters) = 0;
-		virtual void OnConnectionStateChange(const std::string& connectionState)            = 0;
+		virtual std::future<void> OnConnect(const std::string& id, const nlohmann::json& dtlsParameters) = 0;
+		virtual void OnConnectionStateChange(const std::string& connectionState) = 0;
 	};
 
 	/* Pure virtual methods inherited from Handler::Listener */
@@ -51,7 +51,7 @@ public:
 protected:
 	Transport(
 	  Listener* listener,
-	  const nlohmann::json& transportRemoteParameters,
+	  const std::string& id,
 	  const nlohmann::json& extendedRtpCapabilities,
 	  nlohmann::json appData);
 
@@ -91,7 +91,8 @@ public:
 	class Listener : public Transport::Listener
 	{
 	public:
-		virtual std::future<nlohmann::json> OnProduce(nlohmann::json producerLocalParameters) = 0;
+		virtual std::future<std::string> OnProduce(
+		  const std::string& kind, nlohmann::json rtpParameters, const nlohmann::json& appData) = 0;
 	};
 
 public:
@@ -120,7 +121,10 @@ public:
 private:
 	SendTransport(
 	  Listener* listener,
-	  const nlohmann::json& transportRemoteParameters,
+	  const std::string& id,
+	  const nlohmann::json& iceParameters,
+	  const nlohmann::json& iceCandidates,
+	  const nlohmann::json& dtlsParameters,
 	  PeerConnection::Options* peerConnectionOptions,
 	  const nlohmann::json& extendedRtpCapabilities,
 	  std::map<std::string, bool> canProduceByKind,
@@ -149,7 +153,10 @@ class RecvTransport : public Transport, public Consumer::Listener
 public:
 	Consumer* Consume(
 	  Consumer::PublicListener* consumerPublicListener,
-	  const nlohmann::json& consumerRemoteParameters,
+	  const std::string& id,
+	  const std::string& producerId,
+	  const std::string& kind,
+	  const nlohmann::json& rtpParameters,
 	  nlohmann::json appData = nlohmann::json::object());
 
 	/* Virtual methods inherited from Transport. */
@@ -164,7 +171,10 @@ public:
 private:
 	RecvTransport(
 	  Transport::Listener* listener,
-	  const nlohmann::json& transportRemoteParameters,
+	  const std::string& id,
+	  const nlohmann::json& iceParameters,
+	  const nlohmann::json& iceCandidates,
+	  const nlohmann::json& dtlsParameters,
 	  PeerConnection::Options* peerConnectionOptions,
 	  const nlohmann::json& extendedRtpCapabilities,
 	  nlohmann::json appData = nlohmann::json::object());
@@ -184,11 +194,11 @@ private:
 
 inline Transport::Transport(
   Listener* listener,
-  const nlohmann::json& transportRemoteParameters,
+  const std::string& id,
   const nlohmann::json& extendedRtpCapabilities,
   nlohmann::json appData)
-  : extendedRtpCapabilities(extendedRtpCapabilities), listener(listener),
-    id(transportRemoteParameters["id"].get<std::string>()), appData(std::move(appData))
+  : extendedRtpCapabilities(extendedRtpCapabilities), listener(listener), id(id),
+    appData(std::move(appData))
 {
 }
 

@@ -10,8 +10,10 @@ namespace Sdp
 	class RemoteSdp
 	{
 	public:
-		explicit RemoteSdp(
-		  nlohmann::json transportRemoteParameters,
+		RemoteSdp(
+		  const nlohmann::json& iceParameters,
+		  const nlohmann::json& iceCandidates,
+		  const nlohmann::json& dtlsParameters,
 		  nlohmann::json sendingRtpParametersByKind = nlohmann::json::array());
 
 	public:
@@ -25,7 +27,9 @@ namespace Sdp
 
 		// Transport remote parameters, including ICE parameters, ICE candidates
 		// and DTLS parameteres.
-		nlohmann::json transportRemoteParameters = nlohmann::json::object();
+		nlohmann::json iceParameters  = nlohmann::json::object();
+		nlohmann::json iceCandidates  = nlohmann::json::object();
+		nlohmann::json dtlsParameters = nlohmann::json::object();
 
 		// Generic sending RTP parameters for audio and video.
 		nlohmann::json sendingRtpParametersByKind = nlohmann::json::object();

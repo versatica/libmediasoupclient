@@ -42,13 +42,25 @@ TEST_CASE("Device", "[Device]")
 	SECTION("'device->CreateSendTransport()' fails if not loaded")
 	{
 		REQUIRE_THROWS_AS(
-		  device->CreateSendTransport(&sendTransportListener, TransportRemoteParameters), Exception);
+		  device->CreateSendTransport(
+		    &sendTransportListener,
+		    TransportRemoteParameters["id"],
+		    TransportRemoteParameters["iceParameters"],
+		    TransportRemoteParameters["iceCandidates"],
+		    TransportRemoteParameters["dtlsParameters"]),
+		  Exception);
 	}
 
 	SECTION("'device->CreateRecvTransport()' fails if not loaded")
 	{
 		REQUIRE_THROWS_AS(
-		  device->CreateRecvTransport(&recvTransportListener, TransportRemoteParameters), Exception);
+		  device->CreateRecvTransport(
+		    &recvTransportListener,
+		    TransportRemoteParameters["id"],
+		    TransportRemoteParameters["iceParameters"],
+		    TransportRemoteParameters["iceCandidates"],
+		    TransportRemoteParameters["dtlsParameters"]),
+		  Exception);
 	}
 
 	SECTION("'device->Load()' succeeds")
@@ -82,11 +94,21 @@ TEST_CASE("Device", "[Device]")
 
 	SECTION("'device->CreateSendTransport()' succeeds")
 	{
-		REQUIRE_NOTHROW(device->CreateSendTransport(&sendTransportListener, TransportRemoteParameters));
+		REQUIRE_NOTHROW(device->CreateSendTransport(
+		  &sendTransportListener,
+		  TransportRemoteParameters["id"],
+		  TransportRemoteParameters["iceParameters"],
+		  TransportRemoteParameters["iceCandidates"],
+		  TransportRemoteParameters["dtlsParameters"]));
 	}
 
 	SECTION("'device->CreateRecvTransport()' succeeds")
 	{
-		REQUIRE_NOTHROW(device->CreateRecvTransport(&recvTransportListener, TransportRemoteParameters));
+		REQUIRE_NOTHROW(device->CreateRecvTransport(
+		  &recvTransportListener,
+		  TransportRemoteParameters["id"],
+		  TransportRemoteParameters["iceParameters"],
+		  TransportRemoteParameters["iceCandidates"],
+		  TransportRemoteParameters["dtlsParameters"]));
 	}
 }

@@ -5,42 +5,43 @@
 class FakeSendTransportListener : public mediasoupclient::SendTransport::Listener
 {
 public:
-	std::future<json> OnProduce(json producerLocalParameters) override
+		virtual std::future<std::string> OnProduce(const std::string& kind, nlohmann::json rtpParameters, const nlohmann::json& appData) override
 	{
 		this->onProduceTimesCalled++;
 
-		std::promise<json> promise;
+		std::promise<std::string> promise;
 
-		json producerRemoteParameters;
+		json producerId;
 
-		auto kind = producerLocalParameters["kind"].get<std::string>();
+		this->appData = appData;
 
 		if (kind == "audio")
 		{
-			this->audioProducerLocalParameters = producerLocalParameters;
-			this->audioProducerRemoteParameters = generateProducerRemoteParameters();
-			producerRemoteParameters = this->audioProducerRemoteParameters;
+			this->audioProducerLocalParameters = rtpParameters;
+			this->audioProducerId = generateProducerRemoteId();
+			producerId = this->audioProducerId;
 		}
 		else if (kind == "video")
 		{
-			this->videoProducerLocalParameters = producerLocalParameters;
-			this->videoProducerRemoteParameters = generateProducerRemoteParameters();
-			producerRemoteParameters = this->videoProducerRemoteParameters;
+			this->videoProducerLocalParameters = rtpParameters;
+			this->videoProducerId = generateProducerRemoteId();
+			producerId = this->videoProducerId;
 		}
 		else
 		{
 			throw std::runtime_error("Unknown producerLocalParameters[\"kind\"]");
 		}
 
-		promise.set_value(producerRemoteParameters);
+		promise.set_value(producerId);
 
 		return promise.get_future();
 	};
 
-	std::future<void> OnConnect(const json& transportLocalParameters) override
+	std::future<void> OnConnect(const std::string& id, const json& dtlsParameters) override
 	{
 		this->onConnectTimesCalled++;
-		this->transportLocalParameters = transportLocalParameters;
+		this->id = id;
+		this->dtlsParameters = dtlsParameters;
 
 		std::promise<void> promise;
 
@@ -55,12 +56,14 @@ public:
 	};
 
 public:
-	json transportLocalParameters;
+	std::string id;
+	json dtlsParameters;
 
 	json audioProducerLocalParameters;
-	json audioProducerRemoteParameters;
+	std::string audioProducerId;
 	json videoProducerLocalParameters;
-	json videoProducerRemoteParameters;
+	std::string videoProducerId;
+	json appData;
 
 	size_t onProduceTimesCalled{ 0 };
 	size_t onConnectTimesCalled{ 0 };
@@ -74,9 +77,10 @@ public:
 class FakeRecvTransportListener : public mediasoupclient::Transport::Listener
 {
 public:
-	std::future<void> OnConnect(const json& transportLocalParameters) override
+	std::future<void> OnConnect(const std::string& id, const json& dtlsParameters) override
 	{
-		this->transportLocalParameters = transportLocalParameters;
+		this->id = id;
+		this->dtlsParameters = dtlsParameters;
 		this->onConnectTimesCalled++;
 
 		std::promise<void> promise;
@@ -92,7 +96,8 @@ public:
 	};
 
 public:
-	json transportLocalParameters;
+	std::string id;
+	json dtlsParameters;
 
 	size_t onConnectTimesCalled{ 0 };
 	size_t onConnectionStateChangeTimesCalled{ 0 };

@@ -14,8 +14,12 @@ namespace mediasoupclient
 {
 /* Sdp::RemoteSdp methods */
 
-Sdp::RemoteSdp::RemoteSdp(json transportRemoteParameters, json sendingRtpParametersByKind)
-  : transportRemoteParameters(std::move(transportRemoteParameters)),
+Sdp::RemoteSdp::RemoteSdp(
+  const json& iceParameters,
+  const json& iceCandidates,
+  const json& dtlsParameters,
+  json sendingRtpParametersByKind)
+  : iceParameters(iceParameters), iceCandidates(iceCandidates), dtlsParameters(dtlsParameters),
     sendingRtpParametersByKind(std::move(sendingRtpParametersByKind))
 {
 	MSC_TRACE();
@@ -33,19 +37,19 @@ void Sdp::RemoteSdp::UpdateTransportRemoteIceParameters(const json& remoteIcePar
 {
 	MSC_TRACE();
 
-	this->transportRemoteParameters["iceParameters"] = remoteIceParameters;
+	this->iceParameters = remoteIceParameters;
 }
 
 std::string Sdp::RemoteSdp::CreateAnswerSdp(const json& localSdpObj)
 {
 	MSC_TRACE();
 
-	if (this->transportRemoteParameters.empty())
+	if (this->iceParameters.empty() || this->iceCandidates.empty() || this->dtlsParameters.empty())
 		throw Exception("No transport remote parameters");
 
-	const auto remoteIceParameters  = this->transportRemoteParameters["iceParameters"];
-	const auto remoteIceCandidates  = this->transportRemoteParameters["iceCandidates"];
-	const auto remoteDtlsParameters = this->transportRemoteParameters["dtlsParameters"];
+	const auto remoteIceParameters  = this->iceParameters;
+	const auto remoteIceCandidates  = this->iceCandidates;
+	const auto remoteDtlsParameters = this->dtlsParameters;
 
 	json sdpObj = json::object();
 	std::vector<std::string> bundleMids;
@@ -316,12 +320,12 @@ std::string Sdp::RemoteSdp::CreateOfferSdp(const json& receiverInfos)
 {
 	MSC_TRACE();
 
-	if (this->transportRemoteParameters.empty())
+	if (this->iceParameters.empty() || this->iceCandidates.empty() || this->dtlsParameters.empty())
 		throw Exception("No transport remote parameters");
 
-	const auto remoteIceParameters  = this->transportRemoteParameters["iceParameters"];
-	const auto remoteIceCandidates  = this->transportRemoteParameters["iceCandidates"];
-	const auto remoteDtlsParameters = this->transportRemoteParameters["dtlsParameters"];
+	const auto remoteIceParameters  = this->iceParameters;
+	const auto remoteIceCandidates  = this->iceCandidates;
+	const auto remoteDtlsParameters = this->dtlsParameters;
 
 	json sdpObj = json::object();
 	json mids   = json::array();

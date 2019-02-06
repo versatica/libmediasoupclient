@@ -62,7 +62,13 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 	SECTION("'device->CreateSendTransport()' throws if not loaded")
 	{
 		REQUIRE_THROWS_AS(
-		  device->CreateSendTransport(&sendTransportListener, TransportRemoteParameters), Exception);
+		  device->CreateSendTransport(
+		    &sendTransportListener,
+		    TransportRemoteParameters["id"],
+		    TransportRemoteParameters["iceParameters"],
+		    TransportRemoteParameters["iceCandidates"],
+		    TransportRemoteParameters["dtlsParameters"]),
+		  Exception);
 	}
 
 	// TODO: Device::Load() must do some basic checks.
@@ -115,7 +121,13 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		/* clang-format on */
 
 		REQUIRE_NOTHROW(sendTransport.reset(device->CreateSendTransport(
-		  &sendTransportListener, TransportRemoteParameters, nullptr /* PeerConnection::Options */, appData)));
+		  &sendTransportListener,
+		  TransportRemoteParameters["id"],
+		  TransportRemoteParameters["iceParameters"],
+		  TransportRemoteParameters["iceCandidates"],
+		  TransportRemoteParameters["dtlsParameters"],
+		  nullptr /* PeerConnection::Options */,
+		  appData)));
 
 		REQUIRE(sendTransport->GetId() == TransportRemoteParameters["id"].get<std::string>());
 		REQUIRE(!sendTransport->IsClosed());
@@ -125,8 +137,12 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 	SECTION("device->createRecvTransport() for receiving media succeeds")
 	{
-		REQUIRE_NOTHROW(recvTransport.reset(
-		  device->CreateRecvTransport(&recvTransportListener, TransportRemoteParameters)));
+		REQUIRE_NOTHROW(recvTransport.reset(device->CreateRecvTransport(
+		  &recvTransportListener,
+		  TransportRemoteParameters["id"],
+		  TransportRemoteParameters["iceParameters"],
+		  TransportRemoteParameters["iceCandidates"],
+		  TransportRemoteParameters["dtlsParameters"])));
 
 		REQUIRE(recvTransport->GetId() == TransportRemoteParameters["id"].get<std::string>());
 		REQUIRE(!recvTransport->IsClosed());
@@ -167,17 +183,15 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		  sendTransportListener.onConnectTimesCalled ==
 		  ++sendTransportListener.onConnectExpectedTimesCalled);
 
-		REQUIRE(
-		  sendTransportListener.transportLocalParameters["id"].get<std::string>() ==
-		  sendTransport->GetId());
+		REQUIRE(sendTransportListener.id == sendTransport->GetId());
 
 		REQUIRE(
 		  sendTransportListener.onProduceExpectedTimesCalled ==
 		  ++sendTransportListener.onProduceExpectedTimesCalled);
 
-		REQUIRE(sendTransportListener.audioProducerLocalParameters["appData"] == appData);
+		REQUIRE(sendTransportListener.appData == appData);
 
-		REQUIRE(audioProducer->GetId() == sendTransportListener.audioProducerRemoteParameters["id"]);
+		REQUIRE(audioProducer->GetId() == sendTransportListener.audioProducerId);
 		REQUIRE(!audioProducer->IsClosed());
 		REQUIRE(audioProducer->GetKind() == "audio");
 		REQUIRE(audioProducer->GetTrack() == audioTrack);
@@ -216,7 +230,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		  sendTransportListener.onProduceExpectedTimesCalled ==
 		  ++sendTransportListener.onProduceExpectedTimesCalled);
 
-		REQUIRE(videoProducer->GetId() == sendTransportListener.videoProducerRemoteParameters["id"]);
+		REQUIRE(videoProducer->GetId() == sendTransportListener.videoProducerId);
 		REQUIRE(!videoProducer->IsClosed());
 		REQUIRE(videoProducer->GetKind() == "video");
 		REQUIRE(videoProducer->GetTrack() == videoTrack);
@@ -279,15 +293,18 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 		REQUIRE_NOTHROW(audioConsumer.reset(recvTransport->Consume(
 						&consumerPublicListener,
-						audioConsumerRemoteParameters,
+						audioConsumerRemoteParameters["id"].get<std::string>(),
+						audioConsumerRemoteParameters["producerId"].get<std::string>(),
+						audioConsumerRemoteParameters["kind"].get<std::string>(),
+						audioConsumerRemoteParameters["rtpParameters"],
 						appData
 						)));
 
 		REQUIRE(
 		  recvTransportListener.onConnectTimesCalled == ++recvTransportListener.onConnectExpectedTimesCalled);
 
-		REQUIRE(recvTransportListener.transportLocalParameters["id"] == recvTransport->GetId());
-		REQUIRE(recvTransportListener.transportLocalParameters["dtlsParameters"].is_object());
+		REQUIRE(recvTransportListener.id == recvTransport->GetId());
+		REQUIRE(recvTransportListener.dtlsParameters.is_object());
 
 		REQUIRE(audioConsumer->GetId() == audioConsumerRemoteParameters["id"].get<std::string>());
 		REQUIRE(audioConsumer->GetProducerId() == audioConsumerRemoteParameters["producerId"].get<std::string>());
@@ -338,7 +355,10 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 		REQUIRE_NOTHROW(videoConsumer.reset(recvTransport->Consume(
 						&consumerPublicListener,
-						videoConsumerRemoteParameters
+						videoConsumerRemoteParameters["id"].get<std::string>(),
+						videoConsumerRemoteParameters["producerId"].get<std::string>(),
+						videoConsumerRemoteParameters["kind"].get<std::string>(),
+						videoConsumerRemoteParameters["rtpParameters"]
 						)));
 
 		REQUIRE(
@@ -446,7 +466,10 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 		REQUIRE_THROWS_AS(recvTransport->Consume(
 						&consumerPublicListener,
-						consumerRemoteParameters
+						consumerRemoteParameters["id"].get<std::string>(),
+						consumerRemoteParameters["producerId"].get<std::string>(),
+						consumerRemoteParameters["kind"].get<std::string>(),
+						consumerRemoteParameters["rtpParameters"]
 						), Exception);
 	}
 
@@ -459,7 +482,10 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 		REQUIRE_THROWS_AS(recvTransport->Consume(
 						&consumerPublicListener,
-						consumerRemoteParameters
+						consumerRemoteParameters["id"].get<std::string>(),
+						consumerRemoteParameters["producerId"].get<std::string>(),
+						consumerRemoteParameters["kind"].get<std::string>(),
+						consumerRemoteParameters["rtpParameters"]
 						), Exception);
 	}
 
@@ -627,8 +653,11 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 		REQUIRE_THROWS_AS(recvTransport->Consume(
 					&consumerPublicListener,
-					audioConsumerRemoteParameters),
-					Exception);
+					audioConsumerRemoteParameters["id"].get<std::string>(),
+					audioConsumerRemoteParameters["producerId"].get<std::string>(),
+					audioConsumerRemoteParameters["kind"].get<std::string>(),
+					audioConsumerRemoteParameters["rtpParameters"]),
+				Exception);
 	}
 
 	SECTION("transport.getStats() throws if closed")

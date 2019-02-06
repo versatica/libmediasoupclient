@@ -9,7 +9,7 @@ json generateRouterRtpCapabilities();
 json generateRtpParametersByKind();
 json generateLocalDtlsParameters();
 json generateTransportRemoteParameters();
-json generateProducerRemoteParameters();
+std::string generateProducerRemoteId();
 json generateConsumerRemoteParameters(const std::string& codecMimeType);
 
 #endif

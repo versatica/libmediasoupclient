@@ -125,6 +125,11 @@ public:
 
 /* Inline methods */
 
+inline const std::string& Handler::GetName()
+{
+	return PeerConnection::GetName();
+}
+
 inline nlohmann::json Handler::GetTransportStats()
 {
 	return this->pc->GetStats();

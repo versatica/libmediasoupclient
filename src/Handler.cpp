@@ -35,13 +35,6 @@ json Handler::GetNativeRtpCapabilities()
 
 	return nativeRtpCapabilities;
 }
-/*
- * Get PeerConnection name
- */
-const std::string& Handler::GetName()
-{
-	return PeerConnection::GetName();
-}
 
 /* Handler instance methods */
 

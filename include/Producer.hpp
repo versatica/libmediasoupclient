@@ -29,7 +29,6 @@ public:
 	class PublicListener
 	{
 	public:
-		// TODO: missing transport argument here.
 		virtual void OnTransportClose(Transport* transport) = 0;
 	};
 

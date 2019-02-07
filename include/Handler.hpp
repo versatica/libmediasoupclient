@@ -127,7 +127,7 @@ public:
 	std::map<const std::string, nlohmann::json> receiverInfos;
 
 	// MID value counter. It must be incremented for each new m= section.
-	uint32_t nextMid = { 0 };
+	uint32_t nextMid{ 0 };
 };
 
 /* Inline methods */

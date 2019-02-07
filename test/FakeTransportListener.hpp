@@ -37,10 +37,10 @@ public:
 		return promise.get_future();
 	};
 
-	std::future<void> OnConnect(const std::string& id, const json& dtlsParameters) override
+	std::future<void> OnConnect(mediasoupclient::Transport* transport, const json& dtlsParameters) override
 	{
 		this->onConnectTimesCalled++;
-		this->id = id;
+		this->id = transport->GetId();
 		this->dtlsParameters = dtlsParameters;
 
 		std::promise<void> promise;
@@ -50,7 +50,7 @@ public:
 		return promise.get_future();
 	};
 
-	void OnConnectionStateChange(const std::string& /*connectionState*/) override
+	void OnConnectionStateChange(mediasoupclient::Transport* transport, const std::string& /*connectionState*/) override
 	{
 		this->onConnectionStateChangeTimesCalled++;
 	};
@@ -77,9 +77,9 @@ public:
 class FakeRecvTransportListener : public mediasoupclient::Transport::Listener
 {
 public:
-	std::future<void> OnConnect(const std::string& id, const json& dtlsParameters) override
+	std::future<void> OnConnect(mediasoupclient::Transport* transport, const json& dtlsParameters) override
 	{
-		this->id = id;
+		this->id = transport->GetId();
 		this->dtlsParameters = dtlsParameters;
 		this->onConnectTimesCalled++;
 
@@ -90,7 +90,7 @@ public:
 		return promise.get_future();
 	};
 
-	void OnConnectionStateChange(const std::string& /*connectionState*/) override
+	void OnConnectionStateChange(mediasoupclient::Transport* transport, const std::string& /*connectionState*/) override
 	{
 		this->onConnectionStateChangeTimesCalled++;
 	};
@@ -109,7 +109,7 @@ public:
 class FakeProducerPublicListener : public mediasoupclient::Producer::PublicListener
 {
 	public:
-		void OnTransportClose() override
+		void OnTransportClose(mediasoupclient::Transport* /*transport*/) override
 		{
 			this->onTransportCloseTimesCalled++;
 		}
@@ -122,7 +122,7 @@ class FakeProducerPublicListener : public mediasoupclient::Producer::PublicListe
 class FakeConsumerPublicListener : public mediasoupclient::Consumer::PublicListener
 {
 	public:
-		void OnTransportClose() override
+		void OnTransportClose(mediasoupclient::Transport* /*transport*/) override
 		{
 			this->onTransportCloseTimesCalled++;
 		}

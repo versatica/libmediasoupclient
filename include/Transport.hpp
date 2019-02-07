@@ -25,8 +25,8 @@ public:
 	class Listener
 	{
 	public:
-		virtual std::future<void> OnConnect(const std::string& id, const nlohmann::json& dtlsParameters) = 0;
-		virtual void OnConnectionStateChange(const std::string& connectionState) = 0;
+		virtual std::future<void> OnConnect(Transport* transport, const nlohmann::json& dtlsParameters) = 0;
+		virtual void OnConnectionStateChange(Transport* transport, const std::string& connectionState) = 0;
 	};
 
 	/* Pure virtual methods inherited from Handler::Listener */
@@ -271,7 +271,7 @@ inline void Transport::OnConnectionStateChange(
 	this->connectionState = connectionState;
 
 	return this->listener->OnConnectionStateChange(
-	  PeerConnection::iceConnectionState2String[connectionState]);
+	  this, PeerConnection::iceConnectionState2String[connectionState]);
 }
 
 /* SendTransport inline methods */
@@ -288,7 +288,7 @@ inline void SendTransport::Close()
 	{
 		auto* producer = kv.second;
 
-		producer->TransportClosed();
+		producer->TransportClosed(this);
 	}
 }
 
@@ -306,7 +306,7 @@ inline void RecvTransport::Close()
 	{
 		auto* consumer = kv.second;
 
-		consumer->TransportClosed();
+		consumer->TransportClosed(this);
 	}
 }
 } // namespace mediasoupclient

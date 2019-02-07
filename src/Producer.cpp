@@ -42,7 +42,7 @@ void Producer::Close()
 /**
  * Transport was closed.
  */
-void Producer::TransportClosed()
+void Producer::TransportClosed(Transport* transport)
 {
 	MSC_TRACE();
 
@@ -51,7 +51,7 @@ void Producer::TransportClosed()
 
 	this->closed = true;
 
-	this->publicListener->OnTransportClose();
+	this->publicListener->OnTransportClose(transport);
 }
 
 /**

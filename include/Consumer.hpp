@@ -9,6 +9,7 @@
 namespace mediasoupclient
 {
 // Fast forward declarations.
+class Transport;
 class RecvTransport;
 
 class Consumer
@@ -25,7 +26,7 @@ public:
 	class PublicListener
 	{
 	public:
-		virtual void OnTransportClose() = 0;
+		virtual void OnTransportClose(Transport* transport) = 0;
 	};
 
 public:
@@ -54,7 +55,7 @@ private:
 	  nlohmann::json rtpParameters,
 	  nlohmann::json appData);
 
-	void TransportClosed();
+	void TransportClosed(Transport* transport);
 
 	/* RecvTransport will create instances and call private member TransporClosed */
 	friend RecvTransport;

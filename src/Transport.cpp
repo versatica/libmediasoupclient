@@ -131,7 +131,7 @@ void Transport::OnConnect(json& dtlsParameters)
 	if (this->closed)
 		throw Exception("Invalid state");
 
-	return this->listener->OnConnect(this->id, dtlsParameters).get();
+	return this->listener->OnConnect(this, dtlsParameters).get();
 }
 
 /* Producer::Listener methods */

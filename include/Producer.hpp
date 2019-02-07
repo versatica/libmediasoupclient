@@ -9,6 +9,7 @@
 namespace mediasoupclient
 {
 // Fast forward declarations.
+class Transport;
 class SendTransport;
 
 class Producer
@@ -29,7 +30,7 @@ public:
 	{
 	public:
 		// TODO: missing transport argument here.
-		virtual void OnTransportClose() = 0;
+		virtual void OnTransportClose(Transport* transport) = 0;
 	};
 
 public:
@@ -59,7 +60,7 @@ private:
 	  nlohmann::json rtpParameters,
 	  nlohmann::json appData = nlohmann::json::object());
 
-	void TransportClosed();
+	void TransportClosed(Transport* transport);
 
 	/* SendTransport will create instances and call private member TransporClosed */
 	friend SendTransport;

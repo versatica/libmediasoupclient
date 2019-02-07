@@ -20,6 +20,7 @@ namespace Sdp
 		std::string CreateAnswerSdp(const nlohmann::json& localSdpObj);
 		std::string CreateOfferSdp(const nlohmann::json& receiverInfos);
 		void UpdateTransportRemoteIceParameters(const nlohmann::json& remoteIceParameters);
+		void UpdateTransportRemoteDtlsRole(const std::string& remoteRole);
 
 	protected:
 		// Generic sending RTP parameters for audio and video.
@@ -37,6 +38,11 @@ namespace Sdp
 		// SDP global fields.
 		nlohmann::json sdpGlobalFields = nlohmann::json::object();
 	};
+
+	inline void RemoteSdp::UpdateTransportRemoteDtlsRole(const std::string& remoteRole)
+	{
+		this->remoteDtlsParameters["role"] = remoteRole;
+	}
 } // namespace Sdp
 } // namespace mediasoupclient
 

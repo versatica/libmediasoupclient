@@ -83,6 +83,9 @@ void Handler::SetupTransport(const std::string& localDtlsRole)
 	// Set our DTLS role.
 	dtlsParameters["role"] = localDtlsRole;
 
+	std::string remoteDtlsRole = localDtlsRole == "client" ? "server" : "client";
+	this->remoteSdp->UpdateTransportRemoteDtlsRole(remoteDtlsRole);
+
 	// May throw.
 	this->listener->OnConnect(dtlsParameters);
 	this->transportReady = true;

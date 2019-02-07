@@ -27,9 +27,9 @@ namespace Sdp
 
 		// Transport remote parameters, including ICE parameters, ICE candidates
 		// and DTLS parameteres.
-		nlohmann::json iceParameters  = nlohmann::json::object();
-		nlohmann::json iceCandidates  = nlohmann::json::object();
-		nlohmann::json dtlsParameters = nlohmann::json::object();
+		nlohmann::json remoteIceParameters  = nlohmann::json::object();
+		nlohmann::json remoteIceCandidates  = nlohmann::json::object();
+		nlohmann::json remoteDtlsParameters = nlohmann::json::object();
 
 		// Generic sending RTP parameters for audio and video.
 		nlohmann::json sendingRtpParametersByKind = nlohmann::json::object();

@@ -19,7 +19,8 @@ Sdp::RemoteSdp::RemoteSdp(
   const json& iceCandidates,
   const json& dtlsParameters,
   json sendingRtpParametersByKind)
-  : iceParameters(iceParameters), iceCandidates(iceCandidates), dtlsParameters(dtlsParameters),
+  : remoteIceParameters(iceParameters), remoteIceCandidates(iceCandidates),
+    remoteDtlsParameters(dtlsParameters),
     sendingRtpParametersByKind(std::move(sendingRtpParametersByKind))
 {
 	MSC_TRACE();
@@ -37,19 +38,17 @@ void Sdp::RemoteSdp::UpdateTransportRemoteIceParameters(const json& remoteIcePar
 {
 	MSC_TRACE();
 
-	this->iceParameters = remoteIceParameters;
+	this->remoteIceParameters = remoteIceParameters;
 }
 
 std::string Sdp::RemoteSdp::CreateAnswerSdp(const json& localSdpObj)
 {
 	MSC_TRACE();
 
-	if (this->iceParameters.empty() || this->iceCandidates.empty() || this->dtlsParameters.empty())
+	if (
+	  this->remoteIceParameters.empty() || this->remoteIceCandidates.empty() ||
+	  this->remoteDtlsParameters.empty())
 		throw Exception("No transport remote parameters");
-
-	const auto remoteIceParameters  = this->iceParameters;
-	const auto remoteIceCandidates  = this->iceCandidates;
-	const auto remoteDtlsParameters = this->dtlsParameters;
 
 	json sdpObj = json::object();
 	std::vector<std::string> bundleMids;
@@ -87,7 +86,7 @@ std::string Sdp::RemoteSdp::CreateAnswerSdp(const json& localSdpObj)
 	sdpObj["name"]   = "-";
 	sdpObj["timing"] = { { "start", 0 }, { "stop", 0 } };
 
-	if (remoteIceParameters.find("iceLite") != remoteIceParameters.end())
+	if (this->remoteIceParameters.find("iceLite") != this->remoteIceParameters.end())
 		sdpObj["icelite"] = "ice-lite";
 
 	/* clang-format off */
@@ -124,11 +123,11 @@ std::string Sdp::RemoteSdp::CreateAnswerSdp(const json& localSdpObj)
 	sdpObj["media"] = json::array();
 
 	// NOTE: We take the latest fingerprint.
-	auto numFingerprints = remoteDtlsParameters["fingerprints"].size();
+	auto numFingerprints = this->remoteDtlsParameters["fingerprints"].size();
 
 	sdpObj["fingerprint"] = {
-		{ "type", remoteDtlsParameters.at("fingerprints")[numFingerprints - 1]["algorithm"] },
-		{ "hash", remoteDtlsParameters.at("fingerprints")[numFingerprints - 1]["value"] }
+		{ "type", this->remoteDtlsParameters.at("fingerprints")[numFingerprints - 1]["algorithm"] },
+		{ "hash", this->remoteDtlsParameters.at("fingerprints")[numFingerprints - 1]["value"] }
 	};
 
 	for (auto& localMediaObj : localSdpObj["media"])
@@ -144,11 +143,11 @@ std::string Sdp::RemoteSdp::CreateAnswerSdp(const json& localSdpObj)
 		remoteMediaObj["connection"] = { { "ip", "127.0.0.1" }, { "version", 4 } };
 		remoteMediaObj["mid"]        = localMediaObj["mid"];
 
-		remoteMediaObj["iceUfrag"]   = remoteIceParameters["usernameFragment"];
-		remoteMediaObj["icePwd"]     = remoteIceParameters["password"];
+		remoteMediaObj["iceUfrag"]   = this->remoteIceParameters["usernameFragment"];
+		remoteMediaObj["icePwd"]     = this->remoteIceParameters["password"];
 		remoteMediaObj["candidates"] = json::array();
 
-		for (auto candidate : remoteIceCandidates)
+		for (auto candidate : this->remoteIceCandidates)
 		{
 			auto candidateObj = json::object();
 
@@ -320,12 +319,10 @@ std::string Sdp::RemoteSdp::CreateOfferSdp(const json& receiverInfos)
 {
 	MSC_TRACE();
 
-	if (this->iceParameters.empty() || this->iceCandidates.empty() || this->dtlsParameters.empty())
+	if (
+	  this->remoteIceParameters.empty() || this->remoteIceCandidates.empty() ||
+	  this->remoteDtlsParameters.empty())
 		throw Exception("No transport remote parameters");
-
-	const auto remoteIceParameters  = this->iceParameters;
-	const auto remoteIceCandidates  = this->iceCandidates;
-	const auto remoteDtlsParameters = this->dtlsParameters;
 
 	json sdpObj = json::object();
 	json mids   = json::array();
@@ -361,7 +358,7 @@ std::string Sdp::RemoteSdp::CreateOfferSdp(const json& receiverInfos)
 	sdpObj["name"]   = "-";
 	sdpObj["timing"] = { { "start", 0 }, { "stop", 0 } };
 
-	if (remoteIceParameters.find("iceLite") != remoteIceParameters.end())
+	if (this->remoteIceParameters.find("iceLite") != this->remoteIceParameters.end())
 		sdpObj["icelite"] = "ice-lite";
 
 	/* clang-format off */
@@ -442,11 +439,11 @@ std::string Sdp::RemoteSdp::CreateOfferSdp(const json& receiverInfos)
 			remoteMediaObj["mid"]        = mid;
 		}
 
-		remoteMediaObj["iceUfrag"]   = remoteIceParameters["usernameFragment"];
-		remoteMediaObj["icePwd"]     = remoteIceParameters["password"];
+		remoteMediaObj["iceUfrag"]   = this->remoteIceParameters["usernameFragment"];
+		remoteMediaObj["icePwd"]     = this->remoteIceParameters["password"];
 		remoteMediaObj["candidates"] = json::array();
 
-		for (auto candidate : remoteIceCandidates)
+		for (auto candidate : this->remoteIceCandidates)
 		{
 			auto candidateObj = json::object();
 

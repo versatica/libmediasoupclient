@@ -368,12 +368,12 @@ json SendHandler::GetSenderStats(webrtc::MediaStreamTrackInterface* track)
 	return stats;
 }
 
-void SendHandler::RestartIce(const json& remoteIceParameters)
+void SendHandler::RestartIce(const json& iceParameters)
 {
 	MSC_TRACE();
 
 	// Provide the remote SDP handler with new remote ICE parameters.
-	this->remoteSdp->UpdateTransportRemoteIceParameters(remoteIceParameters);
+	this->remoteSdp->UpdateTransportRemoteIceParameters(iceParameters);
 
 	if (!this->transportReady)
 		return;
@@ -567,12 +567,12 @@ json RecvHandler::GetReceiverStats(const std::string& id)
 	return stats;
 }
 
-void RecvHandler::RestartIce(const json& remoteIceParameters)
+void RecvHandler::RestartIce(const json& iceParameters)
 {
 	MSC_TRACE();
 
 	// Provide the remote SDP handler with new remote ICE parameters.
-	this->remoteSdp->UpdateTransportRemoteIceParameters(remoteIceParameters);
+	this->remoteSdp->UpdateTransportRemoteIceParameters(iceParameters);
 
 	if (!this->transportReady)
 		return;

@@ -496,9 +496,9 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 	SECTION("'sendTransport.RestartIce()' succeeds")
 	{
-		auto remoteIceParameters = TransportRemoteParameters["iceParameters"];
+		auto iceParameters = TransportRemoteParameters["iceParameters"];
 
-		REQUIRE_NOTHROW(sendTransport->RestartIce(remoteIceParameters));
+		REQUIRE_NOTHROW(sendTransport->RestartIce(iceParameters));
 	}
 
 	SECTION("'sendTransport.UpdateIceServers()' succeeds")
@@ -667,9 +667,9 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 	SECTION("transport.restartIce() throws if closed")
 	{
-		auto remoteIceParameters = json::object();
+		auto iceParameters = json::object();
 
-		REQUIRE_THROWS_AS(sendTransport->RestartIce(remoteIceParameters), Exception);
+		REQUIRE_THROWS_AS(sendTransport->RestartIce(iceParameters), Exception);
 	}
 
 	SECTION("transport.restartIce() throws if closed")

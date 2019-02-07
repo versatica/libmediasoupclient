@@ -23,7 +23,7 @@ public:
 
 	// Methods to be implemented by child classes.
 public:
-	virtual void RestartIce(const nlohmann::json& remoteIceParameters) = 0;
+	virtual void RestartIce(const nlohmann::json& iceParameters) = 0;
 
 public:
 	static nlohmann::json GetNativeRtpCapabilities();
@@ -86,7 +86,7 @@ public:
 
 	/* Methods inherided from Handler. */
 public:
-	void RestartIce(const nlohmann::json& remoteIceParameters) override;
+	void RestartIce(const nlohmann::json& iceParameters) override;
 
 private:
 	// Sending tracks.
@@ -110,7 +110,7 @@ public:
 
 	/* Methods inherided from Handler. */
 public:
-	void RestartIce(const nlohmann::json& remoteIceParameters) override;
+	void RestartIce(const nlohmann::json& iceParameters) override;
 
 	/*
 	 * Receiver infos indexed by id.

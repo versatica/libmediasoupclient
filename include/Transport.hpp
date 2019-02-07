@@ -43,7 +43,7 @@ public:
 
 	bool IsClosed() const;
 
-	void RestartIce(const nlohmann::json& remoteIceParameters);
+	void RestartIce(const nlohmann::json& iceParameters);
 	void UpdateIceServers(const nlohmann::json& iceServers);
 	virtual void Close();
 
@@ -232,12 +232,12 @@ inline bool Transport::IsClosed() const
 	return this->closed;
 }
 
-inline void Transport::RestartIce(const nlohmann::json& remoteIceParameters)
+inline void Transport::RestartIce(const nlohmann::json& iceParameters)
 {
 	if (this->closed)
 		throw Exception("Invalid state");
 	else
-		return this->handler->RestartIce(remoteIceParameters);
+		return this->handler->RestartIce(iceParameters);
 }
 
 inline void Transport::UpdateIceServers(const nlohmann::json& iceServers)

@@ -130,9 +130,9 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 
 	SECTION("'sendHandler.RestartIce()' succeeds")
 	{
-		auto remoteIceParameters = TransportRemoteParameters["iceParameters"];
+		auto iceParameters = TransportRemoteParameters["iceParameters"];
 
-		REQUIRE_NOTHROW(sendHandler.RestartIce(remoteIceParameters));
+		REQUIRE_NOTHROW(sendHandler.RestartIce(iceParameters));
 	}
 
 	SECTION("'sendHandler.UpdateIceServers()' succeeds")
@@ -190,9 +190,9 @@ TEST_CASE("RecvHandler", "[Handler][RecvHandler]")
 
 	SECTION("'recvHandler.RestartIce()' succeeds")
 	{
-		auto remoteIceParameters = TransportRemoteParameters["iceParameters"];
+		auto iceParameters = TransportRemoteParameters["iceParameters"];
 
-		REQUIRE_NOTHROW(recvHandler.RestartIce(remoteIceParameters));
+		REQUIRE_NOTHROW(recvHandler.RestartIce(iceParameters));
 	}
 
 	SECTION("'recvHandler.UpdateIceServers()' succeeds")

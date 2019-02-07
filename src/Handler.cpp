@@ -426,8 +426,7 @@ webrtc::MediaStreamTrackInterface* RecvHandler::Receive(
 	auto encoding = rtpParameters["encodings"][0];
 	auto cname    = rtpParameters["rtcp"]["cname"];
 
-	std::string mid(&kind[0], 1);
-	mid.append("-").append(id);
+	auto mid = std::to_string(this->nextMid++);
 
 	std::string trackId(kind);
 	trackId.append("-").append(id);

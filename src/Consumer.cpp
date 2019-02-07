@@ -45,7 +45,7 @@ void Consumer::Close()
 /**
  * Transport was closed.
  */
-void Consumer::TransportClosed(Transport* transport)
+void Consumer::TransportClosed()
 {
 	MSC_TRACE();
 
@@ -54,7 +54,7 @@ void Consumer::TransportClosed(Transport* transport)
 
 	this->closed = true;
 
-	this->publicListener->OnTransportClose(transport);
+	this->publicListener->OnTransportClose(this);
 }
 
 /**

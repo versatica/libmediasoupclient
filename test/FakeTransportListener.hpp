@@ -109,7 +109,7 @@ public:
 class FakeProducerPublicListener : public mediasoupclient::Producer::PublicListener
 {
 	public:
-		void OnTransportClose(mediasoupclient::Transport* /*transport*/) override
+		void OnTransportClose(mediasoupclient::Producer* /*producer*/) override
 		{
 			this->onTransportCloseTimesCalled++;
 		}
@@ -122,7 +122,7 @@ class FakeProducerPublicListener : public mediasoupclient::Producer::PublicListe
 class FakeConsumerPublicListener : public mediasoupclient::Consumer::PublicListener
 {
 	public:
-		void OnTransportClose(mediasoupclient::Transport* /*transport*/) override
+		void OnTransportClose(mediasoupclient::Consumer* /*consumer*/) override
 		{
 			this->onTransportCloseTimesCalled++;
 		}

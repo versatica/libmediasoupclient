@@ -26,7 +26,7 @@ public:
 	class PublicListener
 	{
 	public:
-		virtual void OnTransportClose(Transport* transport) = 0;
+		virtual void OnTransportClose(Consumer* consumer) = 0;
 	};
 
 public:
@@ -55,7 +55,7 @@ private:
 	  nlohmann::json rtpParameters,
 	  nlohmann::json appData);
 
-	void TransportClosed(Transport* transport);
+	void TransportClosed();
 
 	/* RecvTransport will create instances and call private member TransporClosed */
 	friend RecvTransport;

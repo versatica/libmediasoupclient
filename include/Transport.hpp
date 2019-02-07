@@ -288,7 +288,7 @@ inline void SendTransport::Close()
 	{
 		auto* producer = kv.second;
 
-		producer->TransportClosed(this);
+		producer->TransportClosed();
 	}
 }
 
@@ -306,7 +306,7 @@ inline void RecvTransport::Close()
 	{
 		auto* consumer = kv.second;
 
-		consumer->TransportClosed(this);
+		consumer->TransportClosed();
 	}
 }
 } // namespace mediasoupclient

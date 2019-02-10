@@ -39,14 +39,6 @@ if (${BUILD_TESTS})
 	subdirs(test)
 endif()
 
-if(${LOG_TRACE})
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMSC_LOG_TRACE")
-endif()
-
-if(${LOG_DEV})
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMSC_LOG_DEV")
-endif()
-
 set(HEADER_FILES
 	include/mediasoupclient.hpp
 )
@@ -78,6 +70,18 @@ endif()
 
 # Create target.
 add_library(${PROJECT_NAME} STATIC ${SOURCES})
+
+if(${LOG_TRACE})
+	target_compile_definitions(${PROJECT_NAME}
+		PRIVATE MSC_LOG_TRACE=1
+	)
+endif()
+
+if(${LOG_DEV})
+	target_compile_definitions(${PROJECT_NAME}
+		PRIVATE MSC_LOG_DEV=1
+	)
+endif()
 
 # Source Dependencies.
 add_subdirectory(deps/libsdptransform "${CMAKE_CURRENT_BINARY_DIR}/libsdptransform")

@@ -297,46 +297,48 @@ void SendHandler::SetMaxSpatialLayer(webrtc::MediaStreamTrackInterface* track, u
 	auto parameters = rtpSender->GetParameters();
 
 	bool hasLowEncoding{ false }, hasMediumEncoding{ false }, hasHighEncoding{ false };
-	webrtc::RtpEncodingParameters lowEncoding, mediumEncoding, highEncoding;
+	webrtc::RtpEncodingParameters *lowEncoding, *mediumEncoding, *highEncoding;
+
+	MSC_DEBUG("encodings size: %zu", parameters.encodings.size());
 
 	if (!parameters.encodings.empty())
 	{
 		hasLowEncoding = true;
-		lowEncoding    = parameters.encodings[0];
+		lowEncoding    = &parameters.encodings[0];
 	}
 
 	if (parameters.encodings.size() > 1)
 	{
 		hasMediumEncoding = true;
-		mediumEncoding    = parameters.encodings[1];
+		mediumEncoding    = &parameters.encodings[1];
 	}
 
 	if (parameters.encodings.size() > 2)
 	{
 		hasHighEncoding = true;
-		highEncoding    = parameters.encodings[2];
+		highEncoding    = &parameters.encodings[2];
 	}
 
 	// Edit encodings.
 	if (spatialLayer == 1u)
 	{
-		hasLowEncoding && (lowEncoding.active = true);
-		hasMediumEncoding && (mediumEncoding.active = false);
-		hasHighEncoding && (highEncoding.active = false);
+		hasLowEncoding && (lowEncoding->active = true);
+		hasMediumEncoding && (mediumEncoding->active = false);
+		hasHighEncoding && (highEncoding->active = false);
 	}
 
 	else if (spatialLayer == 2u)
 	{
-		hasLowEncoding && (lowEncoding.active = true);
-		hasMediumEncoding && (mediumEncoding.active = true);
-		hasHighEncoding && (highEncoding.active = false);
+		hasLowEncoding && (lowEncoding->active = true);
+		hasMediumEncoding && (mediumEncoding->active = true);
+		hasHighEncoding && (highEncoding->active = false);
 	}
 
 	else if (spatialLayer == 3u)
 	{
-		hasLowEncoding && (lowEncoding.active = true);
-		hasMediumEncoding && (mediumEncoding.active = true);
-		hasHighEncoding && (highEncoding.active = true);
+		hasLowEncoding && (lowEncoding->active = true);
+		hasMediumEncoding && (mediumEncoding->active = true);
+		hasHighEncoding && (highEncoding->active = true);
 	}
 
 	auto result = rtpSender->SetParameters(parameters);

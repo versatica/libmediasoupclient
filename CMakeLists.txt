@@ -18,6 +18,7 @@ option(LOG_DEV     "Enable MSC_LOG_DEV (See Logger.hpp)" OFF)
 # Project configuration.
 set(LIBWEBRTC_INCLUDE_PATH "" CACHE STRING "libwebrtc include path")
 set(LIBWEBRTC_BINARY_PATH "" CACHE STRING "libwebrtc binary path")
+set(LIBWEBRTC_EXTRA_LIBS "" CACHE STRING "libwebrtc extra libraries")
 
 if(NOT LIBWEBRTC_INCLUDE_PATH)
 	message(FATAL_ERROR "LIBWEBRTC_INCLUDE_PATH not provided")
@@ -36,28 +37,12 @@ message (STATUS "LIBWEBRTC_BINARY_PATH  = " ${LIBWEBRTC_BINARY_PATH})
 message ("")
 
 if (${BUILD_TESTS})
-	subdirs(test)
+	add_subdirectory(test)
 endif()
 
 set(HEADER_FILES
 	include/mediasoupclient.hpp
 )
-
-if(APPLE)
-	find_library(APPLICATION_SERVICES ApplicationServices)
-	find_library(AUDIOTOOLBOX_LIBRARY AudioToolbox)
-	find_library(COREAUDIO_LIBRARY CoreAudio)
-	find_library(CORE_FOUNDATION Foundation)
-	find_library(CORE_SERVICES CoreServices)
-
-	set(APPLE_EXTRA_LIBS
-		${APPLICATION_SERVICES}
-		${AUDIOTOOLBOX_LIBRARY}
-		${COREAUDIO_LIBRARY}
-		${CORE_FOUNDATION}
-		${CORE_SERVICES}
-	)
-endif(APPLE)
 
 # Add some compile flags to our source files.
 if(MSVC)
@@ -112,7 +97,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 target_link_libraries(${PROJECT_NAME} PUBLIC
 	sdptransform
 	${LIBWEBRTC_BINARY_PATH}/libwebrtc${CMAKE_STATIC_LIBRARY_SUFFIX}
-	$<$<PLATFORM_ID:Darwin>:${APPLE_EXTRA_LIBS}>
+	${LIBWEBRTC_EXTRA_LIBS}
 )
 
 # Compile definitions for libwebrtc.

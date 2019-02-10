@@ -18,7 +18,6 @@ option(LOG_DEV     "Enable MSC_LOG_DEV (See Logger.hpp)" OFF)
 # Project configuration.
 set(LIBWEBRTC_INCLUDE_PATH "" CACHE STRING "libwebrtc include path")
 set(LIBWEBRTC_BINARY_PATH "" CACHE STRING "libwebrtc binary path")
-set(LIBWEBRTC_EXTRA_LIBS "" CACHE STRING "libwebrtc extra libraries")
 
 if(NOT LIBWEBRTC_INCLUDE_PATH)
 	message(FATAL_ERROR "LIBWEBRTC_INCLUDE_PATH not provided")
@@ -97,7 +96,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 target_link_libraries(${PROJECT_NAME} PUBLIC
 	sdptransform
 	${LIBWEBRTC_BINARY_PATH}/libwebrtc${CMAKE_STATIC_LIBRARY_SUFFIX}
-	${LIBWEBRTC_EXTRA_LIBS}
 )
 
 # Compile definitions for libwebrtc.

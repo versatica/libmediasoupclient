@@ -13,6 +13,9 @@ set(
 	tests.cpp
 )
 
+# Create taget.
+add_executable(test_mediasoupclient ${SOURCE_FILES})
+
 if(APPLE)
 	find_library(APPLICATION_SERVICES ApplicationServices)
 	find_library(AUDIO_TOOLBOX AudioToolbox)
@@ -20,17 +23,13 @@ if(APPLE)
 	find_library(CORE_FOUNDATION Foundation)
 	find_library(CORE_SERVICES CoreServices)
 
-	set(LIBWEBRTC_EXTRA_LIBS
+	target_link_libraries(test_mediasoupclient PRIVATE
 		${APPLICATION_SERVICES}
 		${AUDIO_TOOLBOX}
 		${CORE_AUDIO}
 		${CORE_FOUNDATION}
-		PARENT_SCOPE
 	)
 endif(APPLE)
-
-# Create taget.
-add_executable(test_mediasoupclient ${SOURCE_FILES})
 
 # Private (implementation) header files.
 target_include_directories(test_mediasoupclient PRIVATE

@@ -31,9 +31,9 @@ std::map<webrtc::PeerConnectionInterface::IceConnectionState, const std::string>
 	PeerConnection::iceConnectionState2String =
 {
 	{ webrtc::PeerConnectionInterface::IceConnectionState::kIceConnectionNew,          "new"          },
-	{ webrtc::PeerConnectionInterface::IceConnectionState::kIceConnectionChecking,     "cheking"      },
+	{ webrtc::PeerConnectionInterface::IceConnectionState::kIceConnectionChecking,     "checking"     },
 	{ webrtc::PeerConnectionInterface::IceConnectionState::kIceConnectionConnected,    "connected"    },
-	{ webrtc::PeerConnectionInterface::IceConnectionState::kIceConnectionCompleted,    "completed"   },
+	{ webrtc::PeerConnectionInterface::IceConnectionState::kIceConnectionCompleted,    "completed"    },
 	{ webrtc::PeerConnectionInterface::IceConnectionState::kIceConnectionFailed,       "failed"       },
 	{ webrtc::PeerConnectionInterface::IceConnectionState::kIceConnectionDisconnected, "disconnected" },
 	{ webrtc::PeerConnectionInterface::IceConnectionState::kIceConnectionClosed,       "closed"       }

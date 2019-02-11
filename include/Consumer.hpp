@@ -3,7 +3,7 @@
 
 #include "Exception.hpp"
 #include "json.hpp"
-#include "api/mediastreaminterface.h" // MediaStreamTrackInterface
+#include "api/media_stream_interface.h" // MediaStreamTrackInterface
 #include <string>
 
 namespace mediasoupclient

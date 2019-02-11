@@ -10,7 +10,7 @@
 #include "api/create_peerconnection_factory.h"
 #include "api/video_codecs/builtin_video_decoder_factory.h"
 #include "api/video_codecs/builtin_video_encoder_factory.h"
-#include "rtc_base/ssladapter.h"
+#include "rtc_base/ssl_adapter.h"
 #include <utility>
 
 using json = nlohmann::json;
@@ -290,7 +290,7 @@ void PeerConnection::SetSessionDescriptionObserver::OnFailure(webrtc::RTCError e
 {
 	MSC_WARN(
 	  "webtc::SetSessionDescriptionObserver failure [%s:%s]",
-	  webrtc::ToString(error.type()).c_str(),
+	  webrtc::ToString(error.type()).data(),
 	  error.message());
 
 	auto message = std::string(error.message());
@@ -303,7 +303,7 @@ void PeerConnection::CreateSessionDescriptionObserver::OnFailure(webrtc::RTCErro
 {
 	MSC_WARN(
 	  "webtc::CreateSessionDescriptionObserver failure [%s:%s]",
-	  webrtc::ToString(error.type()).c_str(),
+	  webrtc::ToString(error.type()).data(),
 	  error.message());
 
 	auto message = std::string(error.message());
@@ -325,7 +325,7 @@ bool PeerConnection::SetConfiguration(const webrtc::PeerConnectionInterface::RTC
 
 	MSC_WARN(
 	  "webrtc::PeerConnection::SetConfiguration failed [%s:%s]",
-	  webrtc::ToString(error.type()).c_str(),
+	  webrtc::ToString(error.type()).data(),
 	  error.message());
 
 	return false;

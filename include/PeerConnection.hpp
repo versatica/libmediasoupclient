@@ -3,7 +3,7 @@
 
 #include "Exception.hpp"
 #include "json.hpp"
-#include "api/peerconnectioninterface.h"
+#include "api/peer_connection_interface.h"
 #include <future> // std::promise, std::future
 #include <list>
 

@@ -1,7 +1,6 @@
 set(
 	SOURCE_FILES
 	Device.test.cpp
-	FakeVideoCapturer.cpp
 	Handler.test.cpp
 	PeerConnection.test.cpp
 	data/Parameters.cpp
@@ -11,6 +10,8 @@ set(
 	sdp/RemoteSdp.test.cpp
 	sdp/Utils.test.cpp
 	tests.cpp
+	VcmCapturer.cpp
+	VideoCapturer.cpp
 )
 
 # Create taget.
@@ -19,15 +20,22 @@ add_executable(test_mediasoupclient ${SOURCE_FILES})
 if(APPLE)
 	find_library(APPLICATION_SERVICES ApplicationServices)
 	find_library(AUDIO_TOOLBOX AudioToolbox)
+	find_library(AV_FOUNDATION AVFoundation)
 	find_library(CORE_AUDIO CoreAudio)
 	find_library(CORE_FOUNDATION Foundation)
+	find_library(CORE_MEDIA CoreMedia)
+	find_library(CORE_VIDEO CoreVideo)
 	find_library(CORE_SERVICES CoreServices)
 
 	target_link_libraries(test_mediasoupclient PRIVATE
 		${APPLICATION_SERVICES}
 		${AUDIO_TOOLBOX}
+		${AV_FOUNDATION}
 		${CORE_AUDIO}
 		${CORE_FOUNDATION}
+		${CORE_MEDIA}
+		${CORE_VIDEO}
+		${CORE_SERVICES}
 	)
 endif(APPLE)
 

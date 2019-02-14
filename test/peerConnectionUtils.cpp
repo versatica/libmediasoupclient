@@ -1,20 +1,53 @@
 #include "peerConnectionUtils.hpp"
-#include "media/base/fakevideocapturer.h"
+#include "VcmCapturer.hpp"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
 #include "api/create_peerconnection_factory.h"
 #include "api/video_codecs/builtin_video_decoder_factory.h"
 #include "api/video_codecs/builtin_video_encoder_factory.h"
+#include "pc/video_track_source.h"
+#include "modules/video_capture/video_capture_factory.h"
+#include "modules/video_capture/video_capture.h"
+#include <iostream>
 
 static rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peerConnectionFactory{ nullptr };
 
-static std::unique_ptr<cricket::FakeVideoCapturer> videoCapturer{ nullptr };
-
 static rtc::scoped_refptr<webrtc::AudioSourceInterface> audioSource{ nullptr };
 static rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource{ nullptr };
+static rtc::scoped_refptr<webrtc::VideoCaptureModule> videoCaptureModule;
+
+class CapturerTrackSource;
+static rtc::scoped_refptr<CapturerTrackSource> videoDevice{ nullptr };
 
 static rtc::Thread* signalingThread{ nullptr };
 static rtc::Thread* workerThread{ nullptr };
+
+class CapturerTrackSource : public webrtc::VideoTrackSource {
+ public:
+  static rtc::scoped_refptr<CapturerTrackSource> Create() {
+    const size_t kWidth = 640;
+    const size_t kHeight = 480;
+    const size_t kFps = 30;
+    const size_t kDeviceIndex = 0;
+    std::unique_ptr<VcmCapturer> capturer = absl::WrapUnique(
+        VcmCapturer::Create(kWidth, kHeight, kFps, kDeviceIndex));
+    if (!capturer) {
+      return nullptr;
+    }
+    return new rtc::RefCountedObject<CapturerTrackSource>(std::move(capturer));
+  }
+
+ protected:
+  explicit CapturerTrackSource(
+      std::unique_ptr<VcmCapturer> capturer)
+      : VideoTrackSource(/*remote=*/false), capturer(std::move(capturer)) {}
+
+ private:
+  rtc::VideoSourceInterface<webrtc::VideoFrame>* source() override {
+    return capturer.get();
+  }
+  std::unique_ptr<VcmCapturer> capturer;
+};
 
 // PeerConnection factory creation.
 static void createPeerConnectionFactory()
@@ -56,23 +89,6 @@ static void createAudioSource()
 	audioSource = peerConnectionFactory->CreateAudioSource(options);
 }
 
-static void createVideoCapturer()
-{
-	videoCapturer.reset(new cricket::FakeVideoCapturer());
-}
-
-// Video source creation.
-static void createVideoSource(const webrtc::MediaConstraintsInterface* constraints)
-{
-	if (peerConnectionFactory == nullptr)
-		createPeerConnectionFactory();
-
-	if (videoCapturer == nullptr)
-		createVideoCapturer();
-
-	videoSource = peerConnectionFactory->CreateVideoSource(std::move(videoCapturer), constraints);
-}
-
 // Audio track creation.
 rtc::scoped_refptr<webrtc::AudioTrackInterface> createAudioTrack(const std::string& label)
 {
@@ -85,8 +101,8 @@ rtc::scoped_refptr<webrtc::AudioTrackInterface> createAudioTrack(const std::stri
 // Video track creation.
 rtc::scoped_refptr<webrtc::VideoTrackInterface> createVideoTrack(const std::string& label)
 {
-	if (videoSource == nullptr)
-		createVideoSource(nullptr);
+	if (videoDevice == nullptr)
+		videoDevice = CapturerTrackSource::Create();
 
-	return peerConnectionFactory->CreateVideoTrack(label, videoSource);
+	return peerConnectionFactory->CreateVideoTrack(label, videoDevice);
 }

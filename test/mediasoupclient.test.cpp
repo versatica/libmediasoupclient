@@ -2,7 +2,6 @@
 #include "FakeTransportListener.hpp"
 #include "catch.hpp"
 #include "data/parameters.hpp"
-#include "media/base/fakevideocapturer.h"
 #include "mediasoupclient.hpp"
 #include "peerConnectionUtils.hpp"
 #include <vector>
@@ -164,8 +163,6 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		encodings.emplace_back(webrtc::RtpEncodingParameters());
 
 		/* clang-format on */
-		std::unique_ptr<cricket::FakeVideoCapturer> capturer(new cricket::FakeVideoCapturer());
-
 		audioTrack = createAudioTrack("audio-track-id");
 		videoTrack = createVideoTrack("video-track-id");
 

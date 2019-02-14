@@ -8,6 +8,9 @@ using namespace mediasoupclient;
 
 int main(int argc, char* argv[])
 {
+	// Set RTC logging severity to warning.
+	// rtc::LogMessage::LogToDebug(rtc::LoggingSeverity::LS_WARNING);
+
 	// There must be exactly one instance.
 	Catch::Session session;
 

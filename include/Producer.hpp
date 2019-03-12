@@ -34,6 +34,7 @@ public:
 
 public:
 	const std::string& GetId() const;
+	const std::string& GetLocalId() const;
 	std::string GetKind() const;
 	webrtc::MediaStreamTrackInterface* GetTrack() const;
 	const nlohmann::json& GetRtpParameters() const;
@@ -55,6 +56,7 @@ private:
 	  Listener* listener,
 	  PublicListener* publicListener,
 	  std::string id,
+	  std::string localId,
 	  webrtc::MediaStreamTrackInterface* track,
 	  nlohmann::json rtpParameters,
 	  nlohmann::json appData = nlohmann::json::object());
@@ -73,6 +75,9 @@ private:
 
 	// Id.
 	std::string id;
+
+	// localId.
+	std::string localId;
 
 	// Closed flag.
 	bool closed{ false };
@@ -98,6 +103,11 @@ private:
 inline const std::string& Producer::GetId() const
 {
 	return this->id;
+}
+
+inline const std::string& Producer::GetLocalId() const
+{
+	return this->localId;
 }
 
 inline std::string Producer::GetKind() const

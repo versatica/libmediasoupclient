@@ -52,10 +52,12 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 	  TransportRemoteParameters["iceCandidates"],
 	  TransportRemoteParameters["dtlsParameters"],
 	  &PeerConnectionOptions,
+	  RtpParametersByKind,
 	  RtpParametersByKind);
 
 	static std::unique_ptr<PeerConnection> pc(new PeerConnection(nullptr, &PeerConnectionOptions));
 
+	static std::string localId;
 	static const std::vector<webrtc::RtpEncodingParameters> Encodings;
 
 	SECTION("'sendHandler.Send()' fails if a null track is provided")
@@ -67,65 +69,64 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 	{
 		track = createAudioTrack("test-track-id");
 
-		json rtpParameters;
+		std::pair<std::string, nlohmann::json> result;
 
-		REQUIRE_NOTHROW(rtpParameters = sendHandler.Send(track, Encodings));
+		REQUIRE_NOTHROW(result = sendHandler.Send(track, Encodings));
+
+		localId            = result.first;
+		json rtpParameters = result.second;
+
 		REQUIRE(rtpParameters["codecs"].size() == 1);
 		REQUIRE(rtpParameters["headerExtensions"].size() == 3);
 	}
 
-	SECTION("'sendHandler.Send()' fails if track is already handled")
+	SECTION("'sendHandler.Send()' succeeds if track is already handled")
 	{
-		REQUIRE_THROWS_AS(sendHandler.Send(track, Encodings), Exception);
+		REQUIRE_NOTHROW(sendHandler.Send(track, Encodings));
 	}
 
-	SECTION("'sendHandler.ReplaceTrack()' fails if a null track is provided")
+	SECTION("'sendHandler.ReplaceTrack()' fails if an invalid localId is provided")
 	{
-		REQUIRE_THROWS_AS(sendHandler.ReplaceTrack(nullptr, nullptr), Exception);
+		REQUIRE_THROWS_AS(sendHandler.ReplaceTrack("", nullptr), Exception);
 	}
 
 	SECTION("'sendHandler.ReplaceTrack()' succeeds if a new track is provided")
 	{
 		auto newTrack = createAudioTrack("test-new-track-id");
 
-		REQUIRE_NOTHROW(sendHandler.ReplaceTrack(track, newTrack));
+		REQUIRE_NOTHROW(sendHandler.ReplaceTrack(localId, newTrack));
 
 		track = newTrack;
 	}
 
-	SECTION("'sendHandler.SetMaxSpatialLayer()' fails if a null track is provided")
+	SECTION("'sendHandler.SetMaxSpatialLayer()' fails if invalid localId is provided")
 	{
-		REQUIRE_THROWS_AS(sendHandler.SetMaxSpatialLayer(nullptr, 1), Exception);
+		REQUIRE_THROWS_AS(sendHandler.SetMaxSpatialLayer("", 1), Exception);
 	}
 
 	SECTION("'sendHandler.SetMaxSpatialLayer()' succeeds if track is being sent")
 	{
-		REQUIRE_NOTHROW(sendHandler.SetMaxSpatialLayer(track, 1));
+		REQUIRE_NOTHROW(sendHandler.SetMaxSpatialLayer(localId, 1));
 	}
 
-	SECTION("'sendHandler.GetSenderStats()' fails if a null track is provided")
+	SECTION("'sendHandler.GetSenderStats()' fails if invalid localId is provided")
 	{
-		REQUIRE_THROWS_AS(sendHandler.GetSenderStats(nullptr), Exception);
+		REQUIRE_THROWS_AS(sendHandler.GetSenderStats(""), Exception);
 	}
 
 	SECTION("'sendHandler.GetSenderStats()' succeeds if track is being sent")
 	{
-		REQUIRE_NOTHROW(sendHandler.GetSenderStats(track));
+		REQUIRE_NOTHROW(sendHandler.GetSenderStats(localId));
 	}
 
-	SECTION("'sendHandler.StopSending()' fails if a null track is provided")
+	SECTION("'sendHandler.StopSending()' fails if an invalid localId is provided")
 	{
-		REQUIRE_THROWS_AS(sendHandler.StopSending(nullptr), Exception);
+		REQUIRE_THROWS_AS(sendHandler.StopSending(""), Exception);
 	}
 
 	SECTION("'sendHandler.StopSending()' succeeds if track is being sent")
 	{
-		REQUIRE_NOTHROW(sendHandler.StopSending(track));
-	}
-
-	SECTION("'sendHandler.StopSending()' fails if track is not being sent")
-	{
-		REQUIRE_THROWS_AS(sendHandler.StopSending(track), Exception);
+		REQUIRE_NOTHROW(sendHandler.StopSending(localId));
 	}
 
 	SECTION("'sendHandler.RestartIce()' succeeds")
@@ -149,6 +150,8 @@ TEST_CASE("RecvHandler", "[Handler][RecvHandler]")
 	auto kind                     = consumerRemoteParameters["kind"].get<std::string>();
 	auto rtpParameters            = consumerRemoteParameters["rtpParameters"];
 
+	static std::string localId;
+
 	static FakeHandlerListener handlerListener;
 
 	static RecvHandler recvHandler(
@@ -160,12 +163,11 @@ TEST_CASE("RecvHandler", "[Handler][RecvHandler]")
 
 	SECTION("'recvHander.Receive()' succeeds if correct rtpParameters are provided")
 	{
-		REQUIRE_NOTHROW(recvHandler.Receive("test", "audio", rtpParameters));
-	}
+		std::pair<std::string, webrtc::MediaStreamTrackInterface*> result;
 
-	SECTION("'recvHandler.Receive()' fails if rtpParameters are already handled")
-	{
-		REQUIRE_THROWS_AS(recvHandler.Receive("test", "audio", rtpParameters), Exception);
+		REQUIRE_NOTHROW(result = recvHandler.Receive("test", "audio", rtpParameters));
+
+		localId = result.first;
 	}
 
 	SECTION("'recvHandler.GetReceiverStats()' fails if unknown receiver id is provided")
@@ -175,7 +177,7 @@ TEST_CASE("RecvHandler", "[Handler][RecvHandler]")
 
 	SECTION("'recvHandler.GetReceiverStats()' succeeds if known receiver id is provided")
 	{
-		REQUIRE_NOTHROW(recvHandler.GetReceiverStats("test"));
+		REQUIRE_NOTHROW(recvHandler.GetReceiverStats(localId));
 	}
 
 	SECTION("'recvHandler.StopReceiving()' fails if unknown receiver id is provided")
@@ -185,7 +187,7 @@ TEST_CASE("RecvHandler", "[Handler][RecvHandler]")
 
 	SECTION("'recvHandler.StopReceiving()' succeeds if known receiver id is provided")
 	{
-		REQUIRE_NOTHROW(recvHandler.StopReceiving("test"));
+		REQUIRE_NOTHROW(recvHandler.StopReceiving(localId));
 	}
 
 	SECTION("'recvHandler.RestartIce()' succeeds")

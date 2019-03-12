@@ -18,6 +18,8 @@ namespace Sdp
 	{
 		json extractRtpCapabilities(const json& sdpObj)
 		{
+			MSC_TRACE();
+
 			// Map of RtpCodecParameters indexed by payload type.
 			std::map<uint8_t, json> codecsMap;
 
@@ -152,6 +154,8 @@ namespace Sdp
 
 		json extractDtlsParameters(const json& sdpObj)
 		{
+			MSC_TRACE();
+
 			json m, fingerprint;
 			std::string role;
 
@@ -199,160 +203,15 @@ namespace Sdp
 			return dtlsParameters;
 		}
 
-		size_t findMediaSection(const json& sdpObj, const std::string& mid)
-		{
-			json mSection;
-
-			auto media = sdpObj["media"];
-
-			auto it = std::find_if(media.begin(), media.end(), [&mid](const json& m) {
-				return mid == m["mid"].get<std::string>();
-			});
-
-			MSC_ASSERT(it != media.end(), "a=mid line with msid information not found");
-
-			return it - media.begin();
-		};
-
-		size_t findMediaSection(const json& sdpObj, const webrtc::MediaStreamTrackInterface* track)
-		{
-			auto media = sdpObj["media"];
-
-			// Find a media section with 'msid' value pointing to the given track.
-			auto it = std::find_if(media.begin(), media.end(), [&track](const json& m) {
-				auto it2 = m.find("msid");
-				if (it2 == m.end())
-					return false;
-
-				auto line = (*it2).get<std::string>();
-				auto v    = mediasoupclient::Utils::split(line, ' ');
-
-				auto msid = v[1];
-
-				return msid == track->id();
-			});
-
-			MSC_ASSERT(it != media.end(), "a=msid line with msid information not found");
-
-			return it - media.begin();
-		};
-
-		void fillRtpParametersForTrack(json& rtpParameters, const json& sdpObj, const std::string& mid)
-		{
-			MSC_TRACE();
-
-			auto index    = findMediaSection(sdpObj, mid);
-			auto mSection = sdpObj["media"][index];
-
-			rtpParameters["mid"] = mid;
-
-			/* clang-format off */
-			rtpParameters["rtcp"] =
-			{
-				{ "cname",       nullptr },
-				{ "reducedSize", true    },
-				{ "mux",         true    }
-			};
-			/* clang-format on */
-
-			// Get the SSRC and CNAME.
-
-			auto mSsrcs = mSection["ssrcs"];
-
-			auto it = std::find_if(mSsrcs.begin(), mSsrcs.end(), [](const json& line) {
-				return line["attribute"].get<std::string>() == "cname";
-			});
-
-			MSC_ASSERT(it != mSsrcs.end(), "CNAME value not found");
-
-			rtpParameters["rtcp"]["cname"] = (*it)["value"];
-
-			// Simulcast based on PlanB.
-
-			// First media SSRC (or the only one).
-			std::string firstSsrc;
-
-			// Get all the SSRCs.
-
-			std::set<uint32_t> ssrcs;
-
-			for (auto& line : mSection["ssrcs"])
-			{
-				if (line["attribute"].get<std::string>() != "msid")
-					continue;
-
-				auto ssrc = line["id"].get<uint32_t>();
-
-				ssrcs.insert(ssrc);
-
-				if (firstSsrc.empty())
-					firstSsrc = std::to_string(ssrc);
-			}
-
-			MSC_ASSERT(!ssrcs.empty(), "no a=ssrc lines found");
-
-			// Get media and RTX SSRCs.
-
-			std::map<uint32_t, uint32_t> ssrcToRtxSsrc;
-
-			// First assume RTX is used.
-			for (auto& line : mSection["ssrcGroups"])
-			{
-				if (line["semantics"].get<std::string>() != "FID")
-					continue;
-
-				auto fidLine = line["ssrcs"].get<std::string>();
-				auto v       = mediasoupclient::Utils::split(fidLine, ' ');
-
-				auto ssrc    = std::stol(v[0]);
-				auto rtxSsrc = std::stol(v[1]);
-
-				// Remove both the SSRC and RTX SSRC from the Set so later we know that they
-				// are already handled.
-				ssrcs.erase(ssrc);
-				ssrcs.erase(rtxSsrc);
-
-				// Add to the map.
-				ssrcToRtxSsrc[ssrc] = rtxSsrc;
-			}
-
-			// If the Set of SSRCs is not empty it means that RTX is not being used, so take
-			// media SSRCs from there.
-			for (auto& ssrc : ssrcs)
-			{
-				// Add to the map.
-				ssrcToRtxSsrc[ssrc] = 0u;
-			}
-
-			// Fill RTP parameters.
-
-			rtpParameters["encodings"] = json::array();
-
-			for (auto& kv : ssrcToRtxSsrc)
-			{
-				json encoding = { { "ssrc", kv.first } };
-
-				if (kv.second != 0u)
-					encoding["rtx"] = { { "ssrc", kv.second } };
-
-				rtpParameters["encodings"].push_back(encoding);
-			}
-		};
-
-		void addLegacySimulcast(
-		  json& sdpObj, const webrtc::MediaStreamTrackInterface* track, uint8_t numStreams)
+		void addLegacySimulcast(json& offerMediaObject, uint8_t numStreams)
 		{
 			MSC_TRACE();
 
 			if (numStreams <= 1)
 				return;
 
-			auto index     = findMediaSection(sdpObj, track);
-			auto& mSection = sdpObj["media"][index];
-
 			// Get the SSRC.
-
-			auto mSsrcs = mSection["ssrcs"];
+			auto mSsrcs = offerMediaObject["ssrcs"];
 
 			auto it = std::find_if(mSsrcs.begin(), mSsrcs.end(), [](const json& line) {
 				return line["attribute"].get<std::string>() == "msid";
@@ -363,16 +222,17 @@ namespace Sdp
 
 			auto ssrcMsidLine = *it;
 
-			auto v    = mediasoupclient::Utils::split(ssrcMsidLine["value"].get<std::string>(), ' ');
-			auto msid = v[0];
+			auto v        = mediasoupclient::Utils::split(ssrcMsidLine["value"].get<std::string>(), ' ');
+			auto streamId = v[0];
+			auto trackId  = v[1];
 
 			auto firstSsrc = ssrcMsidLine["id"].get<std::uint32_t>();
 			uint32_t firstRtxSsrc{ 0 };
 
 			// Get the SSRC for RTX.
 
-			it = mSection.find("ssrcGroups");
-			if (it != mSection.end())
+			it = offerMediaObject.find("ssrcGroups");
+			if (it != offerMediaObject.end())
 			{
 				auto ssrcGroups = *it;
 
@@ -414,17 +274,17 @@ namespace Sdp
 					rtxSsrcs.push_back(firstRtxSsrc + i);
 			}
 
-			mSection["ssrcGroups"] = json::array();
-			mSection["ssrcs"]      = json::array();
+			offerMediaObject["ssrcGroups"] = json::array();
+			offerMediaObject["ssrcs"]      = json::array();
 
 			std::vector<uint32_t> ussrcs = ssrcs;
 			auto ssrcsLine               = mediasoupclient::Utils::join(ussrcs, ' ');
 
-			std::string msidValue(msid);
-			msidValue.append(" ").append(track->id());
+			std::string msidValue(streamId);
+			msidValue.append(" ").append(trackId);
 
 			/* clang-format off */
-			mSection["ssrcGroups"].push_back(
+			offerMediaObject["ssrcGroups"].push_back(
 				{
 					{ "semantics", "SIM"     },
 					{ "ssrcs",     ssrcsLine },
@@ -434,14 +294,14 @@ namespace Sdp
 			{
 				auto ssrc = i.get<uint32_t>();
 
-				mSection["ssrcs"].push_back(
+				offerMediaObject["ssrcs"].push_back(
 					{
 						{ "id",        ssrc    },
 						{ "attribute", "cname" },
 						{ "value",     cname   }
 					});
 
-				mSection["ssrcs"].push_back(
+				offerMediaObject["ssrcs"].push_back(
 					{
 						{ "id",        ssrc      },
 						{ "attribute", "msid"    },
@@ -458,20 +318,20 @@ namespace Sdp
 				fid = std::to_string(ssrc).append(" ");
 				fid.append(std::to_string(rtxSsrc));
 
-				mSection["ssrcGroups"].push_back(
+				offerMediaObject["ssrcGroups"].push_back(
 					{
 						{ "semantics", "FID" },
 						{ "ssrcs",     fid   }
 					});
 
-				mSection["ssrcs"].push_back(
+				offerMediaObject["ssrcs"].push_back(
 					{
 						{ "id",        rtxSsrc },
 						{ "attribute", "cname" },
 						{ "value",     cname   }
 					});
 
-				mSection["ssrcs"].push_back(
+				offerMediaObject["ssrcs"].push_back(
 					{
 						{ "id",        rtxSsrc   },
 						{ "attribute", "msid"    },
@@ -480,6 +340,170 @@ namespace Sdp
 			}
 			/* clang-format on */
 		};
+
+		std::string getCname(const json& offerMediaObject)
+		{
+			MSC_TRACE();
+
+			const json& mSsrcs = offerMediaObject["ssrcs"];
+
+			auto it = find_if(
+			  mSsrcs.begin(), mSsrcs.end(), [](const json& line) { return line["attribute"] == "cname"; });
+
+			if (it == mSsrcs.end())
+				throw new std::runtime_error("a=ssrc line with cname information not found");
+
+			auto ssrcCnameLine = *it;
+
+			return ssrcCnameLine["value"].get<std::string>();
+		}
+
+		json getRtpEncodings(const json& offerMediaObject)
+		{
+			std::set<uint32_t> ssrcs;
+
+			for (auto& line : offerMediaObject["ssrcs"])
+			{
+				auto ssrc = line["id"].get<uint32_t>();
+				ssrcs.insert(ssrc);
+			}
+
+			if (ssrcs.empty())
+				throw new std::runtime_error("no a=ssrc lines found");
+
+			// Get media and RTX SSRCs.
+
+			std::map<uint32_t, uint32_t> ssrcToRtxSsrc;
+
+			auto it = offerMediaObject.find("ssrcGroups");
+			if (it != offerMediaObject.end())
+			{
+				auto ssrcGroups = (*it);
+
+				// First assume RTX is used.
+				for (auto& line : ssrcGroups)
+				{
+					if (line["semantics"].get<std::string>() != "FID")
+						continue;
+
+					auto fidLine = line["ssrcs"].get<std::string>();
+					auto v       = mediasoupclient::Utils::split(fidLine, ' ');
+
+					auto ssrc    = std::stol(v[0]);
+					auto rtxSsrc = std::stol(v[1]);
+
+					if (ssrcs.find(ssrc) != ssrcs.end())
+					{
+						// Remove both the SSRC and RTX SSRC from the Set so later we know that they
+						// are already handled.
+						ssrcs.erase(ssrc);
+						ssrcs.erase(rtxSsrc);
+					}
+
+					// Add to the map.
+					ssrcToRtxSsrc[ssrc] = rtxSsrc;
+				}
+			}
+
+			// If the Set of SSRCs is not empty it means that RTX is not being used, so take
+			// media SSRCs from there.
+			for (auto& ssrc : ssrcs)
+			{
+				// Add to the map.
+				ssrcToRtxSsrc[ssrc] = 0u;
+			}
+
+			// Fill RTP parameters.
+
+			auto encodings = json::array();
+
+			for (auto& kv : ssrcToRtxSsrc)
+			{
+				json encoding = { { "ssrc", kv.first } };
+
+				if (kv.second != 0u)
+					encoding["rtx"] = { { "ssrc", kv.second } };
+
+				encodings.push_back(encoding);
+			}
+
+			return encodings;
+		}
+
+		void applyCodecParameters(const json& offerRtpParameters, json& answerMediaObject)
+		{
+			MSC_TRACE();
+
+			for (auto& codec : offerRtpParameters["codecs"])
+			{
+				auto mimeType = codec["mimeType"].get<std::string>();
+
+				// Avoid parsing codec parameters for unhandled codecs.
+				if (mimeType != "audio/opus")
+					continue;
+
+				auto rtps = answerMediaObject["rtp"];
+				auto it   = find_if(rtps.begin(), rtps.end(), [&codec](const json& r) {
+          return r["payload"] == codec["payloadType"];
+        });
+
+				if (it == rtps.end())
+					continue;
+
+				// Just in case.
+				if (answerMediaObject.find("fmtp") == answerMediaObject.end())
+					answerMediaObject["fmtp"] = json::array();
+
+				auto fmtps = answerMediaObject["fmtp"];
+				it         = find_if(fmtps.begin(), fmtps.end(), [&codec](const json& f) {
+          return f["payload"] == codec["payloadType"];
+        });
+
+				json parameters;
+
+				if (it == fmtps.end())
+				{
+					json fmtp = { { "payload", codec["payloadType"] }, { "config", "" } };
+
+					answerMediaObject["fmtp"].push_back(fmtp);
+					parameters = sdptransform::parseParams(fmtp["config"]);
+				}
+				else
+				{
+					auto parameters = sdptransform::parseParams((*it)["config"]);
+				}
+
+				if (mimeType == "audio/opus")
+				{
+					auto it2 = codec["parameters"].find("sprop-stereo");
+
+					if (it2 != codec["parameters"].end())
+					{
+						auto spropStereo     = (*it2).get<uint8_t>();
+						parameters["stereo"] = spropStereo ? 1 : 0;
+					}
+				}
+
+				// Write the codec fmtp.config back.
+				std::ostringstream config;
+				for (auto& item : parameters.items())
+				{
+					if (!config.str().empty())
+						config << ";";
+
+					config << item.key();
+					config << "=";
+					if (item.value().is_string())
+						config << item.value().get<std::string>();
+					else if (item.value().is_number_float())
+						config << item.value().get<float>();
+					else if (item.value().is_number())
+						config << item.value().get<int>();
+				}
+
+				answerMediaObject["fmtp"][0]["config"] = config.str();
+			}
+		}
 	} // namespace Utils
 } // namespace Sdp
 } // namespace mediasoupclient

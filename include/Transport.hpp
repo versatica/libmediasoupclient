@@ -105,7 +105,8 @@ public:
 	  Producer::PublicListener* producerPublicListener,
 	  webrtc::MediaStreamTrackInterface* track,
 	  const std::vector<webrtc::RtpEncodingParameters>& encodings,
-	  nlohmann::json appData = nlohmann::json::object());
+	  const nlohmann::json& codecOptions = nlohmann::json::object(),
+	  nlohmann::json appData             = nlohmann::json::object());
 
 	/* Virtual methods inherited from Transport. */
 public:

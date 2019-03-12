@@ -15,11 +15,13 @@ Producer::Producer(
   Producer::Listener* listener,
   Producer::PublicListener* publicListener,
   std::string id,
+  std::string localId,
   webrtc::MediaStreamTrackInterface* track,
   json rtpParameters,
   json appData)
-  : listener(listener), publicListener(publicListener), id(std::move(id)), track(track),
-    rtpParameters(std::move(rtpParameters)), appData(std::move(appData))
+  : listener(listener), publicListener(publicListener), id(std::move(id)),
+    localId(std::move(localId)), track(track), rtpParameters(std::move(rtpParameters)),
+    appData(std::move(appData))
 {
 	MSC_TRACE();
 }

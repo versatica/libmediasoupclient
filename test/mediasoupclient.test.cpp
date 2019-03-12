@@ -268,11 +268,6 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE_THROWS_AS(sendTransport->Produce(&producerPublicListener, nullptr), Exception);
 	}
 
-	SECTION("transport.produce() with an already handled track throws")
-	{
-		REQUIRE_THROWS_AS(sendTransport->Produce(&producerPublicListener, audioTrack), Exception);
-	}
-
 	SECTION("transport.consume() succeeds")
 	{
 		/* clang-format off */
@@ -473,22 +468,6 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 						), Exception);
 	}
 
-	SECTION("transport.consume() with duplicated consumerRtpParameters.id throws")
-	{
-		auto consumerRemoteParameters =
-			generateConsumerRemoteParameters("audio/opus");
-
-		consumerRemoteParameters["id"] = audioConsumer->GetId();
-
-		REQUIRE_THROWS_AS(recvTransport->Consume(
-						&consumerPublicListener,
-						consumerRemoteParameters["id"].get<std::string>(),
-						consumerRemoteParameters["producerId"].get<std::string>(),
-						consumerRemoteParameters["kind"].get<std::string>(),
-						consumerRemoteParameters["rtpParameters"]
-						), Exception);
-	}
-
 	SECTION("'sendTransport.GetStats()' succeeds")
 	{
 		REQUIRE_NOTHROW(sendTransport->GetStats());
@@ -549,11 +528,6 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 	SECTION("'producer->ReplaceTrack()' fails if null track is provided")
 	{
 		REQUIRE_THROWS_AS(videoProducer->ReplaceTrack(nullptr), Exception);
-	}
-
-	SECTION("'producer->ReplaceTrack()' with an already handled track throws")
-	{
-		REQUIRE_THROWS_AS(videoProducer->ReplaceTrack(videoTrack), Exception);
 	}
 
 	SECTION("'producer->SetMaxSpatialLayer()' succeeds")

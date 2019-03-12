@@ -119,12 +119,12 @@ namespace ortc
 	/**
 	 * Generate extended RTP capabilities for sending and receiving.
 	 */
-	json getExtendedCapabilities(const json& localCaps, const json& remoteCaps)
+	json getExtendedRtpCapabilities(const json& localCaps, const json& remoteCaps)
 	{
 		MSC_TRACE();
 
 		/* clang-format off */
-		json extendedCaps =
+		json extendedRtpCapabilities =
 		{
 			{ "codecs",           json::array() },
 			{ "headerExtensions", json::array() },
@@ -153,40 +153,41 @@ namespace ortc
 				/* clang-format off */
 				json extendedCodec =
 				{
-					{ "name",               remoteCodec["name"]                         },
-					{ "mimeType",           remoteCodec["mimeType"]                     },
-					{ "kind",               remoteCodec["kind"]                         },
-					{ "clockRate",          remoteCodec["clockRate"]                    },
-					{ "sendPayloadType",    localCodec["preferredPayloadType"]          },
-					{ "sendRtxPayloadType", nullptr                                     },
-					{ "recvPayloadType",    remoteCodec["preferredPayloadType"]         },
-					{ "recvRtxPayloadType", nullptr                                     },
-					{ "rtcpFeedback",       reduceRtcpFeedback(localCodec, remoteCodec) },
-					{ "parameters",         localCodec["parameters"]                    }
+					{ "name",                 localCodec["name"]                          },
+					{ "mimeType",             localCodec["mimeType"]                      },
+					{ "kind",                 localCodec["kind"]                          },
+					{ "clockRate",            localCodec["clockRate"]                     },
+					{ "localPayloadType",     localCodec["preferredPayloadType"]          },
+					{ "localRtxPayloadType",  nullptr                                     },
+					{ "remotePayloadType",    remoteCodec["preferredPayloadType"]         },
+					{ "remoteRtxPayloadType", nullptr                                     },
+					{ "rtcpFeedback",         reduceRtcpFeedback(localCodec, remoteCodec) },
+					{ "localParameters",      localCodec["parameters"]                    },
+					{ "remoteParameters",     remoteCodec["parameters"]                   }
 				};
 				/* clang-format on */
 
-				auto it = remoteCodec.find("channels");
-				if (it != remoteCodec.end())
+				auto it = localCodec.find("channels");
+				if (it != localCodec.end())
 				{
 					auto channels = (*it).get<uint8_t>();
 					if (channels > 0)
 						extendedCodec["channels"] = channels;
 				}
 
-				extendedCaps["codecs"].push_back(extendedCodec);
+				extendedRtpCapabilities["codecs"].push_back(extendedCodec);
 			}
 		}
 
 		// Match RTX codecs.
-		json& extendedCodecs = extendedCaps["codecs"];
+		json& extendedCodecs = extendedRtpCapabilities["codecs"];
 		for (json& extendedCodec : extendedCodecs)
 		{
 			auto localCodecs = localCaps["codecs"];
 			auto it          = std::find_if(
         localCodecs.begin(), localCodecs.end(), [&extendedCodec](const json& localCodec) {
           return "rtx" == localCodec["name"].get<std::string>() &&
-                 localCodec["parameters"]["apt"] == extendedCodec["sendPayloadType"];
+                 localCodec["parameters"]["apt"] == extendedCodec["localPayloadType"];
         });
 
 			if (it == localCodecs.end())
@@ -198,7 +199,7 @@ namespace ortc
 			it                = std::find_if(
         remoteCodecs.begin(), remoteCodecs.end(), [&extendedCodec](const json& remoteCodec) {
           return "rtx" == remoteCodec["name"].get<std::string>() &&
-                 remoteCodec["parameters"]["apt"] == extendedCodec["recvPayloadType"];
+                 remoteCodec["parameters"]["apt"] == extendedCodec["remotePayloadType"];
         });
 
 			if (it == remoteCodecs.end())
@@ -206,8 +207,8 @@ namespace ortc
 
 			auto matchingRemoteRtxCodec = *it;
 
-			extendedCodec["sendRtxPayloadType"] = matchingLocalRtxCodec["preferredPayloadType"];
-			extendedCodec["recvRtxPayloadType"] = matchingRemoteRtxCodec["preferredPayloadType"];
+			extendedCodec["localRtxPayloadType"]  = matchingLocalRtxCodec["preferredPayloadType"];
+			extendedCodec["remoteRtxPayloadType"] = matchingRemoteRtxCodec["preferredPayloadType"];
 		}
 
 		// Match header extensions.
@@ -235,10 +236,10 @@ namespace ortc
 			};
 			/* clang-format on */
 
-			extendedCaps["headerExtensions"].push_back(extendedExt);
+			extendedRtpCapabilities["headerExtensions"].push_back(extendedExt);
 		}
 
-		return extendedCaps;
+		return extendedRtpCapabilities;
 	}
 
 	/**
@@ -250,7 +251,7 @@ namespace ortc
 		MSC_TRACE();
 
 		/* clang-format off */
-		json caps =
+		json rtpCapabilities =
 		{
 			{ "codecs",           json::array() },
 			{ "headerExtensions", json::array() },
@@ -258,77 +259,77 @@ namespace ortc
 		};
 		/* clang-format on */
 
-		for (auto& capCodec : extendedRtpCapabilities["codecs"])
+		for (auto& extendedCodec : extendedRtpCapabilities["codecs"])
 		{
 			/* clang-format off */
 			json codec =
 			{
-				{ "name",                 capCodec["name"] },
-				{ "mimeType",             capCodec["mimeType"] },
-				{ "kind",                 capCodec["kind"] },
-				{ "clockRate",            capCodec["clockRate"] },
-				{ "preferredPayloadType", capCodec["recvPayloadType"] },
-				{ "rtcpFeedback",         capCodec["rtcpFeedback"] },
-				{ "parameters",           capCodec["parameters"] }
+				{ "name",                 extendedCodec["name"]              },
+				{ "mimeType",             extendedCodec["mimeType"]          },
+				{ "kind",                 extendedCodec["kind"]              },
+				{ "clockRate",            extendedCodec["clockRate"]         },
+				{ "preferredPayloadType", extendedCodec["remotePayloadType"] },
+				{ "rtcpFeedback",         extendedCodec["rtcpFeedback"]      },
+				{ "parameters",           extendedCodec["localParameters"]   }
 			};
 			/* clang-format on */
 
-			auto it = capCodec.find("channels");
-			if (it != capCodec.end())
+			auto it = extendedCodec.find("channels");
+			if (it != extendedCodec.end())
 			{
 				auto channels     = *it;
 				codec["channels"] = channels;
 			}
 
-			caps["codecs"].push_back(codec);
+			rtpCapabilities["codecs"].push_back(codec);
 
 			// Add RTX codec.
-			if (capCodec["recvRtxPayloadType"] != nullptr)
+			if (extendedCodec["remoteRtxPayloadType"] != nullptr)
 			{
-				auto mimeType = capCodec["kind"].get<std::string>();
+				auto mimeType = extendedCodec["kind"].get<std::string>();
 				mimeType.append("/rtx");
 
 				/* clang-format off */
-				json rtxCapCodec =
+				json rtxCodec =
 				{
-					{ "name",                 "rtx"                          },
-					{ "mimeType",             mimeType                       },
-					{ "kind",                 capCodec["kind"]               },
-					{ "clockRate",            capCodec["clockRate"]          },
-					{ "preferredPayloadType", capCodec["recvRtxPayloadType"] },
-					{ "rtcpFeedback",         json::array()                  },
+					{ "name",                 "rtx"                                 },
+					{ "mimeType",             mimeType                              },
+					{ "kind",                 extendedCodec["kind"]                 },
+					{ "clockRate",            extendedCodec["clockRate"]            },
+					{ "preferredPayloadType", extendedCodec["remoteRtxPayloadType"] },
+					{ "rtcpFeedback",         json::array()                         },
 					{
 						"parameters",
 						{
-							{ "apt", capCodec["recvPayloadType"].get<uint8_t>() }
+							{ "apt", extendedCodec["remotePayloadType"].get<uint8_t>() }
 						}
 					}
 				};
 				/* clang-format on */
 
-				caps["codecs"].push_back(rtxCapCodec);
+				rtpCapabilities["codecs"].push_back(rtxCodec);
 			}
 
 			// TODO: In the future, we need to add FEC, CN, etc, codecs.
 		}
 
-		for (auto& capExt : extendedRtpCapabilities["headerExtensions"])
+		for (auto& extendedExtension : extendedRtpCapabilities["headerExtensions"])
 		{
 			/* clang-format off */
 			json ext =
 			{
-				{ "kind",        capExt["kind"]   },
-				{ "uri",         capExt["uri"]    },
-				{ "preferredId", capExt["recvId"] }
+				{ "kind",        extendedExtension["kind"]   },
+				{ "uri",         extendedExtension["uri"]    },
+				{ "preferredId", extendedExtension["recvId"] }
 			};
 			/* clang-format on */
 
-			caps["headerExtensions"].push_back(ext);
+			rtpCapabilities["headerExtensions"].push_back(ext);
 		}
 
-		caps["fecMechanisms"] = extendedRtpCapabilities["fecMechanisms"];
+		rtpCapabilities["fecMechanisms"] = extendedRtpCapabilities["fecMechanisms"];
 
-		return caps;
+		return rtpCapabilities;
 	};
 
 	/**
@@ -341,67 +342,67 @@ namespace ortc
 		MSC_TRACE();
 
 		/* clang-format off */
-		json params =
+		json rtpParameters =
 		{
-			{ "mid",              nullptr       },
-			{ "codecs",           json::array() },
-			{ "headerExtensions", json::array() },
-			{ "encodings",        json::array() },
-			{ "rtcp",             json::array() }
+			{ "mid",              nullptr        },
+			{ "codecs",           json::array()  },
+			{ "headerExtensions", json::array()  },
+			{ "encodings",        json::array()  },
+			{ "rtcp",             json::object() }
 		};
 		/* clang-format on */
 
-		for (auto& capCodec : extendedRtpCapabilities["codecs"])
+		for (auto& extendedCodec : extendedRtpCapabilities["codecs"])
 		{
-			if (kind != capCodec["kind"].get<std::string>())
+			if (kind != extendedCodec["kind"].get<std::string>())
 				continue;
 
 			/* clang-format off */
 			json codec =
 			{
-				{ "name",                 capCodec["name"] },
-				{ "mimeType",             capCodec["mimeType"] },
-				{ "kind",                 capCodec["kind"] },
-				{ "clockRate",            capCodec["clockRate"] },
-				{ "payloadType",          capCodec["sendPayloadType"] },
-				{ "rtcpFeedback",         capCodec["rtcpFeedback"] },
-				{ "parameters",           capCodec["parameters"] }
+				{ "name",                 extendedCodec["name"]             },
+				{ "mimeType",             extendedCodec["mimeType"]         },
+				{ "kind",                 extendedCodec["kind"]             },
+				{ "clockRate",            extendedCodec["clockRate"]        },
+				{ "payloadType",          extendedCodec["localPayloadType"] },
+				{ "rtcpFeedback",         extendedCodec["rtcpFeedback"]     },
+				{ "parameters",           extendedCodec["localParameters"]  }
 			};
 			/* clang-format on */
 
-			auto it = capCodec.find("channels");
-			if (it != capCodec.end())
+			auto it = extendedCodec.find("channels");
+			if (it != extendedCodec.end())
 			{
 				auto channels     = *it;
 				codec["channels"] = channels;
 			}
 
-			params["codecs"].push_back(codec);
+			rtpParameters["codecs"].push_back(codec);
 
 			// Add RTX codec.
-			if (capCodec["sendRtxPayloadType"] != nullptr)
+			if (extendedCodec["localRtxPayloadType"] != nullptr)
 			{
-				auto mimeType = capCodec["kind"].get<std::string>();
+				auto mimeType = extendedCodec["kind"].get<std::string>();
 				mimeType.append("/rtx");
 
 				/* clang-format off */
-				json rtxCapCodec =
+				json rtxCodec =
 				{
-					{ "name",         "rtx"                          },
-					{ "mimeType",     mimeType                       },
-					{ "clockRate",    capCodec["clockRate"]          },
-					{ "payloadType",  capCodec["sendRtxPayloadType"] },
-					{ "rtcpFeedback", json::array()                  },
+					{ "name",         "rtx"                               },
+					{ "mimeType",     mimeType                            },
+					{ "clockRate",    extendedCodec["clockRate"]          },
+					{ "payloadType",  extendedCodec["localRtxPayloadType"] },
+					{ "rtcpFeedback", json::array()                       },
 					{
 						"parameters",
 						{
-							{ "apt", capCodec["sendPayloadType"].get<uint8_t>() }
+							{ "apt", extendedCodec["localPayloadType"].get<uint8_t>() }
 						}
 					}
 				};
 				/* clang-format on */
 
-				params["codecs"].push_back(rtxCapCodec);
+				rtpParameters["codecs"].push_back(rtxCodec);
 			}
 
 			// NOTE: We assume a single media codec plus an optional RTX codec.
@@ -409,23 +410,118 @@ namespace ortc
 			break;
 		}
 
-		for (auto& capExt : extendedRtpCapabilities["headerExtensions"])
+		for (auto& extendedExtension : extendedRtpCapabilities["headerExtensions"])
 		{
-			if (kind != capExt["kind"].get<std::string>())
+			if (kind != extendedExtension["kind"].get<std::string>())
 				continue;
 
 			/* clang-format off */
 			json ext =
 			{
-				{ "uri", capExt["uri"]    },
-				{ "id",  capExt["recvId"] }
+				{ "uri", extendedExtension["uri"]    },
+				{ "id",  extendedExtension["recvId"] }
 			};
 			/* clang-format on */
 
-			params["headerExtensions"].push_back(ext);
+			rtpParameters["headerExtensions"].push_back(ext);
 		}
 
-		return params;
+		return rtpParameters;
+	};
+
+	/**
+	 * Generate RTP parameters of the given kind for sending media.
+	 */
+	json getSendingRemoteRtpParameters(const std::string& kind, const json& extendedRtpCapabilities)
+	{
+		MSC_TRACE();
+
+		/* clang-format off */
+		json rtpParameters =
+		{
+			{ "mid",              nullptr        },
+			{ "codecs",           json::array()  },
+			{ "headerExtensions", json::array()  },
+			{ "encodings",        json::array()  },
+			{ "rtcp",             json::object() }
+		};
+		/* clang-format on */
+
+		for (auto& extendedCodec : extendedRtpCapabilities["codecs"])
+		{
+			if (kind != extendedCodec["kind"].get<std::string>())
+				continue;
+
+			/* clang-format off */
+			json codec =
+			{
+				{ "name",                 extendedCodec["name"]            },
+				{ "mimeType",             extendedCodec["mimeType"]         },
+				{ "kind",                 extendedCodec["kind"]             },
+				{ "clockRate",            extendedCodec["clockRate"]        },
+				{ "payloadType",          extendedCodec["localPayloadType"] },
+				{ "rtcpFeedback",         extendedCodec["rtcpFeedback"]     },
+				{ "parameters",           extendedCodec["remoteParameters"] }
+			};
+			/* clang-format on */
+
+			auto it = extendedCodec.find("channels");
+			if (it != extendedCodec.end())
+			{
+				auto channels     = *it;
+				codec["channels"] = channels;
+			}
+
+			rtpParameters["codecs"].push_back(codec);
+
+			// Add RTX codec.
+			if (extendedCodec["localRtxPayloadType"] != nullptr)
+			{
+				auto mimeType = extendedCodec["kind"].get<std::string>();
+				mimeType.append("/rtx");
+
+				/* clang-format off */
+				json rtxCodec =
+				{
+					{ "name",         "rtx"                               },
+					{ "mimeType",     mimeType                            },
+					{ "clockRate",    extendedCodec["clockRate"]          },
+					{ "payloadType",  extendedCodec["localRtxPayloadType"] },
+					{ "rtcpFeedback", json::array()                       },
+					{
+						"parameters",
+						{
+							{ "apt", extendedCodec["localPayloadType"].get<uint8_t>() }
+						}
+					}
+				};
+				/* clang-format on */
+
+				rtpParameters["codecs"].push_back(rtxCodec);
+			}
+
+			// NOTE: We assume a single media codec plus an optional RTX codec.
+			// TODO: In the future, we need to add FEC, CN, etc, codecs.
+			break;
+		}
+
+		for (auto& extendedExtension : extendedRtpCapabilities["headerExtensions"])
+		{
+			if (kind != extendedExtension["kind"].get<std::string>())
+				continue;
+
+			/* clang-format off */
+			json ext =
+			{
+				{ "uri", extendedExtension["uri"]    },
+				{ "id",  extendedExtension["recvId"] }
+			};
+			/* clang-format on */
+
+			rtpParameters["headerExtensions"].push_back(ext);
+		}
+
+		return rtpParameters;
 	};
 
 	/**
@@ -459,7 +555,7 @@ namespace ortc
 
 		auto codecs = extendedRtpCapabilities["codecs"];
 		auto it     = std::find_if(codecs.begin(), codecs.end(), [&firstMediaCodec](const json& codec) {
-      return codec["recvPayloadType"] == firstMediaCodec["payloadType"];
+      return codec["remotePayloadType"] == firstMediaCodec["payloadType"];
     });
 
 		return it != codecs.end();

@@ -28,7 +28,7 @@ void Device::Load(const json& routerRtpCapabilities)
 
 	// Get extended RTP capabilities.
 	this->extendedRtpCapabilities =
-	  ortc::getExtendedCapabilities(nativeRtpCapabilities, routerRtpCapabilities);
+	  ortc::getExtendedRtpCapabilities(nativeRtpCapabilities, routerRtpCapabilities);
 
 	// Check whether we can produce audio/video.
 	this->canProduceByKind["audio"] = ortc::canSend("audio", this->extendedRtpCapabilities);

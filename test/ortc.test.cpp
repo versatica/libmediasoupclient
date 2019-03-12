@@ -11,7 +11,7 @@ TEST_CASE("GetExtendedCapabilities", "[ortc][GetExtendedCapabilities]")
 		json remoteCaps = generateRouterRtpCapabilities();
 		json localCaps  = generateRouterRtpCapabilities();
 
-		auto extendedRtpCapabilities = ortc::getExtendedCapabilities(localCaps, remoteCaps);
+		auto extendedRtpCapabilities = ortc::getExtendedRtpCapabilities(localCaps, remoteCaps);
 
 		REQUIRE(extendedRtpCapabilities["codecs"].size() == 3);
 
@@ -19,12 +19,12 @@ TEST_CASE("GetExtendedCapabilities", "[ortc][GetExtendedCapabilities]")
 		REQUIRE(codecs[0]["name"] == "opus");
 
 		REQUIRE(codecs[1]["name"] == "VP8");
-		REQUIRE(codecs[1]["recvRtxPayloadType"] == 102);
-		REQUIRE(codecs[1]["sendRtxPayloadType"] == 102);
+		REQUIRE(codecs[1]["remoteRtxPayloadType"] == 102);
+		REQUIRE(codecs[1]["localRtxPayloadType"] == 102);
 
 		REQUIRE(codecs[2]["name"] == "H264");
-		REQUIRE(codecs[2]["recvRtxPayloadType"] == 104);
-		REQUIRE(codecs[2]["sendRtxPayloadType"] == 104);
+		REQUIRE(codecs[2]["remoteRtxPayloadType"] == 104);
+		REQUIRE(codecs[2]["localRtxPayloadType"] == 104);
 
 		REQUIRE(extendedRtpCapabilities["headerExtensions"].size() == 8);
 	}
@@ -39,7 +39,7 @@ TEST_CASE("GetExtendedCapabilities", "[ortc][GetExtendedCapabilities]")
 		it++;
 		localCaps["codecs"].erase(it);
 
-		auto extendedRtpCapabilities = ortc::getExtendedCapabilities(localCaps, remoteCaps);
+		auto extendedRtpCapabilities = ortc::getExtendedRtpCapabilities(localCaps, remoteCaps);
 
 		REQUIRE(extendedRtpCapabilities["codecs"].size() == 2);
 
@@ -47,8 +47,8 @@ TEST_CASE("GetExtendedCapabilities", "[ortc][GetExtendedCapabilities]")
 		REQUIRE(codecs[0]["name"] == "opus");
 
 		REQUIRE(codecs[1]["name"] == "H264");
-		REQUIRE(codecs[1]["recvRtxPayloadType"] == 104);
-		REQUIRE(codecs[1]["sendRtxPayloadType"] == 104);
+		REQUIRE(codecs[1]["remoteRtxPayloadType"] == 104);
+		REQUIRE(codecs[1]["localRtxPayloadType"] == 104);
 
 		REQUIRE(extendedRtpCapabilities["headerExtensions"].size() == 8);
 	}
@@ -61,7 +61,7 @@ TEST_CASE("GetRecvRtpCapabilities", "[GetRecvRtpCapabilities]")
 		json remoteCaps = generateRouterRtpCapabilities();
 		json localCaps  = generateRouterRtpCapabilities();
 
-		auto extendedRtpCapabilities = ortc::getExtendedCapabilities(localCaps, remoteCaps);
+		auto extendedRtpCapabilities = ortc::getExtendedRtpCapabilities(localCaps, remoteCaps);
 		auto recvRtpCapabilities     = ortc::getRecvRtpCapabilities(extendedRtpCapabilities);
 
 		REQUIRE(recvRtpCapabilities["codecs"].size() == 5);
@@ -85,7 +85,7 @@ TEST_CASE("GetRecvRtpCapabilities", "[GetRecvRtpCapabilities]")
 		it++;
 		localCaps["codecs"].erase(it);
 
-		auto extendedRtpCapabilities = ortc::getExtendedCapabilities(localCaps, remoteCaps);
+		auto extendedRtpCapabilities = ortc::getExtendedRtpCapabilities(localCaps, remoteCaps);
 		auto recvRtpCapabilities     = ortc::getRecvRtpCapabilities(extendedRtpCapabilities);
 
 		REQUIRE(recvRtpCapabilities["codecs"].size() == 3);
@@ -105,7 +105,7 @@ TEST_CASE("GetSendingRtpParameters", "[GetSendingRtpParameters]")
 		json remoteCaps = generateRouterRtpCapabilities();
 		json localCaps  = generateRouterRtpCapabilities();
 
-		auto extendedRtpCapabilities = ortc::getExtendedCapabilities(localCaps, remoteCaps);
+		auto extendedRtpCapabilities = ortc::getExtendedRtpCapabilities(localCaps, remoteCaps);
 		auto audioSendRtpParameters  = ortc::getSendingRtpParameters("audio", extendedRtpCapabilities);
 
 		REQUIRE(audioSendRtpParameters["codecs"].size() == 1);
@@ -124,7 +124,7 @@ TEST_CASE("ortc::canSend", "[ortc::canSend]")
 	json remoteCaps = generateRouterRtpCapabilities();
 	json localCaps  = generateRouterRtpCapabilities();
 
-	auto extendedRtpCapabilities = ortc::getExtendedCapabilities(localCaps, remoteCaps);
+	auto extendedRtpCapabilities = ortc::getExtendedRtpCapabilities(localCaps, remoteCaps);
 
 	SECTION("it can send audio and video if audio and video codecs are present")
 	{
@@ -156,7 +156,7 @@ TEST_CASE("ortc::canReceive", "[ortc::canReceive]")
 	json remoteCaps = generateRouterRtpCapabilities();
 	json localCaps  = generateRouterRtpCapabilities();
 
-	auto extendedRtpCapabilities = ortc::getExtendedCapabilities(localCaps, remoteCaps);
+	auto extendedRtpCapabilities = ortc::getExtendedRtpCapabilities(localCaps, remoteCaps);
 
 	SECTION("it can receive")
 	{

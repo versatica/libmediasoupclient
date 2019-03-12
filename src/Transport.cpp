@@ -31,13 +31,24 @@ SendTransport::SendTransport(
 {
 	MSC_TRACE();
 
-	json rtpParametersByKind = {
+	json sendingRtpParametersByKind = {
 		{ "audio", ortc::getSendingRtpParameters("audio", extendedRtpCapabilities) },
 		{ "video", ortc::getSendingRtpParameters("video", extendedRtpCapabilities) }
 	};
 
+	json sendingRemoteRtpParametersByKind = {
+		{ "audio", ortc::getSendingRemoteRtpParameters("audio", extendedRtpCapabilities) },
+		{ "video", ortc::getSendingRemoteRtpParameters("video", extendedRtpCapabilities) }
+	};
+
 	this->handler.reset(new SendHandler(
-	  this, iceParameters, iceCandidates, dtlsParameters, peerConnectionOptions, rtpParametersByKind));
+	  this,
+	  iceParameters,
+	  iceCandidates,
+	  dtlsParameters,
+	  peerConnectionOptions,
+	  sendingRtpParametersByKind,
+	  sendingRemoteRtpParametersByKind));
 
 	Transport::SetHandler(this->handler.get());
 }
@@ -53,8 +64,9 @@ Producer* SendTransport::Produce(
 	MSC_TRACE();
 
 	static const std::vector<webrtc::RtpEncodingParameters> Encodings;
+	static const json CodecOptions = json::object();
 
-	return this->Produce(producerPublicListener, track, Encodings, std::move(appData));
+	return this->Produce(producerPublicListener, track, Encodings, CodecOptions, std::move(appData));
 }
 
 /*
@@ -64,6 +76,7 @@ Producer* SendTransport::Produce(
   Producer::PublicListener* producerPublicListener,
   webrtc::MediaStreamTrackInterface* track,
   const std::vector<webrtc::RtpEncodingParameters>& encodings,
+  const json& codecOptions,
   json appData)
 {
 	MSC_TRACE();
@@ -79,7 +92,6 @@ Producer* SendTransport::Produce(
 	else if (!appData.is_object())
 		throw Exception("appData must be an object");
 
-	json rtpParameters;
 	std::string producerId;
 
 	std::vector<webrtc::RtpEncodingParameters> normalizedEncodings;
@@ -101,7 +113,10 @@ Producer* SendTransport::Produce(
 	  });
 
 	// May throw.
-	rtpParameters = this->handler->Send(track, normalizedEncodings);
+	auto result = this->handler->Send(track, normalizedEncodings, codecOptions);
+
+	auto localId       = result.first;
+	auto rtpParameters = result.second;
 
 	try
 	{
@@ -110,13 +125,13 @@ Producer* SendTransport::Produce(
 	}
 	catch (Exception& error)
 	{
-		this->handler->StopSending(track);
+		this->handler->StopSending(localId);
 
 		throw;
 	}
 
 	auto* producer =
-	  new Producer(this, producerPublicListener, producerId, track, rtpParameters, appData);
+	  new Producer(this, producerPublicListener, producerId, localId, track, rtpParameters, appData);
 
 	this->producers[producer->GetId()] = producer;
 
@@ -145,21 +160,21 @@ void SendTransport::OnClose(Producer* producer)
 		return;
 
 	// May throw.
-	this->handler->StopSending(producer->GetTrack());
+	this->handler->StopSending(producer->GetLocalId());
 }
 
-void SendTransport::OnReplaceTrack(const Producer* producer, webrtc::MediaStreamTrackInterface* newTrack)
+void SendTransport::OnReplaceTrack(const Producer* producer, webrtc::MediaStreamTrackInterface* track)
 {
 	MSC_TRACE();
 
-	return this->handler->ReplaceTrack(producer->GetTrack(), newTrack);
+	return this->handler->ReplaceTrack(producer->GetLocalId(), track);
 }
 
 void SendTransport::OnSetMaxSpatialLayer(const Producer* producer, uint8_t maxSpatialLayer)
 {
 	MSC_TRACE();
 
-	return this->handler->SetMaxSpatialLayer(producer->GetTrack(), maxSpatialLayer);
+	return this->handler->SetMaxSpatialLayer(producer->GetLocalId(), maxSpatialLayer);
 }
 
 json SendTransport::OnGetStats(const Producer* producer)
@@ -169,7 +184,7 @@ json SendTransport::OnGetStats(const Producer* producer)
 	if (this->closed)
 		throw Exception("Invalid state");
 
-	return this->handler->GetSenderStats(producer->GetTrack());
+	return this->handler->GetSenderStats(producer->GetLocalId());
 }
 
 /* RecvTransport instance methods. */
@@ -216,13 +231,14 @@ Consumer* RecvTransport::Consume(
 	if (!canConsume)
 		throw Exception("cannot consume this Producer");
 
-	webrtc::MediaStreamTrackInterface* track;
-
 	// May throw.
-	track = this->handler->Receive(id, kind, rtpParameters);
+	auto result = this->handler->Receive(id, kind, rtpParameters);
+
+	auto localId = result.first;
+	auto* track  = result.second;
 
 	auto* consumer = new Consumer(
-	  this, consumerPublicListener, id, producerId, track, rtpParameters, std::move(appData));
+	  this, consumerPublicListener, id, localId, producerId, track, rtpParameters, std::move(appData));
 
 	this->consumers[consumer->GetId()] = consumer;
 
@@ -240,7 +256,7 @@ void RecvTransport::OnClose(Consumer* consumer)
 		return;
 
 	// May throw.
-	this->handler->StopReceiving(consumer->GetId());
+	this->handler->StopReceiving(consumer->GetLocalId());
 }
 
 json RecvTransport::OnGetStats(const Consumer* consumer)
@@ -250,6 +266,6 @@ json RecvTransport::OnGetStats(const Consumer* consumer)
 	if (this->closed)
 		throw Exception("Invalid state");
 
-	return this->handler->GetReceiverStats(consumer->GetId());
+	return this->handler->GetReceiverStats(consumer->GetLocalId());
 }
 } // namespace mediasoupclient

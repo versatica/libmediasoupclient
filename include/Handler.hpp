@@ -4,6 +4,7 @@
 #include "PeerConnection.hpp"
 #include "sdp/RemoteSdp.hpp"
 #include "json.hpp"
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -32,8 +33,10 @@ public:
 public:
 	explicit Handler(
 	  Listener* listener,
-	  PeerConnection::Options* peerConnectionOptions,
-	  nlohmann::json sendingRtpParametersByKind = nlohmann::json::array());
+	  const nlohmann::json& iceParameters,
+	  const nlohmann::json& iceCandidates,
+	  const nlohmann::json& dtlsParameters,
+	  PeerConnection::Options* peerConnectionOptions);
 
 	nlohmann::json GetTransportStats();
 	void UpdateIceServers(const nlohmann::json& iceServerUris);
@@ -45,20 +48,22 @@ public:
 	void OnIceConnectionChange(webrtc::PeerConnectionInterface::IceConnectionState newState) override;
 
 protected:
-	void SetupTransport(const std::string& localDtlsRole);
+	void SetupTransport(
+	  const std::string& localDtlsRole, nlohmann::json localSdpObject = nlohmann::json::object());
 
 protected:
 	// Listener instance.
 	Listener* listener{ nullptr };
-
-	// Generic sending RTP parameters for audio and video.
-	nlohmann::json sendingRtpParametersByKind;
 
 	// Remote SDP instance.
 	std::unique_ptr<Sdp::RemoteSdp> remoteSdp;
 
 	// Got transport local and remote parameters.
 	bool transportReady{ false };
+
+	// Map of RTCTransceivers indexed by MID.
+	// @type {Map<String, RTCTransceiver>}
+	std::map<std::string, webrtc::RtpTransceiverInterface*> mapMidTransceiver;
 
 	// PeerConnection instance.
 	std::unique_ptr<PeerConnection> pc;
@@ -73,24 +78,29 @@ public:
 	  const nlohmann::json& iceCandidates,
 	  const nlohmann::json& dtlsParameters,
 	  PeerConnection::Options* peerConnectionOptions,
-	  const nlohmann::json& rtpParametersByKind);
+	  const nlohmann::json& sendingRtpParametersByKind,
+	  const nlohmann::json& sendingRemoteRtpParametersByKind = nlohmann::json());
 
-	nlohmann::json Send(
+	std::pair<std::string, nlohmann::json> Send(
 	  webrtc::MediaStreamTrackInterface* track,
-	  const std::vector<webrtc::RtpEncodingParameters>& encodings);
-	void StopSending(webrtc::MediaStreamTrackInterface* track);
-	void ReplaceTrack(
-	  webrtc::MediaStreamTrackInterface* track, webrtc::MediaStreamTrackInterface* newTrack);
-	void SetMaxSpatialLayer(webrtc::MediaStreamTrackInterface* track, uint8_t spatialLayer);
-	nlohmann::json GetSenderStats(webrtc::MediaStreamTrackInterface* track);
+	  const std::vector<webrtc::RtpEncodingParameters>& encodings,
+	  const nlohmann::json& codecOptions = nlohmann::json());
+	void StopSending(const std::string& localId);
+	void ReplaceTrack(const std::string& localId, webrtc::MediaStreamTrackInterface* track);
+	void SetMaxSpatialLayer(const std::string& localId, uint8_t spatialLayer);
+	nlohmann::json GetSenderStats(const std::string& localId);
 
 	/* Methods inherided from Handler. */
 public:
 	void RestartIce(const nlohmann::json& iceParameters) override;
 
 private:
-	// Sending tracks.
-	std::set<webrtc::MediaStreamTrackInterface*> tracks;
+	// Generic sending RTP parameters for audio and video.
+	nlohmann::json sendingRtpParametersByKind;
+
+	// Generic sending RTP parameters for audio and video suitable for the SDP
+	// remote answer.
+	nlohmann::json sendingRemoteRtpParametersByKind;
 };
 
 class RecvHandler : public Handler
@@ -103,28 +113,14 @@ public:
 	  const nlohmann::json& dtlsParameters,
 	  PeerConnection::Options* peerConnectionOptions);
 
-	webrtc::MediaStreamTrackInterface* Receive(
+	std::pair<std::string, webrtc::MediaStreamTrackInterface*> Receive(
 	  const std::string& id, const std::string& kind, const nlohmann::json& rtpParameters);
-	void StopReceiving(const std::string& id);
-	nlohmann::json GetReceiverStats(const std::string& id);
+	void StopReceiving(const std::string& localId);
+	nlohmann::json GetReceiverStats(const std::string& localId);
 
 	/* Methods inherided from Handler. */
 public:
 	void RestartIce(const nlohmann::json& iceParameters) override;
-
-	/*
-	 * Receiver infos indexed by id.
-	 *
-	 * Receiver info:
-	 * - mid {String}
-	 * - kind {String}
-	 * - closed {Boolean}
-	 * - trackId {String}
-	 * - ssrc {Number}
-	 * - rtxSsrc {Number}
-	 * - cname {String}
-	 */
-	std::map<const std::string, nlohmann::json> receiverInfos;
 
 	// MID value counter. It must be incremented for each new m= section.
 	uint32_t nextMid{ 0 };

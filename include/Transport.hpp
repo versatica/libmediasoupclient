@@ -139,7 +139,7 @@ private:
 	Listener* listener;
 
 	// Map of Producers indexed by id.
-	std::map<std::string, Producer*> producers;
+	std::unordered_map<std::string, Producer*> producers;
 
 	// Whether we can produce audio/video based on computed extended RTP
 	// capabilities.
@@ -185,7 +185,7 @@ private:
 
 private:
 	// Map of Consumers indexed by id.
-	std::map<std::string, Consumer*> consumers;
+	std::unordered_map<std::string, Consumer*> consumers;
 
 	// SendHandler instance.
 	std::unique_ptr<RecvHandler> handler;

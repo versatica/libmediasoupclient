@@ -49,7 +49,7 @@ namespace Sdp
 		nlohmann::json dtlsParameters = nlohmann::json::object();
 
 		// MediaSection instances indexed by MID.
-		std::map<std::string, MediaSection*> mediaSections;
+		std::unordered_map<std::string, MediaSection*> mediaSections;
 
 		// Generic sending RTP parameters for audio and video.
 		nlohmann::json sendingRtpParametersByKind = nlohmann::json::object();

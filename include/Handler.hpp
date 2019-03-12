@@ -63,7 +63,7 @@ protected:
 
 	// Map of RTCTransceivers indexed by MID.
 	// @type {Map<String, RTCTransceiver>}
-	std::map<std::string, webrtc::RtpTransceiverInterface*> mapMidTransceiver;
+	std::unordered_map<std::string, webrtc::RtpTransceiverInterface*> mapMidTransceiver;
 
 	// PeerConnection instance.
 	std::unique_ptr<PeerConnection> pc;

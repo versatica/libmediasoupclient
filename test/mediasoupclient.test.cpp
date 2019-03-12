@@ -234,7 +234,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE(!videoProducer->IsClosed());
 		REQUIRE(videoProducer->GetKind() == "video");
 		REQUIRE(videoProducer->GetTrack() == videoTrack);
-		REQUIRE(videoProducer->GetRtpParameters()["codecs"].size() > 0);
+		REQUIRE(!videoProducer->GetRtpParameters()["codecs"].empty());
 
 		codecs = videoProducer->GetRtpParameters()["codecs"];
 		REQUIRE(codecs[0].is_object());

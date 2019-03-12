@@ -14,10 +14,7 @@ namespace mediasoupclient
 {
 namespace Sdp
 {
-	MediaSection::MediaSection(
-	  const nlohmann::json& iceParameters,
-	  const nlohmann::json& iceCandidates,
-	  const nlohmann::json& dtlsParameters)
+	MediaSection::MediaSection(const nlohmann::json& iceParameters, const nlohmann::json& iceCandidates)
 	{
 		MSC_TRACE();
 
@@ -49,9 +46,6 @@ namespace Sdp
 
 		this->mediaObject["endOfCandidates"] = "end-of-candidates";
 		this->mediaObject["iceOptions"]      = "renomination";
-
-		// Set DTLS role.
-		this->SetDtlsRole(dtlsParameters["role"].get<std::string>());
 	}
 
 	AnswerMediaSection::AnswerMediaSection(
@@ -62,7 +56,7 @@ namespace Sdp
 	  const nlohmann::json& offerRtpParameters,
 	  nlohmann::json& answerRtpParameters,
 	  const nlohmann::json& codecOptions)
-	  : MediaSection(iceParameters, iceCandidates, dtlsParameters)
+	  : MediaSection(iceParameters, iceCandidates)
 	{
 		MSC_TRACE();
 
@@ -117,24 +111,24 @@ namespace Sdp
 					if (it2 != codecOptions.end())
 					{
 						auto opusStereo                          = (*it).get<uint8_t>();
-						offerCodec["parameters"]["sprop-stereo"] = opusStereo ? 1 : 0;
-						codecParameters["stereo"]                = opusStereo ? 1 : 0;
+						offerCodec["parameters"]["sprop-stereo"] = opusStereo != 0u ? 1 : 0;
+						codecParameters["stereo"]                = opusStereo != 0u ? 1 : 0;
 					}
 
 					it2 = codecOptions.find("opusFec");
 					if (it2 != codecOptions.end())
 					{
 						auto opusFec                             = (*it).get<uint8_t>();
-						offerCodec["parameters"]["useinbandfec"] = opusFec ? 1 : 0;
-						codecParameters["useinbandfec"]          = opusFec ? 1 : 0;
+						offerCodec["parameters"]["useinbandfec"] = opusFec != 0u ? 1 : 0;
+						codecParameters["useinbandfec"]          = opusFec != 0u ? 1 : 0;
 					}
 
 					it2 = codecOptions.find("opusDtx");
 					if (it2 != codecOptions.end())
 					{
 						auto opusDtx                       = (*it).get<uint8_t>();
-						offerCodec["parameters"]["usedtx"] = opusDtx ? 1 : 0;
-						codecParameters["usedtx"]          = opusDtx ? 1 : 0;
+						offerCodec["parameters"]["usedtx"] = opusDtx != 0u ? 1 : 0;
+						codecParameters["usedtx"]          = opusDtx != 0u ? 1 : 0;
 					}
 
 					it2 = codecOptions.find("opusMaxPlaybackRate");
@@ -257,6 +251,9 @@ namespace Sdp
 
 		this->mediaObject["rtcpMux"]   = "rtcp-mux";
 		this->mediaObject["rtcpRsize"] = "rtcp-rsize";
+
+		// Set DTLS role.
+		this->SetDtlsRole(dtlsParameters["role"].get<std::string>());
 	}
 
 	OfferMediaSection::OfferMediaSection(
@@ -268,7 +265,7 @@ namespace Sdp
 	  const nlohmann::json& offerRtpParameters,
 	  const std::string& streamId,
 	  const std::string& trackId)
-	  : MediaSection(iceParameters, iceCandidates, dtlsParameters)
+	  : MediaSection(iceParameters, iceCandidates)
 	{
 		MSC_TRACE();
 
@@ -422,7 +419,7 @@ namespace Sdp
 				this->mediaObject["ssrcs"].push_back(
 				  { { "id", ssrc }, { "attribute", "msid" }, { "value", msid } });
 
-				if (rtxSsrc)
+				if (rtxSsrc != 0u)
 				{
 					std::string ssrcs = std::to_string(ssrc).append(" ").append(std::to_string(rtxSsrc));
 
@@ -437,6 +434,9 @@ namespace Sdp
 				}
 			}
 		}
+
+		// Set DTLS role.
+		this->SetDtlsRole(dtlsParameters["role"].get<std::string>());
 	}
 } // namespace Sdp
 } // namespace mediasoupclient

@@ -5,6 +5,8 @@
 #include "Exception.hpp"
 #include "Logger.hpp"
 #include "Utils.hpp"
+#include <algorithm> // ::transform
+#include <cctype>    // ::tolower
 #include <map>
 #include <set>
 #include <string>
@@ -437,6 +439,7 @@ namespace Sdp
 			for (auto& codec : offerRtpParameters["codecs"])
 			{
 				auto mimeType = codec["mimeType"].get<std::string>();
+				std::transform(mimeType.begin(), mimeType.end(), mimeType.begin(), ::tolower);
 
 				// Avoid parsing codec parameters for unhandled codecs.
 				if (mimeType != "audio/opus")
@@ -480,7 +483,7 @@ namespace Sdp
 					if (it2 != codec["parameters"].end())
 					{
 						auto spropStereo     = (*it2).get<uint8_t>();
-						parameters["stereo"] = spropStereo ? 1 : 0;
+						parameters["stereo"] = spropStereo != 0u ? 1 : 0;
 					}
 				}
 

@@ -12,17 +12,16 @@ namespace Sdp
 	{
 	public:
 		MediaSection(){};
-		MediaSection(
-		  const nlohmann::json& iceParameters,
-		  const nlohmann::json& iceCandidates,
-		  const nlohmann::json& dtlsParameters);
+		MediaSection(const nlohmann::json& iceParameters, const nlohmann::json& iceCandidates);
 
 	public:
 		std::string GetMid() const;
 		nlohmann::json GetObject() const;
 		void SetIceParameters(const nlohmann::json& iceParameters);
-		virtual void SetDtlsRole(const std::string& role){};
 		void Disable();
+
+	public:
+		virtual void SetDtlsRole(const std::string& role) = 0;
 
 	protected:
 		nlohmann::json mediaObject = nlohmann::json::object();
@@ -41,7 +40,7 @@ namespace Sdp
 		  const nlohmann::json& codecOptions);
 
 	public:
-		void SetDtlsRole(const std::string& role);
+		void SetDtlsRole(const std::string& role) override;
 	};
 
 	class OfferMediaSection : public MediaSection
@@ -58,7 +57,7 @@ namespace Sdp
 		  const std::string& trackId);
 
 	public:
-		void SetDtlsRole(const std::string& role);
+		void SetDtlsRole(const std::string& role) override;
 	};
 
 	// MediaSection inline methods.

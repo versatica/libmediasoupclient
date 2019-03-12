@@ -77,7 +77,7 @@ Producer* SendTransport::Produce(
   webrtc::MediaStreamTrackInterface* track,
   const std::vector<webrtc::RtpEncodingParameters>& encodings,
   const json& codecOptions,
-  json appData)
+  const json appData)
 {
 	MSC_TRACE();
 

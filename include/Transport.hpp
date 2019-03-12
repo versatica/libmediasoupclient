@@ -31,7 +31,7 @@ public:
 
 	/* Pure virtual methods inherited from Handler::Listener */
 public:
-	void OnConnect(nlohmann::json& transportLocalParameters) override;
+	void OnConnect(nlohmann::json& dtlsParameters) override;
 	void OnConnectionStateChange(
 	  webrtc::PeerConnectionInterface::IceConnectionState connectionState) override;
 
@@ -106,7 +106,7 @@ public:
 	  webrtc::MediaStreamTrackInterface* track,
 	  const std::vector<webrtc::RtpEncodingParameters>& encodings,
 	  const nlohmann::json& codecOptions = nlohmann::json::object(),
-	  nlohmann::json appData             = nlohmann::json::object());
+	  const nlohmann::json appData       = nlohmann::json::object());
 
 	/* Virtual methods inherited from Transport. */
 public:
@@ -115,7 +115,7 @@ public:
 	/* Virtual methods inherited from Producer::Listener. */
 public:
 	void OnClose(Producer* producer) override;
-	void OnReplaceTrack(const Producer* producer, webrtc::MediaStreamTrackInterface* newTrack) override;
+	void OnReplaceTrack(const Producer* producer, webrtc::MediaStreamTrackInterface* track) override;
 	void OnSetMaxSpatialLayer(const Producer* producer, uint8_t maxSpatialLayer) override;
 	nlohmann::json OnGetStats(const Producer* producer) override;
 

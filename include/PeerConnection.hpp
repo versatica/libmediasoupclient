@@ -127,7 +127,7 @@ public:
 	const std::string GetLocalDescription();
 	const std::string GetRemoteDescription();
 	std::vector<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>> GetTransceivers() const;
-	rtc::scoped_refptr<webrtc::RtpTransceiverInterface> AddTransceiver(cricket::MediaType media_type);
+	rtc::scoped_refptr<webrtc::RtpTransceiverInterface> AddTransceiver(cricket::MediaType mediaType);
 	rtc::scoped_refptr<webrtc::RtpTransceiverInterface> AddTransceiver(
 	  rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track);
 	void Close();

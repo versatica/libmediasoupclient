@@ -24,8 +24,8 @@ namespace Utils
 	// https://stackoverflow.com/a/447307/4827838.
 	bool isInt(const std::string& str);
 	bool isFloat(const std::string& str);
-	int toInt(const std::string str);
-	float toFloat(const std::string str);
+	int toInt(const std::string& str);
+	float toFloat(const std::string& str);
 
 	/* Inline utils implementations */
 
@@ -123,7 +123,7 @@ namespace Utils
 	inline bool isInt(const std::string& str)
 	{
 		std::istringstream iss(str);
-		long l;
+		int64_t l;
 
 		iss >> std::noskipws >> l;
 
@@ -140,20 +140,20 @@ namespace Utils
 		return iss.eof() && !iss.fail();
 	}
 
-	inline int toInt(const std::string str)
+	inline int toInt(const std::string& str)
 	{
 		std::istringstream iss(str);
-		long long ll;
+		int64_t ll;
 
 		iss >> std::noskipws >> ll;
 
 		if (iss.eof() && !iss.fail())
 			return std::stoll(str);
-		else
-			return 0;
+
+		return 0;
 	}
 
-	inline float toFloat(const std::string str)
+	inline float toFloat(const std::string& str)
 	{
 		std::istringstream iss(str);
 		double d;
@@ -162,8 +162,8 @@ namespace Utils
 
 		if (iss.eof() && !iss.fail())
 			return std::stod(str);
-		else
-			return 0.0f;
+
+		return 0.0f;
 	}
 } // namespace Utils
 } // namespace mediasoupclient

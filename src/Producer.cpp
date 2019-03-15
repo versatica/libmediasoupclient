@@ -12,14 +12,14 @@ using json = nlohmann::json;
 namespace mediasoupclient
 {
 Producer::Producer(
+  Producer::PrivateListener* privateListener,
   Producer::Listener* listener,
-  Producer::PublicListener* publicListener,
   std::string id,
   std::string localId,
   webrtc::MediaStreamTrackInterface* track,
   json rtpParameters,
   json appData)
-  : listener(listener), publicListener(publicListener), id(std::move(id)),
+  : privateListener(privateListener), listener(listener), id(std::move(id)),
     localId(std::move(localId)), track(track), rtpParameters(std::move(rtpParameters)),
     appData(std::move(appData))
 {
@@ -38,7 +38,7 @@ void Producer::Close()
 
 	this->closed = true;
 
-	this->listener->OnClose(this);
+	this->privateListener->OnClose(this);
 }
 
 /**
@@ -53,7 +53,7 @@ void Producer::TransportClosed()
 
 	this->closed = true;
 
-	this->publicListener->OnTransportClose(this);
+	this->listener->OnTransportClose(this);
 }
 
 /**
@@ -101,7 +101,7 @@ void Producer::ReplaceTrack(webrtc::MediaStreamTrackInterface* track)
 		throw Exception("Track ended");
 
 	// May throw.
-	this->listener->OnReplaceTrack(this, track);
+	this->privateListener->OnReplaceTrack(this, track);
 
 	auto paused = this->IsPaused();
 
@@ -128,7 +128,7 @@ void Producer::SetMaxSpatialLayer(const uint8_t spatialLayer)
 		return;
 
 	// May throw.
-	this->listener->OnSetMaxSpatialLayer(this, spatialLayer);
+	this->privateListener->OnSetMaxSpatialLayer(this, spatialLayer);
 
 	this->maxSpatialLayer = spatialLayer;
 }

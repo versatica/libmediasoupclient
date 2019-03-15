@@ -13,15 +13,15 @@ using json = nlohmann::json;
 namespace mediasoupclient
 {
 Consumer::Consumer(
+  Consumer::PrivateListener* privateListener,
   Consumer::Listener* listener,
-  Consumer::PublicListener* publicListener,
   std::string id,
   std::string localId,
   std::string producerId,
   webrtc::MediaStreamTrackInterface* track,
   json rtpParameters,
   json appData)
-  : listener(listener), publicListener(publicListener), id(std::move(id)),
+  : privateListener(privateListener), listener(listener), id(std::move(id)),
     localId(std::move(localId)), producerId(std::move(producerId)), track(track),
     rtpParameters(std::move(rtpParameters)), appData(std::move(appData))
 {
@@ -40,7 +40,7 @@ void Consumer::Close()
 
 	this->closed = true;
 
-	this->listener->OnClose(this);
+	this->privateListener->OnClose(this);
 }
 
 /**
@@ -55,7 +55,7 @@ void Consumer::TransportClosed()
 
 	this->closed = true;
 
-	this->publicListener->OnTransportClose(this);
+	this->listener->OnTransportClose(this);
 }
 
 /**

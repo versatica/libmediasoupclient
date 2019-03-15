@@ -26,8 +26,8 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 	static rtc::scoped_refptr<webrtc::AudioTrackInterface> audioTrack;
 	static rtc::scoped_refptr<webrtc::VideoTrackInterface> videoTrack;
 
-	static FakeProducerPublicListener producerPublicListener;
-	static FakeConsumerPublicListener consumerPublicListener;
+	static FakeProducerListener producerListener;
+	static FakeConsumerListener consumerListener;
 
 	static json routerRtpCapabilities;
 
@@ -174,7 +174,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		audioTrack->set_enabled(false);
 
 		REQUIRE_NOTHROW(
-		  audioProducer.reset(sendTransport->Produce(&producerPublicListener, audioTrack, appData)));
+		  audioProducer.reset(sendTransport->Produce(&producerListener, audioTrack, appData)));
 
 		REQUIRE(
 		  sendTransportListener.onConnectTimesCalled ==
@@ -217,7 +217,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		audioProducer->Resume();
 
 		REQUIRE_NOTHROW(
-		  videoProducer.reset(sendTransport->Produce(&producerPublicListener, videoTrack, encodings)));
+		  videoProducer.reset(sendTransport->Produce(&producerListener, videoTrack, encodings)));
 
 		REQUIRE(
 		  sendTransportListener.onConnectTimesCalled ==
@@ -262,7 +262,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 	SECTION("transport.produce() without track throws")
 	{
-		REQUIRE_THROWS_AS(sendTransport->Produce(&producerPublicListener, nullptr), Exception);
+		REQUIRE_THROWS_AS(sendTransport->Produce(&producerListener, nullptr), Exception);
 	}
 
 	SECTION("transport.consume() succeeds")
@@ -284,7 +284,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		json rtcp;
 
 		REQUIRE_NOTHROW(audioConsumer.reset(recvTransport->Consume(
-						&consumerPublicListener,
+						&consumerListener,
 						audioConsumerRemoteParameters["id"].get<std::string>(),
 						audioConsumerRemoteParameters["producerId"].get<std::string>(),
 						audioConsumerRemoteParameters["kind"].get<std::string>(),
@@ -346,7 +346,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE(audioConsumer->GetAppData() == appData);
 
 		REQUIRE_NOTHROW(videoConsumer.reset(recvTransport->Consume(
-						&consumerPublicListener,
+						&consumerListener,
 						videoConsumerRemoteParameters["id"].get<std::string>(),
 						videoConsumerRemoteParameters["producerId"].get<std::string>(),
 						videoConsumerRemoteParameters["kind"].get<std::string>(),
@@ -457,7 +457,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 			generateConsumerRemoteParameters("audio/ISAC");
 
 		REQUIRE_THROWS_AS(recvTransport->Consume(
-						&consumerPublicListener,
+						&consumerListener,
 						consumerRemoteParameters["id"].get<std::string>(),
 						consumerRemoteParameters["producerId"].get<std::string>(),
 						consumerRemoteParameters["kind"].get<std::string>(),
@@ -596,7 +596,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE(sendTransport->IsClosed());
 		REQUIRE(videoProducer->IsClosed());
 		// Audio Producer was already closed.
-		REQUIRE(producerPublicListener.onTransportCloseTimesCalled == ++producerPublicListener.onTransportCloseExpetecTimesCalled);
+		REQUIRE(producerListener.onTransportCloseTimesCalled == ++producerListener.onTransportCloseExpetecTimesCalled);
 
 		// Audio Consumer was already closed.
 		REQUIRE(audioConsumer->IsClosed());
@@ -606,13 +606,13 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE(audioConsumer->IsClosed());
 		REQUIRE(videoConsumer->IsClosed());
 		// Audio Producer was already closed.
-		REQUIRE(consumerPublicListener.onTransportCloseTimesCalled == ++consumerPublicListener.onTransportCloseExpetecTimesCalled);
+		REQUIRE(consumerListener.onTransportCloseTimesCalled == ++consumerListener.onTransportCloseExpetecTimesCalled);
 	}
 
 	SECTION("transport.produce() throws if closed")
 	{
 		REQUIRE_THROWS_AS(sendTransport->Produce(
-			&producerPublicListener,
+			&producerListener,
 			audioTrack),
 			Exception);
 	}
@@ -623,7 +623,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 			generateConsumerRemoteParameters("audio/opus");
 
 		REQUIRE_THROWS_AS(recvTransport->Consume(
-					&consumerPublicListener,
+					&consumerListener,
 					audioConsumerRemoteParameters["id"].get<std::string>(),
 					audioConsumerRemoteParameters["producerId"].get<std::string>(),
 					audioConsumerRemoteParameters["kind"].get<std::string>(),

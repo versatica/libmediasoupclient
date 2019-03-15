@@ -18,7 +18,7 @@ namespace mediasoupclient
 // Fast forward declarations.
 class Device;
 
-class Transport : public Handler::Listener
+class Transport : public Handler::PrivateListener
 {
 public:
 	/* Public Listener API */
@@ -29,7 +29,7 @@ public:
 		virtual void OnConnectionStateChange(Transport* transport, const std::string& connectionState) = 0;
 	};
 
-	/* Pure virtual methods inherited from Handler::Listener */
+	/* Pure virtual methods inherited from Handler::PrivateListener */
 public:
 	void OnConnect(nlohmann::json& dtlsParameters) override;
 	void OnConnectionStateChange(
@@ -50,7 +50,7 @@ public:
 	/* Only child classes will create transport intances */
 protected:
 	Transport(
-	  Listener* listener,
+	  Listener* Listener,
 	  const std::string& id,
 	  const nlohmann::json& extendedRtpCapabilities,
 	  nlohmann::json appData);
@@ -84,7 +84,7 @@ private:
 	nlohmann::json appData{};
 };
 
-class SendTransport : public Transport, public Producer::Listener
+class SendTransport : public Transport, public Producer::PrivateListener
 {
 public:
 	/* Public Listener API */
@@ -97,12 +97,12 @@ public:
 
 public:
 	Producer* Produce(
-	  Producer::PublicListener* producerPublicListener,
+	  Producer::Listener* producerListener,
 	  webrtc::MediaStreamTrackInterface* track,
 	  nlohmann::json appData = nlohmann::json::object());
 
 	Producer* Produce(
-	  Producer::PublicListener* producerPublicListener,
+	  Producer::Listener* producerListener,
 	  webrtc::MediaStreamTrackInterface* track,
 	  const std::vector<webrtc::RtpEncodingParameters>& encodings,
 	  const nlohmann::json& codecOptions = nlohmann::json::object(),
@@ -112,7 +112,7 @@ public:
 public:
 	void Close() override;
 
-	/* Virtual methods inherited from Producer::Listener. */
+	/* Virtual methods inherited from Producer::PrivateListener. */
 public:
 	void OnClose(Producer* producer) override;
 	void OnReplaceTrack(const Producer* producer, webrtc::MediaStreamTrackInterface* track) override;
@@ -149,11 +149,11 @@ private:
 	std::unique_ptr<SendHandler> handler;
 };
 
-class RecvTransport : public Transport, public Consumer::Listener
+class RecvTransport : public Transport, public Consumer::PrivateListener
 {
 public:
 	Consumer* Consume(
-	  Consumer::PublicListener* consumerPublicListener,
+	  Consumer::Listener* consumerListener,
 	  const std::string& id,
 	  const std::string& producerId,
 	  const std::string& kind,
@@ -164,7 +164,7 @@ public:
 public:
 	void Close() override;
 
-	/* Virtual methods inherited from Consumer::Listener. */
+	/* Virtual methods inherited from Consumer::PrivateListener. */
 public:
 	void OnClose(Consumer* consumer) override;
 	nlohmann::json OnGetStats(const Consumer* consumer) override;

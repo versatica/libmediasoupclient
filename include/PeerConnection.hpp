@@ -33,7 +33,7 @@ public:
 	static void ClassCleanup();
 	static const std::string& GetName();
 
-	class Listener : public webrtc::PeerConnectionObserver
+	class PrivateListener : public webrtc::PeerConnectionObserver
 	{
 		/* Virtual methods inherited from PeerConnectionObserver. */
 	public:
@@ -115,7 +115,7 @@ public:
 	};
 
 public:
-	PeerConnection(Listener* listener, Options* options);
+	PeerConnection(PrivateListener* privateListener, Options* options);
 	~PeerConnection() = default;
 
 	webrtc::PeerConnectionInterface::RTCConfiguration GetConfiguration() const;

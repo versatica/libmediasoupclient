@@ -15,7 +15,7 @@ class RecvTransport;
 class Consumer
 {
 public:
-	class Listener
+	class PrivateListener
 	{
 	public:
 		virtual void OnClose(Consumer* consumer)                    = 0;
@@ -23,7 +23,7 @@ public:
 	};
 
 	/* Public Listener API */
-	class PublicListener
+	class Listener
 	{
 	public:
 		virtual void OnTransportClose(Consumer* consumer) = 0;
@@ -48,8 +48,8 @@ public:
 
 private:
 	Consumer(
+	  PrivateListener* privateListener,
 	  Listener* listener,
-	  PublicListener* publicListener,
 	  std::string id,
 	  std::string localId,
 	  std::string producerId,
@@ -63,11 +63,11 @@ private:
 	friend RecvTransport;
 
 private:
-	// Listener instance.
-	Listener* listener;
+	// PrivateListener instance.
+	PrivateListener* privateListener;
 
-	// Public listener instance.
-	PublicListener* publicListener;
+	// Public Listener instance.
+	Listener* listener;
 
 	// Id.
 	std::string id;
@@ -139,7 +139,7 @@ inline nlohmann::json Consumer::GetStats() const
 	if (this->closed)
 		throw Exception("Invalid state");
 	else
-		return this->listener->OnGetStats(this);
+		return this->privateListener->OnGetStats(this);
 }
 
 inline bool Consumer::IsClosed() const

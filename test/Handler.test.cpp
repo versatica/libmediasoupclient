@@ -12,7 +12,7 @@ static const json RtpParametersByKind       = generateRtpParametersByKind();
 
 static PeerConnection::Options PeerConnectionOptions;
 
-class FakeHandlerListener : public Handler::Listener
+class FakeHandlerListener : public Handler::PrivateListener
 {
 public:
 	void OnConnect(json& /*transportLocalParameters*/) override{};

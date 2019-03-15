@@ -57,7 +57,7 @@ SendTransport::SendTransport(
  * Produce a track
  */
 Producer* SendTransport::Produce(
-  Producer::PublicListener* producerPublicListener,
+  Producer::Listener* producerListener,
   webrtc::MediaStreamTrackInterface* track,
   json appData)
 {
@@ -66,14 +66,14 @@ Producer* SendTransport::Produce(
 	static const std::vector<webrtc::RtpEncodingParameters> Encodings;
 	static const json CodecOptions = json::object();
 
-	return this->Produce(producerPublicListener, track, Encodings, CodecOptions, std::move(appData));
+	return this->Produce(producerListener, track, Encodings, CodecOptions, std::move(appData));
 }
 
 /*
  * Produce a track
  */
 Producer* SendTransport::Produce(
-  Producer::PublicListener* producerPublicListener,
+  Producer::Listener* producerListener,
   webrtc::MediaStreamTrackInterface* track,
   const std::vector<webrtc::RtpEncodingParameters>& encodings,
   const json& codecOptions,
@@ -131,7 +131,7 @@ Producer* SendTransport::Produce(
 	}
 
 	auto* producer =
-	  new Producer(this, producerPublicListener, producerId, localId, track, rtpParameters, appData);
+	  new Producer(this, producerListener, producerId, localId, track, rtpParameters, appData);
 
 	this->producers[producer->GetId()] = producer;
 
@@ -212,7 +212,7 @@ RecvTransport::RecvTransport(
  * Consume a remote Producer.
  */
 Consumer* RecvTransport::Consume(
-  Consumer::PublicListener* consumerPublicListener,
+  Consumer::Listener* consumerListener,
   const std::string& id,
   const std::string& producerId,
   const std::string& kind,
@@ -238,7 +238,7 @@ Consumer* RecvTransport::Consume(
 	auto* track  = result.second;
 
 	auto* consumer = new Consumer(
-	  this, consumerPublicListener, id, localId, producerId, track, rtpParameters, std::move(appData));
+	  this, consumerListener, id, localId, producerId, track, rtpParameters, std::move(appData));
 
 	this->consumers[consumer->GetId()] = consumer;
 

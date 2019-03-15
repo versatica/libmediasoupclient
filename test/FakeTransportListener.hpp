@@ -106,7 +106,7 @@ public:
 	size_t onConnectionStateChangeExpectedTimesCalled{ 0 };
 };
 
-class FakeProducerPublicListener : public mediasoupclient::Producer::PublicListener
+class FakeProducerListener : public mediasoupclient::Producer::Listener
 {
 	public:
 		void OnTransportClose(mediasoupclient::Producer* /*producer*/) override
@@ -119,7 +119,7 @@ class FakeProducerPublicListener : public mediasoupclient::Producer::PublicListe
 		size_t onTransportCloseExpetecTimesCalled{ 0 };
 };
 
-class FakeConsumerPublicListener : public mediasoupclient::Consumer::PublicListener
+class FakeConsumerListener : public mediasoupclient::Consumer::Listener
 {
 	public:
 		void OnTransportClose(mediasoupclient::Consumer* /*consumer*/) override

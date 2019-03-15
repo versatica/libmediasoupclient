@@ -78,7 +78,7 @@ void PeerConnection::ClassCleanup()
 
 /* Instance methods. */
 
-PeerConnection::PeerConnection(PeerConnection::Listener* listener, PeerConnection::Options* options)
+PeerConnection::PeerConnection(PeerConnection::PrivateListener* privateListener, PeerConnection::Options* options)
 {
 	MSC_TRACE();
 
@@ -123,7 +123,7 @@ PeerConnection::PeerConnection(PeerConnection::Listener* listener, PeerConnectio
 	config.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
 
 	// Create the webrtc::Peerconnection.
-	this->pc = peerConnectionFactory->CreatePeerConnection(config, nullptr, nullptr, listener);
+	this->pc = peerConnectionFactory->CreatePeerConnection(config, nullptr, nullptr, privateListener);
 }
 
 std::string PeerConnection::CreateOffer(
@@ -373,10 +373,10 @@ json PeerConnection::GetStats(rtc::scoped_refptr<webrtc::RtpReceiverInterface> s
 	return future.get();
 }
 
-/* PeerConnection::Listener. */
+/* PeerConnection::PrivateListener. */
 
 // Triggered when the SignalingState changed.
-void PeerConnection::Listener::OnSignalingChange(webrtc::PeerConnectionInterface::SignalingState newState)
+void PeerConnection::PrivateListener::OnSignalingChange(webrtc::PeerConnectionInterface::SignalingState newState)
 {
 	MSC_TRACE();
 
@@ -384,26 +384,26 @@ void PeerConnection::Listener::OnSignalingChange(webrtc::PeerConnectionInterface
 }
 
 // Triggered when media is received on a new stream from remote peer.
-void PeerConnection::Listener::OnAddStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> /*stream*/)
+void PeerConnection::PrivateListener::OnAddStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> /*stream*/)
 {
 	MSC_TRACE();
 }
 
 // Triggered when a remote peer closes a stream.
-void PeerConnection::Listener::OnRemoveStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> /*stream*/)
+void PeerConnection::PrivateListener::OnRemoveStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> /*stream*/)
 {
 	MSC_TRACE();
 }
 
 // Triggered when a remote peer opens a data channel.
-void PeerConnection::Listener::OnDataChannel(
+void PeerConnection::PrivateListener::OnDataChannel(
   rtc::scoped_refptr<webrtc::DataChannelInterface> /*dataChannel*/)
 {
 	MSC_TRACE();
 };
 
 // Triggered when renegotiation is needed. For example, an ICE restart has begun.
-void PeerConnection::Listener::OnRenegotiationNeeded()
+void PeerConnection::PrivateListener::OnRenegotiationNeeded()
 {
 	MSC_TRACE();
 }
@@ -414,7 +414,7 @@ void PeerConnection::Listener::OnRenegotiationNeeded()
 // notable differences include the fact that "failed" occurs after 15
 // seconds, not 30, and this actually represents a combination ICE + DTLS
 // state, so it may be "failed" if DTLS fails while ICE succeeds.
-void PeerConnection::Listener::OnIceConnectionChange(
+void PeerConnection::PrivateListener::OnIceConnectionChange(
   webrtc::PeerConnectionInterface::IceConnectionState newState)
 {
 	MSC_TRACE();
@@ -424,7 +424,7 @@ void PeerConnection::Listener::OnIceConnectionChange(
 }
 
 // Triggered any time the IceGatheringState changes.
-void PeerConnection::Listener::OnIceGatheringChange(
+void PeerConnection::PrivateListener::OnIceGatheringChange(
   webrtc::PeerConnectionInterface::IceGatheringState newState)
 {
 	MSC_TRACE();
@@ -433,7 +433,7 @@ void PeerConnection::Listener::OnIceGatheringChange(
 }
 
 // Triggered when a new ICE candidate has been gathered.
-void PeerConnection::Listener::OnIceCandidate(const webrtc::IceCandidateInterface* candidate)
+void PeerConnection::PrivateListener::OnIceCandidate(const webrtc::IceCandidateInterface* candidate)
 {
 	MSC_TRACE();
 
@@ -449,13 +449,13 @@ void PeerConnection::Listener::OnIceCandidate(const webrtc::IceCandidateInterfac
 }
 
 // Triggered when the ICE candidates have been removed.
-void PeerConnection::Listener::OnIceCandidatesRemoved(const std::vector<cricket::Candidate>& /*candidates*/)
+void PeerConnection::PrivateListener::OnIceCandidatesRemoved(const std::vector<cricket::Candidate>& /*candidates*/)
 {
 	MSC_TRACE();
 }
 
 // Triggered when the ICE connection receiving status changes.
-void PeerConnection::Listener::OnIceConnectionReceivingChange(bool /*receiving*/)
+void PeerConnection::PrivateListener::OnIceConnectionReceivingChange(bool /*receiving*/)
 {
 	MSC_TRACE();
 }
@@ -464,7 +464,7 @@ void PeerConnection::Listener::OnIceConnectionReceivingChange(bool /*receiving*/
 // Note: This is called with both Plan B and Unified Plan semantics. Unified
 // Plan users should prefer OnTrack, OnAddTrack is only called as backwards
 // compatibility (and is called in the exact same situations as OnTrack).
-void PeerConnection::Listener::OnAddTrack(
+void PeerConnection::PrivateListener::OnAddTrack(
   rtc::scoped_refptr<webrtc::RtpReceiverInterface> /*receiver*/,
   const std::vector<rtc::scoped_refptr<webrtc::MediaStreamInterface>>& /*streams*/)
 {
@@ -480,7 +480,7 @@ void PeerConnection::Listener::OnAddTrack(
 // This behavior is specified in section 2.2.8.2.5 of the "Set the
 // RTCSessionDescription" algorithm:
 // https://w3c.github.io/webrtc-pc/#set-description
-void PeerConnection::Listener::OnTrack(rtc::scoped_refptr<webrtc::RtpTransceiverInterface> /*transceiver*/)
+void PeerConnection::PrivateListener::OnTrack(rtc::scoped_refptr<webrtc::RtpTransceiverInterface> /*transceiver*/)
 {
 	MSC_TRACE();
 }
@@ -492,7 +492,7 @@ void PeerConnection::Listener::OnTrack(rtc::scoped_refptr<webrtc::RtpTransceiver
 // With Unified Plan semantics, the receiver will remain but the transceiver
 // will have changed direction to either sendonly or inactive.
 // https://w3c.github.io/webrtc-pc/#process-remote-track-removal
-void PeerConnection::Listener::OnRemoveTrack(rtc::scoped_refptr<webrtc::RtpReceiverInterface> /*receiver*/)
+void PeerConnection::PrivateListener::OnRemoveTrack(rtc::scoped_refptr<webrtc::RtpReceiverInterface> /*receiver*/)
 {
 	MSC_TRACE();
 }
@@ -503,7 +503,7 @@ void PeerConnection::Listener::OnRemoveTrack(rtc::scoped_refptr<webrtc::RtpRecei
 // log function.
 // The heuristics for defining what constitutes "interesting" are
 // implementation-defined.
-void PeerConnection::Listener::OnInterestingUsage(int /*usagePattern*/)
+void PeerConnection::PrivateListener::OnInterestingUsage(int /*usagePattern*/)
 {
 	MSC_TRACE();
 }

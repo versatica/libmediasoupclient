@@ -11,10 +11,10 @@
 
 namespace mediasoupclient
 {
-class Handler : public PeerConnection::Listener
+class Handler : public PeerConnection::PrivateListener
 {
 public:
-	class Listener
+	class PrivateListener
 	{
 	public:
 		virtual void OnConnect(nlohmann::json& dtlsParameters) = 0;
@@ -32,7 +32,7 @@ public:
 
 public:
 	explicit Handler(
-	  Listener* listener,
+	  PrivateListener* privateListener,
 	  const nlohmann::json& iceParameters,
 	  const nlohmann::json& iceCandidates,
 	  const nlohmann::json& dtlsParameters,
@@ -52,8 +52,8 @@ protected:
 	  const std::string& localDtlsRole, nlohmann::json localSdpObject = nlohmann::json::object());
 
 protected:
-	// Listener instance.
-	Listener* listener{ nullptr };
+	// PrivateListener instance.
+	PrivateListener* privateListener{ nullptr };
 
 	// Remote SDP instance.
 	std::unique_ptr<Sdp::RemoteSdp> remoteSdp;
@@ -73,7 +73,7 @@ class SendHandler : public Handler
 {
 public:
 	SendHandler(
-	  Handler::Listener* listener,
+	  Handler::PrivateListener* privateListener,
 	  const nlohmann::json& iceParameters,
 	  const nlohmann::json& iceCandidates,
 	  const nlohmann::json& dtlsParameters,
@@ -107,7 +107,7 @@ class RecvHandler : public Handler
 {
 public:
 	RecvHandler(
-	  Handler::Listener* listener,
+	  Handler::PrivateListener* privateListener,
 	  const nlohmann::json& iceParameters,
 	  const nlohmann::json& iceCandidates,
 	  const nlohmann::json& dtlsParameters,

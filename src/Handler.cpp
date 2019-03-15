@@ -20,8 +20,8 @@ json Handler::GetNativeRtpCapabilities()
 {
 	MSC_TRACE();
 
-	std::unique_ptr<PeerConnection::Listener> listener(new PeerConnection::Listener());
-	std::unique_ptr<PeerConnection> pc(new PeerConnection(listener.get(), nullptr));
+	std::unique_ptr<PeerConnection::PrivateListener> privateListener(new PeerConnection::PrivateListener());
+	std::unique_ptr<PeerConnection> pc(new PeerConnection(privateListener.get(), nullptr));
 
 	(void)pc->AddTransceiver(cricket::MediaType::MEDIA_TYPE_AUDIO);
 	(void)pc->AddTransceiver(cricket::MediaType::MEDIA_TYPE_VIDEO);
@@ -39,12 +39,12 @@ json Handler::GetNativeRtpCapabilities()
 /* Handler instance methods */
 
 Handler::Handler(
-  Listener* listener,
+  PrivateListener* privateListener,
   const json& iceParameters,
   const json& iceCandidates,
   const json& dtlsParameters,
   PeerConnection::Options* peerConnectionOptions)
-  : listener(listener)
+  : privateListener(privateListener)
 {
 	MSC_TRACE();
 
@@ -74,7 +74,7 @@ void Handler::UpdateIceServers(const json& iceServerUris)
 
 void Handler::OnIceConnectionChange(webrtc::PeerConnectionInterface::IceConnectionState newState)
 {
-	return this->listener->OnConnectionStateChange(newState);
+	return this->privateListener->OnConnectionStateChange(newState);
 }
 
 void Handler::SetupTransport(const std::string& localDtlsRole, json localSdpObject)
@@ -94,21 +94,21 @@ void Handler::SetupTransport(const std::string& localDtlsRole, json localSdpObje
 	this->remoteSdp->UpdateDtlsRole(remoteDtlsRole);
 
 	// May throw.
-	this->listener->OnConnect(dtlsParameters);
+	this->privateListener->OnConnect(dtlsParameters);
 	this->transportReady = true;
 };
 
 /* SendHandler methods */
 
 SendHandler::SendHandler(
-  Handler::Listener* listener,
+  Handler::PrivateListener* privateListener,
   const json& iceParameters,
   const json& iceCandidates,
   const json& dtlsParameters,
   PeerConnection::Options* peerConnectionOptions,
   const json& sendingRtpParametersByKind,
   const json& sendingRemoteRtpParametersByKind)
-  : Handler(listener, iceParameters, iceCandidates, dtlsParameters, peerConnectionOptions)
+  : Handler(privateListener, iceParameters, iceCandidates, dtlsParameters, peerConnectionOptions)
 {
 	MSC_TRACE();
 
@@ -389,12 +389,12 @@ void SendHandler::RestartIce(const json& iceParameters)
 /* RecvHandler methods */
 
 RecvHandler::RecvHandler(
-  Handler::Listener* listener,
+  Handler::PrivateListener* privateListener,
   const json& iceParameters,
   const json& iceCandidates,
   const json& dtlsParameters,
   PeerConnection::Options* peerConnectionOptions)
-  : Handler(listener, iceParameters, iceCandidates, dtlsParameters, peerConnectionOptions)
+  : Handler(privateListener, iceParameters, iceCandidates, dtlsParameters, peerConnectionOptions)
 {
 	MSC_TRACE();
 };

@@ -15,7 +15,7 @@ class SendTransport;
 class Producer
 {
 public:
-	class Listener
+	class PrivateListener
 	{
 	public:
 		virtual void OnClose(Producer* producer) = 0;
@@ -26,7 +26,7 @@ public:
 	};
 
 	/* Public Listener API */
-	class PublicListener
+	class Listener
 	{
 	public:
 		virtual void OnTransportClose(Producer* producer) = 0;
@@ -53,8 +53,8 @@ public:
 
 private:
 	Producer(
+	  PrivateListener* privateListener,
 	  Listener* listener,
-	  PublicListener* publicListener,
 	  std::string id,
 	  std::string localId,
 	  webrtc::MediaStreamTrackInterface* track,
@@ -67,11 +67,11 @@ private:
 	friend SendTransport;
 
 private:
-	// Listener instance.
-	Listener* listener;
+	// PrivateListener instance.
+	PrivateListener* privateListener;
 
-	// Public listener instance.
-	PublicListener* publicListener;
+	// Public Listener instance.
+	Listener* listener;
 
 	// Id.
 	std::string id;
@@ -149,7 +149,7 @@ inline nlohmann::json Producer::GetStats() const
 	if (this->closed)
 		throw Exception("Invalid state");
 	else
-		return this->listener->OnGetStats(this);
+		return this->privateListener->OnGetStats(this);
 }
 } // namespace mediasoupclient
 

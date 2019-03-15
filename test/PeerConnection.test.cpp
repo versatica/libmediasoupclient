@@ -9,7 +9,7 @@ using namespace mediasoupclient;
 TEST_CASE("PeerConnection", "[PeerConnection]")
 {
 	static std::list<std::string> iceServerUris;
-	static PeerConnection::Listener listener;
+	static PeerConnection::PrivateListener listener;
 	static PeerConnection::Options peerConnectionOptions;
 	static PeerConnection pc(&listener, &peerConnectionOptions);
 
@@ -39,7 +39,7 @@ TEST_CASE("PeerConnection", "[PeerConnection]")
 		iceServer.uri = "Wrong URI";
 		configuration.servers.push_back(iceServer);
 
-		PeerConnection::Listener listener;
+		PeerConnection::PrivateListener listener;
 		PeerConnection pc(&listener, &peerConnectionOptions);
 
 		REQUIRE(!pc.SetConfiguration(configuration));

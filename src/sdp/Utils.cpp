@@ -244,9 +244,9 @@ namespace Sdp
 						  return false;
 
 					  auto v = mediasoupclient::Utils::split(line["ssrcs"].get<std::string>(), ' ');
-					  if (std::stol(v[0]) == firstSsrc)
+					  if (std::stoull(v[0]) == firstSsrc)
 					  {
-						  firstRtxSsrc = std::stol(v[1]);
+						  firstRtxSsrc = std::stoull(v[1]);
 
 						  return true;
 					  }
@@ -391,8 +391,8 @@ namespace Sdp
 					auto fidLine = line["ssrcs"].get<std::string>();
 					auto v       = mediasoupclient::Utils::split(fidLine, ' ');
 
-					auto ssrc    = std::stol(v[0]);
-					auto rtxSsrc = std::stol(v[1]);
+					auto ssrc    = std::stoull(v[0]);
+					auto rtxSsrc = std::stoull(v[1]);
 
 					if (ssrcs.find(ssrc) != ssrcs.end())
 					{

@@ -285,7 +285,7 @@ inline void SendTransport::Close()
 	Transport::Close();
 
 	// Close all Producers.
-	for (auto kv : this->producers)
+	for (auto& kv : this->producers)
 	{
 		auto* producer = kv.second;
 
@@ -303,7 +303,7 @@ inline void RecvTransport::Close()
 	Transport::Close();
 
 	// Close all Producers.
-	for (auto kv : this->consumers)
+	for (auto& kv : this->consumers)
 	{
 		auto* consumer = kv.second;
 

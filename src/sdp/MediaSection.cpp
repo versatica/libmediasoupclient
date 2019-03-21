@@ -206,7 +206,7 @@ namespace Sdp
 			if (it != codec.end())
 			{
 				auto rtcpFeedback = *it;
-				for (auto fb : rtcpFeedback)
+				for (auto& fb : rtcpFeedback)
 				{
 					/* clang-format off */
 					this->mediaObject["rtcpFb"].push_back(
@@ -235,7 +235,7 @@ namespace Sdp
 		this->mediaObject["payloads"] = payloads;
 		this->mediaObject["ext"]      = json::array();
 
-		for (auto ext : answerRtpParameters["headerExtensions"])
+		for (auto& ext : answerRtpParameters["headerExtensions"])
 		{
 			// Don't add a header extension if not present in the offer.
 			auto it = offerMediaObject.find("ext");
@@ -351,7 +351,7 @@ namespace Sdp
 			if (it != codec.end())
 			{
 				auto rtcpFeedback = *it;
-				for (auto fb : rtcpFeedback)
+				for (auto& fb : rtcpFeedback)
 				{
 					/* clang-format off */
 					this->mediaObject["rtcpFb"].push_back(
@@ -380,7 +380,7 @@ namespace Sdp
 
 			this->mediaObject["ext"] = json::array();
 
-			for (auto ext : offerRtpParameters["headerExtensions"])
+			for (auto& ext : offerRtpParameters["headerExtensions"])
 			{
 				// Ignore MID and RID RTP extensions when receiving.
 				if (

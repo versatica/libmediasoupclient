@@ -174,7 +174,7 @@ json generateRtpParametersByKind()
 	/* clang-format on */
 
 	auto codecs = generateRouterRtpCapabilities()["codecs"];
-	for (auto codec : codecs)
+	for (auto& codec : codecs)
 	{
 		codec["payloadType"] = codec["preferredPayloadType"];
 		codec.erase("preferredPayloadType");
@@ -188,7 +188,7 @@ json generateRtpParametersByKind()
 	}
 
 	auto headerExtensions = generateRouterRtpCapabilities()["headerExtensions"];
-	for (auto ext : headerExtensions)
+	for (auto& ext : headerExtensions)
 	{
 		ext["id"] = ext["preferredId"];
 		ext.erase("preferredId");

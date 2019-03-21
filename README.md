@@ -25,7 +25,7 @@ Automatically added during *Installation*.
 
 **libwebrtc** must be downloaded and compiled in the system. Follow the [official instructions](https://webrtc.org/native-code/development/).
 
-Make sure branch `remotes/branch-heads/72` is checked-out and compiled.
+Make sure branch `remotes/branch-heads/m73` is checked-out and compiled.
 
 ## Developement dependencies
 

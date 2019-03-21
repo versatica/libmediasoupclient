@@ -90,7 +90,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/include
 # Public (interface) headers from dependencies.
 target_include_directories(${PROJECT_NAME} PUBLIC
 	"${PROJECT_SOURCE_DIR}/deps/libsdptransform/include"
-	${LIBWEBRTC_INCLUDE_PATH}
+	"${LIBWEBRTC_INCLUDE_PATH}"
+	"${LIBWEBRTC_INCLUDE_PATH}/third_party/abseil-cpp"
 )
 
 # Public (interface) dependencies.

@@ -63,7 +63,7 @@ namespace Sdp
 	  const nlohmann::json& iceCandidates,
 	  const nlohmann::json& dtlsParameters,
 	  const nlohmann::json& offerMediaObject,
-	  const nlohmann::json& offerRtpParameters,
+	  nlohmann::json& offerRtpParameters,
 	  nlohmann::json& answerRtpParameters,
 	  const nlohmann::json& codecOptions)
 	  : MediaSection(iceParameters, iceCandidates)
@@ -106,68 +106,68 @@ namespace Sdp
 
 			if (!codecOptions.empty())
 			{
-				auto offerCodecs = offerRtpParameters["codecs"];
-				it = find_if(offerCodecs.begin(), offerCodecs.end(), [&codec](const json& offerCodec) {
+				auto& offerCodecs = offerRtpParameters["codecs"];
+				it = find_if(offerCodecs.begin(), offerCodecs.end(), [&codec](json& offerCodec) {
 					return offerCodec["payloadType"] == codec["payloadType"];
 				});
 
-				auto offerCodec = *it;
+				auto& offerCodec = *it;
 				auto mimeType   = codec["mimeType"].get<std::string>();
 				std::transform(mimeType.begin(), mimeType.end(), mimeType.begin(), ::tolower);
 
 				if (mimeType == "audio/opus")
 				{
 					auto it2 = codecOptions.find("opusStereo");
-					if (it2 != codecOptions.end())
+					if (it2 != codecOptions.end() && it2->is_boolean())
 					{
-						auto opusStereo                          = (*it).get<uint8_t>();
-						offerCodec["parameters"]["sprop-stereo"] = opusStereo != 0u ? 1 : 0;
-						codecParameters["stereo"]                = opusStereo != 0u ? 1 : 0;
+						auto opusStereo                          = it2->get<bool>();
+						offerCodec["parameters"]["sprop-stereo"] = opusStereo == true ? 1 : 0;
+						codecParameters["stereo"]                = opusStereo == true ? 1 : 0;
 					}
 
 					it2 = codecOptions.find("opusFec");
-					if (it2 != codecOptions.end())
+					if (it2 != codecOptions.end() && it2->is_boolean())
 					{
-						auto opusFec                             = (*it).get<uint8_t>();
-						offerCodec["parameters"]["useinbandfec"] = opusFec != 0u ? 1 : 0;
-						codecParameters["useinbandfec"]          = opusFec != 0u ? 1 : 0;
+						auto opusFec                             = it2->get<bool>();
+						offerCodec["parameters"]["useinbandfec"] = opusFec == true ? 1 : 0;
+						codecParameters["useinbandfec"]          = opusFec == true ? 1 : 0;
 					}
 
 					it2 = codecOptions.find("opusDtx");
-					if (it2 != codecOptions.end())
+					if (it2 != codecOptions.end() && it2->is_boolean())
 					{
-						auto opusDtx                       = (*it).get<uint8_t>();
-						offerCodec["parameters"]["usedtx"] = opusDtx != 0u ? 1 : 0;
-						codecParameters["usedtx"]          = opusDtx != 0u ? 1 : 0;
+						auto opusDtx                       = it2->get<bool>();
+						offerCodec["parameters"]["usedtx"] = opusDtx == true ? 1 : 0;
+						codecParameters["usedtx"]          = opusDtx == true ? 1 : 0;
 					}
 
 					it2 = codecOptions.find("opusMaxPlaybackRate");
-					if (it2 != codecOptions.end())
+					if (it2 != codecOptions.end() && it2->is_number_unsigned())
 					{
-						auto opusMaxPlaybackRate                    = (*it).get<uint32_t>();
+						auto opusMaxPlaybackRate                    = it2->get<uint32_t>();
 						offerCodec["parameters"]["maxplaybackrate"] = opusMaxPlaybackRate;
 					}
 				}
 				else if (mimeType == "video/vp8" || mimeType == "video/vp9" || mimeType == "video/h264" || mimeType == "video/h265")
 				{
 					auto it2 = codecOptions.find("videoGoogleStartBitrate");
-					if (it2 != codecOptions.end())
+					if (it2 != codecOptions.end() && it2->is_number_unsigned())
 					{
-						auto startBitrate                                  = (*it).get<uint32_t>();
+						auto startBitrate                                  = it2->get<uint32_t>();
 						offerCodec["parameters"]["x-google-start-bitrate"] = startBitrate;
 					}
 
 					it2 = codecOptions.find("videoGoogleMaxBitrate");
-					if (it2 != codecOptions.end())
+					if (it2 != codecOptions.end() && it2->is_number_unsigned())
 					{
-						auto maxBitrate                                  = (*it).get<uint32_t>();
+						auto maxBitrate                                  = it2->get<uint32_t>();
 						offerCodec["parameters"]["x-google-max-bitrate"] = maxBitrate;
 					}
 
 					it2 = codecOptions.find("videoGoogleMinBitrate");
-					if (it2 != codecOptions.end())
+					if (it2 != codecOptions.end() && it2->is_number_unsigned())
 					{
-						auto minBitrate                                  = (*it).get<uint32_t>();
+						auto minBitrate                                  = it2->get<uint32_t>();
 						offerCodec["parameters"]["x-google-min-bitrate"] = minBitrate;
 					}
 				}

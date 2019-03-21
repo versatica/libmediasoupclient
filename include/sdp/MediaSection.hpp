@@ -35,7 +35,7 @@ namespace Sdp
 		  const nlohmann::json& iceCandidates,
 		  const nlohmann::json& dtlsParameters,
 		  const nlohmann::json& offerMediaObject,
-		  const nlohmann::json& offerRtpParameters,
+		  nlohmann::json& offerRtpParameters,
 		  nlohmann::json& answerRtpParameters,
 		  const nlohmann::json& codecOptions);
 

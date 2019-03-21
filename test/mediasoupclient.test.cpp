@@ -173,8 +173,15 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		// Pause the audio track before creating its Producer.
 		audioTrack->set_enabled(false);
 
+		std::vector<webrtc::RtpEncodingParameters> audioEncodings;
+
+		json codecOptions = {
+			{ "opusStereo", true },
+			{ "opusDtx",    true }
+		};
+
 		REQUIRE_NOTHROW(
-		  audioProducer.reset(sendTransport->Produce(&producerListener, audioTrack, appData)));
+		  audioProducer.reset(sendTransport->Produce(&producerListener, audioTrack, audioEncodings, codecOptions, appData)));
 
 		REQUIRE(
 		  sendTransportListener.onConnectTimesCalled ==

@@ -461,28 +461,25 @@ namespace Sdp
           return f["payload"] == codec["payloadType"];
         });
 
-				json parameters;
-
 				if (it == fmtps.end())
 				{
 					json fmtp = { { "payload", codec["payloadType"] }, { "config", "" } };
 
 					answerMediaObject["fmtp"].push_back(fmtp);
-					parameters = sdptransform::parseParams(fmtp["config"]);
+					it = answerMediaObject["fmtp"].end() - 1;
 				}
-				else
-				{
-					auto parameters = sdptransform::parseParams((*it)["config"]);
-				}
+
+				json& fmtp = *it;
+				json parameters = sdptransform::parseParams(fmtp["config"]);
 
 				if (mimeType == "audio/opus")
 				{
 					auto it2 = codec["parameters"].find("sprop-stereo");
 
-					if (it2 != codec["parameters"].end())
+					if (it2 != codec["parameters"].end() && it2->is_boolean())
 					{
-						auto spropStereo     = (*it2).get<uint8_t>();
-						parameters["stereo"] = spropStereo != 0u ? 1 : 0;
+						auto spropStereo     = (*it2).get<bool>();
+						parameters["stereo"] = spropStereo == true ? 1 : 0;
 					}
 				}
 
@@ -503,7 +500,7 @@ namespace Sdp
 						config << item.value().get<int>();
 				}
 
-				answerMediaObject["fmtp"][0]["config"] = config.str();
+				fmtp["config"] = config.str();
 			}
 		}
 	} // namespace Utils

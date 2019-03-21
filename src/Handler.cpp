@@ -20,7 +20,8 @@ json Handler::GetNativeRtpCapabilities()
 {
 	MSC_TRACE();
 
-	std::unique_ptr<PeerConnection::PrivateListener> privateListener(new PeerConnection::PrivateListener());
+	std::unique_ptr<PeerConnection::PrivateListener> privateListener(
+	  new PeerConnection::PrivateListener());
 	std::unique_ptr<PeerConnection> pc(new PeerConnection(privateListener.get(), nullptr));
 
 	(void)pc->AddTransceiver(cricket::MediaType::MEDIA_TYPE_AUDIO);

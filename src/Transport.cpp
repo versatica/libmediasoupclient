@@ -57,9 +57,7 @@ SendTransport::SendTransport(
  * Produce a track
  */
 Producer* SendTransport::Produce(
-  Producer::Listener* producerListener,
-  webrtc::MediaStreamTrackInterface* track,
-  json appData)
+  Producer::Listener* producerListener, webrtc::MediaStreamTrackInterface* track, json appData)
 {
 	MSC_TRACE();
 

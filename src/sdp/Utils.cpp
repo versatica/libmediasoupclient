@@ -64,7 +64,6 @@ namespace Sdp
 					/* clang-format off */
 					json codec =
 					{
-						{ "name",                 rtp["codec"]   },
 						{ "mimeType",             mimeType       },
 						{ "kind",                 kind           },
 						{ "clockRate",            rtp["rate"]    },

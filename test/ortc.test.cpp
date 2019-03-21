@@ -16,13 +16,13 @@ TEST_CASE("GetExtendedCapabilities", "[ortc][GetExtendedCapabilities]")
 		REQUIRE(extendedRtpCapabilities["codecs"].size() == 3);
 
 		auto codecs = extendedRtpCapabilities["codecs"];
-		REQUIRE(codecs[0]["name"] == "opus");
+		REQUIRE(codecs[0]["mimeType"] == "audio/opus");
 
-		REQUIRE(codecs[1]["name"] == "VP8");
+		REQUIRE(codecs[1]["mimeType"] == "video/VP8");
 		REQUIRE(codecs[1]["remoteRtxPayloadType"] == 102);
 		REQUIRE(codecs[1]["localRtxPayloadType"] == 102);
 
-		REQUIRE(codecs[2]["name"] == "H264");
+		REQUIRE(codecs[2]["mimeType"] == "video/H264");
 		REQUIRE(codecs[2]["remoteRtxPayloadType"] == 104);
 		REQUIRE(codecs[2]["localRtxPayloadType"] == 104);
 
@@ -44,9 +44,9 @@ TEST_CASE("GetExtendedCapabilities", "[ortc][GetExtendedCapabilities]")
 		REQUIRE(extendedRtpCapabilities["codecs"].size() == 2);
 
 		auto codecs = extendedRtpCapabilities["codecs"];
-		REQUIRE(codecs[0]["name"] == "opus");
+		REQUIRE(codecs[0]["mimeType"] == "audio/opus");
 
-		REQUIRE(codecs[1]["name"] == "H264");
+		REQUIRE(codecs[1]["mimeType"] == "video/H264");
 		REQUIRE(codecs[1]["remoteRtxPayloadType"] == 104);
 		REQUIRE(codecs[1]["localRtxPayloadType"] == 104);
 
@@ -68,11 +68,11 @@ TEST_CASE("GetRecvRtpCapabilities", "[GetRecvRtpCapabilities]")
 
 		auto codecs = recvRtpCapabilities["codecs"];
 
-		REQUIRE(codecs[0]["name"] == "opus");
-		REQUIRE(codecs[1]["name"] == "VP8");
-		REQUIRE(codecs[2]["name"] == "rtx");
-		REQUIRE(codecs[3]["name"] == "H264");
-		REQUIRE(codecs[4]["name"] == "rtx");
+		REQUIRE(codecs[0]["mimeType"] == "audio/opus");
+		REQUIRE(codecs[1]["mimeType"] == "video/VP8");
+		REQUIRE(codecs[2]["mimeType"] == "video/rtx");
+		REQUIRE(codecs[3]["mimeType"] == "video/H264");
+		REQUIRE(codecs[4]["mimeType"] == "video/rtx");
 	}
 
 	SECTION("succeeds if localCaps is a subset of remoteCaps")
@@ -92,9 +92,9 @@ TEST_CASE("GetRecvRtpCapabilities", "[GetRecvRtpCapabilities]")
 
 		auto codecs = recvRtpCapabilities["codecs"];
 
-		REQUIRE(codecs[0]["name"] == "opus");
-		REQUIRE(codecs[1]["name"] == "H264");
-		REQUIRE(codecs[2]["name"] == "rtx");
+		REQUIRE(codecs[0]["mimeType"] == "audio/opus");
+		REQUIRE(codecs[1]["mimeType"] == "video/H264");
+		REQUIRE(codecs[2]["mimeType"] == "video/rtx");
 	}
 }
 
@@ -109,13 +109,13 @@ TEST_CASE("GetSendingRtpParameters", "[GetSendingRtpParameters]")
 		auto audioSendRtpParameters  = ortc::getSendingRtpParameters("audio", extendedRtpCapabilities);
 
 		REQUIRE(audioSendRtpParameters["codecs"].size() == 1);
-		REQUIRE(audioSendRtpParameters["codecs"][0]["name"] == "opus");
+		REQUIRE(audioSendRtpParameters["codecs"][0]["mimeType"] == "audio/opus");
 
 		auto videoSendRtpParameters = ortc::getSendingRtpParameters("video", extendedRtpCapabilities);
 
 		REQUIRE(videoSendRtpParameters["codecs"].size() == 2);
-		REQUIRE(videoSendRtpParameters["codecs"][0]["name"] == "VP8");
-		REQUIRE(videoSendRtpParameters["codecs"][1]["name"] == "rtx");
+		REQUIRE(videoSendRtpParameters["codecs"][0]["mimeType"] == "video/VP8");
+		REQUIRE(videoSendRtpParameters["codecs"][1]["mimeType"] == "video/rtx");
 	}
 }
 
@@ -165,7 +165,6 @@ TEST_CASE("ortc::canReceive", "[ortc::canReceive]")
 			"codecs" :
 			[
 				{
-					"name"         : "opus",
 					"mimeType"     : "audio/opus",
 					"kind"         : "audio",
 					"clockRate"    : 48000,
@@ -200,7 +199,6 @@ TEST_CASE("ortc::canReceive", "[ortc::canReceive]")
 			"codecs" :
 			[
 				{
-					"name"         : "opus",
 					"mimeType"     : "audio/opus",
 					"kind"         : "audio",
 					"clockRate"    : 48000,

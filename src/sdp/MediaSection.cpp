@@ -5,10 +5,20 @@
 #include "Logger.hpp"
 #include <algorithm> // ::transform
 #include <cctype>    // ::tolower
+#include <regex>
 #include <sstream>
 #include <utility>
 
 using json = nlohmann::json;
+
+static std::string getCodecName(const json& codec)
+{
+	static const std::regex regex("^.*/");
+
+	auto mimeType = codec["mimeType"].get<std::string>();
+
+	return std::regex_replace(mimeType, regex, "");
+}
 
 namespace mediasoupclient
 {
@@ -77,7 +87,7 @@ namespace Sdp
 			json rtp =
 			{
 				{ "payload", codec["payloadType"] },
-				{ "codec",   codec["name"]        },
+				{ "codec",   getCodecName(codec)  },
 				{ "rate",    codec["clockRate"]   }
 			};
 			/* clang-format on */
@@ -287,7 +297,7 @@ namespace Sdp
 			json rtp =
 			{
 				{ "payload", codec["payloadType"] },
-				{ "codec",   codec["name"]        },
+				{ "codec",   getCodecName(codec)  },
 				{ "rate",    codec["clockRate"]   }
 			};
 			/* clang-format on */

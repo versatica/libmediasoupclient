@@ -313,7 +313,6 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 			"channels":    2,
 			"clockRate":   48000,
 			"mimeType":    "audio/opus",
-			"name":        "opus",
 			"parameters":
 			{
 				"useinbandfec": "1"
@@ -370,7 +369,6 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		{
 			"clockRate":   90000,
 			"mimeType":    "video/VP8",
-			"name":        "VP8",
 			"parameters":
 			{
 				"x-google-start-bitrate": "1500"
@@ -411,7 +409,6 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		{
 			"clockRate":  90000,
 			"mimeType":   "video/rtx",
-			"name":       "rtx",
 			"parameters":
 			{
 			  "apt": "101"

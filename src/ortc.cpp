@@ -4,9 +4,30 @@
 #include "ortc.hpp"
 #include "Logger.hpp"
 #include <algorithm> // std::find_if
+#include <regex>
 #include <string>
 
 using json = nlohmann::json;
+
+static bool isRtxCodec(const json& codec)
+{
+	static const std::regex regex(".+/rtx$");
+
+	std::smatch match;
+	auto name = codec["mimeType"].get<std::string>();
+
+	return std::regex_match(name, match, regex);
+}
+
+static bool isAudioCodec(const json& codec)
+{
+	static const std::regex regex("audio/.+$");
+
+	std::smatch match;
+	auto name = codec["mimeType"].get<std::string>();
+
+	return std::regex_match(name, match, regex);
+}
 
 namespace mediasoupclient
 {
@@ -135,8 +156,7 @@ namespace ortc
 		// Match media codecs and keep the order preferred by remoteCaps.
 		for (auto& remoteCodec : remoteCaps["codecs"])
 		{
-			// TODO: Ignore pseudo-codecs and feature codecs.
-			if ("rtx" == remoteCodec["name"].get<std::string>())
+			if (isRtxCodec(remoteCodec))
 				continue;
 
 			auto localCodecs = localCaps["codecs"];
@@ -153,7 +173,6 @@ namespace ortc
 				/* clang-format off */
 				json extendedCodec =
 				{
-					{ "name",                 localCodec["name"]                          },
 					{ "mimeType",             localCodec["mimeType"]                      },
 					{ "kind",                 localCodec["kind"]                          },
 					{ "clockRate",            localCodec["clockRate"]                     },
@@ -186,7 +205,7 @@ namespace ortc
 			auto localCodecs = localCaps["codecs"];
 			auto it          = std::find_if(
         localCodecs.begin(), localCodecs.end(), [&extendedCodec](const json& localCodec) {
-          return "rtx" == localCodec["name"].get<std::string>() &&
+          return isRtxCodec(localCodec) &&
                  localCodec["parameters"]["apt"] == extendedCodec["localPayloadType"];
         });
 
@@ -198,7 +217,7 @@ namespace ortc
 			auto remoteCodecs = remoteCaps["codecs"];
 			it                = std::find_if(
         remoteCodecs.begin(), remoteCodecs.end(), [&extendedCodec](const json& remoteCodec) {
-          return "rtx" == remoteCodec["name"].get<std::string>() &&
+          return isRtxCodec(remoteCodec) &&
                  remoteCodec["parameters"]["apt"] == extendedCodec["remotePayloadType"];
         });
 
@@ -264,7 +283,6 @@ namespace ortc
 			/* clang-format off */
 			json codec =
 			{
-				{ "name",                 extendedCodec["name"]              },
 				{ "mimeType",             extendedCodec["mimeType"]          },
 				{ "kind",                 extendedCodec["kind"]              },
 				{ "clockRate",            extendedCodec["clockRate"]         },
@@ -292,7 +310,6 @@ namespace ortc
 				/* clang-format off */
 				json rtxCodec =
 				{
-					{ "name",                 "rtx"                                 },
 					{ "mimeType",             mimeType                              },
 					{ "kind",                 extendedCodec["kind"]                 },
 					{ "clockRate",            extendedCodec["clockRate"]            },
@@ -360,7 +377,6 @@ namespace ortc
 			/* clang-format off */
 			json codec =
 			{
-				{ "name",                 extendedCodec["name"]             },
 				{ "mimeType",             extendedCodec["mimeType"]         },
 				{ "kind",                 extendedCodec["kind"]             },
 				{ "clockRate",            extendedCodec["clockRate"]        },
@@ -388,7 +404,6 @@ namespace ortc
 				/* clang-format off */
 				json rtxCodec =
 				{
-					{ "name",         "rtx"                               },
 					{ "mimeType",     mimeType                            },
 					{ "clockRate",    extendedCodec["clockRate"]          },
 					{ "payloadType",  extendedCodec["localRtxPayloadType"] },
@@ -455,7 +470,6 @@ namespace ortc
 			/* clang-format off */
 			json codec =
 			{
-				{ "name",                 extendedCodec["name"]            },
 				{ "mimeType",             extendedCodec["mimeType"]         },
 				{ "kind",                 extendedCodec["kind"]             },
 				{ "clockRate",            extendedCodec["clockRate"]        },
@@ -483,7 +497,6 @@ namespace ortc
 				/* clang-format off */
 				json rtxCodec =
 				{
-					{ "name",         "rtx"                               },
 					{ "mimeType",     mimeType                            },
 					{ "clockRate",    extendedCodec["clockRate"]          },
 					{ "payloadType",  extendedCodec["localRtxPayloadType"] },

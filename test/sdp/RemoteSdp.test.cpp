@@ -40,7 +40,6 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 
 		auto audioCodecs = R"([
 			{
-				"name"                 : "PCMU",
 				"mimeType"             : "audio/PCMU",
 				"kind"                 : "audio",
 				"clockRate"            : 8000,
@@ -49,7 +48,6 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 				"parameters"           : {}
 			},
 			{
-				"name"                 : "opus",
 				"mimeType"             : "audio/opus",
 				"kind"                 : "audio",
 				"clockRate"            : 48000,
@@ -205,7 +203,6 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 
 		auto audioCodecs = R"([
 			{
-				"name"                 : "PCMU",
 				"mimeType"             : "audio/PCMU",
 				"kind"                 : "audio",
 				"clockRate"            : 8000,
@@ -214,7 +211,6 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 				"parameters"           : {}
 			},
 			{
-				"name"                 : "opus",
 				"mimeType"             : "audio/opus",
 				"kind"                 : "audio",
 				"clockRate"            : 48000,

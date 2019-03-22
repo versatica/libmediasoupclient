@@ -239,10 +239,15 @@ namespace Sdp
 
 				std::find_if(
 				  ssrcGroups.begin(), ssrcGroups.end(), [&firstSsrc, &firstRtxSsrc](const json& line) {
-					  if (line["semantics"].get<std::string>() != "FID")
+					  auto jsonSemanticsIt = line.find("semantics");
+					  if (jsonSemanticsIt == line.end() || !jsonSemanticsIt->is_string())
 						  return false;
 
-					  auto v = mediasoupclient::Utils::split(line["ssrcs"].get<std::string>(), ' ');
+					  auto jsonSsrcsIt = line.find("ssrcs");
+					  if (jsonSsrcsIt == line.end() || !jsonSsrcsIt->is_string())
+						  return false;
+
+					  auto v = mediasoupclient::Utils::split(jsonSsrcsIt->get<std::string>(), ' ');
 					  if (std::stoull(v[0]) == firstSsrc)
 					  {
 						  firstRtxSsrc = std::stoull(v[1]);
@@ -348,8 +353,11 @@ namespace Sdp
 
 			const json& mSsrcs = offerMediaObject["ssrcs"];
 
-			auto it = find_if(
-			  mSsrcs.begin(), mSsrcs.end(), [](const json& line) { return line["attribute"] == "cname"; });
+			auto it = find_if(mSsrcs.begin(), mSsrcs.end(), [](const json& line) {
+				auto jsonAttributeIt = line.find("attribute");
+
+				return (jsonAttributeIt != line.end() && jsonAttributeIt->is_string());
+			});
 
 			if (it == mSsrcs.end())
 				return "";

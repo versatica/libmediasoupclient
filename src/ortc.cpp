@@ -49,7 +49,7 @@ namespace ortc
 		return it->get<uint8_t>();
 	}
 
-	static bool matchCapCodecs(const json& aCodec, const json& bCodec)
+	static bool matchCodecs(const json& aCodec, const json& bCodec)
 	{
 		MSC_TRACE();
 
@@ -163,7 +163,7 @@ namespace ortc
 
 			auto it =
 			  std::find_if(localCodecs.begin(), localCodecs.end(), [&remoteCodec](const json& localCodec) {
-				  return matchCapCodecs(localCodec, remoteCodec);
+				  return matchCodecs(localCodec, remoteCodec);
 			  });
 
 			if (it != localCodecs.end())

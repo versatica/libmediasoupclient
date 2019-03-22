@@ -469,7 +469,7 @@ namespace Sdp
 					it = answerMediaObject["fmtp"].end() - 1;
 				}
 
-				json& fmtp = *it;
+				json& fmtp      = *it;
 				json parameters = sdptransform::parseParams(fmtp["config"]);
 
 				if (mimeType == "audio/opus")

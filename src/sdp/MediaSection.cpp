@@ -112,7 +112,7 @@ namespace Sdp
 				});
 
 				auto& offerCodec = *it;
-				auto mimeType   = codec["mimeType"].get<std::string>();
+				auto mimeType    = codec["mimeType"].get<std::string>();
 				std::transform(mimeType.begin(), mimeType.end(), mimeType.begin(), ::tolower);
 
 				if (mimeType == "audio/opus")

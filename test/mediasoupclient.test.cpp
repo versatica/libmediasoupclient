@@ -175,13 +175,10 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 		std::vector<webrtc::RtpEncodingParameters> audioEncodings;
 
-		json codecOptions = {
-			{ "opusStereo", true },
-			{ "opusDtx",    true }
-		};
+		json codecOptions = { { "opusStereo", true }, { "opusDtx", true } };
 
-		REQUIRE_NOTHROW(
-		  audioProducer.reset(sendTransport->Produce(&producerListener, audioTrack, audioEncodings, codecOptions, appData)));
+		REQUIRE_NOTHROW(audioProducer.reset(sendTransport->Produce(
+		  &producerListener, audioTrack, audioEncodings, codecOptions, appData)));
 
 		REQUIRE(
 		  sendTransportListener.onConnectTimesCalled ==

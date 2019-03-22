@@ -16,7 +16,6 @@ public:
 	Device()  = default;
 	~Device() = default;
 
-	const std::string& GetHandlerName() const;
 	bool IsLoaded() const;
 	const nlohmann::json& GetRtpCapabilities() const;
 	void Load(const nlohmann::json& routerRtpCapabilities);
@@ -56,14 +55,6 @@ private:
 };
 
 /* Inline methods */
-
-/**
- * The RTC handler class name.
- */
-inline const std::string& Device::GetHandlerName() const
-{
-	return Handler::GetName();
-}
 
 /**
  * Whether the Device is loaded.

@@ -59,23 +59,6 @@ std::map<webrtc::PeerConnectionInterface::SignalingState, const std::string>
 };
 /* clang-format on */
 
-void PeerConnection::ClassInit()
-{
-	MSC_TRACE();
-
-	// rtc::LogMessage::LogToDebug(rtc::LoggingSeverity::LS_WARNING);
-
-	rtc::InitializeSSL();
-	rtc::InitRandom(rtc::Time());
-}
-
-void PeerConnection::ClassCleanup()
-{
-	MSC_TRACE();
-
-	rtc::CleanupSSL();
-}
-
 /* Instance methods. */
 
 PeerConnection::PeerConnection(

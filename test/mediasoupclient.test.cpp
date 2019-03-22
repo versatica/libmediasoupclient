@@ -33,17 +33,9 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 	static std::unique_ptr<PeerConnection> pc(new PeerConnection(nullptr, nullptr));
 
-	// SECTION("mediasoup-client exposes a version property")
-	// {
-	// expect(version).toBeType("string");
-	// expect(version).toBe(pkg.version);
-	// }
-
 	SECTION("create a Device succeeds")
 	{
 		REQUIRE_NOTHROW(device.reset(new Device()));
-
-		REQUIRE_NOTHROW(device->GetHandlerName());
 		REQUIRE(!device->IsLoaded());
 	}
 

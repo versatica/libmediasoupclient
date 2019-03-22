@@ -1,6 +1,7 @@
 #define CATCH_CONFIG_RUNNER
 
 #include "include/catch.hpp"
+#include "mediasoupclient.hpp"
 #include "PeerConnection.hpp"
 #include "Logger.hpp"
 
@@ -13,9 +14,6 @@ int main(int argc, char* argv[])
 
 	// There must be exactly one instance.
 	Catch::Session session;
-
-	// Initializations.
-	PeerConnection::ClassInit();
 
 	int logLevel = 0;
 
@@ -43,10 +41,13 @@ int main(int argc, char* argv[])
 		Logger::SetHandler(new Logger::DefaultLogHandler());
 	}
 
+	// Initialization.
+	mediasoupclient::Initialize();
+
 	int ret = session.run(argc, argv);
 
-	// Cleanups.
-	PeerConnection::ClassCleanup();
+	// Cleanup.
+	mediasoupclient::Cleanup();
 
 	return ret;
 }

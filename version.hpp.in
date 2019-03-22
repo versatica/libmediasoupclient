@@ -1,0 +1,9 @@
+#ifndef MSC_VERSION_HPP
+#define MSC_VERSION_HPP
+
+// Version configuration.
+#define MEDIASOUPCLIENT_VERSION_MAJOR @mediasoupclient_VERSION_MAJOR@
+#define MEDIASOUPCLIENT_VERSION_MINOR @mediasoupclient_VERSION_MINOR@
+#define MEDIASOUPCLIENT_VERSION_PATCH @mediasoupclient_VERSION_PATCH@
+
+#endif

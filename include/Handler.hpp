@@ -28,7 +28,6 @@ public:
 
 public:
 	static nlohmann::json GetNativeRtpCapabilities();
-	static const std::string& GetName();
 
 public:
 	explicit Handler(
@@ -127,11 +126,6 @@ public:
 };
 
 /* Inline methods */
-
-inline const std::string& Handler::GetName()
-{
-	return PeerConnection::GetName();
-}
 
 inline nlohmann::json Handler::GetTransportStats()
 {

@@ -33,11 +33,6 @@ TEST_CASE("Handler", "[Handler]")
 		REQUIRE(rtpCapabilities["fecMechanisms"].is_array());
 		REQUIRE(rtpCapabilities["headerExtensions"].is_array());
 	}
-
-	SECTION("'Handler::GetName()' succeeds")
-	{
-		REQUIRE_NOTHROW(Handler::GetName());
-	}
 }
 
 TEST_CASE("SendHandler", "[Handler][SendHandler]")

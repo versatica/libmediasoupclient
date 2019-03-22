@@ -7,8 +7,6 @@
 #include <future> // std::promise, std::future
 #include <list>
 
-static std::string Name("webrtc70");
-
 namespace mediasoupclient
 {
 class PeerConnection
@@ -29,10 +27,6 @@ public:
 	static std::map<webrtc::PeerConnectionInterface::SignalingState, const std::string> signalingState2String;
 
 public:
-	static void ClassInit();
-	static void ClassCleanup();
-	static const std::string& GetName();
-
 	class PrivateListener : public webrtc::PeerConnectionObserver
 	{
 		/* Virtual methods inherited from PeerConnectionObserver. */
@@ -150,11 +144,6 @@ private:
 };
 
 /* Inline methods */
-
-inline const std::string& PeerConnection::GetName()
-{
-	return Name;
-}
 
 inline webrtc::PeerConnectionInterface::RTCConfiguration PeerConnection::GetConfiguration() const
 {

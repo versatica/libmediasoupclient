@@ -18,11 +18,6 @@ TEST_CASE("Device", "[Device]")
 	static std::unique_ptr<Device> device(new Device());
 	static json routerRtpCapabilities;
 
-	SECTION("'device->GetHandlerName()' succeeds")
-	{
-		REQUIRE_NOTHROW(device->GetHandlerName());
-	}
-
 	SECTION("'device->IsLoaded()' is false if not loaded")
 	{
 		REQUIRE(!device->IsLoaded());

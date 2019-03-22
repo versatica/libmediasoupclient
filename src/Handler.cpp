@@ -231,11 +231,11 @@ void SendHandler::StopSending(const std::string& localId)
 
 	MSC_DEBUG("[localId:%s]", localId.c_str());
 
-	auto it = this->mapMidTransceiver.find(localId);
-	if (it == this->mapMidTransceiver.end())
+	auto jsonLocaIdIt = this->mapMidTransceiver.find(localId);
+	if (jsonLocaIdIt == this->mapMidTransceiver.end())
 		throw Exception("Associated RtpTransceiver not found");
 
-	auto transceiver = it->second;
+	auto transceiver = jsonLocaIdIt->second;
 
 	transceiver->sender()->SetTrack(nullptr);
 	this->pc->RemoveTrack(transceiver->sender());
@@ -269,11 +269,11 @@ void SendHandler::ReplaceTrack(const std::string& localId, webrtc::MediaStreamTr
 	  localId.c_str(),
 	  track == nullptr ? "nullptr" : track->id().c_str());
 
-	auto it = this->mapMidTransceiver.find(localId);
-	if (it == this->mapMidTransceiver.end())
+	auto jsonLocalIdIt = this->mapMidTransceiver.find(localId);
+	if (jsonLocalIdIt == this->mapMidTransceiver.end())
 		throw Exception("Associated RtpTransceiver not found");
 
-	auto transceiver = it->second;
+	auto transceiver = jsonLocalIdIt->second;
 
 	transceiver->sender()->SetTrack(track);
 }
@@ -284,11 +284,11 @@ void SendHandler::SetMaxSpatialLayer(const std::string& localId, uint8_t spatial
 
 	MSC_DEBUG("[localId:%s, spatialLayer:%d]", localId.c_str(), spatialLayer);
 
-	auto it = this->mapMidTransceiver.find(localId);
-	if (it == this->mapMidTransceiver.end())
+	auto jsonLocalIdIt = this->mapMidTransceiver.find(localId);
+	if (jsonLocalIdIt == this->mapMidTransceiver.end())
 		throw Exception("Associated RtpTransceiver not found");
 
-	auto transceiver = it->second;
+	auto transceiver = jsonLocalIdIt->second;
 
 	auto parameters = transceiver->sender()->GetParameters();
 
@@ -346,11 +346,11 @@ json SendHandler::GetSenderStats(const std::string& localId)
 
 	MSC_DEBUG("[localId:%s]", localId.c_str());
 
-	auto it = this->mapMidTransceiver.find(localId);
-	if (it == this->mapMidTransceiver.end())
+	auto jsonLocalIdIt = this->mapMidTransceiver.find(localId);
+	if (jsonLocalIdIt == this->mapMidTransceiver.end())
 		throw Exception("Associated RtpTransceiver not found");
 
-	auto transceiver = it->second;
+	auto transceiver = jsonLocalIdIt->second;
 
 	auto stats = this->pc->GetStats(transceiver->sender());
 
@@ -429,12 +429,12 @@ std::pair<std::string, webrtc::MediaStreamTrackInterface*> RecvHandler::Receive(
 		auto answer = this->pc->CreateAnswer(options);
 
 		auto localSdpObject = sdptransform::parse(answer);
-		auto it             = find_if(
+		auto jsonMediaIt    = find_if(
       localSdpObject["media"].begin(), localSdpObject["media"].end(), [&localId](const json& m) {
         return m["mid"].get<std::string>() == localId;
       });
 
-		auto answerMediaObject = *it;
+		auto answerMediaObject = *jsonMediaIt;
 
 		// May need to modify codec parameters in the answer based on codec
 		// parameters in the offer.
@@ -481,11 +481,11 @@ void RecvHandler::StopReceiving(const std::string& localId)
 
 	MSC_DEBUG("[localId:%s]", localId.c_str());
 
-	auto it = this->mapMidTransceiver.find(localId);
-	if (it == this->mapMidTransceiver.end())
+	auto jsonLocalIdIt = this->mapMidTransceiver.find(localId);
+	if (jsonLocalIdIt == this->mapMidTransceiver.end())
 		throw Exception("Associated RtpTransceiver not found");
 
-	auto transceiver = it->second;
+	auto transceiver = jsonLocalIdIt->second;
 	MSC_DEBUG("--- disabling mid: %s", transceiver->mid().value().c_str());
 	this->remoteSdp->DisableMediaSection(transceiver->mid().value());
 
@@ -514,11 +514,11 @@ json RecvHandler::GetReceiverStats(const std::string& localId)
 
 	MSC_DEBUG("[localId:%s]", localId.c_str());
 
-	auto it = this->mapMidTransceiver.find(localId);
-	if (it == this->mapMidTransceiver.end())
+	auto jsonLocalIdIt = this->mapMidTransceiver.find(localId);
+	if (jsonLocalIdIt == this->mapMidTransceiver.end())
 		throw Exception("Associated RtpTransceiver not found");
 
-	auto transceiver = it->second;
+	auto transceiver = jsonLocalIdIt->second;
 
 	// May throw.
 	auto stats = this->pc->GetStats(transceiver->receiver());

@@ -92,10 +92,10 @@ namespace Sdp
 			};
 			/* clang-format on */
 
-			auto it = codec.find("channels");
-			if (it != codec.end())
+			auto jsonChannelsIt = codec.find("channels");
+			if (jsonChannelsIt != codec.end() && jsonChannelsIt->is_number_unsigned())
 			{
-				auto channels = (*it).get<uint8_t>();
+				auto channels = jsonChannelsIt->get<uint8_t>();
 				if (channels > 1)
 					rtp["encoding"] = channels;
 			}
@@ -107,67 +107,68 @@ namespace Sdp
 			if (!codecOptions.empty())
 			{
 				auto& offerCodecs = offerRtpParameters["codecs"];
-				it = find_if(offerCodecs.begin(), offerCodecs.end(), [&codec](json& offerCodec) {
-					return offerCodec["payloadType"] == codec["payloadType"];
-				});
+				auto jsonCodecIt =
+				  find_if(offerCodecs.begin(), offerCodecs.end(), [&codec](json& offerCodec) {
+					  return offerCodec["payloadType"] == codec["payloadType"];
+				  });
 
-				auto& offerCodec = *it;
+				auto& offerCodec = *jsonCodecIt;
 				auto mimeType    = codec["mimeType"].get<std::string>();
 				std::transform(mimeType.begin(), mimeType.end(), mimeType.begin(), ::tolower);
 
 				if (mimeType == "audio/opus")
 				{
-					auto it2 = codecOptions.find("opusStereo");
-					if (it2 != codecOptions.end() && it2->is_boolean())
+					auto jsonOpustStereoIt = codecOptions.find("opusStereo");
+					if (jsonOpustStereoIt != codecOptions.end() && jsonOpustStereoIt->is_boolean())
 					{
-						auto opusStereo                          = it2->get<bool>();
+						auto opusStereo                          = jsonOpustStereoIt->get<bool>();
 						offerCodec["parameters"]["sprop-stereo"] = opusStereo == true ? 1 : 0;
 						codecParameters["stereo"]                = opusStereo == true ? 1 : 0;
 					}
 
-					it2 = codecOptions.find("opusFec");
-					if (it2 != codecOptions.end() && it2->is_boolean())
+					auto jsonOpusFec = codecOptions.find("opusFec");
+					if (jsonOpusFec != codecOptions.end() && jsonOpusFec->is_boolean())
 					{
-						auto opusFec                             = it2->get<bool>();
+						auto opusFec                             = jsonOpusFec->get<bool>();
 						offerCodec["parameters"]["useinbandfec"] = opusFec == true ? 1 : 0;
 						codecParameters["useinbandfec"]          = opusFec == true ? 1 : 0;
 					}
 
-					it2 = codecOptions.find("opusDtx");
-					if (it2 != codecOptions.end() && it2->is_boolean())
+					auto jsonOpusDtx = codecOptions.find("opusDtx");
+					if (jsonOpusDtx != codecOptions.end() && jsonOpusDtx->is_boolean())
 					{
-						auto opusDtx                       = it2->get<bool>();
+						auto opusDtx                       = jsonOpusDtx->get<bool>();
 						offerCodec["parameters"]["usedtx"] = opusDtx == true ? 1 : 0;
 						codecParameters["usedtx"]          = opusDtx == true ? 1 : 0;
 					}
 
-					it2 = codecOptions.find("opusMaxPlaybackRate");
-					if (it2 != codecOptions.end() && it2->is_number_unsigned())
+					auto jsonOpusMaxPlaybackRate = codecOptions.find("opusMaxPlaybackRate");
+					if (jsonOpusMaxPlaybackRate != codecOptions.end() && jsonOpusMaxPlaybackRate->is_number_unsigned())
 					{
-						auto opusMaxPlaybackRate                    = it2->get<uint32_t>();
+						auto opusMaxPlaybackRate                    = jsonOpusMaxPlaybackRate->get<uint32_t>();
 						offerCodec["parameters"]["maxplaybackrate"] = opusMaxPlaybackRate;
 					}
 				}
 				else if (mimeType == "video/vp8" || mimeType == "video/vp9" || mimeType == "video/h264" || mimeType == "video/h265")
 				{
-					auto it2 = codecOptions.find("videoGoogleStartBitrate");
-					if (it2 != codecOptions.end() && it2->is_number_unsigned())
+					auto jsonVideoGoogleStartBitrate = codecOptions.find("videoGoogleStartBitrate");
+					if (jsonVideoGoogleStartBitrate != codecOptions.end() && jsonVideoGoogleStartBitrate->is_number_unsigned())
 					{
-						auto startBitrate                                  = it2->get<uint32_t>();
+						auto startBitrate = jsonVideoGoogleStartBitrate->get<uint32_t>();
 						offerCodec["parameters"]["x-google-start-bitrate"] = startBitrate;
 					}
 
-					it2 = codecOptions.find("videoGoogleMaxBitrate");
-					if (it2 != codecOptions.end() && it2->is_number_unsigned())
+					auto jsonVideoGoogleMaxBitrate = codecOptions.find("videoGoogleMaxBitrate");
+					if (jsonVideoGoogleMaxBitrate != codecOptions.end() && jsonVideoGoogleMaxBitrate->is_number_unsigned())
 					{
-						auto maxBitrate                                  = it2->get<uint32_t>();
+						auto maxBitrate = jsonVideoGoogleMaxBitrate->get<uint32_t>();
 						offerCodec["parameters"]["x-google-max-bitrate"] = maxBitrate;
 					}
 
-					it2 = codecOptions.find("videoGoogleMinBitrate");
-					if (it2 != codecOptions.end() && it2->is_number_unsigned())
+					auto jsonVideoGoogleMinBitrate = codecOptions.find("videoGoogleMinBitrate");
+					if (jsonVideoGoogleMinBitrate != codecOptions.end() && jsonVideoGoogleMinBitrate->is_number_unsigned())
 					{
-						auto minBitrate                                  = it2->get<uint32_t>();
+						auto minBitrate = jsonVideoGoogleMinBitrate->get<uint32_t>();
 						offerCodec["parameters"]["x-google-min-bitrate"] = minBitrate;
 					}
 				}
@@ -202,10 +203,10 @@ namespace Sdp
 				this->mediaObject["fmtp"].push_back(fmtp);
 			}
 
-			it = codec.find("rtcpFeedback");
-			if (it != codec.end())
+			auto jsonRtcpFeedbackIt = codec.find("rtcpFeedback");
+			if (jsonRtcpFeedbackIt != codec.end())
 			{
-				auto rtcpFeedback = *it;
+				auto rtcpFeedback = *jsonRtcpFeedbackIt;
 				for (auto& fb : rtcpFeedback)
 				{
 					/* clang-format off */
@@ -238,16 +239,24 @@ namespace Sdp
 		for (auto& ext : answerRtpParameters["headerExtensions"])
 		{
 			// Don't add a header extension if not present in the offer.
-			auto it = offerMediaObject.find("ext");
-			if (it == offerMediaObject.end())
+			auto jsonExtsIt = offerMediaObject.find("ext");
+			if (jsonExtsIt == offerMediaObject.end())
 				continue;
 
-			auto localExts = *it;
-			it             = find_if(localExts.begin(), localExts.end(), [&ext](const json& localExt) {
-        return localExt["uri"] == ext["uri"];
-      });
+			auto localExts  = *jsonExtsIt;
+			auto localExtIt = find_if(localExts.begin(), localExts.end(), [&ext](const json& localExt) {
+				auto jsonUriIt = localExt.find("uri");
+				if (jsonUriIt == localExt.end() || !jsonUriIt->is_string())
+					return false;
 
-			if (it == localExts.end())
+				jsonUriIt = ext.find("uri");
+				if (jsonUriIt == ext.end() || !jsonUriIt->is_string())
+					return false;
+
+				return localExt["uri"] == ext["uri"];
+			});
+
+			if (localExtIt == localExts.end())
 				continue;
 
 			/* clang-format off */
@@ -302,18 +311,17 @@ namespace Sdp
 			};
 			/* clang-format on */
 
-			auto it = codec.find("channels");
-			if (it != codec.end())
+			auto jsonChannelsIt = codec.find("channels");
+			if (jsonChannelsIt != codec.end() && jsonChannelsIt->is_number_unsigned())
 			{
-				auto channels = (*it).get<uint8_t>();
+				auto channels = (*jsonChannelsIt).get<uint8_t>();
 				if (channels > 1)
 					rtp["encoding"] = channels;
 			}
 
 			this->mediaObject["rtp"].push_back(rtp);
 
-			it = codec.find("parameters");
-			if (it != codec.end())
+			if (codec.find("parameters") != codec.end())
 			{
 				const json& codecParameters = codec["parameters"];
 
@@ -347,10 +355,10 @@ namespace Sdp
 				}
 			}
 
-			it = codec.find("rtcpFeedback");
-			if (it != codec.end())
+			auto jsonRtcpFeedbackIt = codec.find("rtcpFeedback");
+			if (codec.find("rtcpFeedback") != codec.end())
 			{
-				auto rtcpFeedback = *it;
+				auto rtcpFeedback = *jsonRtcpFeedbackIt;
 				for (auto& fb : rtcpFeedback)
 				{
 					/* clang-format off */
@@ -406,8 +414,8 @@ namespace Sdp
 			auto ssrc     = encoding["ssrc"].get<uint32_t>();
 			uint32_t rtxSsrc;
 
-			it = encoding.find("rtx");
-			if ((it != encoding.end()) && ((*it).find("ssrc") != (*it).end()))
+			auto jsonRtxIt = encoding.find("rtx");
+			if ((jsonRtxIt != encoding.end()) && ((*jsonRtxIt).find("ssrc") != (*jsonRtxIt).end()))
 				rtxSsrc = encoding["rtx"]["ssrc"].get<uint32_t>();
 			else
 				rtxSsrc = 0u;
@@ -415,10 +423,10 @@ namespace Sdp
 			this->mediaObject["ssrcs"]      = json::array();
 			this->mediaObject["ssrcGroups"] = json::array();
 
-			it = offerRtpParameters["rtcp"].find("cname");
-			if (it != offerRtpParameters["rtcp"].end())
+			auto jsonCnameIt = offerRtpParameters["rtcp"].find("cname");
+			if (jsonCnameIt != offerRtpParameters["rtcp"].end() && jsonCnameIt->is_string())
 			{
-				auto cname = (*it).get<std::string>();
+				auto cname = (*jsonCnameIt).get<std::string>();
 
 				std::string msid(streamId);
 				msid.append(" ").append(trackId);

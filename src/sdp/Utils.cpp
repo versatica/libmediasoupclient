@@ -352,7 +352,7 @@ namespace Sdp
 			  mSsrcs.begin(), mSsrcs.end(), [](const json& line) { return line["attribute"] == "cname"; });
 
 			if (it == mSsrcs.end())
-				throw new std::runtime_error("a=ssrc line with cname information not found");
+				return "";
 
 			auto ssrcCnameLine = *it;
 

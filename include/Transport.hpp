@@ -99,14 +99,9 @@ public:
 	Producer* Produce(
 	  Producer::Listener* producerListener,
 	  webrtc::MediaStreamTrackInterface* track,
-	  nlohmann::json appData = nlohmann::json::object());
-
-	Producer* Produce(
-	  Producer::Listener* producerListener,
-	  webrtc::MediaStreamTrackInterface* track,
-	  const std::vector<webrtc::RtpEncodingParameters>& encodings,
-	  const nlohmann::json& codecOptions = nlohmann::json::object(),
-	  const nlohmann::json appData       = nlohmann::json::object());
+	  const std::vector<webrtc::RtpEncodingParameters>* encodings,
+	  const nlohmann::json* codecOptions,
+	  const nlohmann::json appData = nlohmann::json::object());
 
 	/* Virtual methods inherited from Transport. */
 public:
@@ -157,7 +152,7 @@ public:
 	  const std::string& id,
 	  const std::string& producerId,
 	  const std::string& kind,
-	  const nlohmann::json& rtpParameters,
+	  const nlohmann::json* rtpParameters,
 	  nlohmann::json appData = nlohmann::json::object());
 
 	/* Virtual methods inherited from Transport. */

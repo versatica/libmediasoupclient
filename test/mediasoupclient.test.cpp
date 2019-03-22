@@ -165,12 +165,16 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		// Pause the audio track before creating its Producer.
 		audioTrack->set_enabled(false);
 
-		std::vector<webrtc::RtpEncodingParameters> audioEncodings;
-
-		json codecOptions = { { "opusStereo", true }, { "opusDtx", true } };
+		/* clang-format off */
+		json codecOptions =
+		{
+			{ "opusStereo", true },
+			{ "opusDtx",    true }
+		};
+		/* clang-format on */
 
 		REQUIRE_NOTHROW(audioProducer.reset(sendTransport->Produce(
-		  &producerListener, audioTrack, audioEncodings, codecOptions, appData)));
+		  &producerListener, audioTrack, nullptr, &codecOptions, appData)));
 
 		REQUIRE(
 		  sendTransportListener.onConnectTimesCalled ==
@@ -213,7 +217,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		audioProducer->Resume();
 
 		REQUIRE_NOTHROW(
-		  videoProducer.reset(sendTransport->Produce(&producerListener, videoTrack, encodings)));
+		  videoProducer.reset(sendTransport->Produce(&producerListener, videoTrack, &encodings, nullptr)));
 
 		REQUIRE(
 		  sendTransportListener.onConnectTimesCalled ==
@@ -258,7 +262,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 	SECTION("transport.produce() without track throws")
 	{
-		REQUIRE_THROWS_AS(sendTransport->Produce(&producerListener, nullptr), Exception);
+		REQUIRE_THROWS_AS(sendTransport->Produce(&producerListener, nullptr, nullptr, nullptr), Exception);
 	}
 
 	SECTION("transport.consume() succeeds")
@@ -284,7 +288,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 						audioConsumerRemoteParameters["id"].get<std::string>(),
 						audioConsumerRemoteParameters["producerId"].get<std::string>(),
 						audioConsumerRemoteParameters["kind"].get<std::string>(),
-						audioConsumerRemoteParameters["rtpParameters"],
+						&audioConsumerRemoteParameters["rtpParameters"],
 						appData
 						)));
 
@@ -345,7 +349,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 						videoConsumerRemoteParameters["id"].get<std::string>(),
 						videoConsumerRemoteParameters["producerId"].get<std::string>(),
 						videoConsumerRemoteParameters["kind"].get<std::string>(),
-						videoConsumerRemoteParameters["rtpParameters"]
+						&videoConsumerRemoteParameters["rtpParameters"]
 						)));
 
 		REQUIRE(
@@ -454,7 +458,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 						consumerRemoteParameters["id"].get<std::string>(),
 						consumerRemoteParameters["producerId"].get<std::string>(),
 						consumerRemoteParameters["kind"].get<std::string>(),
-						consumerRemoteParameters["rtpParameters"]
+						&consumerRemoteParameters["rtpParameters"]
 						), Exception);
 	}
 
@@ -606,7 +610,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 	{
 		REQUIRE_THROWS_AS(sendTransport->Produce(
 			&producerListener,
-			audioTrack),
+			audioTrack, nullptr, nullptr),
 			Exception);
 	}
 
@@ -620,7 +624,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 					audioConsumerRemoteParameters["id"].get<std::string>(),
 					audioConsumerRemoteParameters["producerId"].get<std::string>(),
 					audioConsumerRemoteParameters["kind"].get<std::string>(),
-					audioConsumerRemoteParameters["rtpParameters"]),
+					&audioConsumerRemoteParameters["rtpParameters"]),
 				Exception);
 	}
 

@@ -37,7 +37,7 @@ namespace Sdp
 		  const nlohmann::json& offerMediaObject,
 		  nlohmann::json& offerRtpParameters,
 		  nlohmann::json& answerRtpParameters,
-		  const nlohmann::json& codecOptions);
+		  const nlohmann::json* codecOptions);
 
 	public:
 		void SetDtlsRole(const std::string& role) override;

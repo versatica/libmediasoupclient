@@ -114,7 +114,7 @@ void Sdp::RemoteSdp::Send(
   nlohmann::json& offerMediaObject,
   nlohmann::json& offerRtpParameters,
   nlohmann::json& answerRtpParameters,
-  const nlohmann::json& codecOptions)
+  const nlohmann::json* codecOptions)
 {
 	MSC_TRACE();
 

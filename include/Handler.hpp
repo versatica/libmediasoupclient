@@ -82,8 +82,8 @@ public:
 
 	std::pair<std::string, nlohmann::json> Send(
 	  webrtc::MediaStreamTrackInterface* track,
-	  const std::vector<webrtc::RtpEncodingParameters>& encodings,
-	  const nlohmann::json& codecOptions = nlohmann::json());
+	  const std::vector<webrtc::RtpEncodingParameters>* encodings,
+	  const nlohmann::json* codecOptions);
 	void StopSending(const std::string& localId);
 	void ReplaceTrack(const std::string& localId, webrtc::MediaStreamTrackInterface* track);
 	void SetMaxSpatialLayer(const std::string& localId, uint8_t spatialLayer);
@@ -113,7 +113,7 @@ public:
 	  PeerConnection::Options* peerConnectionOptions);
 
 	std::pair<std::string, webrtc::MediaStreamTrackInterface*> Receive(
-	  const std::string& id, const std::string& kind, const nlohmann::json& rtpParameters);
+	  const std::string& id, const std::string& kind, const nlohmann::json* rtpParameters);
 	void StopReceiving(const std::string& localId);
 	nlohmann::json GetReceiverStats(const std::string& localId);
 

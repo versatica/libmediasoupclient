@@ -57,24 +57,10 @@ SendTransport::SendTransport(
  * Produce a track
  */
 Producer* SendTransport::Produce(
-  Producer::Listener* producerListener, webrtc::MediaStreamTrackInterface* track, json appData)
-{
-	MSC_TRACE();
-
-	static const std::vector<webrtc::RtpEncodingParameters> Encodings;
-	static const json CodecOptions = json::object();
-
-	return this->Produce(producerListener, track, Encodings, CodecOptions, std::move(appData));
-}
-
-/*
- * Produce a track
- */
-Producer* SendTransport::Produce(
   Producer::Listener* producerListener,
   webrtc::MediaStreamTrackInterface* track,
-  const std::vector<webrtc::RtpEncodingParameters>& encodings,
-  const json& codecOptions,
+  const std::vector<webrtc::RtpEncodingParameters>* encodings,
+  const json* codecOptions,
   const json appData)
 {
 	MSC_TRACE();
@@ -87,31 +73,32 @@ Producer* SendTransport::Produce(
 		throw Exception("Track ended");
 	else if (this->canProduceByKind.find(track->kind()) == this->canProduceByKind.end())
 		throw Exception("Cannot produce track kind");
-	else if (!appData.is_object())
-		throw Exception("appData must be an object");
 
 	std::string producerId;
 
 	std::vector<webrtc::RtpEncodingParameters> normalizedEncodings;
 
-	std::for_each(
-	  encodings.begin(),
-	  encodings.end(),
-	  [&normalizedEncodings](const webrtc::RtpEncodingParameters& entry) {
-		  webrtc::RtpEncodingParameters encoding;
+	if (encodings != nullptr)
+	{
+		std::for_each(
+		  encodings->begin(),
+		  encodings->end(),
+		  [&normalizedEncodings](const webrtc::RtpEncodingParameters& entry) {
+			  webrtc::RtpEncodingParameters encoding;
 
-		  encoding.active                   = entry.active;
-		  encoding.dtx                      = entry.dtx;
-		  encoding.max_bitrate_bps          = entry.max_bitrate_bps;
-		  encoding.max_framerate            = entry.max_framerate;
-		  encoding.scale_framerate_down_by  = entry.scale_framerate_down_by;
-		  encoding.scale_resolution_down_by = entry.scale_resolution_down_by;
+			  encoding.active                   = entry.active;
+			  encoding.dtx                      = entry.dtx;
+			  encoding.max_bitrate_bps          = entry.max_bitrate_bps;
+			  encoding.max_framerate            = entry.max_framerate;
+			  encoding.scale_framerate_down_by  = entry.scale_framerate_down_by;
+			  encoding.scale_resolution_down_by = entry.scale_resolution_down_by;
 
-		  normalizedEncodings.push_back(encoding);
+			  normalizedEncodings.push_back(encoding);
 	  });
+	}
 
 	// May throw.
-	auto result = this->handler->Send(track, normalizedEncodings, codecOptions);
+	auto result = this->handler->Send(track, &normalizedEncodings, codecOptions);
 
 	auto localId       = result.first;
 	auto rtpParameters = result.second;
@@ -214,7 +201,7 @@ Consumer* RecvTransport::Consume(
   const std::string& id,
   const std::string& producerId,
   const std::string& kind,
-  const json& rtpParameters,
+  const json* rtpParameters,
   json appData)
 {
 	MSC_TRACE();
@@ -224,7 +211,7 @@ Consumer* RecvTransport::Consume(
 		throw Exception("Invalid state");
 
 	// Ensure the device can consume it.
-	auto canConsume = ortc::canReceive(rtpParameters, this->extendedRtpCapabilities);
+	auto canConsume = ortc::canReceive(*rtpParameters, this->extendedRtpCapabilities);
 
 	if (!canConsume)
 		throw Exception("cannot consume this Producer");
@@ -236,7 +223,7 @@ Consumer* RecvTransport::Consume(
 	auto* track  = result.second;
 
 	auto* consumer = new Consumer(
-	  this, consumerListener, id, localId, producerId, track, rtpParameters, std::move(appData));
+	  this, consumerListener, id, localId, producerId, track, *rtpParameters, std::move(appData));
 
 	this->consumers[consumer->GetId()] = consumer;
 

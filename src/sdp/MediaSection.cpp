@@ -65,7 +65,7 @@ namespace Sdp
 	  const nlohmann::json& offerMediaObject,
 	  nlohmann::json& offerRtpParameters,
 	  nlohmann::json& answerRtpParameters,
-	  const nlohmann::json& codecOptions)
+	  const nlohmann::json* codecOptions)
 	  : MediaSection(iceParameters, iceCandidates)
 	{
 		MSC_TRACE();
@@ -104,7 +104,7 @@ namespace Sdp
 
 			json& codecParameters = codec["parameters"];
 
-			if (!codecOptions.empty())
+			if (codecOptions != nullptr && !codecOptions->empty())
 			{
 				auto& offerCodecs = offerRtpParameters["codecs"];
 				auto jsonCodecIt =
@@ -118,32 +118,32 @@ namespace Sdp
 
 				if (mimeType == "audio/opus")
 				{
-					auto jsonOpustStereoIt = codecOptions.find("opusStereo");
-					if (jsonOpustStereoIt != codecOptions.end() && jsonOpustStereoIt->is_boolean())
+					auto jsonOpusStereoIt = codecOptions->find("opusStereo");
+					if (jsonOpusStereoIt != codecOptions->end() && jsonOpusStereoIt->is_boolean())
 					{
-						auto opusStereo                          = jsonOpustStereoIt->get<bool>();
+						auto opusStereo                          = jsonOpusStereoIt->get<bool>();
 						offerCodec["parameters"]["sprop-stereo"] = opusStereo == true ? 1 : 0;
 						codecParameters["stereo"]                = opusStereo == true ? 1 : 0;
 					}
 
-					auto jsonOpusFec = codecOptions.find("opusFec");
-					if (jsonOpusFec != codecOptions.end() && jsonOpusFec->is_boolean())
+					auto jsonOpusFec = codecOptions->find("opusFec");
+					if (jsonOpusFec != codecOptions->end() && jsonOpusFec->is_boolean())
 					{
 						auto opusFec                             = jsonOpusFec->get<bool>();
 						offerCodec["parameters"]["useinbandfec"] = opusFec == true ? 1 : 0;
 						codecParameters["useinbandfec"]          = opusFec == true ? 1 : 0;
 					}
 
-					auto jsonOpusDtx = codecOptions.find("opusDtx");
-					if (jsonOpusDtx != codecOptions.end() && jsonOpusDtx->is_boolean())
+					auto jsonOpusDtx = codecOptions->find("opusDtx");
+					if (jsonOpusDtx != codecOptions->end() && jsonOpusDtx->is_boolean())
 					{
 						auto opusDtx                       = jsonOpusDtx->get<bool>();
 						offerCodec["parameters"]["usedtx"] = opusDtx == true ? 1 : 0;
 						codecParameters["usedtx"]          = opusDtx == true ? 1 : 0;
 					}
 
-					auto jsonOpusMaxPlaybackRate = codecOptions.find("opusMaxPlaybackRate");
-					if (jsonOpusMaxPlaybackRate != codecOptions.end() && jsonOpusMaxPlaybackRate->is_number_unsigned())
+					auto jsonOpusMaxPlaybackRate = codecOptions->find("opusMaxPlaybackRate");
+					if (jsonOpusMaxPlaybackRate != codecOptions->end() && jsonOpusMaxPlaybackRate->is_number_unsigned())
 					{
 						auto opusMaxPlaybackRate                    = jsonOpusMaxPlaybackRate->get<uint32_t>();
 						offerCodec["parameters"]["maxplaybackrate"] = opusMaxPlaybackRate;
@@ -151,22 +151,22 @@ namespace Sdp
 				}
 				else if (mimeType == "video/vp8" || mimeType == "video/vp9" || mimeType == "video/h264" || mimeType == "video/h265")
 				{
-					auto jsonVideoGoogleStartBitrate = codecOptions.find("videoGoogleStartBitrate");
-					if (jsonVideoGoogleStartBitrate != codecOptions.end() && jsonVideoGoogleStartBitrate->is_number_unsigned())
+					auto jsonVideoGoogleStartBitrate = codecOptions->find("videoGoogleStartBitrate");
+					if (jsonVideoGoogleStartBitrate != codecOptions->end() && jsonVideoGoogleStartBitrate->is_number_unsigned())
 					{
 						auto startBitrate = jsonVideoGoogleStartBitrate->get<uint32_t>();
 						offerCodec["parameters"]["x-google-start-bitrate"] = startBitrate;
 					}
 
-					auto jsonVideoGoogleMaxBitrate = codecOptions.find("videoGoogleMaxBitrate");
-					if (jsonVideoGoogleMaxBitrate != codecOptions.end() && jsonVideoGoogleMaxBitrate->is_number_unsigned())
+					auto jsonVideoGoogleMaxBitrate = codecOptions->find("videoGoogleMaxBitrate");
+					if (jsonVideoGoogleMaxBitrate != codecOptions->end() && jsonVideoGoogleMaxBitrate->is_number_unsigned())
 					{
 						auto maxBitrate = jsonVideoGoogleMaxBitrate->get<uint32_t>();
 						offerCodec["parameters"]["x-google-max-bitrate"] = maxBitrate;
 					}
 
-					auto jsonVideoGoogleMinBitrate = codecOptions.find("videoGoogleMinBitrate");
-					if (jsonVideoGoogleMinBitrate != codecOptions.end() && jsonVideoGoogleMinBitrate->is_number_unsigned())
+					auto jsonVideoGoogleMinBitrate = codecOptions->find("videoGoogleMinBitrate");
+					if (jsonVideoGoogleMinBitrate != codecOptions->end() && jsonVideoGoogleMinBitrate->is_number_unsigned())
 					{
 						auto minBitrate = jsonVideoGoogleMinBitrate->get<uint32_t>();
 						offerCodec["parameters"]["x-google-min-bitrate"] = minBitrate;

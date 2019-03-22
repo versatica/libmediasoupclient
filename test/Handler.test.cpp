@@ -53,11 +53,10 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 	static std::unique_ptr<PeerConnection> pc(new PeerConnection(nullptr, &PeerConnectionOptions));
 
 	static std::string localId;
-	static const std::vector<webrtc::RtpEncodingParameters> Encodings;
 
 	SECTION("'sendHandler.Send()' fails if a null track is provided")
 	{
-		REQUIRE_THROWS_AS(sendHandler.Send(nullptr, Encodings), Exception);
+		REQUIRE_THROWS_AS(sendHandler.Send(nullptr, nullptr, nullptr), Exception);
 	}
 
 	SECTION("'sendHandler.Send()' succeeds if a track is provided")
@@ -66,7 +65,7 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 
 		std::pair<std::string, nlohmann::json> result;
 
-		REQUIRE_NOTHROW(result = sendHandler.Send(track, Encodings));
+		REQUIRE_NOTHROW(result = sendHandler.Send(track, nullptr, nullptr));
 
 		localId            = result.first;
 		json rtpParameters = result.second;
@@ -77,7 +76,7 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 
 	SECTION("'sendHandler.Send()' succeeds if track is already handled")
 	{
-		REQUIRE_NOTHROW(sendHandler.Send(track, Encodings));
+		REQUIRE_NOTHROW(sendHandler.Send(track, nullptr, nullptr));
 	}
 
 	SECTION("'sendHandler.ReplaceTrack()' fails if an invalid localId is provided")
@@ -160,7 +159,7 @@ TEST_CASE("RecvHandler", "[Handler][RecvHandler]")
 	{
 		std::pair<std::string, webrtc::MediaStreamTrackInterface*> result;
 
-		REQUIRE_NOTHROW(result = recvHandler.Receive("test", "audio", rtpParameters));
+		REQUIRE_NOTHROW(result = recvHandler.Receive("test", "audio", &rtpParameters));
 
 		localId = result.first;
 	}

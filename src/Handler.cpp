@@ -120,8 +120,8 @@ SendHandler::SendHandler(
 
 std::pair<std::string, nlohmann::json> SendHandler::Send(
   webrtc::MediaStreamTrackInterface* track,
-  const std::vector<webrtc::RtpEncodingParameters>& encodings,
-  const json& codecOptions)
+  const std::vector<webrtc::RtpEncodingParameters>* encodings,
+  const json* codecOptions)
 {
 	MSC_TRACE();
 
@@ -155,7 +155,7 @@ std::pair<std::string, nlohmann::json> SendHandler::Send(
 		if (!this->transportReady)
 			this->SetupTransport("server", localSdpObject);
 
-		if (encodings.size() > 1)
+		if (encodings != nullptr && encodings->size() > 1)
 		{
 			MSC_DEBUG("enabling legacy simulcast");
 
@@ -163,7 +163,7 @@ std::pair<std::string, nlohmann::json> SendHandler::Send(
 			auto numMediaSection   = localSdpObject["media"].size();
 			json& offerMediaObject = localSdpObject["media"][numMediaSection - 1];
 
-			Sdp::Utils::addLegacySimulcast(offerMediaObject, encodings.size());
+			Sdp::Utils::addLegacySimulcast(offerMediaObject, encodings->size());
 
 			offer = sdptransform::write(localSdpObject);
 		}
@@ -401,7 +401,7 @@ RecvHandler::RecvHandler(
 };
 
 std::pair<std::string, webrtc::MediaStreamTrackInterface*> RecvHandler::Receive(
-  const std::string& id, const std::string& kind, const json& rtpParameters)
+  const std::string& id, const std::string& kind, const json* rtpParameters)
 {
 	MSC_TRACE();
 
@@ -409,10 +409,10 @@ std::pair<std::string, webrtc::MediaStreamTrackInterface*> RecvHandler::Receive(
 
 	auto localId = std::to_string(this->nextMid);
 
-	auto encoding = rtpParameters["encodings"][0];
-	auto cname    = rtpParameters["rtcp"]["cname"];
+	auto encoding = (*rtpParameters)["encodings"][0];
+	auto cname    = (*rtpParameters)["rtcp"]["cname"];
 
-	this->remoteSdp->Receive(localId, kind, rtpParameters, cname, id);
+	this->remoteSdp->Receive(localId, kind, *rtpParameters, cname, id);
 
 	auto offer = this->remoteSdp->GetSdp();
 
@@ -438,7 +438,7 @@ std::pair<std::string, webrtc::MediaStreamTrackInterface*> RecvHandler::Receive(
 
 		// May need to modify codec parameters in the answer based on codec
 		// parameters in the offer.
-		Sdp::Utils::applyCodecParameters(rtpParameters, answerMediaObject);
+		Sdp::Utils::applyCodecParameters(*rtpParameters, answerMediaObject);
 
 		answer = sdptransform::write(localSdpObject);
 

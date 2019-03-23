@@ -53,7 +53,7 @@ set(HEADER_FILES
 # Add some compile flags to our source files.
 if(MSVC)
 	set_source_files_properties(${SOURCE_FILES}
-		PROPERTIES COMPILE_FLAGS /W3 /WX)
+		PROPERTIES COMPILE_FLAGS "/W3 /WX")
 else()
 	set_source_files_properties(${SOURCE_FILES}
 		PROPERTIES COMPILE_FLAGS -Wall -Wextra -Wpedantic)

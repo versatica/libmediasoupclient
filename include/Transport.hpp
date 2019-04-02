@@ -147,6 +147,8 @@ private:
 class RecvTransport : public Transport, public Consumer::PrivateListener
 {
 public:
+	using Listener = Transport::Listener;
+
 	Consumer* Consume(
 	  Consumer::Listener* consumerListener,
 	  const std::string& id,
@@ -166,7 +168,7 @@ public:
 
 private:
 	RecvTransport(
-	  Transport::Listener* listener,
+	  Listener* listener,
 	  const std::string& id,
 	  const nlohmann::json& iceParameters,
 	  const nlohmann::json& iceCandidates,

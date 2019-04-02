@@ -74,7 +74,7 @@ public:
 	size_t onConnectionStateChangeExpectedTimesCalled{ 0 };
 };
 
-class FakeRecvTransportListener : public mediasoupclient::Transport::Listener
+class FakeRecvTransportListener : public mediasoupclient::RecvTransport::Listener
 {
 public:
 	std::future<void> OnConnect(mediasoupclient::Transport* transport, const json& dtlsParameters) override

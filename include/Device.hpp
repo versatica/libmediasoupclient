@@ -31,7 +31,7 @@ public:
 	  nlohmann::json appData                         = nlohmann::json::object()) const;
 
 	RecvTransport* CreateRecvTransport(
-	  Transport::Listener* listener,
+	  RecvTransport::Listener* listener,
 	  const std::string& id,
 	  const nlohmann::json& iceParameters,
 	  const nlohmann::json& iceCandidates,
@@ -49,9 +49,14 @@ private:
 	// Local RTP capabilities for receiving media.
 	nlohmann::json recvRtpCapabilities;
 
-	// Whether we can produce audio/video based on computed extended RTP
-	// capabilities.
-	std::map<std::string, bool> canProduceByKind = { { "audio", false }, { "video", false } };
+	// Whether we can produce audio/video based on computed extended RTP capabilities.
+	/* clang-format off */
+	std::map<std::string, bool> canProduceByKind =
+	{
+		{ "audio", false },
+		{ "video", false }
+	};
+	/* clang-format on */
 };
 
 /* Inline methods */

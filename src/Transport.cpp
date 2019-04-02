@@ -175,7 +175,7 @@ json SendTransport::OnGetStats(const Producer* producer)
 /* RecvTransport instance methods. */
 
 RecvTransport::RecvTransport(
-  Transport::Listener* listener,
+  Listener* listener,
   const std::string& id,
   const json& iceParameters,
   const json& iceCandidates,

@@ -1,5 +1,5 @@
 #define MSC_CLASS "mediasoupclient"
-#define MSC_LOG_DEV
+// #define MSC_LOG_DEV
 
 #include "Logger.hpp"
 #include "version.hpp"

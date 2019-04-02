@@ -5,7 +5,7 @@
 #include "api/video/i420_buffer.h"
 #include "api/video/video_frame_buffer.h"
 #include "api/video/video_rotation.h"
-#include "rtc_base/scoped_ref_ptr.h"
+#include "api/scoped_refptr.h"
 
 VideoCapturer::VideoCapturer()  = default;
 VideoCapturer::~VideoCapturer() = default;

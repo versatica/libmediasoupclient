@@ -6,7 +6,7 @@
 
 #include "VideoCapturer.hpp"
 #include "modules/video_capture/video_capture.h"
-#include "rtc_base/scoped_ref_ptr.h"
+#include "api/scoped_refptr.h"
 
 class VcmCapturer : public VideoCapturer, public rtc::VideoSinkInterface<webrtc::VideoFrame>
 {

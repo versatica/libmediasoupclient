@@ -79,8 +79,8 @@ PeerConnection::PeerConnection(
 	}
 	else
 	{
-		this->signalingThread = new rtc::Thread();
-		this->workerThread    = new rtc::Thread();
+		this->signalingThread.reset(new rtc::Thread());
+		this->workerThread.reset(new rtc::Thread());
 
 		this->signalingThread->SetName("signaling_thread", nullptr);
 		this->workerThread->SetName("worker_thread", nullptr);
@@ -91,9 +91,9 @@ PeerConnection::PeerConnection(
 		}
 
 		this->peerConnectionFactory = webrtc::CreatePeerConnectionFactory(
-		  this->workerThread,
-		  this->workerThread,
-		  this->signalingThread,
+		  this->workerThread.get(),
+		  this->workerThread.get(),
+		  this->signalingThread.get(),
 		  nullptr /*default_adm*/,
 		  webrtc::CreateBuiltinAudioEncoderFactory(),
 		  webrtc::CreateBuiltinAudioDecoderFactory(),

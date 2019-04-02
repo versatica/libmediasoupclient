@@ -5,7 +5,7 @@
 #include "json.hpp"
 #include "api/peer_connection_interface.h"
 #include <future> // std::promise, std::future
-#include <list>
+#include <memory> // std::unique_ptr
 
 namespace mediasoupclient
 {
@@ -133,8 +133,8 @@ public:
 
 private:
 	// Signaling and worker threads.
-	rtc::Thread* signalingThread;
-	rtc::Thread* workerThread;
+	std::unique_ptr<rtc::Thread> signalingThread;
+	std::unique_ptr<rtc::Thread> workerThread;
 
 	// PeerConnection factory.
 	rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peerConnectionFactory;

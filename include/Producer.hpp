@@ -55,11 +55,11 @@ private:
 	Producer(
 	  PrivateListener* privateListener,
 	  Listener* listener,
-	  std::string id,
-	  std::string localId,
+	  const std::string& id,
+	  const std::string& localId,
 	  webrtc::MediaStreamTrackInterface* track,
-	  nlohmann::json rtpParameters,
-	  nlohmann::json appData = nlohmann::json::object());
+	  const nlohmann::json& rtpParameters,
+	  const nlohmann::json& appData);
 
 	void TransportClosed();
 

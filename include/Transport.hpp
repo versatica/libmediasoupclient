@@ -52,8 +52,8 @@ protected:
 	Transport(
 	  Listener* Listener,
 	  const std::string& id,
-	  const nlohmann::json& extendedRtpCapabilities,
-	  nlohmann::json appData);
+	  const nlohmann::json* extendedRtpCapabilities,
+	  const nlohmann::json& appData);
 
 protected:
 	void SetHandler(Handler* handler);
@@ -63,7 +63,7 @@ protected:
 	bool closed{ false };
 
 	// Extended RTP capabilities.
-	const nlohmann::json& extendedRtpCapabilities;
+	const nlohmann::json* extendedRtpCapabilities{ nullptr };
 
 private:
 	// Listener.
@@ -81,7 +81,7 @@ private:
 	};
 
 	// App custom data.
-	nlohmann::json appData{};
+	nlohmann::json appData = nlohmann::json::object();
 };
 
 class SendTransport : public Transport, public Producer::PrivateListener
@@ -121,10 +121,10 @@ private:
 	  const nlohmann::json& iceParameters,
 	  const nlohmann::json& iceCandidates,
 	  const nlohmann::json& dtlsParameters,
-	  PeerConnection::Options* peerConnectionOptions,
-	  const nlohmann::json& extendedRtpCapabilities,
-	  std::map<std::string, bool> canProduceByKind,
-	  nlohmann::json appData = nlohmann::json::object());
+	  const PeerConnection::Options* peerConnectionOptions,
+	  const nlohmann::json* extendedRtpCapabilities,
+	  const std::map<std::string, bool>* canProduceByKind,
+	  const nlohmann::json& appData);
 
 	/* Device is the only one constructing Transports */
 	friend Device;
@@ -138,7 +138,7 @@ private:
 
 	// Whether we can produce audio/video based on computed extended RTP
 	// capabilities.
-	std::map<std::string, bool> canProduceByKind;
+	const std::map<std::string, bool>* canProduceByKind{ nullptr };
 
 	// SendHandler instance.
 	std::unique_ptr<SendHandler> handler;
@@ -155,7 +155,7 @@ public:
 	  const std::string& producerId,
 	  const std::string& kind,
 	  const nlohmann::json* rtpParameters,
-	  nlohmann::json appData = nlohmann::json::object());
+	  const nlohmann::json appData = nlohmann::json::object());
 
 	/* Virtual methods inherited from Transport. */
 public:
@@ -173,9 +173,9 @@ private:
 	  const nlohmann::json& iceParameters,
 	  const nlohmann::json& iceCandidates,
 	  const nlohmann::json& dtlsParameters,
-	  PeerConnection::Options* peerConnectionOptions,
-	  const nlohmann::json& extendedRtpCapabilities,
-	  nlohmann::json appData = nlohmann::json::object());
+	  const PeerConnection::Options* peerConnectionOptions,
+	  const nlohmann::json* extendedRtpCapabilities,
+	  const nlohmann::json& appData);
 
 	/* Device is the only one constructing Transports */
 	friend Device;
@@ -193,10 +193,9 @@ private:
 inline Transport::Transport(
   Listener* listener,
   const std::string& id,
-  const nlohmann::json& extendedRtpCapabilities,
-  nlohmann::json appData)
-  : extendedRtpCapabilities(extendedRtpCapabilities), listener(listener), id(id),
-    appData(std::move(appData))
+  const nlohmann::json* extendedRtpCapabilities,
+  const nlohmann::json& appData)
+  : extendedRtpCapabilities(extendedRtpCapabilities), listener(listener), id(id), appData(appData)
 {
 }
 

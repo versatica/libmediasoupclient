@@ -50,12 +50,12 @@ private:
 	Consumer(
 	  PrivateListener* privateListener,
 	  Listener* listener,
-	  std::string id,
-	  std::string localId,
-	  std::string producerId,
+	  const std::string& id,
+	  const std::string& localId,
+	  const std::string& producerId,
 	  webrtc::MediaStreamTrackInterface* track,
-	  nlohmann::json rtpParameters,
-	  nlohmann::json appData);
+	  const nlohmann::json& rtpParameters,
+	  const nlohmann::json& appData);
 
 	void TransportClosed();
 

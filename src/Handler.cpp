@@ -44,7 +44,7 @@ Handler::Handler(
   const json& iceParameters,
   const json& iceCandidates,
   const json& dtlsParameters,
-  PeerConnection::Options* peerConnectionOptions)
+  const PeerConnection::Options* peerConnectionOptions)
   : privateListener(privateListener)
 {
 	MSC_TRACE();
@@ -106,7 +106,7 @@ SendHandler::SendHandler(
   const json& iceParameters,
   const json& iceCandidates,
   const json& dtlsParameters,
-  PeerConnection::Options* peerConnectionOptions,
+  const PeerConnection::Options* peerConnectionOptions,
   const json& sendingRtpParametersByKind,
   const json& sendingRemoteRtpParametersByKind)
   : Handler(privateListener, iceParameters, iceCandidates, dtlsParameters, peerConnectionOptions)
@@ -394,7 +394,7 @@ RecvHandler::RecvHandler(
   const json& iceParameters,
   const json& iceCandidates,
   const json& dtlsParameters,
-  PeerConnection::Options* peerConnectionOptions)
+  const PeerConnection::Options* peerConnectionOptions)
   : Handler(privateListener, iceParameters, iceCandidates, dtlsParameters, peerConnectionOptions)
 {
 	MSC_TRACE();

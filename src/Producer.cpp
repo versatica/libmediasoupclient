@@ -14,14 +14,13 @@ namespace mediasoupclient
 Producer::Producer(
   Producer::PrivateListener* privateListener,
   Producer::Listener* listener,
-  std::string id,
-  std::string localId,
+  const std::string& id,
+  const std::string& localId,
   webrtc::MediaStreamTrackInterface* track,
-  json rtpParameters,
-  json appData)
-  : privateListener(privateListener), listener(listener), id(std::move(id)),
-    localId(std::move(localId)), track(track), rtpParameters(std::move(rtpParameters)),
-    appData(std::move(appData))
+  const json& rtpParameters,
+  const json& appData)
+  : privateListener(privateListener), listener(listener), id(id), localId(localId), track(track),
+    rtpParameters(rtpParameters), appData(appData)
 {
 	MSC_TRACE();
 }

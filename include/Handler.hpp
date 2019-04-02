@@ -35,7 +35,7 @@ public:
 	  const nlohmann::json& iceParameters,
 	  const nlohmann::json& iceCandidates,
 	  const nlohmann::json& dtlsParameters,
-	  PeerConnection::Options* peerConnectionOptions);
+	  const PeerConnection::Options* peerConnectionOptions);
 
 	nlohmann::json GetTransportStats();
 	void UpdateIceServers(const nlohmann::json& iceServerUris);
@@ -76,7 +76,7 @@ public:
 	  const nlohmann::json& iceParameters,
 	  const nlohmann::json& iceCandidates,
 	  const nlohmann::json& dtlsParameters,
-	  PeerConnection::Options* peerConnectionOptions,
+	  const PeerConnection::Options* peerConnectionOptions,
 	  const nlohmann::json& sendingRtpParametersByKind,
 	  const nlohmann::json& sendingRemoteRtpParametersByKind = nlohmann::json());
 
@@ -110,7 +110,7 @@ public:
 	  const nlohmann::json& iceParameters,
 	  const nlohmann::json& iceCandidates,
 	  const nlohmann::json& dtlsParameters,
-	  PeerConnection::Options* peerConnectionOptions);
+	  const PeerConnection::Options* peerConnectionOptions);
 
 	std::pair<std::string, webrtc::MediaStreamTrackInterface*> Receive(
 	  const std::string& id, const std::string& kind, const nlohmann::json* rtpParameters);

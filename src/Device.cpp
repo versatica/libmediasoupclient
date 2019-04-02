@@ -48,13 +48,17 @@ SendTransport* Device::CreateSendTransport(
   const json& iceParameters,
   const json& iceCandidates,
   const json& dtlsParameters,
-  PeerConnection::Options* peerConnectionOptions,
+  const PeerConnection::Options* peerConnectionOptions,
   json appData) const
 {
 	MSC_TRACE();
 
 	if (!this->loaded)
 		throw Exception("not loaded");
+
+	// App data must be a json object.
+	if (!appData.is_object())
+		throw Exception("appData must be a JSON object");
 
 	// Create a new Transport.
 	auto* transport = new SendTransport(
@@ -64,9 +68,9 @@ SendTransport* Device::CreateSendTransport(
 	  iceCandidates,
 	  dtlsParameters,
 	  peerConnectionOptions,
-	  this->extendedRtpCapabilities,
-	  this->canProduceByKind,
-	  std::move(appData));
+	  &this->extendedRtpCapabilities,
+	  &this->canProduceByKind,
+	  appData);
 
 	return transport;
 }
@@ -77,13 +81,17 @@ RecvTransport* Device::CreateRecvTransport(
   const json& iceParameters,
   const json& iceCandidates,
   const json& dtlsParameters,
-  PeerConnection::Options* peerConnectionOptions,
+  const PeerConnection::Options* peerConnectionOptions,
   json appData) const
 {
 	MSC_TRACE();
 
 	if (!this->loaded)
 		throw Exception("not loaded");
+
+	// App data must be a json object.
+	if (!appData.is_object())
+		throw Exception("appData must be a JSON object");
 
 	// Create a new Transport.
 	auto* transport = new RecvTransport(
@@ -93,8 +101,8 @@ RecvTransport* Device::CreateRecvTransport(
 	  iceCandidates,
 	  dtlsParameters,
 	  peerConnectionOptions,
-	  this->extendedRtpCapabilities,
-	  std::move(appData));
+	  &this->extendedRtpCapabilities,
+	  appData);
 
 	return transport;
 }

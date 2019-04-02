@@ -27,8 +27,8 @@ public:
 	  const nlohmann::json& iceParameters,
 	  const nlohmann::json& iceCandidates,
 	  const nlohmann::json& dtlsParameters,
-	  PeerConnection::Options* peerConnectionOptions = nullptr,
-	  nlohmann::json appData                         = nlohmann::json::object()) const;
+	  const PeerConnection::Options* peerConnectionOptions = nullptr,
+	  nlohmann::json appData                               = nlohmann::json::object()) const;
 
 	RecvTransport* CreateRecvTransport(
 	  RecvTransport::Listener* listener,
@@ -36,8 +36,8 @@ public:
 	  const nlohmann::json& iceParameters,
 	  const nlohmann::json& iceCandidates,
 	  const nlohmann::json& dtlsParameters,
-	  PeerConnection::Options* peerConnectionOptions = nullptr,
-	  nlohmann::json appData                         = nlohmann::json::object()) const;
+	  const PeerConnection::Options* peerConnectionOptions = nullptr,
+	  nlohmann::json appData                               = nlohmann::json::object()) const;
 
 private:
 	// Loaded flag.

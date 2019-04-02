@@ -62,7 +62,7 @@ std::map<webrtc::PeerConnectionInterface::SignalingState, const std::string>
 /* Instance methods. */
 
 PeerConnection::PeerConnection(
-  PeerConnection::PrivateListener* privateListener, PeerConnection::Options* options)
+  PeerConnection::PrivateListener* privateListener, const PeerConnection::Options* options)
 {
 	MSC_TRACE();
 
@@ -256,7 +256,7 @@ rtc::scoped_refptr<webrtc::RtpTransceiverInterface> PeerConnection::AddTransceiv
 	webrtc::RtpTransceiverInit rtpTransceiverInit;
 	rtpTransceiverInit.stream_ids.emplace_back("0");
 
-	auto result = this->pc->AddTransceiver(std::move(track), rtpTransceiverInit);
+	auto result = this->pc->AddTransceiver(track, rtpTransceiverInit);
 
 	if (!result.ok())
 	{

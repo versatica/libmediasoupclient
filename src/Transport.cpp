@@ -21,24 +21,24 @@ SendTransport::SendTransport(
   const json& iceParameters,
   const json& iceCandidates,
   const json& dtlsParameters,
-  PeerConnection::Options* peerConnectionOptions,
-  const json& extendedRtpCapabilities,
-  std::map<std::string, bool> canProduceByKind,
-  json appData)
+  const PeerConnection::Options* peerConnectionOptions,
+  const json* extendedRtpCapabilities,
+  const std::map<std::string, bool>* canProduceByKind,
+  const json& appData)
 
-  : Transport(listener, id, extendedRtpCapabilities, std::move(appData)), listener(listener),
-    canProduceByKind(std::move(canProduceByKind))
+  : Transport(listener, id, extendedRtpCapabilities, appData), listener(listener),
+    canProduceByKind(canProduceByKind)
 {
 	MSC_TRACE();
 
 	json sendingRtpParametersByKind = {
-		{ "audio", ortc::getSendingRtpParameters("audio", extendedRtpCapabilities) },
-		{ "video", ortc::getSendingRtpParameters("video", extendedRtpCapabilities) }
+		{ "audio", ortc::getSendingRtpParameters("audio", *extendedRtpCapabilities) },
+		{ "video", ortc::getSendingRtpParameters("video", *extendedRtpCapabilities) }
 	};
 
 	json sendingRemoteRtpParametersByKind = {
-		{ "audio", ortc::getSendingRemoteRtpParameters("audio", extendedRtpCapabilities) },
-		{ "video", ortc::getSendingRemoteRtpParameters("video", extendedRtpCapabilities) }
+		{ "audio", ortc::getSendingRemoteRtpParameters("audio", *extendedRtpCapabilities) },
+		{ "video", ortc::getSendingRemoteRtpParameters("video", *extendedRtpCapabilities) }
 	};
 
 	this->handler.reset(new SendHandler(
@@ -71,7 +71,7 @@ Producer* SendTransport::Produce(
 		throw Exception("Track cannot be null");
 	else if (track->state() == webrtc::MediaStreamTrackInterface::TrackState::kEnded)
 		throw Exception("Track ended");
-	else if (this->canProduceByKind.find(track->kind()) == this->canProduceByKind.end())
+	else if (this->canProduceByKind->find(track->kind()) == this->canProduceByKind->end())
 		throw Exception("Cannot produce track kind");
 
 	std::string producerId;
@@ -94,7 +94,7 @@ Producer* SendTransport::Produce(
 			  encoding.scale_resolution_down_by = entry.scale_resolution_down_by;
 
 			  normalizedEncodings.push_back(encoding);
-	  });
+		  });
 	}
 
 	// May throw.
@@ -180,10 +180,10 @@ RecvTransport::RecvTransport(
   const json& iceParameters,
   const json& iceCandidates,
   const json& dtlsParameters,
-  PeerConnection::Options* peerConnectionOptions,
-  const json& extendedRtpCapabilities,
-  json appData)
-  : Transport(listener, id, extendedRtpCapabilities, std::move(appData))
+  const PeerConnection::Options* peerConnectionOptions,
+  const json* extendedRtpCapabilities,
+  const json& appData)
+  : Transport(listener, id, extendedRtpCapabilities, appData)
 {
 	MSC_TRACE();
 
@@ -210,8 +210,16 @@ Consumer* RecvTransport::Consume(
 	if (this->closed)
 		throw Exception("Invalid state");
 
+	// RTP parameters cannot be null.
+	if (rtpParameters == nullptr)
+		throw Exception("rtpParameters cannot be null");
+
+	// App data must be a json object.
+	if (!appData.is_object())
+		throw Exception("appData must be a JSON object");
+
 	// Ensure the device can consume it.
-	auto canConsume = ortc::canReceive(*rtpParameters, this->extendedRtpCapabilities);
+	auto canConsume = ortc::canReceive(*rtpParameters, *this->extendedRtpCapabilities);
 
 	if (!canConsume)
 		throw Exception("cannot consume this Producer");
@@ -222,8 +230,8 @@ Consumer* RecvTransport::Consume(
 	auto localId = result.first;
 	auto* track  = result.second;
 
-	auto* consumer = new Consumer(
-	  this, consumerListener, id, localId, producerId, track, *rtpParameters, std::move(appData));
+	auto* consumer =
+	  new Consumer(this, consumerListener, id, localId, producerId, track, *rtpParameters, appData);
 
 	this->consumers[consumer->GetId()] = consumer;
 

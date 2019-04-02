@@ -173,8 +173,8 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		};
 		/* clang-format on */
 
-		REQUIRE_NOTHROW(audioProducer.reset(sendTransport->Produce(
-		  &producerListener, audioTrack, nullptr, &codecOptions, appData)));
+		REQUIRE_NOTHROW(audioProducer.reset(
+		  sendTransport->Produce(&producerListener, audioTrack, nullptr, &codecOptions, appData)));
 
 		REQUIRE(
 		  sendTransportListener.onConnectTimesCalled ==
@@ -216,8 +216,8 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 		audioProducer->Resume();
 
-		REQUIRE_NOTHROW(
-		  videoProducer.reset(sendTransport->Produce(&producerListener, videoTrack, &encodings, nullptr)));
+		REQUIRE_NOTHROW(videoProducer.reset(
+		  sendTransport->Produce(&producerListener, videoTrack, &encodings, nullptr)));
 
 		REQUIRE(
 		  sendTransportListener.onConnectTimesCalled ==

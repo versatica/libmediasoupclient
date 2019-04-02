@@ -109,7 +109,7 @@ public:
 	};
 
 public:
-	PeerConnection(PrivateListener* privateListener, Options* options);
+	PeerConnection(PrivateListener* privateListener, const Options* options);
 	~PeerConnection() = default;
 
 	webrtc::PeerConnectionInterface::RTCConfiguration GetConfiguration() const;

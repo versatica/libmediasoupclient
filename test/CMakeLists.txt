@@ -37,6 +37,12 @@ if(APPLE)
 		${CORE_VIDEO}
 		${CORE_SERVICES}
 	)
+
+	# Bundle it.
+	set_target_properties(test_mediasoupclient PROPERTIES
+		MACOSX_BUNDLE TRUE
+		MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist
+	)
 endif(APPLE)
 
 # Private (implementation) header files.

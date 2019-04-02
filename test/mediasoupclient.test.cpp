@@ -516,6 +516,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE(videoProducer->GetTrack() == newVideoTrack);
 		REQUIRE(!videoProducer->IsPaused());
 
+		videoTrack.release();
 		videoTrack = newVideoTrack;
 	}
 

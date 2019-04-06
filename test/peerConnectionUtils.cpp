@@ -13,8 +13,6 @@
 static rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peerConnectionFactory{ nullptr };
 
 static rtc::scoped_refptr<webrtc::AudioSourceInterface> audioSource{ nullptr };
-static rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource{ nullptr };
-static rtc::scoped_refptr<webrtc::VideoCaptureModule> videoCaptureModule;
 
 class CapturerTrackSource;
 static rtc::scoped_refptr<CapturerTrackSource> videoDevice{ nullptr };

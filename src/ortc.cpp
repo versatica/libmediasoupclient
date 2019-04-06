@@ -38,11 +38,11 @@ namespace ortc
 	{
 		MSC_TRACE();
 
-		auto jsonParameterIt = codec.find("parameters");
-		if (jsonParameterIt == codec.end())
+		auto jsonParametersIt = codec.find("parameters");
+		if (jsonParametersIt == codec.end())
 			return 0;
 
-		auto parameters              = *jsonParameterIt;
+		auto parameters              = *jsonParametersIt;
 		auto jsonPacketizationModeIt = parameters.find("packetization-mode");
 		if (jsonPacketizationModeIt == parameters.end() || !jsonPacketizationModeIt->is_number())
 			return 0;
@@ -54,11 +54,11 @@ namespace ortc
 	{
 		MSC_TRACE();
 
-		auto jsonParameterIt = codec.find("parameters");
-		if (jsonParameterIt == codec.end())
+		auto jsonParametersIt = codec.find("parameters");
+		if (jsonParametersIt == codec.end())
 			return 0;
 
-		auto parameters                  = *jsonParameterIt;
+		auto parameters                  = *jsonParametersIt;
 		auto jsonLevelAssimetryAllowedIt = parameters.find("level-assimetry-allowed");
 		if (jsonLevelAssimetryAllowedIt == parameters.end() || !jsonLevelAssimetryAllowedIt->is_number_unsigned())
 			return 0;

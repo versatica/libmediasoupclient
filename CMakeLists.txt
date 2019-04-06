@@ -50,17 +50,25 @@ set(HEADER_FILES
 	include/mediasoupclient.hpp
 )
 
-# Add some compile flags to our source files.
-if(MSVC)
-	set_source_files_properties(${SOURCE_FILES}
-		PROPERTIES COMPILE_FLAGS "/W3 /WX")
-else()
-	set_source_files_properties(${SOURCE_FILES}
-		PROPERTIES COMPILE_FLAGS -Wall -Wextra -Wpedantic)
-endif()
+set(
+	SOURCE_FILES
+	src/Consumer.cpp
+	src/Device.cpp
+	src/Handler.cpp
+	src/Logger.cpp
+	src/mediasoupclient.cpp
+	src/PeerConnection.cpp
+	src/Producer.cpp
+	src/Transport.cpp
+	src/ortc.cpp
+	src/scalabilityMode.cpp
+	src/sdp/MediaSection.cpp
+	src/sdp/RemoteSdp.cpp
+	src/sdp/Utils.cpp
+)
 
 # Create target.
-add_library(${PROJECT_NAME} STATIC ${SOURCES})
+add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 
 if(${LOG_TRACE})
 	target_compile_definitions(${PROJECT_NAME}
@@ -77,21 +85,17 @@ endif()
 # Source Dependencies.
 add_subdirectory(deps/libsdptransform "${CMAKE_CURRENT_BINARY_DIR}/libsdptransform")
 
-target_sources(${PROJECT_NAME} PRIVATE
-	src/Consumer.cpp
-	src/Device.cpp
-	src/Handler.cpp
-	src/Logger.cpp
-	src/mediasoupclient.cpp
-	src/PeerConnection.cpp
-	src/Producer.cpp
-	src/Transport.cpp
-	src/ortc.cpp
-	src/scalabilityMode.cpp
-	src/sdp/MediaSection.cpp
-	src/sdp/RemoteSdp.cpp
-	src/sdp/Utils.cpp
-)
+# Add some compile flags to our source files.
+if(MSVC)
+	set_source_files_properties(${SOURCE_FILES}
+		PROPERTIES COMPILE_FLAGS "/W3 /WX")
+else()
+	set_source_files_properties(${SOURCE_FILES}
+		PROPERTIES COMPILE_FLAGS -Wall -Wextra -Wpedantic)
+endif()
+
+target_compile_options(${PROJECT_NAME} PRIVATE "-fvisibility=hidden")
+target_compile_options(${PROJECT_NAME} PRIVATE "-fvisibility-inlines-hidden")
 
 # Private (implementation) header files.
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/include)

@@ -20,16 +20,6 @@ static bool isRtxCodec(const json& codec)
 	return std::regex_match(name, match, regex);
 }
 
-static bool isAudioCodec(const json& codec)
-{
-	static const std::regex regex("audio/.+$");
-
-	std::smatch match;
-	auto name = codec["mimeType"].get<std::string>();
-
-	return std::regex_match(name, match, regex);
-}
-
 namespace mediasoupclient
 {
 namespace ortc

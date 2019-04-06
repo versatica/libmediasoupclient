@@ -3,6 +3,7 @@
 
 #include "ortc.hpp"
 #include "Logger.hpp"
+#include "media/base/h264_profile_level_id.h"
 #include <algorithm> // std::find_if
 #include <regex>
 #include <string>
@@ -43,13 +44,29 @@ namespace ortc
 
 		auto parameters              = *jsonParameterIt;
 		auto jsonPacketizationModeIt = parameters.find("packetization-mode");
-		if (jsonPacketizationModeIt == parameters.end() || !jsonPacketizationModeIt->is_number_unsigned())
+		if (jsonPacketizationModeIt == parameters.end() || !jsonPacketizationModeIt->is_number())
 			return 0;
 
 		return jsonPacketizationModeIt->get<uint8_t>();
 	}
 
-	static bool matchCodecs(const json& aCodec, const json& bCodec)
+	static uint8_t getH264LevelAssimetryAllowed(const json& codec)
+	{
+		MSC_TRACE();
+
+		auto jsonParameterIt = codec.find("parameters");
+		if (jsonParameterIt == codec.end())
+			return 0;
+
+		auto parameters                  = *jsonParameterIt;
+		auto jsonLevelAssimetryAllowedIt = parameters.find("level-assimetry-allowed");
+		if (jsonLevelAssimetryAllowedIt == parameters.end() || !jsonLevelAssimetryAllowedIt->is_number_unsigned())
+			return 0;
+
+		return jsonLevelAssimetryAllowedIt->get<uint8_t>();
+	}
+
+	static bool matchCodecs(json& aCodec, const json& bCodec)
 	{
 		MSC_TRACE();
 
@@ -85,6 +102,31 @@ namespace ortc
 
 			if (aPacketizationMode != bPacketizationMode)
 				return false;
+
+			webrtc::H264::CodecParameterMap aParameters;
+			webrtc::H264::CodecParameterMap bParameters;
+
+			// Check H264 profile.
+			aParameters["level-asymmetry-allowed"] = std::to_string(getH264LevelAssimetryAllowed(aCodec));
+			aParameters["packetization-mode"]      = std::to_string(aPacketizationMode);
+			aParameters["profile-level-id"] = aCodec["parameters"]["profile-level-id"].get<std::string>();
+
+			bParameters["level-asymmetry-allowed"] = std::to_string(getH264LevelAssimetryAllowed(bCodec));
+			bParameters["packetization-mode"]      = std::to_string(bPacketizationMode);
+			bParameters["profile-level-id"] = bCodec["parameters"]["profile-level-id"].get<std::string>();
+
+			if (!webrtc::H264::IsSameH264Profile(aParameters, bParameters))
+				return false;
+
+			webrtc::H264::CodecParameterMap newParameters;
+
+			webrtc::H264::GenerateProfileLevelIdForAnswer(aParameters, bParameters, &newParameters);
+
+			auto profileLevelIdIt = newParameters.find("profile-level-id");
+			if (profileLevelIdIt != newParameters.end())
+				aCodec["parameters"]["profile-level-id"] = profileLevelIdIt->second;
+			else
+				aCodec["parameters"].erase("profile-level-id");
 		}
 
 		return true;
@@ -141,7 +183,7 @@ namespace ortc
 	/**
 	 * Generate extended RTP capabilities for sending and receiving.
 	 */
-	json getExtendedRtpCapabilities(const json& localCaps, const json& remoteCaps)
+	json getExtendedRtpCapabilities(json& localCaps, const json& remoteCaps)
 	{
 		MSC_TRACE();
 
@@ -160,10 +202,10 @@ namespace ortc
 			if (isRtxCodec(remoteCodec))
 				continue;
 
-			auto localCodecs = localCaps["codecs"];
+			json& localCodecs = localCaps["codecs"];
 
 			auto jsonLocalCodecIt =
-			  std::find_if(localCodecs.begin(), localCodecs.end(), [&remoteCodec](const json& localCodec) {
+			  std::find_if(localCodecs.begin(), localCodecs.end(), [&remoteCodec](json& localCodec) {
 				  return matchCodecs(localCodec, remoteCodec);
 			  });
 

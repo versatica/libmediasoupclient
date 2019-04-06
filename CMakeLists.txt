@@ -87,6 +87,7 @@ target_sources(${PROJECT_NAME} PRIVATE
 	src/Producer.cpp
 	src/Transport.cpp
 	src/ortc.cpp
+	src/scalabilityMode.cpp
 	src/sdp/MediaSection.cpp
 	src/sdp/RemoteSdp.cpp
 	src/sdp/Utils.cpp

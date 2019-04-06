@@ -7,6 +7,7 @@ set(
 	mediasoupclient.test.cpp
 	ortc.test.cpp
 	peerConnectionUtils.cpp
+	scalabilityMode.test.cpp
 	sdp/RemoteSdp.test.cpp
 	sdp/Utils.test.cpp
 	tests.cpp

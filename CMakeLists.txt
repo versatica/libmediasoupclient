@@ -94,9 +94,6 @@ else()
 		PROPERTIES COMPILE_FLAGS -Wall -Wextra -Wpedantic)
 endif()
 
-target_compile_options(${PROJECT_NAME} PRIVATE "-fvisibility=hidden")
-target_compile_options(${PROJECT_NAME} PRIVATE "-fvisibility-inlines-hidden")
-
 # Private (implementation) header files.
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/include)
 

@@ -29,7 +29,6 @@ set(
 add_library(sdptransform STATIC ${SOURCE_FILES} ${HEADER_FILES})
 
 target_compile_options(sdptransform PUBLIC "-fvisibility=hidden")
-target_compile_options(sdptransform PUBLIC "-fvisibility-inlines-hidden")
 
 install(TARGETS sdptransform DESTINATION lib)
 install(FILES ${HEADER_FILES} DESTINATION include/sdptransform)

@@ -58,13 +58,32 @@ Depending on the host, it will generate the following static lib and header file
 -- Up-to-date: /usr/local/include/mediasoupclient/mediasoupclient.hpp
 ```
 
-
 ## Testing
 
 ```bash
 ./scripts/test.sh
 ```
 
+## Linkage considerations
+
+The application is responsible for defining the symbol visibility of the resulting binary. Symbol visibility mismatch among different libraries will generate plenty of linker warnings such us the one below:
+
+```txt
+ld: warning: direct access in function 'webrtc::I010Buffer::Rotate(webrtc::I010BufferInterface const&, webrtc::VideoRotation)'
+from file '/Users/jmillan/src/webrtc-checkout/src/out/m73/obj/libwebrtc.a(i010_buffer.o)'
+to global weak symbol 'void rtc::webrtc_checks_impl::LogStreamer<>::Call<>(char const*, int, char const*)::t'
+from file '../libmediasoupclient.a(PeerConnection.cpp.o)' means the weak symbol cannot be overridden at runtime.
+This was likely caused by different translation units being compiled with different visibility settings.
+```
+
+In order to avoid such warnings make sure the corresponding visibility compilation flags are provided. For example, if `libwebrtc` was built with hidden symbol visibility, `libmediasoupclient` needs to be provided with the correspoinding compilation flag:
+
+```bash
+cmake . -Bbuild \
+-DLIBWEBRTC_INCLUDE_PATH:PATH=${PATH_TO_LIBWEBRTC_SOURCES} \
+-DLIBWEBRTC_BINARY_PATH:PATH=${PATH_TO_LIBWEBRTC_BINARY}
+-DCMAKE_CXX_FLAGS="-fvisibility=hidden"
+```
 
 ## Authors
 

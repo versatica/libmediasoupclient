@@ -8,6 +8,7 @@ namespace mediasoupclient
 {
 void Initialize();
 void Cleanup();
+std::string Version();
 } // namespace mediasoupclient
 
 #endif

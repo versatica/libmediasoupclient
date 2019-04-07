@@ -17,6 +17,10 @@ configure_file (
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# TMP: Avoid linking errors.
+# https://github.com/jmillan/libmediasoupclient/issues/34
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
+
 # Project options.
 option(MEDIASOUPCLIENT_BUILD_TESTS "Build unit tests" ON)
 option(MEDIASOUPCLIENT_LOG_TRACE   "Enable MSC_LOG_TRACE (See Logger.hpp)" OFF)

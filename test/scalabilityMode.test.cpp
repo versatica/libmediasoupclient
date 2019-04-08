@@ -23,8 +23,12 @@ TEST_CASE("scalabilityMode", "[scalabilityMode]")
 		REQUIRE(jsonScalabilityMode["temporalLayers"].get<uint32_t>() == 6);
 	}
 
-	SECTION("throws if input is incorrect")
+	SECTION("return deault layers if input is incorrect")
 	{
-		REQUIRE_THROWS_AS(parseScalabilityMode("1T3"), Exception);
+		nlohmann::json jsonScalabilityMode;
+
+		REQUIRE_NOTHROW(jsonScalabilityMode = parseScalabilityMode("1T3"));
+		REQUIRE(jsonScalabilityMode["spatialLayers"].get<uint32_t>() == 1);
+		REQUIRE(jsonScalabilityMode["temporalLayers"].get<uint32_t>() == 1);
 	}
 }

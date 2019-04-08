@@ -2,7 +2,7 @@
 // #define MSC_LOG_DEV
 
 #include "scalabilityMode.hpp"
-#include "Exception.hpp"
+#include "Logger.hpp"
 #include <regex>
 #include <string>
 
@@ -14,7 +14,14 @@ namespace mediasoupclient
 {
 json parseScalabilityMode(const std::string& scalabilityMode)
 {
-	json jsonScalabilityMode;
+	/* clang-format off */
+	json jsonScalabilityMode
+	{
+		{ "spatialLayers",  1 },
+		{ "temporalLayers", 1 }
+	};
+	/* clang-format on */
+
 	std::smatch match;
 
 	std::regex_match(scalabilityMode, match, ScalabilityModeRegex);
@@ -28,12 +35,12 @@ json parseScalabilityMode(const std::string& scalabilityMode)
 		}
 		catch (std::exception& e)
 		{
-			throw Exception(std::string("invalid scalabilityMode: ") + e.what());
+			MSC_WARN("invalid scalabilityMode: %s", e.what());
 		}
 	}
 	else
 	{
-		throw Exception(std::string("invalid scalabilityMode: ") + scalabilityMode);
+		MSC_WARN("invalid scalabilityMode: %s", scalabilityMode.c_str());
 	}
 
 	return jsonScalabilityMode;

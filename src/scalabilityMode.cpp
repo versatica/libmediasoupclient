@@ -8,7 +8,8 @@
 
 using json = nlohmann::json;
 
-static const std::regex ScalabilityModeRegex("^L(\\d+)T(\\d+)");
+static const std::regex ScalabilityModeRegex(
+  "^L(\\d+)T(\\d+).*", std::regex_constants::ECMAScript);
 
 namespace mediasoupclient
 {

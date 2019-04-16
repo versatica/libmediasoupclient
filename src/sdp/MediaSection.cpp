@@ -13,7 +13,7 @@ using json = nlohmann::json;
 
 static std::string getCodecName(const json& codec)
 {
-	static const std::regex regex("^.*/");
+	static const std::regex regex("^.*/", std::regex_constants::ECMAScript);
 
 	auto mimeType = codec["mimeType"].get<std::string>();
 

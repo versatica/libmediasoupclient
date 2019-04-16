@@ -12,7 +12,7 @@ using json = nlohmann::json;
 
 static bool isRtxCodec(const json& codec)
 {
-	static const std::regex regex(".+/rtx$");
+	static const std::regex regex(".+/rtx$", std::regex_constants::ECMAScript);
 
 	std::smatch match;
 	auto name = codec["mimeType"].get<std::string>();

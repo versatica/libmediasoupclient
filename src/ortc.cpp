@@ -282,12 +282,27 @@ namespace ortc
 			/* clang-format off */
 			json extendedExt =
 			{
-				{ "kind",   remoteExt["kind"]               },
-				{ "uri",    remoteExt["uri"]                },
-				{ "sendId", matchingLocalExt["preferredId"] },
-				{ "recvId", remoteExt["preferredId"]        }
+				{ "kind",      remoteExt["kind"]               },
+				{ "uri",       remoteExt["uri"]                },
+				{ "sendId",    matchingLocalExt["preferredId"] },
+				{ "recvId",    remoteExt["preferredId"]        },
+				{ "direction", remoteExt["sendrecv"]           }
 			};
 			/* clang-format on */
+
+			auto jsonRemoteExtDirectionIt = remoteExt.find("direction");
+
+			if (jsonRemoteExtDirectionIt != remoteExt.end() && jsonRemoteExtDirectionIt->is_string())
+			{
+				auto remoteExtDirection = jsonRemoteExtDirectionIt->get<std::string>();
+
+				if (remoteExtDirection == "recvonly")
+					extendedExt["direction"] = "sendonly";
+				else if (remoteExtDirection == "sendonly")
+					extendedExt["direction"] = "recvonly";
+				else if (remoteExtDirection == "inactive")
+					extendedExt["direction"] = "inactive";
+			}
 
 			extendedRtpCapabilities["headerExtensions"].push_back(extendedExt);
 		}
@@ -366,6 +381,18 @@ namespace ortc
 
 		for (auto& extendedExtension : extendedRtpCapabilities["headerExtensions"])
 		{
+			auto jsonDirectionIt = extendedExtension.find("direction");
+			std::string direction;
+
+			if (jsonDirectionIt != extendedExtension.end() && jsonDirectionIt->is_string())
+				direction = jsonDirectionIt->get<std::string>();
+			else
+				direction = "sendrecv";
+
+			// Ignore RTP extensions not valid for receiving.
+			if (direction != "sendrecv" && direction != "recvonly")
+				continue;
+
 			/* clang-format off */
 			json ext =
 			{
@@ -464,6 +491,18 @@ namespace ortc
 			if (kind != extendedExtension["kind"].get<std::string>())
 				continue;
 
+			auto jsonDirectionIt = extendedExtension.find("direction");
+			std::string direction;
+
+			if (jsonDirectionIt != extendedExtension.end() && jsonDirectionIt->is_string())
+				direction = jsonDirectionIt->get<std::string>();
+			else
+				direction = "sendrecv";
+
+			// Ignore RTP extensions not valid for sending.
+			if (direction != "sendrecv" && direction != "sendonly")
+				continue;
+
 			/* clang-format off */
 			json ext =
 			{
@@ -557,6 +596,18 @@ namespace ortc
 			if (kind != extendedExtension["kind"].get<std::string>())
 				continue;
 
+			auto jsonDirectionIt = extendedExtension.find("direction");
+			std::string direction;
+
+			if (jsonDirectionIt != extendedExtension.end() && jsonDirectionIt->is_string())
+				direction = jsonDirectionIt->get<std::string>();
+			else
+				direction = "sendrecv";
+
+			// Ignore RTP extensions not valid for sending.
+			if (direction != "sendrecv" && direction != "sendonly")
+				continue;
+
 			/* clang-format off */
 			json ext =
 			{
@@ -566,6 +617,64 @@ namespace ortc
 			/* clang-format on */
 
 			rtpParameters["headerExtensions"].push_back(ext);
+		}
+
+		// Reduce codecs' RTCP feedback. Use Transport-CC if available, REMB otherwise.
+		auto jsonHeaderExtensionIt = std::find_if(
+		  rtpParameters["headerExtensions"].begin(),
+		  rtpParameters["headerExtensions"].end(),
+		  [](json& ext) {
+			  return ext["uri"].get<std::string>() ==
+			         "http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01";
+		  });
+
+		if (jsonHeaderExtensionIt != rtpParameters["headerExtensions"].end())
+		{
+			for (auto& codec : rtpParameters["codecs"])
+			{
+				if (codec.find("rtcpFeedback") == codec.end())
+					break;
+
+				std::remove_if(codec["rtcpFeedback"].begin(), codec["rtcpFeedback"].end(), [](json& fb) {
+					return fb["type"].get<std::string>() == "goog-remb";
+				});
+			}
+
+			return rtpParameters;
+		}
+
+		jsonHeaderExtensionIt = std::find_if(
+		  rtpParameters["headerExtensions"].begin(),
+		  rtpParameters["headerExtensions"].end(),
+		  [](json& ext) {
+			  return ext["uri"].get<std::string>() ==
+			         "http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time";
+		  });
+
+		if (jsonHeaderExtensionIt != rtpParameters["headerExtensions"].end())
+		{
+			for (auto& codec : rtpParameters["codecs"])
+			{
+				if (codec.find("rtcpFeedback") == codec.end())
+					break;
+
+				std::remove_if(codec["rtcpFeedback"].begin(), codec["rtcpFeedback"].end(), [](json& fb) {
+					return fb["type"].get<std::string>() == "transport-cc";
+				});
+			}
+
+			return rtpParameters;
+		}
+
+		for (auto& codec : rtpParameters["codecs"])
+		{
+			if (codec.find("rtcpFeedback") == codec.end())
+				break;
+
+			std::remove_if(codec["rtcpFeedback"].begin(), codec["rtcpFeedback"].end(), [](json& fb) {
+				return fb["type"].get<std::string>() == "transport-cc" ||
+				       fb["type"].get<std::string>() == "goog-remb";
+			});
 		}
 
 		return rtpParameters;

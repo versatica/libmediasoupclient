@@ -36,7 +36,7 @@ Already integrated in this repository.
 ## Installation
 
 ```bash
-git clone https://github.com/jmillan/libmediasoupclient.git
+git clone https://github.com/versatica/libmediasoupclient.git
 
 cd libmediasoupclient/
 

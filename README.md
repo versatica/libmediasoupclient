@@ -1,6 +1,6 @@
 # libmediasoupclient
 
-C++ library for building [mediasoup][mediasoup-website] based applications built on top of [libwebrtc][libwebrtc].
+C++ client side library for building [mediasoup][mediasoup-website] based applications built on top of [libwebrtc][libwebrtc].
 
 
 

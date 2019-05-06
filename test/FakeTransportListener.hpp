@@ -5,7 +5,7 @@
 class FakeSendTransportListener : public mediasoupclient::SendTransport::Listener
 {
 public:
-		virtual std::future<std::string> OnProduce(const std::string& kind, nlohmann::json rtpParameters, const nlohmann::json& appData) override
+		virtual std::future<std::string> OnProduce(mediasoupclient::SendTransport* /*transport*/, const std::string& kind, nlohmann::json rtpParameters, const nlohmann::json& appData) override
 	{
 		this->onProduceTimesCalled++;
 

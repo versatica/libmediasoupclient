@@ -92,7 +92,10 @@ public:
 	{
 	public:
 		virtual std::future<std::string> OnProduce(
-		  const std::string& kind, nlohmann::json rtpParameters, const nlohmann::json& appData) = 0;
+		  SendTransport* transport,
+		  const std::string& kind,
+		  nlohmann::json rtpParameters,
+		  const nlohmann::json& appData) = 0;
 	};
 
 public:

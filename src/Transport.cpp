@@ -106,7 +106,7 @@ Producer* SendTransport::Produce(
 	try
 	{
 		// May throw.
-		producerId = this->listener->OnProduce(track->kind(), rtpParameters, appData).get();
+		producerId = this->listener->OnProduce(this, track->kind(), rtpParameters, appData).get();
 	}
 	catch (Exception& error)
 	{

@@ -1,10 +1,10 @@
 # libmediasoupclient
 
-C++ version of [mediasoup-client][mediasoup-client] JavaScript library using [WebRTC Native Code][WebRTC Native Code].
+C++ library for building [mediasoup][mediasoup-website] based applications built on top of [libwebrtc][libwebrtc].
 
 
 
-## Website and documentation
+## Website and Documentation
 
 * [mediasoup.org][mediasoup-website]
 
@@ -25,5 +25,4 @@ C++ version of [mediasoup-client][mediasoup-client] JavaScript library using [We
 
 
 [mediasoup-website]: https://mediasoup.org
-[mediasoup-client]: https://github.com/versatica/mediasoup-client
-[WebRTC Native Code]: https://webrtc.org/native-code
+[libwebrtc]: https://webrtc.org/native-code

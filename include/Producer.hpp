@@ -39,7 +39,7 @@ public:
 	webrtc::MediaStreamTrackInterface* GetTrack() const;
 	const nlohmann::json& GetRtpParameters() const;
 	const uint8_t GetMaxSpatialLayer() const;
-	const nlohmann::json& GetAppData() const;
+	nlohmann::json& GetAppData();
 	nlohmann::json GetStats() const;
 
 	bool IsClosed() const;
@@ -139,7 +139,7 @@ inline const uint8_t Producer::GetMaxSpatialLayer() const
 	return this->maxSpatialLayer;
 }
 
-inline const nlohmann::json& Producer::GetAppData() const
+inline nlohmann::json& Producer::GetAppData()
 {
 	return this->appData;
 }

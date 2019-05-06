@@ -31,11 +31,8 @@ void Logger::SetDefaultHandler()
 
 /* DefaultLogHandler */
 
-void Logger::DefaultLogHandler::OnLog(LogLevel level, char* payload, size_t len)
+void Logger::DefaultLogHandler::OnLog(LogLevel /*level*/, char* payload, size_t /*len*/)
 {
-	(void)level;
-	(void)len;
-
 	std::cout << payload << std::endl;
 }
 } // namespace mediasoupclient

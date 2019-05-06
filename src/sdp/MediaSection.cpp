@@ -390,14 +390,6 @@ namespace Sdp
 
 			for (auto& ext : offerRtpParameters["headerExtensions"])
 			{
-				// Ignore MID and RID RTP extensions when receiving.
-				if (
-				  ext["uri"].get<std::string>() == "urn:ietf:params:rtp-hdrext:sdes:mid" ||
-				  ext["uri"].get<std::string>() == "urn:ietf:params:rtp-hdrext:sdes:rtp-stream-id")
-				{
-					continue;
-				}
-
 				/* clang-format off */
 				this->mediaObject["ext"].push_back(
 					{

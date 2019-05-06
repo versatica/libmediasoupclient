@@ -36,7 +36,7 @@ public:
 	const std::string GetKind() const;
 	webrtc::MediaStreamTrackInterface* GetTrack() const;
 	const nlohmann::json& GetRtpParameters() const;
-	const nlohmann::json& GetAppData() const;
+	nlohmann::json& GetAppData();
 	nlohmann::json GetStats() const;
 
 	bool IsClosed() const;
@@ -129,7 +129,7 @@ inline const nlohmann::json& Consumer::GetRtpParameters() const
 	return this->rtpParameters;
 }
 
-inline const nlohmann::json& Consumer::GetAppData() const
+inline nlohmann::json& Consumer::GetAppData()
 {
 	return this->appData;
 }

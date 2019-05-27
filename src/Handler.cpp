@@ -206,11 +206,17 @@ std::pair<std::string, nlohmann::json> SendHandler::Send(
 		auto mimeType = sendingRtpParameters["codecs"][0]["mimeType"].get<std::string>();
 
 		std::transform(mimeType.begin(), mimeType.end(), mimeType.begin(), ::tolower);
-		if (sendingRtpParameters["encodings"].size() > 1 && mimeType == "video/vp8")
+
+		// clang-format off
+		if (
+			sendingRtpParameters["encodings"].size() > 1 &&
+			(mimeType == "video/vp8" || mimeType == "video/h264")
+		)
+		// clang-format on
 		{
 			for (auto& encoding : sendingRtpParameters["encodings"])
 			{
-				encoding["scalabilityMode"] = "L1T3";
+				encoding["scalabilityMode"] = "S1T3";
 			}
 		}
 
@@ -228,7 +234,7 @@ std::pair<std::string, nlohmann::json> SendHandler::Send(
 	}
 	catch (Exception& error)
 	{
-		throw error;
+		throw;
 	}
 
 	// Store in the map.
@@ -464,7 +470,7 @@ std::pair<std::string, webrtc::MediaStreamTrackInterface*> RecvHandler::Receive(
 	}
 	catch (Exception& error)
 	{
-		throw error;
+		throw;
 	}
 
 	auto transceivers  = this->pc->GetTransceivers();

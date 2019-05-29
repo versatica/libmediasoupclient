@@ -6,7 +6,7 @@ PROJECT_PWD=${PWD}
 DEP=$1
 
 current_dir_name=${PROJECT_PWD##*/}
-if [ "${current_dir_name}" != "libmediasoupclient" ] ; then
+if [ "${current_dir_name}" != "libmediasoupclient" ] && [ "${current_dir_name}" != "v3-libmediasoupclient" ] ; then
 	echo ">>> [ERROR] $(basename $0) must be called from libmediasoupclient/ root directory" >&2
 	exit 1
 fi
@@ -46,7 +46,7 @@ function get_dep()
 function get_libsdptransform()
 {
 	GIT_REPO="https://github.com/ibc/libsdptransform.git"
-	GIT_TAG="1.2.2"
+	GIT_TAG="1.2.4"
 	DEST="deps/libsdptransform"
 
 	get_dep "${GIT_REPO}" "${GIT_TAG}" "${DEST}"

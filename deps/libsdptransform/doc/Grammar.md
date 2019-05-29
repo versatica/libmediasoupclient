@@ -100,13 +100,17 @@ if (
 
 `c=IN IP4 10.47.197.26`
 
+`c=IN IP4 224.2.36.42/15`
+
 * type: object
 
 | field           | type    | example
 | --------------- | ------- | -------------------------
 | version         | integer | 4
 | ip              | string  | "10.47.197.26"
+| ttl             | integer | 15
 
+*NOTE:* `ttl` is just present in the object if `ip` is followed by `/` plus a number. More info in the [RFC 4566 section 5.7](https://tools.ietf.org/html/rfc4566#section-5.7).
 
 ### bandwidth
 
@@ -226,6 +230,8 @@ if (
 
 `a=extmap:2 urn:ietf:params:rtp-hdrext:toffset`
 
+`a=extmap:3 urn:ietf:params:rtp-hdrext:encrypt urn:ietf:params:rtp-hdrext:smpte-tc 25@600/24`
+
 * multiple
 * type: object
 
@@ -234,6 +240,7 @@ if (
 | value           | integer | 1
 | direction       | string  | "recvonly"
 | uri             | string  | "URI-gps-string"
+| encrypt-uri     | string  | "urn:ietf:params:rtp-hdrext:encrypt"
 | config          | string  |
 
 

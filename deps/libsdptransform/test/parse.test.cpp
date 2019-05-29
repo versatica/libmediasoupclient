@@ -931,3 +931,100 @@ SCENARIO("aes67", "[parse]")
 
 	REQUIRE(newSdp == sdp);
 }
+
+SCENARIO("multicastttlSdp", "[parse]")
+{
+	auto sdp = helpers::readFile("test/data/multicastttl.sdp");
+	auto session = sdptransform::parse(sdp);
+
+	REQUIRE(session.size() > 0);
+	REQUIRE(session.find("media") != session.end());
+
+	auto& media = session.at("media");
+
+	REQUIRE(session.at("origin").at("sessionId") == 1558439701980808);
+	REQUIRE(session.at("origin").at("sessionVersion") == 1);
+	REQUIRE(session.at("origin").at("netType") == "IN");
+	REQUIRE(session.at("origin").at("ipVer") == 4);
+	REQUIRE(session.at("origin").at("address") == "192.168.1.189");
+
+	REQUIRE(session.at("connection").at("ip") == "224.2.36.42");
+	REQUIRE(session.at("connection").at("version") == 4);
+	REQUIRE(session.at("connection").at("ttl") == 15);
+
+	auto& video = media[0];
+	auto videoPayloads = sdptransform::parsePayloads(video.at("payloads"));
+
+	REQUIRE(video.at("type") == "video");
+	REQUIRE(video.at("port") == 6970);
+	REQUIRE(video.at("protocol") == "RTP/AVP");
+	REQUIRE(video.at("rtp")[0].at("payload") == 96);
+	REQUIRE(video.at("rtp")[0].at("codec") == "H264");
+	REQUIRE(video.at("rtp")[0].at("rate") == 90000);
+	REQUIRE(video.at("fmtp")[0].at("payload") == 96);
+
+	auto newSdp = sdptransform::write(session);
+
+	REQUIRE(newSdp == sdp);
+}
+
+SCENARIO("extmapEncryptSdp", "[parse]")
+{
+	auto sdp = helpers::readFile("test/data/extmap-encrypt.sdp");
+	auto session = sdptransform::parse(sdp);
+
+	REQUIRE(session.size() > 0);
+	REQUIRE(session.find("media") != session.end());
+
+	auto& media = session.at("media");
+	auto& audio = media[0];
+	auto audioPayloads = sdptransform::parsePayloads(audio.at("payloads"));
+
+	REQUIRE(audioPayloads == R"([ 96 ])"_json);
+
+	REQUIRE(audio.at("type") == "audio");
+	REQUIRE(audio.at("port") == 54400);
+	REQUIRE(audio.at("protocol") == "RTP/SAVPF");
+	REQUIRE(audio.at("rtp")[0].at("payload") == 96);
+	REQUIRE(audio.at("rtp")[0].at("codec") == "opus");
+	REQUIRE(audio.at("rtp")[0].at("rate") == 48000);
+	REQUIRE(
+		audio.at("ext")[0] ==
+		R"({
+			"value"     : 1,
+			"direction" : "sendonly",
+			"uri"       : "URI-toffset"
+		})"_json
+	);
+	REQUIRE(
+		audio.at("ext")[1] ==
+		R"({
+			"value" : 2,
+			"uri"   : "urn:ietf:params:rtp-hdrext:toffset"
+		})"_json
+	);
+	REQUIRE(
+		audio.at("ext")[2] ==
+		R"({
+			"value"       : 3,
+			"encrypt-uri" : "urn:ietf:params:rtp-hdrext:encrypt",
+			"uri"         : "urn:ietf:params:rtp-hdrext:smpte-tc",
+			"config"      : "25@600/24"
+		})"_json
+	);
+	REQUIRE(
+		audio.at("ext")[3] ==
+		R"({
+			"value"       : 4,
+			"direction"   : "recvonly",
+			"encrypt-uri" : "urn:ietf:params:rtp-hdrext:encrypt",
+			"uri"         : "URI-gps-string"
+		})"_json
+	);
+
+	REQUIRE(media.size() == 1);
+
+	auto newSdp = sdptransform::write(session);
+
+	REQUIRE(newSdp == sdp);
+}

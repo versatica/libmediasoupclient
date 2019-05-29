@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-project(sdptransform VERSION 1.2.2)
+project(sdptransform VERSION 1.2.4)
 
 # For CMake >= 3.1.
 set(CMAKE_CXX_STANDARD 11)

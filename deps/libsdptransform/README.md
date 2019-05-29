@@ -24,7 +24,7 @@ The **libsdptransform** API is exposed in the `sdptransform` C++ namespace.
 
 It's important to recall that this is not JavaScript but C++. Operations that are safe on a JavaScript `Object` may not be safe in a C++ JSON object.
 
-So, before reading a JSON value, make sure that its corresponding `key` **does** exit and also check its type (`int`, `std::string`, `nullptr`, etc.) before assigning it to a C++ variable.
+So, before reading a JSON value, make sure that its corresponding `key` **does exist** and also check its type (`int`, `std::string`, `nullptr`, etc.) before assigning it to a C++ variable.
 
 * For example, assuming that the parsed SDP `session` does NOT have a `s=` line (name), the following code would crash:
 

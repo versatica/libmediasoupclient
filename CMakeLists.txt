@@ -42,7 +42,7 @@ message (STATUS "LIBWEBRTC_INCLUDE_PATH       = " ${LIBWEBRTC_INCLUDE_PATH})
 message (STATUS "LIBWEBRTC_BINARY_PATH        = " ${LIBWEBRTC_BINARY_PATH})
 message ("")
 
-if (${BUILD_TESTS})
+if (${MEDIASOUPCLIENT_BUILD_TESTS})
 	add_subdirectory(test)
 endif()
 

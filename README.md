@@ -9,6 +9,10 @@ C++ client side library for building [mediasoup][mediasoup-website] based applic
 * [mediasoup.org][mediasoup-website]
 
 
+## Support Forum
+
+* [mediasoup.discourse.group][mediasoup-discourse]
+
 
 ## Authors
 
@@ -25,4 +29,5 @@ C++ client side library for building [mediasoup][mediasoup-website] based applic
 
 
 [mediasoup-website]: https://mediasoup.org
+[mediasoup-discourse]: https://mediasoup.discourse.group
 [libwebrtc]: https://webrtc.org/native-code

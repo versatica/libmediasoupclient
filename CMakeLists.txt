@@ -70,13 +70,13 @@ set(
 # Create target.
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 
-if(${LOG_TRACE})
+if(${MEDIASOUPCLIENT_LOG_TRACE})
 	target_compile_definitions(${PROJECT_NAME}
 		PRIVATE MSC_LOG_TRACE=1
 	)
 endif()
 
-if(${LOG_DEV})
+if(${MEDIASOUPCLIENT_LOG_DEV})
 	target_compile_definitions(${PROJECT_NAME}
 		PRIVATE MSC_LOG_DEV=1
 	)

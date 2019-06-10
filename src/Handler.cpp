@@ -203,20 +203,23 @@ std::pair<std::string, nlohmann::json> SendHandler::Send(
 		sendingRtpParameters["encodings"] = Sdp::Utils::getRtpEncodings(offerMediaObject);
 
 		// If VP8 and there is effective simulcast, add scalabilityMode to each encoding.
-		auto mimeType = sendingRtpParameters["codecs"][0]["mimeType"].get<std::string>();
-
-		std::transform(mimeType.begin(), mimeType.end(), mimeType.begin(), ::tolower);
-
-		// clang-format off
-		if (
-			sendingRtpParameters["encodings"].size() > 1 &&
-			(mimeType == "video/vp8" || mimeType == "video/h264")
-		)
-		// clang-format on
+		if (sendingRtpParameters["codecs"][0]["mimeType"].is_string())
 		{
-			for (auto& encoding : sendingRtpParameters["encodings"])
+			auto mimeType = sendingRtpParameters["codecs"][0]["mimeType"].get<std::string>();
+
+			std::transform(mimeType.begin(), mimeType.end(), mimeType.begin(), ::tolower);
+
+			// clang-format off
+			if (
+					sendingRtpParameters["encodings"].size() > 1 &&
+					(mimeType == "video/vp8" || mimeType == "video/h264")
+				 )
+				// clang-format on
 			{
-				encoding["scalabilityMode"] = "S1T3";
+				for (auto& encoding : sendingRtpParameters["encodings"])
+				{
+					encoding["scalabilityMode"] = "S1T3";
+				}
 			}
 		}
 

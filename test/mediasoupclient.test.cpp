@@ -73,6 +73,16 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 	}
 	*/
 
+	SECTION("device->load() with invalid routerRtpCapabilities throws")
+	{
+		routerRtpCapabilities = generateRouterRtpCapabilities();
+
+		for (auto& codec : routerRtpCapabilities["codecs"])
+			codec.erase("mimeType");
+
+		REQUIRE_THROWS_AS(device->Load(routerRtpCapabilities), Exception);
+	}
+
 	SECTION("device->load() succeeds")
 	{
 		routerRtpCapabilities = generateRouterRtpCapabilities();

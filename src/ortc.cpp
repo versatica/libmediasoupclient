@@ -2,6 +2,7 @@
 // #define MSC_LOG_DEV
 
 #include "ortc.hpp"
+#include "Exception.hpp"
 #include "Logger.hpp"
 #include "media/base/h264_profile_level_id.h"
 #include <algorithm> // std::find_if
@@ -186,9 +187,25 @@ namespace ortc
 		};
 		/* clang-format on */
 
+		static const std::regex regex("^(audio|video)/(.+)", std::regex_constants::ECMAScript);
+
+		std::smatch match;
+
 		// Match media codecs and keep the order preferred by remoteCaps.
 		for (auto& remoteCodec : remoteCaps["codecs"])
 		{
+			/* clang-format off */
+			if (
+				!remoteCodec.is_object() ||
+				remoteCodec.find("mimeType") == remoteCodec.end() ||
+				!remoteCodec["mimeType"].is_string() ||
+				!std::regex_match(remoteCodec["mimeType"].get<std::string>(), match, regex)
+			)
+			/* clang-format on */
+			{
+				throw Exception("Invalid remote capabilitiy codec");
+			}
+
 			if (isRtxCodec(remoteCodec))
 				continue;
 

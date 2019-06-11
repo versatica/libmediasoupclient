@@ -198,10 +198,15 @@ namespace ortc
 			if (
 				!remoteCodec.is_object() ||
 				remoteCodec.find("mimeType") == remoteCodec.end() ||
-				!remoteCodec["mimeType"].is_string() ||
-				!std::regex_match(remoteCodec["mimeType"].get<std::string>(), match, regex)
+				!remoteCodec["mimeType"].is_string()
 			)
 			/* clang-format on */
+			{
+				throw Exception("Invalid remote capabilitiy codec");
+			}
+
+			auto mimeType = remoteCodec["mimeType"].get<std::string>();
+			if (!std::regex_match(mimeType, match, regex))
 			{
 				throw Exception("Invalid remote capabilitiy codec");
 			}

@@ -657,9 +657,20 @@ namespace ortc
 				if (codec.find("rtcpFeedback") == codec.end())
 					break;
 
-				std::remove_if(codec["rtcpFeedback"].begin(), codec["rtcpFeedback"].end(), [](json& fb) {
-					return fb["type"].get<std::string>() == "goog-remb";
-				});
+				auto jsonRtcpFeedbackIt = codec["rtcpFeedback"].begin();
+				for (; jsonRtcpFeedbackIt != codec["rtcpFeedback"].end();)
+				{
+					auto& rtcpFeedback = *jsonRtcpFeedbackIt;
+
+					if (rtcpFeedback["type"].get<std::string>() == "goog-remb")
+					{
+						jsonRtcpFeedbackIt = codec["rtcpFeedback"].erase(jsonRtcpFeedbackIt);
+					}
+					else
+					{
+						++jsonRtcpFeedbackIt;
+					}
+				}
 			}
 
 			return rtpParameters;
@@ -680,9 +691,20 @@ namespace ortc
 				if (codec.find("rtcpFeedback") == codec.end())
 					break;
 
-				std::remove_if(codec["rtcpFeedback"].begin(), codec["rtcpFeedback"].end(), [](json& fb) {
-					return fb["type"].get<std::string>() == "transport-cc";
-				});
+				auto jsonRtcpFeedbackIt = codec["rtcpFeedback"].begin();
+				for (; jsonRtcpFeedbackIt != codec["rtcpFeedback"].end();)
+				{
+					auto& rtcpFeedback = *jsonRtcpFeedbackIt;
+
+					if (rtcpFeedback["type"].get<std::string>() == "transport-cc")
+					{
+						jsonRtcpFeedbackIt = codec["rtcpFeedback"].erase(jsonRtcpFeedbackIt);
+					}
+					else
+					{
+						++jsonRtcpFeedbackIt;
+					}
+				}
 			}
 
 			return rtpParameters;
@@ -693,10 +715,23 @@ namespace ortc
 			if (codec.find("rtcpFeedback") == codec.end())
 				break;
 
-			std::remove_if(codec["rtcpFeedback"].begin(), codec["rtcpFeedback"].end(), [](json& fb) {
-				return fb["type"].get<std::string>() == "transport-cc" ||
-				       fb["type"].get<std::string>() == "goog-remb";
-			});
+			auto jsonRtcpFeedbackIt = codec["rtcpFeedback"].begin();
+			for (; jsonRtcpFeedbackIt != codec["rtcpFeedback"].end();)
+			{
+				auto& rtcpFeedback = *jsonRtcpFeedbackIt;
+
+				/* clang-format off */
+				if (
+					rtcpFeedback["type"].get<std::string>() == "transport-cc" ||
+					rtcpFeedback["type"].get<std::string>() == "goog-remb"
+				)
+				{
+					jsonRtcpFeedbackIt = codec["rtcpFeedback"].erase(jsonRtcpFeedbackIt);
+				} else {
+					++jsonRtcpFeedbackIt;
+				}
+				/* clang-format on */
+			}
 		}
 
 		return rtpParameters;

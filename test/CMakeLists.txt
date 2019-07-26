@@ -3,7 +3,7 @@ set(
 	Device.test.cpp
 	Handler.test.cpp
 	PeerConnection.test.cpp
-	data/Parameters.cpp
+	data/parameters.cpp
 	mediasoupclient.test.cpp
 	ortc.test.cpp
 	peerConnectionUtils.cpp

@@ -443,6 +443,22 @@ namespace sdptransform
 						}
 					},
 
+					// a=extmap-allow-mixed
+					{
+						// name:
+						"extmapAllowMixed",
+						// push:
+						"",
+						// reg:
+						std::regex("^(extmap-allow-mixed)"),
+						// names:
+						{ },
+						// types:
+						{ 's' },
+						// format:
+						"%s"
+					},
+
 					// a=crypto:1 AES_CM_128_HMAC_SHA1_80 inline:PS1uQCVeeCFCanVmcjkpPywjNWhcYD0mXXtxaVBR|2^20|1:32
 					{
 						// name:

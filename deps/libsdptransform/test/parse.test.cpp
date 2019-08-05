@@ -70,6 +70,7 @@ SCENARIO("normalSdp", "[parse]")
 			"uri"       : "URI-gps-string"
 		})"_json
 	);
+	REQUIRE(audio.at("extmapAllowMixed") == "extmap-allow-mixed");
 
 	auto& video = media[1];
 	auto videoPayloads = sdptransform::parsePayloads(video.at("payloads"));

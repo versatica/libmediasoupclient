@@ -114,6 +114,7 @@ inline std::string Producer::GetKind() const
 {
 	return this->track->kind();
 }
+
 inline bool Producer::IsClosed() const
 {
 	return this->closed;

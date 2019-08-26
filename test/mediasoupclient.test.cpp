@@ -81,7 +81,9 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		for (auto& codec : routerRtpCapabilities["codecs"])
 			codec.erase("mimeType");
 
-		REQUIRE_THROWS_AS(device->Load(routerRtpCapabilities), mediasoupclient::Exception);
+		REQUIRE_THROWS_AS(
+			device->Load(routerRtpCapabilities),
+			mediasoupclient::Exception);
 	}
 
 	SECTION("device.load() succeeds")
@@ -94,7 +96,9 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 	SECTION("device.load() rejects if already loaded")
 	{
-		REQUIRE_THROWS_AS(device->Load(routerRtpCapabilities), mediasoupclient::Exception);
+		REQUIRE_THROWS_AS(
+			device->Load(routerRtpCapabilities),
+			mediasoupclient::Exception);
 	}
 
 	SECTION("device.GetRtpCapabilities() succeeds")
@@ -110,7 +114,9 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 	SECTION("device.CanProduce() with invalid kind throws exception")
 	{
-		REQUIRE_THROWS_AS(device->CanProduce("chicken"), mediasoupclient::Exception);
+		REQUIRE_THROWS_AS(
+			device->CanProduce("chicken"),
+			mediasoupclient::Exception);
 	}
 
 	SECTION("device.createSendTransport() for sending media succeeds")
@@ -122,14 +128,15 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		};
 		/* clang-format on */
 
-		REQUIRE_NOTHROW(sendTransport.reset(device->CreateSendTransport(
-		  &sendTransportListener,
-		  TransportRemoteParameters["id"],
-		  TransportRemoteParameters["iceParameters"],
-		  TransportRemoteParameters["iceCandidates"],
-		  TransportRemoteParameters["dtlsParameters"],
-		  &peerConnectionOptions,
-		  appData)));
+		REQUIRE_NOTHROW(sendTransport.reset(
+			device->CreateSendTransport(
+		  	&sendTransportListener,
+		  	TransportRemoteParameters["id"],
+		  	TransportRemoteParameters["iceParameters"],
+		  	TransportRemoteParameters["iceCandidates"],
+		  	TransportRemoteParameters["dtlsParameters"],
+		  	&peerConnectionOptions,
+		  	appData)));
 
 		REQUIRE(sendTransport->GetId() == TransportRemoteParameters["id"].get<std::string>());
 		REQUIRE(!sendTransport->IsClosed());
@@ -139,13 +146,14 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 	SECTION("device.createRecvTransport() for receiving media succeeds")
 	{
-		REQUIRE_NOTHROW(recvTransport.reset(device->CreateRecvTransport(
-		  &recvTransportListener,
-		  TransportRemoteParameters["id"],
-		  TransportRemoteParameters["iceParameters"],
-		  TransportRemoteParameters["iceCandidates"],
-		  TransportRemoteParameters["dtlsParameters"],
-		  &peerConnectionOptions)));
+		REQUIRE_NOTHROW(recvTransport.reset(
+			device->CreateRecvTransport(
+		  	&recvTransportListener,
+		  	TransportRemoteParameters["id"],
+		  	TransportRemoteParameters["iceParameters"],
+		  	TransportRemoteParameters["iceCandidates"],
+		  	TransportRemoteParameters["dtlsParameters"],
+		  	&peerConnectionOptions)));
 
 		REQUIRE(recvTransport->GetId() == TransportRemoteParameters["id"].get<std::string>());
 		REQUIRE(!recvTransport->IsClosed());
@@ -275,7 +283,9 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 	SECTION("transport.produce() without track throws")
 	{
-		REQUIRE_THROWS_AS(sendTransport->Produce(&producerListener, nullptr, nullptr, nullptr), mediasoupclient::Exception);
+		REQUIRE_THROWS_AS(
+			sendTransport->Produce(&producerListener, nullptr, nullptr, nullptr),
+			mediasoupclient::Exception);
 	}
 
 	SECTION("transport.consume() succeeds")
@@ -296,14 +306,14 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		json encodings;
 		json rtcp;
 
-		REQUIRE_NOTHROW(audioConsumer.reset(recvTransport->Consume(
-						&consumerListener,
-						audioConsumerRemoteParameters["id"].get<std::string>(),
-						audioConsumerRemoteParameters["producerId"].get<std::string>(),
-						audioConsumerRemoteParameters["kind"].get<std::string>(),
-						&audioConsumerRemoteParameters["rtpParameters"],
-						appData
-						)));
+		REQUIRE_NOTHROW(audioConsumer.reset(
+			recvTransport->Consume(
+				&consumerListener,
+				audioConsumerRemoteParameters["id"].get<std::string>(),
+				audioConsumerRemoteParameters["producerId"].get<std::string>(),
+				audioConsumerRemoteParameters["kind"].get<std::string>(),
+				&audioConsumerRemoteParameters["rtpParameters"],
+				appData)));
 
 		REQUIRE(
 		  recvTransportListener.onConnectTimesCalled == ++recvTransportListener.onConnectExpectedTimesCalled);
@@ -357,13 +367,13 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE(!audioConsumer->IsPaused());
 		REQUIRE(audioConsumer->GetAppData() == appData);
 
-		REQUIRE_NOTHROW(videoConsumer.reset(recvTransport->Consume(
-						&consumerListener,
-						videoConsumerRemoteParameters["id"].get<std::string>(),
-						videoConsumerRemoteParameters["producerId"].get<std::string>(),
-						videoConsumerRemoteParameters["kind"].get<std::string>(),
-						&videoConsumerRemoteParameters["rtpParameters"]
-						)));
+		REQUIRE_NOTHROW(videoConsumer.reset(
+			recvTransport->Consume(
+				&consumerListener,
+				videoConsumerRemoteParameters["id"].get<std::string>(),
+				videoConsumerRemoteParameters["producerId"].get<std::string>(),
+				videoConsumerRemoteParameters["kind"].get<std::string>(),
+				&videoConsumerRemoteParameters["rtpParameters"])));
 
 		REQUIRE(
 		  recvTransportListener.onConnectTimesCalled == recvTransportListener.onConnectExpectedTimesCalled);
@@ -463,14 +473,14 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		// Consume an additional audio track.
 		std::unique_ptr<mediasoupclient::Consumer> audioConsumer2;
 
-		REQUIRE_NOTHROW(audioConsumer2.reset(recvTransport->Consume(
-						&consumerListener,
-						audioConsumerRemoteParameters["id"].get<std::string>(),
-						audioConsumerRemoteParameters["producerId"].get<std::string>(),
-						audioConsumerRemoteParameters["kind"].get<std::string>(),
-						&audioConsumerRemoteParameters["rtpParameters"],
-						appData
-						)));
+		REQUIRE_NOTHROW(audioConsumer2.reset(
+			recvTransport->Consume(
+				&consumerListener,
+				audioConsumerRemoteParameters["id"].get<std::string>(),
+				audioConsumerRemoteParameters["producerId"].get<std::string>(),
+				audioConsumerRemoteParameters["kind"].get<std::string>(),
+				&audioConsumerRemoteParameters["rtpParameters"],
+				appData)));
 
 		REQUIRE(
 		  recvTransportListener.onConnectTimesCalled == ++recvTransportListener.onConnectExpectedTimesCalled);
@@ -530,13 +540,14 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		auto consumerRemoteParameters =
 			generateConsumerRemoteParameters("audio/ISAC");
 
-		REQUIRE_THROWS_AS(recvTransport->Consume(
-						&consumerListener,
-						consumerRemoteParameters["id"].get<std::string>(),
-						consumerRemoteParameters["producerId"].get<std::string>(),
-						consumerRemoteParameters["kind"].get<std::string>(),
-						&consumerRemoteParameters["rtpParameters"]
-						), mediasoupclient::Exception);
+		REQUIRE_THROWS_AS(
+			recvTransport->Consume(
+				&consumerListener,
+				consumerRemoteParameters["id"].get<std::string>(),
+				consumerRemoteParameters["producerId"].get<std::string>(),
+				consumerRemoteParameters["kind"].get<std::string>(),
+				&consumerRemoteParameters["rtpParameters"]),
+			mediasoupclient::Exception);
 	}
 
 	SECTION("sendTransport.GetStats() succeeds")
@@ -599,7 +610,9 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 	SECTION("producer.ReplaceTrack() fails if null track is provided")
 	{
-		REQUIRE_THROWS_AS(videoProducer->ReplaceTrack(nullptr), mediasoupclient::Exception);
+		REQUIRE_THROWS_AS(
+			videoProducer->ReplaceTrack(nullptr),
+			mediasoupclient::Exception);
 	}
 
 	SECTION("producer.SetMaxSpatialLayer() succeeds")
@@ -610,7 +623,9 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 	SECTION("producer.SetMaxSpatialLayer() in an audio Producer throws")
 	{
-		REQUIRE_THROWS_AS(audioProducer->SetMaxSpatialLayer(1), mediasoupclient::Exception);
+		REQUIRE_THROWS_AS(
+			audioProducer->SetMaxSpatialLayer(1),
+			mediasoupclient::Exception);
 	}
 
 	SECTION("producer.GetStats() succeeds")
@@ -646,7 +661,9 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 	SECTION("producer.getStats() throws if closed")
 	{
-		REQUIRE_THROWS_AS(audioProducer->GetStats(), mediasoupclient::Exception);
+		REQUIRE_THROWS_AS(
+			audioProducer->GetStats(),
+			mediasoupclient::Exception);
 	}
 
 	SECTION("consumer.Close() succeeds")
@@ -658,7 +675,9 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 	SECTION("consumer.getStats() throws if closed")
 	{
-		REQUIRE_THROWS_AS(audioConsumer->GetStats(), mediasoupclient::Exception);
+		REQUIRE_THROWS_AS(
+			audioConsumer->GetStats(),
+			mediasoupclient::Exception);
 	}
 
 	SECTION("transport.Close() fires 'OnTransportClose' in live Producers/Consumers")
@@ -686,9 +705,10 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 	SECTION("transport.produce() throws if closed")
 	{
-		REQUIRE_THROWS_AS(sendTransport->Produce(
-			&producerListener,
-			audioTrack, nullptr, nullptr),
+		REQUIRE_THROWS_AS(
+			sendTransport->Produce(
+				&producerListener,
+				audioTrack, nullptr, nullptr),
 			mediasoupclient::Exception);
 	}
 
@@ -697,31 +717,38 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		auto audioConsumerRemoteParameters =
 			generateConsumerRemoteParameters("audio/opus");
 
-		REQUIRE_THROWS_AS(recvTransport->Consume(
-					&consumerListener,
-					audioConsumerRemoteParameters["id"].get<std::string>(),
-					audioConsumerRemoteParameters["producerId"].get<std::string>(),
-					audioConsumerRemoteParameters["kind"].get<std::string>(),
-					&audioConsumerRemoteParameters["rtpParameters"]),
-				mediasoupclient::Exception);
+		REQUIRE_THROWS_AS(
+			recvTransport->Consume(
+				&consumerListener,
+				audioConsumerRemoteParameters["id"].get<std::string>(),
+				audioConsumerRemoteParameters["producerId"].get<std::string>(),
+				audioConsumerRemoteParameters["kind"].get<std::string>(),
+				&audioConsumerRemoteParameters["rtpParameters"]),
+			mediasoupclient::Exception);
 	}
 
 	SECTION("transport.getStats() throws if closed")
 	{
-		REQUIRE_THROWS_AS(sendTransport->GetStats(), mediasoupclient::Exception);
+		REQUIRE_THROWS_AS(
+			sendTransport->GetStats(),
+			mediasoupclient::Exception);
 	}
 
 	SECTION("transport.restartIce() throws if closed")
 	{
 		auto iceParameters = json::object();
 
-		REQUIRE_THROWS_AS(sendTransport->RestartIce(iceParameters), mediasoupclient::Exception);
+		REQUIRE_THROWS_AS(
+			sendTransport->RestartIce(iceParameters),
+			mediasoupclient::Exception);
 	}
 
 	SECTION("transport.restartIce() throws if closed")
 	{
 		auto iceServers = json::object();
 
-		REQUIRE_THROWS_AS(sendTransport->UpdateIceServers(iceServers), mediasoupclient::Exception);
+		REQUIRE_THROWS_AS(
+			sendTransport->UpdateIceServers(iceServers),
+			mediasoupclient::Exception);
 	}
 }

@@ -18,10 +18,10 @@ int main(int argc, char* argv[])
 	// Build a new parser on top of Catch's.
 	using namespace Catch::clara;
 	auto cli
-		= session.cli()               // Get Catch's composite command line parser.
-		| Opt( logLevel, "logLevel" ) // Bind variable to a new option.
-		["-L"]["--log-level"]         // The option names it will respond to.
-		("log level");                // Description string for the help output.
+		= session.cli()             // Get Catch's composite command line parser.
+		| Opt(logLevel, "logLevel") // Bind variable to a new option.
+		["-L"]["--log-level"]       // The option names it will respond to.
+		("log level");              // Description string for the help output.
 
 	// Now pass the new composite back to Catch so it uses that.
 	session.cli(cli);

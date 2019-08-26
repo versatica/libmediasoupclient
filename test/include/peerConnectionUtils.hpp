@@ -1,7 +1,10 @@
-#ifndef PEERCONNECTION_UTILS_HPP
-#define PEERCONNECTION_UTILS_HPP
+#ifndef MSC_TEST_PEERCONNECTION_UTILS_HPP
+#define MSC_TEST_PEERCONNECTION_UTILS_HPP
 
 #include "api/create_peerconnection_factory.h"
+
+// Create PeerConnectionFactory.
+rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> createPeerConnectionFactory();
 
 // Audio track creation.
 rtc::scoped_refptr<webrtc::AudioTrackInterface> createAudioTrack(const std::string& label);

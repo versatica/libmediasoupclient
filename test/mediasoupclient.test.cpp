@@ -21,6 +21,10 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 	static std::unique_ptr<mediasoupclient::Consumer> audioConsumer;
 	static std::unique_ptr<mediasoupclient::Consumer> videoConsumer;
 
+	static mediasoupclient::PeerConnection::Options peerConnectionOptions;
+
+	peerConnectionOptions.factory = createPeerConnectionFactory();
+
 	static rtc::scoped_refptr<webrtc::AudioTrackInterface> audioTrack;
 	static rtc::scoped_refptr<webrtc::VideoTrackInterface> videoTrack;
 
@@ -28,9 +32,6 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 	static FakeConsumerListener consumerListener;
 
 	static json routerRtpCapabilities;
-
-	static std::unique_ptr<mediasoupclient::PeerConnection> pc(
-	  new mediasoupclient::PeerConnection(nullptr, nullptr));
 
 	SECTION("create a Device succeeds")
 	{
@@ -57,7 +58,8 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		    TransportRemoteParameters["id"],
 		    TransportRemoteParameters["iceParameters"],
 		    TransportRemoteParameters["iceCandidates"],
-		    TransportRemoteParameters["dtlsParameters"]),
+		    TransportRemoteParameters["dtlsParameters"],
+		    &peerConnectionOptions),
 		  mediasoupclient::Exception);
 	}
 
@@ -126,7 +128,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		  TransportRemoteParameters["iceParameters"],
 		  TransportRemoteParameters["iceCandidates"],
 		  TransportRemoteParameters["dtlsParameters"],
-		  nullptr /* PeerConnection::Options */,
+		  &peerConnectionOptions,
 		  appData)));
 
 		REQUIRE(sendTransport->GetId() == TransportRemoteParameters["id"].get<std::string>());
@@ -142,7 +144,8 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		  TransportRemoteParameters["id"],
 		  TransportRemoteParameters["iceParameters"],
 		  TransportRemoteParameters["iceCandidates"],
-		  TransportRemoteParameters["dtlsParameters"])));
+		  TransportRemoteParameters["dtlsParameters"],
+		  &peerConnectionOptions)));
 
 		REQUIRE(recvTransport->GetId() == TransportRemoteParameters["id"].get<std::string>());
 		REQUIRE(!recvTransport->IsClosed());

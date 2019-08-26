@@ -21,35 +21,51 @@ static rtc::scoped_refptr<CapturerTrackSource> videoDevice{ nullptr };
 static rtc::Thread* signalingThread{ nullptr };
 static rtc::Thread* workerThread{ nullptr };
 
-class CapturerTrackSource : public webrtc::VideoTrackSource {
- public:
-  static rtc::scoped_refptr<CapturerTrackSource> Create() {
-    const size_t kWidth = 640;
-    const size_t kHeight = 480;
-    const size_t kFps = 30;
-    const size_t kDeviceIndex = 0;
-    std::unique_ptr<VcmCapturer> capturer = absl::WrapUnique(
-        VcmCapturer::Create(kWidth, kHeight, kFps, kDeviceIndex));
-    if (!capturer) {
-      return nullptr;
-    }
-    return new rtc::RefCountedObject<CapturerTrackSource>(std::move(capturer));
-  }
+class CapturerTrackSource : public webrtc::VideoTrackSource
+{
+public:
+	static rtc::scoped_refptr<CapturerTrackSource> Create()
+	{
+		const size_t kWidth = 640;
+		const size_t kHeight = 480;
+		const size_t kFps = 30;
+		const size_t kDeviceIndex = 0;
 
- protected:
-  explicit CapturerTrackSource(
-      std::unique_ptr<VcmCapturer> capturer)
-      : VideoTrackSource(/*remote=*/false), capturer(std::move(capturer)) {}
+		std::unique_ptr<VcmCapturer> capturer = absl::WrapUnique(
+		  VcmCapturer::Create(kWidth, kHeight, kFps, kDeviceIndex));
 
- private:
-  rtc::VideoSourceInterface<webrtc::VideoFrame>* source() override {
-    return capturer.get();
-  }
-  std::unique_ptr<VcmCapturer> capturer;
+		if (!capturer)
+			return nullptr;
+
+		return new rtc::RefCountedObject<CapturerTrackSource>(std::move(capturer));
+	}
+
+protected:
+	explicit CapturerTrackSource(std::unique_ptr<VcmCapturer> capturer)
+	  : VideoTrackSource(/*remote=*/false), capturer(std::move(capturer)) {}
+
+private:
+	rtc::VideoSourceInterface<webrtc::VideoFrame>* source() override
+	{
+		return capturer.get();
+	}
+
+	std::unique_ptr<VcmCapturer> capturer;
 };
 
+// Audio source creation.
+static void createAudioSource()
+{
+	cricket::AudioOptions options;
+
+	if (peerConnectionFactory == nullptr)
+		peerConnectionFactory = createPeerConnectionFactory();
+
+	audioSource = peerConnectionFactory->CreateAudioSource(options);
+}
+
 // PeerConnection factory creation.
-static void createPeerConnectionFactory()
+rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> createPeerConnectionFactory()
 {
 	webrtc::PeerConnectionInterface::RTCConfiguration config;
 
@@ -63,30 +79,21 @@ static void createPeerConnectionFactory()
 		throw std::runtime_error("Thread start errored");
 
 	rtc::scoped_refptr<AudioDeviceDummy> audioDeviceModule(
-	  new rtc::RefCountedObject<AudioDeviceDummy>());
+		new rtc::RefCountedObject<AudioDeviceDummy>());
 
 	peerConnectionFactory = webrtc::CreatePeerConnectionFactory(
-	  workerThread,
-	  workerThread,
-	  signalingThread,
-	  audioDeviceModule,
-	  webrtc::CreateBuiltinAudioEncoderFactory(),
-	  webrtc::CreateBuiltinAudioDecoderFactory(),
-	  webrtc::CreateBuiltinVideoEncoderFactory(),
-	  webrtc::CreateBuiltinVideoDecoderFactory(),
-	  nullptr /*audio_mixer*/,
-	  nullptr /*audio_processing*/);
-}
+		workerThread,
+		workerThread,
+		signalingThread,
+		audioDeviceModule,
+		webrtc::CreateBuiltinAudioEncoderFactory(),
+		webrtc::CreateBuiltinAudioDecoderFactory(),
+		webrtc::CreateBuiltinVideoEncoderFactory(),
+		webrtc::CreateBuiltinVideoDecoderFactory(),
+		nullptr /*audio_mixer*/,
+		nullptr /*audio_processing*/);
 
-// Audio source creation.
-static void createAudioSource()
-{
-	cricket::AudioOptions options;
-
-	if (peerConnectionFactory == nullptr)
-		createPeerConnectionFactory();
-
-	audioSource = peerConnectionFactory->CreateAudioSource(options);
+	 return peerConnectionFactory;
 }
 
 // Audio track creation.
@@ -101,6 +108,9 @@ rtc::scoped_refptr<webrtc::AudioTrackInterface> createAudioTrack(const std::stri
 // Video track creation.
 rtc::scoped_refptr<webrtc::VideoTrackInterface> createVideoTrack(const std::string& label)
 {
+	if (peerConnectionFactory == nullptr)
+		peerConnectionFactory = createPeerConnectionFactory();
+
 	if (videoDevice == nullptr)
 		videoDevice = CapturerTrackSource::Create();
 

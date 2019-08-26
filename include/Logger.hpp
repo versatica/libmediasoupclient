@@ -182,7 +182,8 @@ public:
 		MSC_ABORT("failed assertion `%s': " desc, #condition, ##__VA_ARGS__); \
 	}
 
-// clang-format on
 } // namespace mediasoupclient
+
+// clang-format on
 
 #endif

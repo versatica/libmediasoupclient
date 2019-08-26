@@ -9,6 +9,7 @@
 #include "api/video_codecs/builtin_video_decoder_factory.h"
 #include "api/video_codecs/builtin_video_encoder_factory.h"
 #include "pc/video_track_source.h"
+#include "modules/audio_device/include/fake_audio_device.h"
 #include "modules/video_capture/video_capture_factory.h"
 #include "modules/video_capture/video_capture.h"
 #include <iostream>
@@ -81,8 +82,11 @@ rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> createPeerConnectionF
 		throw std::runtime_error("Thread start errored");
 
 	// TODO: Let's see if needed.
-	rtc::scoped_refptr<AudioDeviceDummy> audioDeviceModule(
-		new rtc::RefCountedObject<AudioDeviceDummy>());
+	// rtc::scoped_refptr<AudioDeviceDummy> audioDeviceModule(
+	// 	new rtc::RefCountedObject<AudioDeviceDummy>());
+
+	rtc::scoped_refptr<webrtc::AudioDeviceModule> audioDeviceModule(
+		new webrtc::FakeAudioDeviceModule());
 
 	// TODO: Let's see if needed.
 	rtc::scoped_refptr<AudioMixerDummy> audioMixerModule(
@@ -101,8 +105,10 @@ rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> createPeerConnectionF
 		webrtc::CreateBuiltinAudioDecoderFactory(),
 		webrtc::CreateBuiltinVideoEncoderFactory(),
 		webrtc::CreateBuiltinVideoDecoderFactory(),
-		audioMixerModule,
-		audioProcessingModule);
+		nullptr,
+		nullptr);
+		// audioMixerModule,
+		// audioProcessingModule);
 
 	 return peerConnectionFactory;
 }

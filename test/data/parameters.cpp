@@ -2,6 +2,11 @@
 #include "parameters.hpp"
 #include "Utils.hpp"
 #include <string>
+#include <cstdint>
+
+static uint32_t lastAudioSsrc{ 1000000 };
+static uint32_t lastVideoSsrc{ 2000000 };
+static uint32_t lastRtxSsrc{ 3000000 };
 
 json generateRouterRtpCapabilities()
 {
@@ -282,7 +287,7 @@ json generateConsumerRemoteParameters(const std::string& codecMimeType)
 {
 	if (codecMimeType == "audio/opus")
 	{
-		return R"({
+		auto json = R"({
 			"producerId"    : "0e014094-0d51-11e9-ab14-d663bd873d93",
 			"id"            : "261e6c9c-0d51-11e9-ab14-d663bd873d93",
 			"kind"          : "audio",
@@ -305,7 +310,7 @@ json generateConsumerRemoteParameters(const std::string& codecMimeType)
 				"encodings" :
 				[
 					{
-						"ssrc" : 46687003
+						"ssrc" : 0
 					}
 				],
 				"headerExtensions" :
@@ -323,11 +328,15 @@ json generateConsumerRemoteParameters(const std::string& codecMimeType)
 				}
 			}
 		})"_json;
+
+		json.at("rtpParameters").at("encodings")[0]["ssrc"] = ++lastAudioSsrc;
+
+		return json;
 	}
 
 	if (codecMimeType == "audio/ISAC")
 	{
-		return R"({
+		auto json = R"({
 			"producerId"    : "0e014094-0d51-11e9-ab14-d663bd873d94",
 			"id"            : "261e6c9c-0d51-11e9-ab14-d663bd873d94",
 			"kind"          : "audio",
@@ -347,7 +356,7 @@ json generateConsumerRemoteParameters(const std::string& codecMimeType)
 				"encodings" :
 				[
 					{
-						"ssrc" : 46687004
+						"ssrc" : 0
 					}
 				],
 				"headerExtensions" :
@@ -365,11 +374,15 @@ json generateConsumerRemoteParameters(const std::string& codecMimeType)
 				}
 			}
 		})"_json;
+
+		json.at("rtpParameters").at("encodings")[0]["ssrc"] = ++lastAudioSsrc;
+
+		return json;
 	}
 
 	if (codecMimeType == "video/VP8")
 	{
-		return R"({
+		auto json = R"({
 			"producerId"    : "0e014094-0d51-11e9-ab14-d663bd873d95",
 			"id"            : "261e6c9c-0d51-11e9-ab14-d663bd873d95",
 			"kind"          : "video",
@@ -410,10 +423,10 @@ json generateConsumerRemoteParameters(const std::string& codecMimeType)
 				"encodings" :
 				[
 					{
-						"ssrc" : 99991111,
+						"ssrc" : 0,
 						"rtx"  :
 						{
-							"ssrc" : 99991112
+							"ssrc" : 0
 						}
 					}
 				],
@@ -436,7 +449,12 @@ json generateConsumerRemoteParameters(const std::string& codecMimeType)
 				}
 			}
 		})"_json;
+
+		json.at("rtpParameters").at("encodings")[0]["ssrc"] = ++lastVideoSsrc;
+		json.at("rtpParameters").at("encodings")[0]["rtx"]["ssrc"] = ++lastRtxSsrc;
+
+		return json;
 	}
 
-	  return json::object();
+	return json::object();
 };

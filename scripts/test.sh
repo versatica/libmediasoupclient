@@ -6,7 +6,7 @@ PROJECT_PWD=${PWD}
 TEST_BINARY=""
 
 current_dir_name=${PROJECT_PWD##*/}
-if [ "${current_dir_name}" != "libmediasoupclient" ] ; then
+if [ "${current_dir_name}" != "libmediasoupclient" ] && [ "${current_dir_name}" != "v3-libmediasoupclient" ] ; then
 	echo ">>> [ERROR] $(basename $0) must be called from libmediasoupclient/ root directory" >&2
 	exit 1
 fi

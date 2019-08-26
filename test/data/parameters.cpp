@@ -2,11 +2,6 @@
 #include "parameters.hpp"
 #include "Utils.hpp"
 #include <string>
-#include <cstdint>
-
-static uint32_t lastAudioSsrc{ 1000000 };
-static uint32_t lastVideoSsrc{ 2000000 };
-static uint32_t lastRtxSsrc{ 3000000 };
 
 json generateRouterRtpCapabilities()
 {
@@ -322,14 +317,15 @@ json generateConsumerRemoteParameters(const std::string& codecMimeType)
 				],
 				"rtcp" :
 				{
-					"cname"       : "wB4Ql4lrsxYLjzuN",
+					"cname"       : "",
 					"reducedSize" : true,
 					"mux"         : true
 				}
 			}
 		})"_json;
 
-		json.at("rtpParameters").at("encodings")[0]["ssrc"] = ++lastAudioSsrc;
+		json["rtpParameters"]["encodings"][0]["ssrc"] = mediasoupclient::Utils::getRandomInteger(1000000, 1999999);
+		json["rtpParameters"]["rtcp"]["cname"] = mediasoupclient::Utils::getRandomString(16);
 
 		return json;
 	}
@@ -368,14 +364,15 @@ json generateConsumerRemoteParameters(const std::string& codecMimeType)
 				],
 				"rtcp" :
 				{
-					"cname"       : "wB4Ql4lrsxYLjzuN",
+					"cname"       : "",
 					"reducedSize" : true,
 					"mux"         : true
 				}
 			}
 		})"_json;
 
-		json.at("rtpParameters").at("encodings")[0]["ssrc"] = ++lastAudioSsrc;
+		json["rtpParameters"]["encodings"][0]["ssrc"] = mediasoupclient::Utils::getRandomInteger(1000000, 1999999);
+		json["rtpParameters"]["rtcp"]["cname"] = mediasoupclient::Utils::getRandomString(16);
 
 		return json;
 	}
@@ -443,15 +440,16 @@ json generateConsumerRemoteParameters(const std::string& codecMimeType)
 				],
 				"rtcp" :
 				{
-					"cname"       : "wB4Ql4lrsxYLjzuN",
+					"cname"       : "",
 					"reducedSize" : true,
 					"mux"         : true
 				}
 			}
 		})"_json;
 
-		json.at("rtpParameters").at("encodings")[0]["ssrc"] = ++lastVideoSsrc;
-		json.at("rtpParameters").at("encodings")[0]["rtx"]["ssrc"] = ++lastRtxSsrc;
+		json["rtpParameters"]["encodings"][0]["ssrc"] = mediasoupclient::Utils::getRandomInteger(2000000, 2999999);
+		json["rtpParameters"]["encodings"][0]["rtx"]["ssrc"] = mediasoupclient::Utils::getRandomInteger(3000000, 3999999);
+		json["rtpParameters"]["rtcp"]["cname"] = mediasoupclient::Utils::getRandomString(16);
 
 		return json;
 	}

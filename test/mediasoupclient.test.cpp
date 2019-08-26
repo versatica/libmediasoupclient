@@ -459,7 +459,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE(videoConsumer->GetAppData() == json::object());
 
 		// Consume an additional audio track.
-		static std::unique_ptr<Consumer> audioConsumer2;
+		std::unique_ptr<Consumer> audioConsumer2;
 
 		REQUIRE_NOTHROW(audioConsumer2.reset(recvTransport->Consume(
 						&consumerListener,

@@ -15,8 +15,14 @@ set(
 	VideoCapturer.cpp
 )
 
-# Create taget.
+# Create target.
 add_executable(test_mediasoupclient ${SOURCE_FILES})
+
+# Private (implementation) header files.
+target_include_directories(test_mediasoupclient PRIVATE
+	${mediasoupclient_SOURCE_DIR}/include
+	include
+)
 
 if(APPLE)
 	find_library(APPLICATION_SERVICES ApplicationServices)
@@ -46,11 +52,11 @@ if(APPLE)
 	)
 endif(APPLE)
 
-# Private (implementation) header files.
-target_include_directories(test_mediasoupclient PRIVATE
-	${mediasoupclient_SOURCE_DIR}/include
-	include
-)
+if(UNIX)
+	find_package(Threads REQUIRED)
+	target_link_libraries(test_mediasoupclient PRIVATE Threads::Threads)
+endif(UNIX)
 
 # Private dependencies.
 target_link_libraries(test_mediasoupclient PRIVATE mediasoupclient)
+target_link_libraries(test_mediasoupclient PRIVATE ${CMAKE_DL_LIBS})

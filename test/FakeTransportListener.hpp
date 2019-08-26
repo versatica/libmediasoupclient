@@ -119,7 +119,7 @@ class FakeProducerListener : public mediasoupclient::Producer::Listener
 
 	public:
 		size_t onTransportCloseTimesCalled{ 0 };
-		size_t onTransportCloseExpetecTimesCalled{ 0 };
+		size_t onTransportCloseExpectedTimesCalled{ 0 };
 };
 
 class FakeConsumerListener : public mediasoupclient::Consumer::Listener
@@ -132,7 +132,7 @@ class FakeConsumerListener : public mediasoupclient::Consumer::Listener
 
 	public:
 		size_t onTransportCloseTimesCalled{ 0 };
-		size_t onTransportCloseExpetecTimesCalled{ 0 };
+		size_t onTransportCloseExpectedTimesCalled{ 0 };
 };
 
 #endif

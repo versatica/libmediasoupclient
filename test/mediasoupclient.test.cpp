@@ -20,6 +20,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 	static std::unique_ptr<mediasoupclient::Producer> videoProducer;
 	static std::unique_ptr<mediasoupclient::Consumer> audioConsumer;
 	static std::unique_ptr<mediasoupclient::Consumer> videoConsumer;
+	static std::unique_ptr<mediasoupclient::Consumer> audioConsumer2;
 
 	static mediasoupclient::PeerConnection::Options peerConnectionOptions;
 
@@ -300,6 +301,8 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 			generateConsumerRemoteParameters("audio/opus");
 		auto videoConsumerRemoteParameters =
 			generateConsumerRemoteParameters("video/VP8");
+		auto audioConsumer2RemoteParameters =
+			generateConsumerRemoteParameters("audio/opus");
 
 		json codecs;
 		json headerExtensions;
@@ -471,25 +474,23 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE(videoConsumer->GetAppData() == json::object());
 
 		// Consume an additional audio track.
-		std::unique_ptr<mediasoupclient::Consumer> audioConsumer2;
-
 		REQUIRE_NOTHROW(audioConsumer2.reset(
 			recvTransport->Consume(
 				&consumerListener,
-				audioConsumerRemoteParameters["id"].get<std::string>(),
-				audioConsumerRemoteParameters["producerId"].get<std::string>(),
-				audioConsumerRemoteParameters["kind"].get<std::string>(),
-				&audioConsumerRemoteParameters["rtpParameters"],
+				audioConsumer2RemoteParameters["id"].get<std::string>(),
+				audioConsumer2RemoteParameters["producerId"].get<std::string>(),
+				audioConsumer2RemoteParameters["kind"].get<std::string>(),
+				&audioConsumer2RemoteParameters["rtpParameters"],
 				appData)));
 
 		REQUIRE(
-		  recvTransportListener.onConnectTimesCalled == ++recvTransportListener.onConnectExpectedTimesCalled);
+		  recvTransportListener.onConnectTimesCalled == recvTransportListener.onConnectExpectedTimesCalled);
 
 		REQUIRE(recvTransportListener.id == recvTransport->GetId());
 		REQUIRE(recvTransportListener.dtlsParameters.is_object());
 
-		REQUIRE(audioConsumer2->GetId() == audioConsumerRemoteParameters["id"].get<std::string>());
-		REQUIRE(audioConsumer2->GetProducerId() == audioConsumerRemoteParameters["producerId"].get<std::string>());
+		REQUIRE(audioConsumer2->GetId() == audioConsumer2RemoteParameters["id"].get<std::string>());
+		REQUIRE(audioConsumer2->GetProducerId() == audioConsumer2RemoteParameters["producerId"].get<std::string>());
 
 		REQUIRE(!audioConsumer2->IsClosed());
 		REQUIRE(audioConsumer2->GetKind() == "audio");
@@ -690,17 +691,19 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE(sendTransport->IsClosed());
 		REQUIRE(videoProducer->IsClosed());
 		// Audio Producer was already closed.
-		REQUIRE(producerListener.onTransportCloseTimesCalled == ++producerListener.onTransportCloseExpetecTimesCalled);
+		REQUIRE(producerListener.onTransportCloseTimesCalled == ++producerListener.onTransportCloseExpectedTimesCalled);
 
 		// Audio Consumer was already closed.
 		REQUIRE(audioConsumer->IsClosed());
 		REQUIRE(!videoConsumer->IsClosed());
+		REQUIRE(!audioConsumer2->IsClosed());
 
 		recvTransport->Close();
 		REQUIRE(audioConsumer->IsClosed());
 		REQUIRE(videoConsumer->IsClosed());
+		REQUIRE(audioConsumer2->IsClosed());
 		// Audio Producer was already closed.
-		REQUIRE(consumerListener.onTransportCloseTimesCalled == ++consumerListener.onTransportCloseExpetecTimesCalled);
+		REQUIRE(consumerListener.onTransportCloseTimesCalled == (consumerListener.onTransportCloseExpectedTimesCalled += 2));
 	}
 
 	SECTION("transport.produce() throws if closed")

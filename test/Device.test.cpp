@@ -18,23 +18,23 @@ TEST_CASE("Device", "[Device]")
 	static std::unique_ptr<Device> device(new Device());
 	static json routerRtpCapabilities;
 
-	SECTION("'device->IsLoaded()' is false if not loaded")
+	SECTION("device.IsLoaded() is false if not loaded")
 	{
 		REQUIRE(!device->IsLoaded());
 	}
 
-	SECTION("'device->GetRtpCapabilities()' throws if not loaded")
+	SECTION("device.GetRtpCapabilities() throws if not loaded")
 	{
 		REQUIRE_THROWS_AS(device->GetRtpCapabilities(), Exception);
 	}
 
-	SECTION("'device->CanProduce()' with audio/video throws if not loaded")
+	SECTION("device.CanProduce() with audio/video throws if not loaded")
 	{
 		REQUIRE_THROWS_AS(device->CanProduce("audio"), Exception);
 		REQUIRE_THROWS_AS(device->CanProduce("video"), Exception);
 	}
 
-	SECTION("'device->CreateSendTransport()' fails if not loaded")
+	SECTION("device.CreateSendTransport() fails if not loaded")
 	{
 		REQUIRE_THROWS_AS(
 		  device->CreateSendTransport(
@@ -46,7 +46,7 @@ TEST_CASE("Device", "[Device]")
 		  Exception);
 	}
 
-	SECTION("'device->CreateRecvTransport()' fails if not loaded")
+	SECTION("device.CreateRecvTransport() fails if not loaded")
 	{
 		REQUIRE_THROWS_AS(
 		  device->CreateRecvTransport(
@@ -58,7 +58,7 @@ TEST_CASE("Device", "[Device]")
 		  Exception);
 	}
 
-	SECTION("'device->Load()' succeeds")
+	SECTION("device.Load() succeeds")
 	{
 		routerRtpCapabilities = generateRouterRtpCapabilities();
 
@@ -66,28 +66,28 @@ TEST_CASE("Device", "[Device]")
 		REQUIRE(device->IsLoaded());
 	}
 
-	SECTION("'device->Load()' fails if already loaded")
+	SECTION("device.Load() fails if already loaded")
 	{
 		REQUIRE_THROWS_AS(device->Load(routerRtpCapabilities), Exception);
 	}
 
-	SECTION("'device->GetRtpCapabilities()' succeeds")
+	SECTION("device.GetRtpCapabilities() succeeds")
 	{
 		REQUIRE(device->GetRtpCapabilities().is_object());
 	}
 
-	SECTION("device->CanProduce() with 'audio'/'video' kind returns true")
+	SECTION("device.CanProduce() with 'audio'/'video' kind returns true")
 	{
 		REQUIRE(device->CanProduce("audio"));
 		REQUIRE(device->CanProduce("video"));
 	}
 
-	SECTION("device->CanProduce() with invalid kind throws exception")
+	SECTION("device.CanProduce() with invalid kind throws exception")
 	{
 		REQUIRE_THROWS_AS(device->CanProduce("chicken"), Exception);
 	}
 
-	SECTION("'device->CreateSendTransport()' succeeds")
+	SECTION("device.CreateSendTransport() succeeds")
 	{
 		REQUIRE_NOTHROW(device->CreateSendTransport(
 		  &sendTransportListener,
@@ -97,7 +97,7 @@ TEST_CASE("Device", "[Device]")
 		  TransportRemoteParameters["dtlsParameters"]));
 	}
 
-	SECTION("'device->CreateRecvTransport()' succeeds")
+	SECTION("device.CreateRecvTransport() succeeds")
 	{
 		REQUIRE_NOTHROW(device->CreateRecvTransport(
 		  &recvTransportListener,

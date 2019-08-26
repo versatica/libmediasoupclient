@@ -39,18 +39,18 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE(!device->IsLoaded());
 	}
 
-	SECTION("device->GetRtpCapabilities throws if not loaded")
+	SECTION("device.GetRtpCapabilities throws if not loaded")
 	{
 		REQUIRE_THROWS_AS(device->GetRtpCapabilities(), Exception);
 	}
 
-	SECTION("device->CanProduce() throws if not loaded")
+	SECTION("device.CanProduce() throws if not loaded")
 	{
 		REQUIRE_THROWS_AS(device->CanProduce("audio"), Exception);
 		REQUIRE_THROWS_AS(device->CanProduce("video"), Exception);
 	}
 
-	SECTION("'device->CreateSendTransport()' throws if not loaded")
+	SECTION("device.CreateSendTransport() throws if not loaded")
 	{
 		REQUIRE_THROWS_AS(
 		  device->CreateSendTransport(
@@ -64,7 +64,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 	// TODO: Device::Load() must do some basic checks.
 	/*
-	SECTION("device->load() without routerRtpCapabilities rejects with TypeError")
+	SECTION("device.load() without routerRtpCapabilities rejects with TypeError")
 	{
 	  routerRtpCapabilities = json::object();
 
@@ -73,7 +73,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 	}
 	*/
 
-	SECTION("device->load() with invalid routerRtpCapabilities throws")
+	SECTION("device.load() with invalid routerRtpCapabilities throws")
 	{
 		routerRtpCapabilities = generateRouterRtpCapabilities();
 
@@ -83,7 +83,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE_THROWS_AS(device->Load(routerRtpCapabilities), Exception);
 	}
 
-	SECTION("device->load() succeeds")
+	SECTION("device.load() succeeds")
 	{
 		routerRtpCapabilities = generateRouterRtpCapabilities();
 
@@ -91,28 +91,28 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE(device->IsLoaded());
 	}
 
-	SECTION("device->load() rejects if already loaded")
+	SECTION("device.load() rejects if already loaded")
 	{
 		REQUIRE_THROWS_AS(device->Load(routerRtpCapabilities), Exception);
 	}
 
-	SECTION("'device->GetRtpCapabilities()' succeeds")
+	SECTION("device.GetRtpCapabilities() succeeds")
 	{
 		REQUIRE(device->GetRtpCapabilities().is_object());
 	}
 
-	SECTION("device->CanProduce() with 'audio'/'video' kind returns true")
+	SECTION("device.CanProduce() with 'audio'/'video' kind returns true")
 	{
 		REQUIRE(device->CanProduce("audio"));
 		REQUIRE(device->CanProduce("video"));
 	}
 
-	SECTION("device->CanProduce() with invalid kind throws exception")
+	SECTION("device.CanProduce() with invalid kind throws exception")
 	{
 		REQUIRE_THROWS_AS(device->CanProduce("chicken"), Exception);
 	}
 
-	SECTION("device->createSendTransport() for sending media succeeds")
+	SECTION("device.createSendTransport() for sending media succeeds")
 	{
 		/* clang-format off */
 		json appData =
@@ -136,7 +136,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE(sendTransport->GetAppData() == appData);
 	}
 
-	SECTION("device->createRecvTransport() for receiving media succeeds")
+	SECTION("device.createRecvTransport() for receiving media succeeds")
 	{
 		REQUIRE_NOTHROW(recvTransport.reset(device->CreateRecvTransport(
 		  &recvTransportListener,
@@ -158,6 +158,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		{
 			{ "baz", "BAZ" }
 		};
+		/* clang-format on */
 
 		std::vector<webrtc::RtpEncodingParameters> encodings;
 		encodings.emplace_back(webrtc::RtpEncodingParameters());
@@ -472,40 +473,40 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 						), Exception);
 	}
 
-	SECTION("'sendTransport.GetStats()' succeeds")
+	SECTION("sendTransport.GetStats() succeeds")
 	{
 		REQUIRE_NOTHROW(sendTransport->GetStats());
 	}
 
-	SECTION("'sendTransport.RestartIce()' succeeds")
+	SECTION("sendTransport.RestartIce() succeeds")
 	{
 		auto iceParameters = TransportRemoteParameters["iceParameters"];
 
 		REQUIRE_NOTHROW(sendTransport->RestartIce(iceParameters));
 	}
 
-	SECTION("'sendTransport.UpdateIceServers()' succeeds")
+	SECTION("sendTransport.UpdateIceServers() succeeds")
 	{
 		auto iceServers = json::array();
 
 		REQUIRE_NOTHROW(sendTransport->UpdateIceServers(iceServers));
 	}
 
-	SECTION("'producer->Pause()' succeeds")
+	SECTION("producer.Pause() succeeds")
 	{
 		videoProducer->Pause();
 
 		REQUIRE(videoProducer->IsPaused());
 	}
 
-	SECTION("'producer->Resume()' succeeds")
+	SECTION("producer.Resume() succeeds")
 	{
 		videoProducer->Resume();
 
 		REQUIRE(!videoProducer->IsPaused());
 	}
 
-	SECTION("'producer->ReplaceTrack()' succeeds")
+	SECTION("producer.ReplaceTrack() succeeds")
 	{
 		// Have the audio Producer paused.
 		audioProducer->Pause();
@@ -530,71 +531,71 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		videoTrack = newVideoTrack;
 	}
 
-	SECTION("'producer->ReplaceTrack()' fails if null track is provided")
+	SECTION("producer.ReplaceTrack() fails if null track is provided")
 	{
 		REQUIRE_THROWS_AS(videoProducer->ReplaceTrack(nullptr), Exception);
 	}
 
-	SECTION("'producer->SetMaxSpatialLayer()' succeeds")
+	SECTION("producer.SetMaxSpatialLayer() succeeds")
 	{
 		REQUIRE_NOTHROW(videoProducer->SetMaxSpatialLayer(1));
 		REQUIRE(videoProducer->GetMaxSpatialLayer() == 1);
 	}
 
-	SECTION("'producer->SetMaxSpatialLayer()' in an audio Producer throws")
+	SECTION("producer.SetMaxSpatialLayer() in an audio Producer throws")
 	{
 		REQUIRE_THROWS_AS(audioProducer->SetMaxSpatialLayer(1), Exception);
 	}
 
-	SECTION("'producer->GetStats()' succeeds")
+	SECTION("producer.GetStats() succeeds")
 	{
 		REQUIRE_NOTHROW(videoProducer->GetStats());
 	}
 
-	SECTION("'consumer->Resume()' succeeds")
+	SECTION("consumer.Resume() succeeds")
 	{
 		videoConsumer->Resume();
 
 		REQUIRE(!videoConsumer->IsPaused());
 	}
 
-	SECTION("'consumer->Pause()' succeeds")
+	SECTION("consumer.Pause() succeeds")
 	{
 		videoConsumer->Pause();
 
 		REQUIRE(videoConsumer->IsPaused());
 	}
 
-	SECTION("'consumer->GetStats()' succeeds")
+	SECTION("consumer.GetStats() succeeds")
 	{
 		REQUIRE_NOTHROW(videoConsumer->GetStats());
 	}
 
-	SECTION("'producer->Close()' succeeds")
+	SECTION("producer.Close() succeeds")
 	{
 		audioProducer->Close();
 
 		REQUIRE(audioProducer->IsClosed());
 	}
 
-	SECTION("producer->getStats() throws if closed")
+	SECTION("producer.getStats() throws if closed")
 	{
 		REQUIRE_THROWS_AS(audioProducer->GetStats(), Exception);
 	}
 
-	SECTION("'consumer->Close()' succeeds")
+	SECTION("consumer.Close() succeeds")
 	{
 		audioConsumer->Close();
 
 		REQUIRE(audioConsumer->IsClosed());
 	}
 
-	SECTION("consumer->getStats() throws if closed")
+	SECTION("consumer.getStats() throws if closed")
 	{
 		REQUIRE_THROWS_AS(audioConsumer->GetStats(), Exception);
 	}
 
-	SECTION("transport->Close() fires 'OnTransportClose' in live Producers/Consumers")
+	SECTION("transport.Close() fires 'OnTransportClose' in live Producers/Consumers")
 	{
 		// Audio Producer was already closed.
 		REQUIRE(audioProducer->IsClosed());

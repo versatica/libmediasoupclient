@@ -23,7 +23,7 @@ public:
 
 TEST_CASE("Handler", "[Handler]")
 {
-	SECTION("'Handler::GetNativeRtpCapabilities()' succeeds")
+	SECTION("Handler::GetNativeRtpCapabilities() succeeds")
 	{
 		json rtpCapabilities;
 
@@ -54,12 +54,12 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 
 	static std::string localId;
 
-	SECTION("'sendHandler.Send()' fails if a null track is provided")
+	SECTION("sendHandler.Send() fails if a null track is provided")
 	{
 		REQUIRE_THROWS_AS(sendHandler.Send(nullptr, nullptr, nullptr), Exception);
 	}
 
-	SECTION("'sendHandler.Send()' succeeds if a track is provided")
+	SECTION("sendHandler.Send() succeeds if a track is provided")
 	{
 		track = createAudioTrack("test-track-id");
 
@@ -74,17 +74,17 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 		REQUIRE(rtpParameters["headerExtensions"].size() == 3);
 	}
 
-	SECTION("'sendHandler.Send()' succeeds if track is already handled")
+	SECTION("sendHandler.Send() succeeds if track is already handled")
 	{
 		REQUIRE_NOTHROW(sendHandler.Send(track, nullptr, nullptr));
 	}
 
-	SECTION("'sendHandler.ReplaceTrack()' fails if an invalid localId is provided")
+	SECTION("sendHandler.ReplaceTrack() fails if an invalid localId is provided")
 	{
 		REQUIRE_THROWS_AS(sendHandler.ReplaceTrack("", nullptr), Exception);
 	}
 
-	SECTION("'sendHandler.ReplaceTrack()' succeeds if a new track is provided")
+	SECTION("sendHandler.ReplaceTrack() succeeds if a new track is provided")
 	{
 		auto newTrack = createAudioTrack("test-new-track-id");
 
@@ -93,44 +93,44 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 		track = newTrack;
 	}
 
-	SECTION("'sendHandler.SetMaxSpatialLayer()' fails if invalid localId is provided")
+	SECTION("sendHandler.SetMaxSpatialLayer() fails if invalid localId is provided")
 	{
 		REQUIRE_THROWS_AS(sendHandler.SetMaxSpatialLayer("", 1), Exception);
 	}
 
-	SECTION("'sendHandler.SetMaxSpatialLayer()' succeeds if track is being sent")
+	SECTION("sendHandler.SetMaxSpatialLayer() succeeds if track is being sent")
 	{
 		REQUIRE_NOTHROW(sendHandler.SetMaxSpatialLayer(localId, 1));
 	}
 
-	SECTION("'sendHandler.GetSenderStats()' fails if invalid localId is provided")
+	SECTION("sendHandler.GetSenderStats() fails if invalid localId is provided")
 	{
 		REQUIRE_THROWS_AS(sendHandler.GetSenderStats(""), Exception);
 	}
 
-	SECTION("'sendHandler.GetSenderStats()' succeeds if track is being sent")
+	SECTION("sendHandler.GetSenderStats() succeeds if track is being sent")
 	{
 		REQUIRE_NOTHROW(sendHandler.GetSenderStats(localId));
 	}
 
-	SECTION("'sendHandler.StopSending()' fails if an invalid localId is provided")
+	SECTION("sendHandler.StopSending() fails if an invalid localId is provided")
 	{
 		REQUIRE_THROWS_AS(sendHandler.StopSending(""), Exception);
 	}
 
-	SECTION("'sendHandler.StopSending()' succeeds if track is being sent")
+	SECTION("sendHandler.StopSending() succeeds if track is being sent")
 	{
 		REQUIRE_NOTHROW(sendHandler.StopSending(localId));
 	}
 
-	SECTION("'sendHandler.RestartIce()' succeeds")
+	SECTION("sendHandler.RestartIce() succeeds")
 	{
 		auto iceParameters = TransportRemoteParameters["iceParameters"];
 
 		REQUIRE_NOTHROW(sendHandler.RestartIce(iceParameters));
 	}
 
-	SECTION("'sendHandler.UpdateIceServers()' succeeds")
+	SECTION("sendHandler.UpdateIceServers() succeeds")
 	{
 		REQUIRE_NOTHROW(sendHandler.UpdateIceServers(json::array()));
 	}
@@ -155,7 +155,7 @@ TEST_CASE("RecvHandler", "[Handler][RecvHandler]")
 	  TransportRemoteParameters["dtlsParameters"],
 	  &PeerConnectionOptions);
 
-	SECTION("'recvHander.Receive()' succeeds if correct rtpParameters are provided")
+	SECTION("recvHander.Receive() succeeds if correct rtpParameters are provided")
 	{
 		std::pair<std::string, webrtc::MediaStreamTrackInterface*> result;
 
@@ -164,34 +164,34 @@ TEST_CASE("RecvHandler", "[Handler][RecvHandler]")
 		localId = result.first;
 	}
 
-	SECTION("'recvHandler.GetReceiverStats()' fails if unknown receiver id is provided")
+	SECTION("recvHandler.GetReceiverStats() fails if unknown receiver id is provided")
 	{
 		REQUIRE_THROWS_AS(recvHandler.GetReceiverStats("unknown"), Exception);
 	}
 
-	SECTION("'recvHandler.GetReceiverStats()' succeeds if known receiver id is provided")
+	SECTION("recvHandler.GetReceiverStats() succeeds if known receiver id is provided")
 	{
 		REQUIRE_NOTHROW(recvHandler.GetReceiverStats(localId));
 	}
 
-	SECTION("'recvHandler.StopReceiving()' fails if unknown receiver id is provided")
+	SECTION("recvHandler.StopReceiving() fails if unknown receiver id is provided")
 	{
 		REQUIRE_THROWS_AS(recvHandler.StopReceiving("unknown"), Exception);
 	}
 
-	SECTION("'recvHandler.StopReceiving()' succeeds if known receiver id is provided")
+	SECTION("recvHandler.StopReceiving() succeeds if known receiver id is provided")
 	{
 		REQUIRE_NOTHROW(recvHandler.StopReceiving(localId));
 	}
 
-	SECTION("'recvHandler.RestartIce()' succeeds")
+	SECTION("recvHandler.RestartIce() succeeds")
 	{
 		auto iceParameters = TransportRemoteParameters["iceParameters"];
 
 		REQUIRE_NOTHROW(recvHandler.RestartIce(iceParameters));
 	}
 
-	SECTION("'recvHandler.UpdateIceServers()' succeeds")
+	SECTION("recvHandler.UpdateIceServers() succeeds")
 	{
 		REQUIRE_NOTHROW(recvHandler.UpdateIceServers(json::array()));
 	}

@@ -269,7 +269,16 @@ namespace Sdp
 		}
 
 		// Allow both 1 byte and 2 bytes length header extensions.
-		this->mediaObject["extmapAllowMixed"] = "extmap-allow-mixed";
+		auto jsonExtmapAllowMixedIt = offerMediaObject.find("extmapAllowMixed");
+
+		// clang-format off
+		if (
+			jsonExtmapAllowMixedIt != offerMediaObject.end() &&
+			jsonExtmapAllowMixedIt->is_string()
+		)
+		{
+			this->mediaObject["extmapAllowMixed"] = "extmap-allow-mixed";
+		}
 
 		this->mediaObject["rtcpMux"]   = "rtcp-mux";
 		this->mediaObject["rtcpRsize"] = "rtcp-rsize";
@@ -401,9 +410,6 @@ namespace Sdp
 					});
 				/* clang-format on */
 			}
-
-			// Allow both 1 byte and 2 bytes length header extensions.
-			this->mediaObject["extmapAllowMixed"] = "extmap-allow-mixed";
 
 			this->mediaObject["rtcpMux"]   = "rtcp-mux";
 			this->mediaObject["rtcpRsize"] = "rtcp-rsize";

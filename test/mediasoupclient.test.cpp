@@ -457,6 +457,70 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 		REQUIRE(!videoConsumer->IsPaused());
 		REQUIRE(videoConsumer->GetAppData() == json::object());
+
+		// Consume an additional audio track.
+		static std::unique_ptr<Consumer> audioConsumer2;
+
+		REQUIRE_NOTHROW(audioConsumer2.reset(recvTransport->Consume(
+						&consumerListener,
+						audioConsumerRemoteParameters["id"].get<std::string>(),
+						audioConsumerRemoteParameters["producerId"].get<std::string>(),
+						audioConsumerRemoteParameters["kind"].get<std::string>(),
+						&audioConsumerRemoteParameters["rtpParameters"],
+						appData
+						)));
+
+		REQUIRE(
+		  recvTransportListener.onConnectTimesCalled == ++recvTransportListener.onConnectExpectedTimesCalled);
+
+		REQUIRE(recvTransportListener.id == recvTransport->GetId());
+		REQUIRE(recvTransportListener.dtlsParameters.is_object());
+
+		REQUIRE(audioConsumer2->GetId() == audioConsumerRemoteParameters["id"].get<std::string>());
+		REQUIRE(audioConsumer2->GetProducerId() == audioConsumerRemoteParameters["producerId"].get<std::string>());
+
+		REQUIRE(!audioConsumer2->IsClosed());
+		REQUIRE(audioConsumer2->GetKind() == "audio");
+		REQUIRE(audioConsumer2->GetRtpParameters()["codecs"].is_array());
+		REQUIRE(audioConsumer2->GetRtpParameters()["codecs"].size() == 1);
+
+		codecs = audioConsumer2->GetRtpParameters()["codecs"];
+
+		REQUIRE(codecs[0] == R"(
+		{
+			"channels":    2,
+			"clockRate":   48000,
+			"mimeType":    "audio/opus",
+			"parameters":
+			{
+				"useinbandfec": "1"
+			},
+			"payloadType":  100,
+			"rtcpFeedback": []
+		})"_json);
+
+		headerExtensions = audioConsumer2->GetRtpParameters()["headerExtensions"];
+		REQUIRE(headerExtensions == R"(
+		[
+			{
+				"id":  1,
+				"uri": "urn:ietf:params:rtp-hdrext:ssrc-audio-level"
+			}
+		])"_json);
+
+		encodings = audioConsumer2->GetRtpParameters()["encodings"];
+		REQUIRE(encodings.is_array());
+		REQUIRE(encodings.size() == 1);
+		REQUIRE(encodings[0].is_object());
+		REQUIRE(encodings[0].find("ssrc") != encodings[0].end());
+		REQUIRE(encodings[0]["ssrc"].is_number());
+
+		rtcp = audioConsumer2->GetRtpParameters()["rtcp"];
+		REQUIRE(rtcp.is_object());
+		REQUIRE(rtcp["cname"].is_string());
+
+		REQUIRE(!audioConsumer2->IsPaused());
+		REQUIRE(audioConsumer2->GetAppData() == appData);
 	}
 
 	SECTION("transport.consume() with unsupported consumerRtpParameters throws")

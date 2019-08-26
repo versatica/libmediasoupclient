@@ -1,5 +1,5 @@
-#ifndef SDPTRANSFORM_HELPERS_HPP
-#define	SDPTRANSFORM_HELPERS_HPP
+#ifndef MSC_TEST_HELPERS_HPP
+#define	MSC_TEST_HELPERS_HPP
 
 #include <string>
 #include <fstream>   // std::ifstream

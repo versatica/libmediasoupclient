@@ -1,3 +1,6 @@
+#ifndef MSC_TEST_FAKE_TRANSPORT_LISTENER_HPP
+#define	MSC_TEST_FAKE_TRANSPORT_LISTENER_HPP
+
 #include "mediasoupclient.hpp"
 #include "data/parameters.hpp"
 #include "catch.hpp"
@@ -131,3 +134,5 @@ class FakeConsumerListener : public mediasoupclient::Consumer::Listener
 		size_t onTransportCloseTimesCalled{ 0 };
 		size_t onTransportCloseExpetecTimesCalled{ 0 };
 };
+
+#endif

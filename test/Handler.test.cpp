@@ -5,14 +5,12 @@
 #include "peerConnectionUtils.hpp"
 #include <memory>
 
-using namespace mediasoupclient;
-
 static const json TransportRemoteParameters = generateTransportRemoteParameters();
 static const json RtpParametersByKind       = generateRtpParametersByKind();
 
-static PeerConnection::Options PeerConnectionOptions;
+static mediasoupclient::PeerConnection::Options PeerConnectionOptions;
 
-class FakeHandlerListener : public Handler::PrivateListener
+class FakeHandlerListener : public mediasoupclient::Handler::PrivateListener
 {
 public:
 	void OnConnect(json& /*transportLocalParameters*/) override{};
@@ -27,7 +25,7 @@ TEST_CASE("Handler", "[Handler]")
 	{
 		json rtpCapabilities;
 
-		REQUIRE_NOTHROW(rtpCapabilities = Handler::GetNativeRtpCapabilities());
+		REQUIRE_NOTHROW(rtpCapabilities = mediasoupclient::Handler::GetNativeRtpCapabilities());
 
 		REQUIRE(rtpCapabilities["codecs"].is_array());
 		REQUIRE(rtpCapabilities["fecMechanisms"].is_array());
@@ -41,7 +39,7 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 
 	static FakeHandlerListener handlerListener;
 
-	static SendHandler sendHandler(
+	static mediasoupclient::SendHandler sendHandler(
 	  &handlerListener,
 	  TransportRemoteParameters["iceParameters"],
 	  TransportRemoteParameters["iceCandidates"],
@@ -50,13 +48,14 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 	  RtpParametersByKind,
 	  RtpParametersByKind);
 
-	static std::unique_ptr<PeerConnection> pc(new PeerConnection(nullptr, &PeerConnectionOptions));
+	static std::unique_ptr<mediasoupclient::PeerConnection> pc(
+	  new mediasoupclient::PeerConnection(nullptr, &PeerConnectionOptions));
 
 	static std::string localId;
 
 	SECTION("sendHandler.Send() fails if a null track is provided")
 	{
-		REQUIRE_THROWS_AS(sendHandler.Send(nullptr, nullptr, nullptr), Exception);
+		REQUIRE_THROWS_AS(sendHandler.Send(nullptr, nullptr, nullptr), mediasoupclient::Exception);
 	}
 
 	SECTION("sendHandler.Send() succeeds if a track is provided")
@@ -81,7 +80,7 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 
 	SECTION("sendHandler.ReplaceTrack() fails if an invalid localId is provided")
 	{
-		REQUIRE_THROWS_AS(sendHandler.ReplaceTrack("", nullptr), Exception);
+		REQUIRE_THROWS_AS(sendHandler.ReplaceTrack("", nullptr), mediasoupclient::Exception);
 	}
 
 	SECTION("sendHandler.ReplaceTrack() succeeds if a new track is provided")
@@ -95,7 +94,7 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 
 	SECTION("sendHandler.SetMaxSpatialLayer() fails if invalid localId is provided")
 	{
-		REQUIRE_THROWS_AS(sendHandler.SetMaxSpatialLayer("", 1), Exception);
+		REQUIRE_THROWS_AS(sendHandler.SetMaxSpatialLayer("", 1), mediasoupclient::Exception);
 	}
 
 	SECTION("sendHandler.SetMaxSpatialLayer() succeeds if track is being sent")
@@ -105,7 +104,7 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 
 	SECTION("sendHandler.GetSenderStats() fails if invalid localId is provided")
 	{
-		REQUIRE_THROWS_AS(sendHandler.GetSenderStats(""), Exception);
+		REQUIRE_THROWS_AS(sendHandler.GetSenderStats(""), mediasoupclient::Exception);
 	}
 
 	SECTION("sendHandler.GetSenderStats() succeeds if track is being sent")
@@ -115,7 +114,7 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 
 	SECTION("sendHandler.StopSending() fails if an invalid localId is provided")
 	{
-		REQUIRE_THROWS_AS(sendHandler.StopSending(""), Exception);
+		REQUIRE_THROWS_AS(sendHandler.StopSending(""), mediasoupclient::Exception);
 	}
 
 	SECTION("sendHandler.StopSending() succeeds if track is being sent")
@@ -148,7 +147,7 @@ TEST_CASE("RecvHandler", "[Handler][RecvHandler]")
 
 	static FakeHandlerListener handlerListener;
 
-	static RecvHandler recvHandler(
+	static mediasoupclient::RecvHandler recvHandler(
 	  &handlerListener,
 	  TransportRemoteParameters["iceParameters"],
 	  TransportRemoteParameters["iceCandidates"],
@@ -166,7 +165,7 @@ TEST_CASE("RecvHandler", "[Handler][RecvHandler]")
 
 	SECTION("recvHandler.GetReceiverStats() fails if unknown receiver id is provided")
 	{
-		REQUIRE_THROWS_AS(recvHandler.GetReceiverStats("unknown"), Exception);
+		REQUIRE_THROWS_AS(recvHandler.GetReceiverStats("unknown"), mediasoupclient::Exception);
 	}
 
 	SECTION("recvHandler.GetReceiverStats() succeeds if known receiver id is provided")
@@ -176,7 +175,7 @@ TEST_CASE("RecvHandler", "[Handler][RecvHandler]")
 
 	SECTION("recvHandler.StopReceiving() fails if unknown receiver id is provided")
 	{
-		REQUIRE_THROWS_AS(recvHandler.StopReceiving("unknown"), Exception);
+		REQUIRE_THROWS_AS(recvHandler.StopReceiving("unknown"), mediasoupclient::Exception);
 	}
 
 	SECTION("recvHandler.StopReceiving() succeeds if known receiver id is provided")

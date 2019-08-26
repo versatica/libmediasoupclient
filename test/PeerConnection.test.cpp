@@ -4,14 +4,12 @@
 #include "helpers.hpp"
 #include "sdp/Utils.hpp"
 
-using namespace mediasoupclient;
-
 TEST_CASE("PeerConnection", "[PeerConnection]")
 {
 	static std::list<std::string> iceServerUris;
-	static PeerConnection::PrivateListener listener;
-	static PeerConnection::Options peerConnectionOptions;
-	static PeerConnection pc(&listener, &peerConnectionOptions);
+	static mediasoupclient::PeerConnection::PrivateListener listener;
+	static mediasoupclient::PeerConnection::Options peerConnectionOptions;
+	static mediasoupclient::PeerConnection pc(&listener, &peerConnectionOptions);
 
 	static std::string offer;
 
@@ -39,8 +37,8 @@ TEST_CASE("PeerConnection", "[PeerConnection]")
 		iceServer.uri = "Wrong URI";
 		configuration.servers.push_back(iceServer);
 
-		PeerConnection::PrivateListener listener;
-		PeerConnection pc(&listener, &peerConnectionOptions);
+		mediasoupclient::PeerConnection::PrivateListener listener;
+		mediasoupclient::PeerConnection pc(&listener, &peerConnectionOptions);
 
 		REQUIRE(!pc.SetConfiguration(configuration));
 	}
@@ -54,21 +52,21 @@ TEST_CASE("PeerConnection", "[PeerConnection]")
 	{
 		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
 
-		REQUIRE_THROWS_AS(pc.CreateAnswer(options), Exception);
+		REQUIRE_THROWS_AS(pc.CreateAnswer(options), mediasoupclient::Exception);
 	}
 
 	SECTION("'pc.SetRemoteDescription()' fails if incorrect SDP is provided")
 	{
 		auto sdp = std::string();
 
-		REQUIRE_THROWS_AS(pc.SetLocalDescription(PeerConnection::SdpType::OFFER, sdp), Exception);
+		REQUIRE_THROWS_AS(pc.SetLocalDescription(mediasoupclient::PeerConnection::SdpType::OFFER, sdp), mediasoupclient::Exception);
 	}
 
 	SECTION("'pc.SetRemoteDescription()' succeeds if correct SDP is provided")
 	{
 		auto sdp = helpers::readFile("test/sdp/data/webrtc.sdp");
 
-		REQUIRE_NOTHROW(pc.SetRemoteDescription(PeerConnection::SdpType::OFFER, sdp));
+		REQUIRE_NOTHROW(pc.SetRemoteDescription(mediasoupclient::PeerConnection::SdpType::OFFER, sdp));
 	}
 
 	SECTION("'pc.CreateOffer()' succeeds")
@@ -80,7 +78,7 @@ TEST_CASE("PeerConnection", "[PeerConnection]")
 
 	SECTION("'pc.SetRemoteDescription()' succeeds")
 	{
-		REQUIRE_NOTHROW(pc.SetRemoteDescription(PeerConnection::SdpType::OFFER, offer));
+		REQUIRE_NOTHROW(pc.SetRemoteDescription(mediasoupclient::PeerConnection::SdpType::OFFER, offer));
 	}
 
 	SECTION("'pc.CreateAnswer()' succeeds if remote offer is provided")

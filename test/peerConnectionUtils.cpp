@@ -1,4 +1,5 @@
 #include "peerConnectionUtils.hpp"
+#include "AudioDeviceDummy.hpp"
 #include "VcmCapturer.hpp"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
@@ -59,15 +60,16 @@ static void createPeerConnectionFactory()
 	workerThread->SetName("worker_thread", nullptr);
 
 	if (!signalingThread->Start() || !workerThread->Start())
-	{
 		throw std::runtime_error("Thread start errored");
-	}
+
+	rtc::scoped_refptr<AudioDeviceDummy> audioDeviceModule(
+	  new rtc::RefCountedObject<AudioDeviceDummy>());
 
 	peerConnectionFactory = webrtc::CreatePeerConnectionFactory(
 	  workerThread,
 	  workerThread,
 	  signalingThread,
-	  nullptr /*default_adm*/,
+	  audioDeviceModule,
 	  webrtc::CreateBuiltinAudioEncoderFactory(),
 	  webrtc::CreateBuiltinAudioDecoderFactory(),
 	  webrtc::CreateBuiltinVideoEncoderFactory(),

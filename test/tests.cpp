@@ -5,8 +5,6 @@
 #include "PeerConnection.hpp"
 #include "Logger.hpp"
 
-using namespace mediasoupclient;
-
 int main(int argc, char* argv[])
 {
 	// Set RTC logging severity to warning.
@@ -35,10 +33,11 @@ int main(int argc, char* argv[])
 
 	if (logLevel > 0)
 	{
-		auto level = static_cast<Logger::LogLevel>(logLevel);
+		auto level = static_cast<mediasoupclient::Logger::LogLevel>(logLevel);
 
-		Logger::SetLogLevel(level);
-		Logger::SetHandler(new Logger::DefaultLogHandler());
+		mediasoupclient::Logger::SetLogLevel(level);
+		mediasoupclient::Logger::SetHandler(
+		  new mediasoupclient::Logger::DefaultLogHandler());
 	}
 
 	// Initialization.

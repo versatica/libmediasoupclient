@@ -221,9 +221,9 @@ json generateLocalDtlsParameters()
 
 json generateTransportRemoteParameters()
 {
-	return R"(
+	auto json = R"(
 	{
-		"id"             : "edf19c06-0d4e-11e9-ab14-d663bd873d93",
+		"id"             : "",
 		"dtlsParameters" :
 		{
 			"fingerprints" :
@@ -271,20 +271,25 @@ json generateTransportRemoteParameters()
 			"usernameFragment" : "h3hk1iz6qqlnqlne"
 		}
 	})"_json;
+
+	json["id"] = mediasoupclient::Utils::getRandomString(12);
+
+	return json;
 };
 
 std::string generateProducerRemoteId()
 {
-	return mediasoupclient::Utils::getRandomString(20);
+	return mediasoupclient::Utils::getRandomString(12);
 };
 
 json generateConsumerRemoteParameters(const std::string& codecMimeType)
 {
 	if (codecMimeType == "audio/opus")
 	{
-		auto json = R"({
-			"producerId"    : "0e014094-0d51-11e9-ab14-d663bd873d93",
-			"id"            : "261e6c9c-0d51-11e9-ab14-d663bd873d93",
+		auto json = R"(
+		{
+			"producerId"    : "",
+			"id"            : "",
 			"kind"          : "audio",
 			"rtpParameters" :
 			{
@@ -324,17 +329,19 @@ json generateConsumerRemoteParameters(const std::string& codecMimeType)
 			}
 		})"_json;
 
+		json["producerId"] = mediasoupclient::Utils::getRandomString(12);
+		json["id"] = mediasoupclient::Utils::getRandomString(12);
 		json["rtpParameters"]["encodings"][0]["ssrc"] = mediasoupclient::Utils::getRandomInteger(1000000, 1999999);
 		json["rtpParameters"]["rtcp"]["cname"] = mediasoupclient::Utils::getRandomString(16);
 
 		return json;
 	}
-
-	if (codecMimeType == "audio/ISAC")
+	else if (codecMimeType == "audio/ISAC")
 	{
-		auto json = R"({
-			"producerId"    : "0e014094-0d51-11e9-ab14-d663bd873d94",
-			"id"            : "261e6c9c-0d51-11e9-ab14-d663bd873d94",
+		auto json = R"(
+		{
+			"producerId"    : "",
+			"id"            : "",
 			"kind"          : "audio",
 			"rtpParameters" :
 			{
@@ -371,17 +378,19 @@ json generateConsumerRemoteParameters(const std::string& codecMimeType)
 			}
 		})"_json;
 
+		json["producerId"] = mediasoupclient::Utils::getRandomString(12);
+		json["id"] = mediasoupclient::Utils::getRandomString(12);
 		json["rtpParameters"]["encodings"][0]["ssrc"] = mediasoupclient::Utils::getRandomInteger(1000000, 1999999);
 		json["rtpParameters"]["rtcp"]["cname"] = mediasoupclient::Utils::getRandomString(16);
 
 		return json;
 	}
-
-	if (codecMimeType == "video/VP8")
+	else if (codecMimeType == "video/VP8")
 	{
-		auto json = R"({
-			"producerId"    : "0e014094-0d51-11e9-ab14-d663bd873d95",
-			"id"            : "261e6c9c-0d51-11e9-ab14-d663bd873d95",
+		auto json = R"(
+		{
+			"producerId"    : "",
+			"id"            : "",
 			"kind"          : "video",
 			"rtpParameters" :
 			{
@@ -447,6 +456,8 @@ json generateConsumerRemoteParameters(const std::string& codecMimeType)
 			}
 		})"_json;
 
+		json["producerId"] = mediasoupclient::Utils::getRandomString(12);
+		json["id"] = mediasoupclient::Utils::getRandomString(12);
 		json["rtpParameters"]["encodings"][0]["ssrc"] = mediasoupclient::Utils::getRandomInteger(2000000, 2999999);
 		json["rtpParameters"]["encodings"][0]["rtx"]["ssrc"] = mediasoupclient::Utils::getRandomInteger(3000000, 3999999);
 		json["rtpParameters"]["rtcp"]["cname"] = mediasoupclient::Utils::getRandomString(16);

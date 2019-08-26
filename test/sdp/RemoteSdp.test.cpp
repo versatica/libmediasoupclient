@@ -3,13 +3,12 @@
 #include "sdp/RemoteSdp.hpp"
 #include "sdptransform.hpp"
 
-using namespace mediasoupclient;
-
 TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 {
 	SECTION("audio only", "[CreateAnswerSdp]")
 	{
-		auto dtlsParameters = R"({
+		auto dtlsParameters = R"(
+		{
 			"role"         : "client",
 			"fingerprints" :
 			[
@@ -20,12 +19,14 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 			]
 		})"_json;
 
-		auto iceParameters = R"({
+		auto iceParameters = R"(
+		{
 			"usernameFragment" : "5I2uVefP13X1wzOY",
 			"password"         : "e46UjXntt0K/xTncQcDBQePn"
 		})"_json;
 
-		auto iceCandidates = R"([
+		auto iceCandidates = R"(
+		[
 			{
 				"foundation" : "1162875081",
 				"component"  : 1,
@@ -38,7 +39,8 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 			}
 		])"_json;
 
-		auto audioCodecs = R"([
+		auto audioCodecs = R"(
+		[
 			{
 				"mimeType"             : "audio/PCMU",
 				"kind"                 : "audio",
@@ -61,7 +63,8 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 			}
 		])"_json;
 
-		auto headerExtensions = R"([
+		auto headerExtensions = R"(
+		[
 			{
 				"value" : 1,
 				"uri"   : "URI-toffset"
@@ -82,7 +85,8 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 
 		/* clang-format on */
 
-		auto* remoteSdp = new Sdp::RemoteSdp(iceParameters, iceCandidates, dtlsParameters);
+		auto* remoteSdp =
+			new mediasoupclient::Sdp::RemoteSdp(iceParameters, iceCandidates, dtlsParameters);
 
 		auto sdp         = helpers::readFile("test/sdp/data/jssip.sdp");
 		auto localSdpObj = sdptransform::parse(sdp);
@@ -172,7 +176,8 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 
 	SECTION("audio and video", "[CreateAnswerSdp]")
 	{
-		auto dtlsParameters = R"({
+		auto dtlsParameters = R"(
+		{
 			"role"         : "client",
 			"fingerprints" :
 			[
@@ -183,12 +188,14 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 			]
 		})"_json;
 
-		auto iceParameters = R"({
+		auto iceParameters = R"(
+		{
 			"usernameFragment" : "5I2uVefP13X1wzOY",
 			"password"         : "e46UjXntt0K/xTncQcDBQePn"
 		})"_json;
 
-		auto iceCandidates = R"([
+		auto iceCandidates = R"(
+		[
 			{
 				"foundation" : "1162875081",
 				"component"  : 1,
@@ -201,7 +208,8 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 			}
 		])"_json;
 
-		auto audioCodecs = R"([
+		auto audioCodecs = R"(
+		[
 			{
 				"mimeType"             : "audio/PCMU",
 				"kind"                 : "audio",
@@ -224,7 +232,8 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 			}
 		])"_json;
 
-		auto headerExtensions = R"([
+		auto headerExtensions = R"(
+		[
 			{
 				"value" : 1,
 				"uri"   : "URI-toffset"
@@ -251,7 +260,8 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 		};
 		/* clang-format on */
 
-		auto* remoteSdp = new Sdp::RemoteSdp(iceParameters, iceCandidates, dtlsParameters);
+		auto* remoteSdp =
+			new mediasoupclient::Sdp::RemoteSdp(iceParameters, iceCandidates, dtlsParameters);
 
 		auto sdp         = helpers::readFile("test/sdp/data/audio_video.sdp");
 		auto localSdpObj = sdptransform::parse(sdp);

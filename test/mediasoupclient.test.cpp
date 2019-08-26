@@ -171,11 +171,11 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		/* clang-format on */
 
 		std::vector<webrtc::RtpEncodingParameters> encodings;
+
 		encodings.emplace_back(webrtc::RtpEncodingParameters());
 		encodings.emplace_back(webrtc::RtpEncodingParameters());
 		encodings.emplace_back(webrtc::RtpEncodingParameters());
 
-		/* clang-format on */
 		audioTrack = createAudioTrack("audio-track-id");
 		videoTrack = createVideoTrack("video-track-id");
 

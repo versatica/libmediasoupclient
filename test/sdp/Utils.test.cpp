@@ -2,8 +2,6 @@
 #include "helpers.hpp"
 #include "sdp/Utils.hpp"
 
-using namespace mediasoupclient;
-
 TEST_CASE("Sdp::Utils", "[Sdp][Utils]")
 {
 	SECTION("ExtractDtlsParameters")
@@ -11,7 +9,8 @@ TEST_CASE("Sdp::Utils", "[Sdp][Utils]")
 		auto sdp     = helpers::readFile("test/sdp/data/jssip.sdp");
 		auto session = sdptransform::parse(sdp);
 
-		auto dtlsParameters = Sdp::Utils::extractDtlsParameters(session);
+		auto dtlsParameters =
+			mediasoupclient::Sdp::Utils::extractDtlsParameters(session);
 
 		REQUIRE(dtlsParameters.at("role") == "auto");
 

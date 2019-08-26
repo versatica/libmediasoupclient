@@ -1,5 +1,7 @@
 #include "peerConnectionUtils.hpp"
-#include "AudioDeviceDummy.hpp"
+#include "AudioDeviceDummy.hpp"     // TODO: Let's see if needed.
+#include "AudioMixerDummy.hpp"      // TODO: Let's see if needed.
+#include "AudioProcessingDummy.hpp" // TODO: Let's see if needed.
 #include "VcmCapturer.hpp"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
@@ -78,8 +80,17 @@ rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> createPeerConnectionF
 	if (!signalingThread->Start() || !workerThread->Start())
 		throw std::runtime_error("Thread start errored");
 
+	// TODO: Let's see if needed.
 	rtc::scoped_refptr<AudioDeviceDummy> audioDeviceModule(
 		new rtc::RefCountedObject<AudioDeviceDummy>());
+
+	// TODO: Let's see if needed.
+	rtc::scoped_refptr<AudioMixerDummy> audioMixerModule(
+		new rtc::RefCountedObject<AudioMixerDummy>());
+
+	// TODO: Let's see if needed.
+	rtc::scoped_refptr<AudioProcessingDummy> audioProcessingModule(
+		new rtc::RefCountedObject<AudioProcessingDummy>());
 
 	peerConnectionFactory = webrtc::CreatePeerConnectionFactory(
 		workerThread,
@@ -90,8 +101,8 @@ rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> createPeerConnectionF
 		webrtc::CreateBuiltinAudioDecoderFactory(),
 		webrtc::CreateBuiltinVideoEncoderFactory(),
 		webrtc::CreateBuiltinVideoDecoderFactory(),
-		nullptr /*audio_mixer*/,
-		nullptr /*audio_processing*/);
+		audioMixerModule,
+		audioProcessingModule);
 
 	 return peerConnectionFactory;
 }

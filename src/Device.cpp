@@ -14,7 +14,9 @@ namespace mediasoupclient
 /**
  * Initialize the Device.
  */
-void Device::Load(const json& routerRtpCapabilities)
+void Device::Load(
+  const json& routerRtpCapabilities,
+  const PeerConnection::Options* peerConnectionOptions)
 {
 	MSC_TRACE();
 
@@ -24,7 +26,7 @@ void Device::Load(const json& routerRtpCapabilities)
 		throw Exception("Missing routerRtpCapabilities");
 
 	// Get Native RTP capabilities.
-	auto nativeRtpCapabilities = Handler::GetNativeRtpCapabilities();
+	auto nativeRtpCapabilities = Handler::GetNativeRtpCapabilities(peerConnectionOptions);
 
 	// Get extended RTP capabilities.
 	this->extendedRtpCapabilities =

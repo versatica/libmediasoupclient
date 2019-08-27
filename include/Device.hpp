@@ -18,7 +18,9 @@ public:
 
 	bool IsLoaded() const;
 	const nlohmann::json& GetRtpCapabilities() const;
-	void Load(const nlohmann::json& routerRtpCapabilities);
+	void Load(
+	  const nlohmann::json& routerRtpCapabilities,
+	  const PeerConnection::Options* peerConnectionOptions = nullptr);
 	bool CanProduce(const std::string& kind);
 
 	SendTransport* CreateSendTransport(

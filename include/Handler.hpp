@@ -27,7 +27,8 @@ public:
 	virtual void RestartIce(const nlohmann::json& iceParameters) = 0;
 
 public:
-	static nlohmann::json GetNativeRtpCapabilities();
+	static nlohmann::json GetNativeRtpCapabilities(
+	  const PeerConnection::Options* peerConnectionOptions = nullptr);
 
 public:
 	explicit Handler(

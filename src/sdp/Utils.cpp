@@ -476,8 +476,7 @@ namespace Sdp
 				if (answerMediaObject.find("fmtp") == answerMediaObject.end())
 					answerMediaObject["fmtp"] = json::array();
 
-				// TODO: If we use auto& here it fails with SIGABRT.
-				auto fmtps      = answerMediaObject["fmtp"];
+				auto& fmtps      = answerMediaObject["fmtp"];
 				auto jsonFmtpIt = find_if(fmtps.begin(), fmtps.end(), [&codec](const json& f) {
 					return f["payload"] == codec["payloadType"];
 				});

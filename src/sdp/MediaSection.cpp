@@ -126,49 +126,49 @@ namespace Sdp
 						codecParameters["stereo"]                = opusStereo == true ? 1 : 0;
 					}
 
-					auto jsonOpusFec = codecOptions->find("opusFec");
-					if (jsonOpusFec != codecOptions->end() && jsonOpusFec->is_boolean())
+					auto jsonOpusFecIt = codecOptions->find("opusFec");
+					if (jsonOpusFecIt != codecOptions->end() && jsonOpusFecIt->is_boolean())
 					{
-						auto opusFec                             = jsonOpusFec->get<bool>();
+						auto opusFec                             = jsonOpusFecIt->get<bool>();
 						offerCodec["parameters"]["useinbandfec"] = opusFec == true ? 1 : 0;
 						codecParameters["useinbandfec"]          = opusFec == true ? 1 : 0;
 					}
 
-					auto jsonOpusDtx = codecOptions->find("opusDtx");
-					if (jsonOpusDtx != codecOptions->end() && jsonOpusDtx->is_boolean())
+					auto jsonOpusDtxIt = codecOptions->find("opusDtx");
+					if (jsonOpusDtxIt != codecOptions->end() && jsonOpusDtxIt->is_boolean())
 					{
-						auto opusDtx                       = jsonOpusDtx->get<bool>();
+						auto opusDtx                       = jsonOpusDtxIt->get<bool>();
 						offerCodec["parameters"]["usedtx"] = opusDtx == true ? 1 : 0;
 						codecParameters["usedtx"]          = opusDtx == true ? 1 : 0;
 					}
 
-					auto jsonOpusMaxPlaybackRate = codecOptions->find("opusMaxPlaybackRate");
-					if (jsonOpusMaxPlaybackRate != codecOptions->end() && jsonOpusMaxPlaybackRate->is_number_unsigned())
+					auto jsonOpusMaxPlaybackRateIt = codecOptions->find("opusMaxPlaybackRate");
+					if (jsonOpusMaxPlaybackRateIt != codecOptions->end() && jsonOpusMaxPlaybackRateIt->is_number_unsigned())
 					{
-						auto opusMaxPlaybackRate                    = jsonOpusMaxPlaybackRate->get<uint32_t>();
+						auto opusMaxPlaybackRate                    = jsonOpusMaxPlaybackRateIt->get<uint32_t>();
 						offerCodec["parameters"]["maxplaybackrate"] = opusMaxPlaybackRate;
 					}
 				}
 				else if (mimeType == "video/vp8" || mimeType == "video/vp9" || mimeType == "video/h264" || mimeType == "video/h265")
 				{
-					auto jsonVideoGoogleStartBitrate = codecOptions->find("videoGoogleStartBitrate");
-					if (jsonVideoGoogleStartBitrate != codecOptions->end() && jsonVideoGoogleStartBitrate->is_number_unsigned())
+					auto jsonVideoGoogleStartBitrateIt = codecOptions->find("videoGoogleStartBitrate");
+					if (jsonVideoGoogleStartBitrateIt != codecOptions->end() && jsonVideoGoogleStartBitrateIt->is_number_unsigned())
 					{
-						auto startBitrate = jsonVideoGoogleStartBitrate->get<uint32_t>();
+						auto startBitrate = jsonVideoGoogleStartBitrateIt->get<uint32_t>();
 						offerCodec["parameters"]["x-google-start-bitrate"] = startBitrate;
 					}
 
-					auto jsonVideoGoogleMaxBitrate = codecOptions->find("videoGoogleMaxBitrate");
-					if (jsonVideoGoogleMaxBitrate != codecOptions->end() && jsonVideoGoogleMaxBitrate->is_number_unsigned())
+					auto jsonVideoGoogleMaxBitrateIt = codecOptions->find("videoGoogleMaxBitrate");
+					if (jsonVideoGoogleMaxBitrateIt != codecOptions->end() && jsonVideoGoogleMaxBitrateIt->is_number_unsigned())
 					{
-						auto maxBitrate = jsonVideoGoogleMaxBitrate->get<uint32_t>();
+						auto maxBitrate = jsonVideoGoogleMaxBitrateIt->get<uint32_t>();
 						offerCodec["parameters"]["x-google-max-bitrate"] = maxBitrate;
 					}
 
-					auto jsonVideoGoogleMinBitrate = codecOptions->find("videoGoogleMinBitrate");
-					if (jsonVideoGoogleMinBitrate != codecOptions->end() && jsonVideoGoogleMinBitrate->is_number_unsigned())
+					auto jsonVideoGoogleMinBitrateIt = codecOptions->find("videoGoogleMinBitrate");
+					if (jsonVideoGoogleMinBitrateIt != codecOptions->end() && jsonVideoGoogleMinBitrateIt->is_number_unsigned())
 					{
-						auto minBitrate = jsonVideoGoogleMinBitrate->get<uint32_t>();
+						auto minBitrate = jsonVideoGoogleMinBitrateIt->get<uint32_t>();
 						offerCodec["parameters"]["x-google-min-bitrate"] = minBitrate;
 					}
 				}
@@ -182,6 +182,7 @@ namespace Sdp
 			/* clang-format on */
 
 			std::ostringstream config;
+
 			for (auto& item : codecParameters.items())
 			{
 				if (!config.str().empty())
@@ -206,7 +207,7 @@ namespace Sdp
 			auto jsonRtcpFeedbackIt = codec.find("rtcpFeedback");
 			if (jsonRtcpFeedbackIt != codec.end())
 			{
-				auto rtcpFeedback = *jsonRtcpFeedbackIt;
+				auto& rtcpFeedback = *jsonRtcpFeedbackIt;
 				for (auto& fb : rtcpFeedback)
 				{
 					/* clang-format off */
@@ -243,7 +244,7 @@ namespace Sdp
 			if (jsonExtsIt == offerMediaObject.end())
 				continue;
 
-			auto localExts  = *jsonExtsIt;
+			auto& localExts = *jsonExtsIt;
 			auto localExtIt = find_if(localExts.begin(), localExts.end(), [&ext](const json& localExt) {
 				auto jsonUriIt = localExt.find("uri");
 				if (jsonUriIt == localExt.end() || !jsonUriIt->is_string())
@@ -370,6 +371,7 @@ namespace Sdp
 			auto jsonRtcpFeedbackIt = codec.find("rtcpFeedback");
 			if (codec.find("rtcpFeedback") != codec.end())
 			{
+				// TODO: If we use auto& here it produces SIGABRT.
 				auto rtcpFeedback = *jsonRtcpFeedbackIt;
 				for (auto& fb : rtcpFeedback)
 				{
@@ -414,8 +416,8 @@ namespace Sdp
 			this->mediaObject["rtcpMux"]   = "rtcp-mux";
 			this->mediaObject["rtcpRsize"] = "rtcp-rsize";
 
-			auto encoding = offerRtpParameters["encodings"][0];
-			auto ssrc     = encoding["ssrc"].get<uint32_t>();
+			auto& encoding = offerRtpParameters["encodings"][0];
+			auto ssrc      = encoding["ssrc"].get<uint32_t>();
 			uint32_t rtxSsrc;
 
 			auto jsonRtxIt = encoding.find("rtx");

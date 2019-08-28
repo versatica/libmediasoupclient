@@ -13,6 +13,8 @@ using json = nlohmann::json;
 
 static bool isRtxCodec(const json& codec)
 {
+	MSC_TRACE();
+
 	static const std::regex regex(".+/rtx$", std::regex_constants::ECMAScript);
 
 	std::smatch match;
@@ -33,8 +35,9 @@ namespace ortc
 		if (jsonParametersIt == codec.end())
 			return 0;
 
-		auto parameters              = *jsonParametersIt;
+		auto& parameters             = *jsonParametersIt;
 		auto jsonPacketizationModeIt = parameters.find("packetization-mode");
+
 		if (jsonPacketizationModeIt == parameters.end() || !jsonPacketizationModeIt->is_number())
 			return 0;
 
@@ -49,8 +52,9 @@ namespace ortc
 		if (jsonParametersIt == codec.end())
 			return 0;
 
-		auto parameters                  = *jsonParametersIt;
+		auto& parameters                 = *jsonParametersIt;
 		auto jsonLevelAssimetryAllowedIt = parameters.find("level-assimetry-allowed");
+
 		if (jsonLevelAssimetryAllowedIt == parameters.end() || !jsonLevelAssimetryAllowedIt->is_number_unsigned())
 			return 0;
 
@@ -114,6 +118,7 @@ namespace ortc
 			webrtc::H264::GenerateProfileLevelIdForAnswer(aParameters, bParameters, &newParameters);
 
 			auto profileLevelIdIt = newParameters.find("profile-level-id");
+
 			if (profileLevelIdIt != newParameters.end())
 				aCodec["parameters"]["profile-level-id"] = profileLevelIdIt->second;
 			else
@@ -202,13 +207,13 @@ namespace ortc
 			)
 			/* clang-format on */
 			{
-				throw Exception("Invalid remote capabilitiy codec");
+				throw Exception("invalid remote capabilitiy codec");
 			}
 
 			auto mimeType = remoteCodec["mimeType"].get<std::string>();
 			if (!std::regex_match(mimeType, match, regex))
 			{
-				throw Exception("Invalid remote capabilitiy codec");
+				throw Exception("invalid remote capabilitiy codec");
 			}
 
 			if (isRtxCodec(remoteCodec))
@@ -223,7 +228,7 @@ namespace ortc
 
 			if (jsonLocalCodecIt != localCodecs.end())
 			{
-				auto localCodec = *jsonLocalCodecIt;
+				auto& localCodec = *jsonLocalCodecIt;
 
 				/* clang-format off */
 				json extendedCodec =
@@ -267,7 +272,7 @@ namespace ortc
 			if (jsonLocalCodecIt == localCodecs.end())
 				continue;
 
-			auto matchingLocalRtxCodec = *jsonLocalCodecIt;
+			auto& matchingLocalRtxCodec = *jsonLocalCodecIt;
 
 			auto remoteCodecs      = remoteCaps["codecs"];
 			auto jsonRemoteCodecIt = std::find_if(
@@ -279,7 +284,7 @@ namespace ortc
 			if (jsonRemoteCodecIt == remoteCodecs.end())
 				continue;
 
-			auto matchingRemoteRtxCodec = *jsonRemoteCodecIt;
+			auto& matchingRemoteRtxCodec = *jsonRemoteCodecIt;
 
 			extendedCodec["localRtxPayloadType"]  = matchingLocalRtxCodec["preferredPayloadType"];
 			extendedCodec["remoteRtxPayloadType"] = matchingRemoteRtxCodec["preferredPayloadType"];
@@ -299,7 +304,7 @@ namespace ortc
 			if (jsonLocalExtIt == localExts.end())
 				continue;
 
-			auto matchingLocalExt = *jsonLocalExtIt;
+			auto& matchingLocalExt = *jsonLocalExtIt;
 
 			/* clang-format off */
 			json extendedExt =
@@ -744,8 +749,7 @@ namespace ortc
 	{
 		MSC_TRACE();
 
-		auto codecs = extendedRtpCapabilities["codecs"];
-
+		auto& codecs     = extendedRtpCapabilities["codecs"];
 		auto jsonCodecIt = std::find_if(codecs.begin(), codecs.end(), [&kind](const json& codec) {
 			return kind == codec["kind"].get<std::string>();
 		});
@@ -764,9 +768,8 @@ namespace ortc
 		if (rtpParameters["codecs"].empty())
 			return false;
 
-		auto firstMediaCodec = rtpParameters["codecs"][0];
-
-		auto codecs = extendedRtpCapabilities["codecs"];
+		auto& firstMediaCodec = rtpParameters["codecs"][0];
+		auto& codecs          = extendedRtpCapabilities["codecs"];
 		auto jsonCodecIt =
 		  std::find_if(codecs.begin(), codecs.end(), [&firstMediaCodec](const json& codec) {
 			  return codec["remotePayloadType"] == firstMediaCodec["payloadType"];

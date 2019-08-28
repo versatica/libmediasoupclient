@@ -87,7 +87,7 @@ void Sdp::RemoteSdp::UpdateIceParameters(const json& iceParameters)
 
 	for (auto& kv : this->mediaSections)
 	{
-		auto mediaSection = kv.second;
+		auto* mediaSection = kv.second;
 
 		mediaSection->SetIceParameters(iceParameters);
 	}
@@ -104,7 +104,7 @@ void Sdp::RemoteSdp::UpdateDtlsRole(const std::string& role)
 
 	for (auto& kv : this->mediaSections)
 	{
-		auto mediaSection = kv.second;
+		auto* mediaSection = kv.second;
 
 		mediaSection->SetDtlsRole(role);
 	}
@@ -118,7 +118,7 @@ void Sdp::RemoteSdp::Send(
 {
 	MSC_TRACE();
 
-	auto mediaSection = new AnswerMediaSection(
+	auto* mediaSection = new AnswerMediaSection(
 	  this->iceParameters,
 	  this->iceCandidates,
 	  this->dtlsParameters,
@@ -139,7 +139,7 @@ void Sdp::RemoteSdp::Receive(
 {
 	MSC_TRACE();
 
-	auto mediaSection = new OfferMediaSection(
+	auto* mediaSection = new OfferMediaSection(
 	  this->iceParameters,
 	  this->iceCandidates,
 	  this->dtlsParameters,
@@ -156,7 +156,9 @@ void Sdp::RemoteSdp::DisableMediaSection(const std::string& mid)
 {
 	MSC_TRACE();
 
-	auto mediaSection = this->mediaSections[mid];
+	// TODO: Should check that mediaSections.find(mid) exists.
+
+	auto* mediaSection = this->mediaSections[mid];
 
 	mediaSection->Disable();
 }

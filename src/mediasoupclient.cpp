@@ -31,6 +31,7 @@ void Cleanup()
 std::string Version()
 {
 	std::stringstream ss;
+
 	ss << MEDIASOUPCLIENT_VERSION_MAJOR << "." << MEDIASOUPCLIENT_VERSION_MINOR << "."
 	   << MEDIASOUPCLIENT_VERSION_PATCH;
 

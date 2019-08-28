@@ -21,9 +21,9 @@ void Device::Load(
 	MSC_TRACE();
 
 	if (this->loaded)
-		throw Exception("Already loaded");
+		throw Exception("already loaded");
 	else if (!routerRtpCapabilities.is_object())
-		throw Exception("Missing routerRtpCapabilities");
+		throw Exception("missing routerRtpCapabilities");
 
 	// Get Native RTP capabilities.
 	auto nativeRtpCapabilities = Handler::GetNativeRtpCapabilities(peerConnectionOptions);

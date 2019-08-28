@@ -72,7 +72,7 @@ void Handler::UpdateIceServers(const json& iceServerUris)
 	if (this->pc->SetConfiguration(configuration))
 		return;
 
-	throw Exception("UpdateIceServers failed");
+	throw Exception("UpdateIceServers() failed");
 };
 
 void Handler::OnIceConnectionChange(webrtc::PeerConnectionInterface::IceConnectionState newState)
@@ -129,7 +129,7 @@ std::pair<std::string, nlohmann::json> SendHandler::Send(
 
 	// Check if the track is a null pointer.
 	if (track == nullptr)
-		throw Exception("Track cannot be null");
+		throw Exception("track cannot be null");
 
 	MSC_DEBUG("[kind:%s, track.id:%s]", track->kind().c_str(), track->id().c_str());
 
@@ -138,7 +138,7 @@ std::pair<std::string, nlohmann::json> SendHandler::Send(
 	webrtc::RtpTransceiverInterface* transceiver = this->pc->AddTransceiver(track);
 
 	if (transceiver == nullptr)
-		throw Exception("Error creating transceiver");
+		throw Exception("error creating transceiver");
 
 	transceiver->SetDirection(webrtc::RtpTransceiverDirection::kSendOnly);
 
@@ -253,9 +253,9 @@ void SendHandler::StopSending(const std::string& localId)
 
 	auto jsonLocaIdIt = this->mapMidTransceiver.find(localId);
 	if (jsonLocaIdIt == this->mapMidTransceiver.end())
-		throw Exception("Associated RtpTransceiver not found");
+		throw Exception("associated RtpTransceiver not found");
 
-	auto transceiver = jsonLocaIdIt->second;
+	auto* transceiver = jsonLocaIdIt->second;
 
 	transceiver->sender()->SetTrack(nullptr);
 	this->pc->RemoveTrack(transceiver->sender());
@@ -291,9 +291,9 @@ void SendHandler::ReplaceTrack(const std::string& localId, webrtc::MediaStreamTr
 
 	auto jsonLocalIdIt = this->mapMidTransceiver.find(localId);
 	if (jsonLocalIdIt == this->mapMidTransceiver.end())
-		throw Exception("Associated RtpTransceiver not found");
+		throw Exception("associated RtpTransceiver not found");
 
-	auto transceiver = jsonLocalIdIt->second;
+	auto* transceiver = jsonLocalIdIt->second;
 
 	transceiver->sender()->SetTrack(track);
 }
@@ -306,11 +306,10 @@ void SendHandler::SetMaxSpatialLayer(const std::string& localId, uint8_t spatial
 
 	auto jsonLocalIdIt = this->mapMidTransceiver.find(localId);
 	if (jsonLocalIdIt == this->mapMidTransceiver.end())
-		throw Exception("Associated RtpTransceiver not found");
+		throw Exception("associated RtpTransceiver not found");
 
-	auto transceiver = jsonLocalIdIt->second;
-
-	auto parameters = transceiver->sender()->GetParameters();
+	auto* transceiver = jsonLocalIdIt->second;
+	auto parameters   = transceiver->sender()->GetParameters();
 
 	bool hasLowEncoding{ false }, hasMediumEncoding{ false }, hasHighEncoding{ false };
 	webrtc::RtpEncodingParameters *lowEncoding, *mediumEncoding, *highEncoding;
@@ -368,11 +367,10 @@ json SendHandler::GetSenderStats(const std::string& localId)
 
 	auto jsonLocalIdIt = this->mapMidTransceiver.find(localId);
 	if (jsonLocalIdIt == this->mapMidTransceiver.end())
-		throw Exception("Associated RtpTransceiver not found");
+		throw Exception("associated RtpTransceiver not found");
 
-	auto transceiver = jsonLocalIdIt->second;
-
-	auto stats = this->pc->GetStats(transceiver->sender());
+	auto* transceiver = jsonLocalIdIt->second;
+	auto stats        = this->pc->GetStats(transceiver->sender());
 
 	return stats;
 }
@@ -427,10 +425,8 @@ std::pair<std::string, webrtc::MediaStreamTrackInterface*> RecvHandler::Receive(
 
 	MSC_DEBUG("[id:%s, kind:%s]", id.c_str(), kind.c_str());
 
-	auto localId = std::to_string(this->nextMid);
-
-	auto encoding = (*rtpParameters)["encodings"][0];
-	auto cname    = (*rtpParameters)["rtcp"]["cname"];
+	auto localId  = std::to_string(this->nextMid);
+	auto& cname   = (*rtpParameters)["rtcp"]["cname"];
 
 	this->remoteSdp->Receive(localId, kind, *rtpParameters, cname, id);
 
@@ -454,7 +450,7 @@ std::pair<std::string, webrtc::MediaStreamTrackInterface*> RecvHandler::Receive(
         return m["mid"].get<std::string>() == localId;
       });
 
-		auto answerMediaObject = *jsonMediaIt;
+		auto& answerMediaObject = *jsonMediaIt;
 
 		// May need to modify codec parameters in the answer based on codec
 		// parameters in the offer.
@@ -484,7 +480,7 @@ std::pair<std::string, webrtc::MediaStreamTrackInterface*> RecvHandler::Receive(
 	if (transceiverIt == transceivers.end())
 		throw Exception("new RTCRtpTransceiver not found");
 
-	auto transceiver = *transceiverIt;
+	auto& transceiver = *transceiverIt;
 
 	// Store in the map.
 	this->mapMidTransceiver[localId] = transceiver;
@@ -503,10 +499,12 @@ void RecvHandler::StopReceiving(const std::string& localId)
 
 	auto jsonLocalIdIt = this->mapMidTransceiver.find(localId);
 	if (jsonLocalIdIt == this->mapMidTransceiver.end())
-		throw Exception("Associated RtpTransceiver not found");
+		throw Exception("associated RtpTransceiver not found");
 
-	auto transceiver = jsonLocalIdIt->second;
-	MSC_DEBUG("--- disabling mid: %s", transceiver->mid().value().c_str());
+	auto& transceiver = jsonLocalIdIt->second;
+
+	MSC_DEBUG("disabling mid:%s", transceiver->mid().value().c_str());
+
 	this->remoteSdp->DisableMediaSection(transceiver->mid().value());
 
 	auto offer = this->remoteSdp->GetSdp();
@@ -517,6 +515,7 @@ void RecvHandler::StopReceiving(const std::string& localId)
 	this->pc->SetRemoteDescription(PeerConnection::SdpType::OFFER, offer);
 
 	webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
+
 	// May throw.
 	auto answer = this->pc->CreateAnswer(options);
 
@@ -532,13 +531,11 @@ json RecvHandler::GetReceiverStats(const std::string& localId)
 
 	MSC_DEBUG("[localId:%s]", localId.c_str());
 
-	MSC_DEBUG("[localId:%s]", localId.c_str());
-
 	auto jsonLocalIdIt = this->mapMidTransceiver.find(localId);
 	if (jsonLocalIdIt == this->mapMidTransceiver.end())
-		throw Exception("Associated RtpTransceiver not found");
+		throw Exception("associated RtpTransceiver not found");
 
-	auto transceiver = jsonLocalIdIt->second;
+	auto& transceiver = jsonLocalIdIt->second;
 
 	// May throw.
 	auto stats = this->pc->GetStats(transceiver->receiver());
@@ -564,6 +561,7 @@ void RecvHandler::RestartIce(const json& iceParameters)
 	this->pc->SetRemoteDescription(PeerConnection::SdpType::OFFER, offer);
 
 	webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
+
 	// May throw.
 	auto answer = this->pc->CreateAnswer(options);
 

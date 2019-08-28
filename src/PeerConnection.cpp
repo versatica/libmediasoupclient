@@ -87,7 +87,7 @@ PeerConnection::PeerConnection(
 
 		if (!this->signalingThread->Start() || !this->workerThread->Start())
 		{
-			throw Exception("Thread start errored");
+			throw Exception("thread start errored");
 		}
 
 		this->peerConnectionFactory = webrtc::CreatePeerConnectionFactory(
@@ -149,8 +149,8 @@ void PeerConnection::SetLocalDescription(PeerConnection::SdpType type, const std
 	rtc::scoped_refptr<SetSessionDescriptionObserver> observer(
 	  new rtc::RefCountedObject<SetSessionDescriptionObserver>());
 
-	auto typeStr = sdpType2String[type];
-	auto future  = observer->GetFuture();
+	auto& typeStr = sdpType2String[type];
+	auto future   = observer->GetFuture();
 
 	sessionDescription = webrtc::CreateSessionDescription(typeStr, sdp, &error);
 	if (sessionDescription == nullptr)
@@ -179,8 +179,8 @@ void PeerConnection::SetRemoteDescription(PeerConnection::SdpType type, const st
 	rtc::scoped_refptr<SetSessionDescriptionObserver> observer(
 	  new rtc::RefCountedObject<SetSessionDescriptionObserver>());
 
-	auto typeStr = sdpType2String[type];
-	auto future  = observer->GetFuture();
+	auto& typeStr = sdpType2String[type];
+	auto future   = observer->GetFuture();
 
 	sessionDescription = webrtc::CreateSessionDescription(typeStr, sdp, &error);
 	if (sessionDescription == nullptr)
@@ -278,6 +278,7 @@ void PeerConnection::SetSessionDescriptionObserver::OnFailure(webrtc::RTCError e
 	  error.message());
 
 	auto message = std::string(error.message());
+
 	this->Reject(message);
 };
 
@@ -291,6 +292,7 @@ void PeerConnection::CreateSessionDescriptionObserver::OnFailure(webrtc::RTCErro
 	  error.message());
 
 	auto message = std::string(error.message());
+
 	this->Reject(message);
 };
 

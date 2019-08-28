@@ -66,13 +66,13 @@ Producer* SendTransport::Produce(
 	MSC_TRACE();
 
 	if (this->closed)
-		throw Exception("Invalid state");
+		throw Exception("invalid state");
 	else if (track == nullptr)
-		throw Exception("Track cannot be null");
+		throw Exception("track cannot be null");
 	else if (track->state() == webrtc::MediaStreamTrackInterface::TrackState::kEnded)
-		throw Exception("Track ended");
+		throw Exception("track ended");
 	else if (this->canProduceByKind->find(track->kind()) == this->canProduceByKind->end())
-		throw Exception("Cannot produce track kind");
+		throw Exception("cannot produce track kind");
 
 	std::string producerId;
 
@@ -100,8 +100,8 @@ Producer* SendTransport::Produce(
 	// May throw.
 	auto result = this->handler->Send(track, &normalizedEncodings, codecOptions);
 
-	auto localId       = result.first;
-	auto rtpParameters = result.second;
+	auto& localId       = result.first;
+	auto& rtpParameters = result.second;
 
 	try
 	{
@@ -129,7 +129,7 @@ void Transport::OnConnect(json& dtlsParameters)
 	MSC_TRACE();
 
 	if (this->closed)
-		throw Exception("Invalid state");
+		throw Exception("invalid state");
 
 	return this->listener->OnConnect(this, dtlsParameters).get();
 }
@@ -167,7 +167,7 @@ json SendTransport::OnGetStats(const Producer* producer)
 	MSC_TRACE();
 
 	if (this->closed)
-		throw Exception("Invalid state");
+		throw Exception("invalid state");
 
 	return this->handler->GetSenderStats(producer->GetLocalId());
 }
@@ -208,7 +208,7 @@ Consumer* RecvTransport::Consume(
 
 	// Check if the track is a null pointer.
 	if (this->closed)
-		throw Exception("Invalid state");
+		throw Exception("invalid state");
 
 	// RTP parameters cannot be null.
 	if (rtpParameters == nullptr)
@@ -227,8 +227,8 @@ Consumer* RecvTransport::Consume(
 	// May throw.
 	auto result = this->handler->Receive(id, kind, rtpParameters);
 
-	auto localId = result.first;
-	auto* track  = result.second;
+	auto& localId = result.first;
+	auto* track   = result.second;
 
 	auto* consumer =
 	  new Consumer(this, consumerListener, id, localId, producerId, track, *rtpParameters, appData);
@@ -257,7 +257,7 @@ json RecvTransport::OnGetStats(const Consumer* consumer)
 	MSC_TRACE();
 
 	if (this->closed)
-		throw Exception("Invalid state");
+		throw Exception("invalid state");
 
 	return this->handler->GetReceiverStats(consumer->GetLocalId());
 }

@@ -225,11 +225,11 @@ namespace Sdp
 			if (jsonSsrcIt == mSsrcs.end())
 				throw Exception("a=ssrc line with msid information not found");
 
-			auto ssrcMsidLine = *jsonSsrcIt;
+			auto& ssrcMsidLine = *jsonSsrcIt;
 
-			auto v        = mediasoupclient::Utils::split(ssrcMsidLine["value"].get<std::string>(), ' ');
-			auto streamId = v[0];
-			auto trackId  = v[1];
+			auto v         = mediasoupclient::Utils::split(ssrcMsidLine["value"].get<std::string>(), ' ');
+			auto& streamId = v[0];
+			auto& trackId  = v[1];
 
 			auto firstSsrc = ssrcMsidLine["id"].get<std::uint32_t>();
 			uint32_t firstRtxSsrc{ 0 };
@@ -239,7 +239,7 @@ namespace Sdp
 			auto jsonSsrcGroupsIt = offerMediaObject.find("ssrcGroups");
 			if (jsonSsrcGroupsIt != offerMediaObject.end())
 			{
-				auto ssrcGroups = *jsonSsrcGroupsIt;
+				auto& ssrcGroups = *jsonSsrcGroupsIt;
 
 				std::find_if(
 				  ssrcGroups.begin(), ssrcGroups.end(), [&firstSsrc, &firstRtxSsrc](const json& line) {
@@ -308,7 +308,7 @@ namespace Sdp
 					{ "ssrcs",     ssrcsLine },
 				});
 
-			for (auto &i : ssrcs)
+			for (auto& i : ssrcs)
 			{
 				auto ssrc = i.get<uint32_t>();
 
@@ -374,7 +374,7 @@ namespace Sdp
 			if (jsonSsrcIt == mSsrcs.end())
 				return "";
 
-			auto ssrcCnameLine = *jsonSsrcIt;
+			auto& ssrcCnameLine = *jsonSsrcIt;
 
 			return ssrcCnameLine["value"].get<std::string>();
 		}
@@ -399,7 +399,7 @@ namespace Sdp
 			auto jsonSsrcGroupsIt = offerMediaObject.find("ssrcGroups");
 			if (jsonSsrcGroupsIt != offerMediaObject.end())
 			{
-				auto ssrcGroups = (*jsonSsrcGroupsIt);
+				auto& ssrcGroups = *jsonSsrcGroupsIt;
 
 				// First assume RTX is used.
 				for (auto& line : ssrcGroups)
@@ -464,7 +464,7 @@ namespace Sdp
 				if (mimeType != "audio/opus")
 					continue;
 
-				auto rtps      = answerMediaObject["rtp"];
+				auto& rtps     = answerMediaObject["rtp"];
 				auto jsonRtpIt = find_if(rtps.begin(), rtps.end(), [&codec](const json& r) {
 					return r["payload"] == codec["payloadType"];
 				});
@@ -476,6 +476,7 @@ namespace Sdp
 				if (answerMediaObject.find("fmtp") == answerMediaObject.end())
 					answerMediaObject["fmtp"] = json::array();
 
+				// TODO: If we use auto& here it fails with SIGABRT.
 				auto fmtps      = answerMediaObject["fmtp"];
 				auto jsonFmtpIt = find_if(fmtps.begin(), fmtps.end(), [&codec](const json& f) {
 					return f["payload"] == codec["payloadType"];

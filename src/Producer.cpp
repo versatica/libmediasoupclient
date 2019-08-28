@@ -93,11 +93,11 @@ void Producer::ReplaceTrack(webrtc::MediaStreamTrackInterface* track)
 	MSC_TRACE();
 
 	if (this->closed)
-		throw Exception("Invalid state");
+		throw Exception("invalid state");
 	if (track == nullptr)
-		throw Exception("Missing track");
+		throw Exception("missing track");
 	if (track->state() == webrtc::MediaStreamTrackInterface::TrackState::kEnded)
-		throw Exception("Track ended");
+		throw Exception("track ended");
 
 	// May throw.
 	this->privateListener->OnReplaceTrack(this, track);
@@ -119,9 +119,9 @@ void Producer::SetMaxSpatialLayer(const uint8_t spatialLayer)
 	MSC_TRACE();
 
 	if (this->closed)
-		throw Exception("Invalid state");
+		throw Exception("invalid state");
 	if (this->track->kind() != "video")
-		throw Exception("Not a video Producer");
+		throw Exception("not a video Producer");
 
 	if (spatialLayer == this->maxSpatialLayer)
 		return;

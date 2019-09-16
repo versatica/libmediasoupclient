@@ -42,6 +42,13 @@ message (STATUS "LIBWEBRTC_INCLUDE_PATH       = " ${LIBWEBRTC_INCLUDE_PATH})
 message (STATUS "LIBWEBRTC_BINARY_PATH        = " ${LIBWEBRTC_BINARY_PATH})
 message ("")
 
+# GCC >= 4.9 is required due to std::regex use.
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.9)
+        message(FATAL_ERROR "GCC version must be at least 4.9!")
+    endif()
+endif()
+
 if (${MEDIASOUPCLIENT_BUILD_TESTS})
 	add_subdirectory(test)
 endif()

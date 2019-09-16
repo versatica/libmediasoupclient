@@ -61,6 +61,25 @@ namespace ortc
 		return jsonLevelAssimetryAllowedIt->get<uint8_t>();
 	}
 
+	static std::string getH264ProfileLevelId(const json& codec)
+	{
+		MSC_TRACE();
+
+		auto jsonParametersIt = codec.find("parameters");
+		if (jsonParametersIt == codec.end())
+			return "";
+
+		auto parameters            = *jsonParametersIt;
+		auto jsonAprofileLevelIdIt = parameters.find("profile-level-id");
+		if (jsonAprofileLevelIdIt == parameters.end())
+			return "";
+
+		if (jsonAprofileLevelIdIt->is_number())
+			return std::to_string(jsonAprofileLevelIdIt->get<uint32_t>());
+		else
+			return jsonAprofileLevelIdIt->get<std::string>();
+	}
+
 	static bool matchCodecs(json& aCodec, const json& bCodec)
 	{
 		MSC_TRACE();
@@ -98,17 +117,23 @@ namespace ortc
 			if (aPacketizationMode != bPacketizationMode)
 				return false;
 
+			auto aProfileLevelId = getH264ProfileLevelId(aCodec);
+			auto bProfileLevelId = getH264ProfileLevelId(bCodec);
+
+			if (aProfileLevelId.empty() || bProfileLevelId.empty())
+				return false;
+
 			webrtc::H264::CodecParameterMap aParameters;
 			webrtc::H264::CodecParameterMap bParameters;
 
 			// Check H264 profile.
 			aParameters["level-asymmetry-allowed"] = std::to_string(getH264LevelAssimetryAllowed(aCodec));
 			aParameters["packetization-mode"]      = std::to_string(aPacketizationMode);
-			aParameters["profile-level-id"] = aCodec["parameters"]["profile-level-id"].get<std::string>();
+			aParameters["profile-level-id"]        = aProfileLevelId;
 
 			bParameters["level-asymmetry-allowed"] = std::to_string(getH264LevelAssimetryAllowed(bCodec));
 			bParameters["packetization-mode"]      = std::to_string(bPacketizationMode);
-			bParameters["profile-level-id"] = bCodec["parameters"]["profile-level-id"].get<std::string>();
+			bParameters["profile-level-id"]        = bProfileLevelId;
 
 			if (!webrtc::H264::IsSameH264Profile(aParameters, bParameters))
 				return false;

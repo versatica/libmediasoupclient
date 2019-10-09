@@ -38,7 +38,7 @@ public:
 	std::string GetKind() const;
 	webrtc::MediaStreamTrackInterface* GetTrack() const;
 	const nlohmann::json& GetRtpParameters() const;
-	const uint8_t GetMaxSpatialLayer() const;
+	uint8_t GetMaxSpatialLayer() const;
 	nlohmann::json& GetAppData();
 	nlohmann::json GetStats() const;
 
@@ -135,7 +135,7 @@ inline const nlohmann::json& Producer::GetRtpParameters() const
 	return this->rtpParameters;
 }
 
-inline const uint8_t Producer::GetMaxSpatialLayer() const
+inline uint8_t Producer::GetMaxSpatialLayer() const
 {
 	return this->maxSpatialLayer;
 }

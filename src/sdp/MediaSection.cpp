@@ -237,36 +237,36 @@ namespace Sdp
 		this->mediaObject["payloads"] = payloads;
 		this->mediaObject["ext"]      = json::array();
 
-		for (auto& ext : answerRtpParameters["headerExtensions"])
-		{
-			// Don't add a header extension if not present in the offer.
-			auto jsonExtsIt = offerMediaObject.find("ext");
-			if (jsonExtsIt == offerMediaObject.end())
-				continue;
+		auto jsonExtsIt = offerMediaObject.find("ext");
+		if (jsonExtsIt != offerMediaObject.end())
+		{  // Don't add a header extension if not present in the offer.
+			for (auto& ext : answerRtpParameters["headerExtensions"])
+			{
 
-			auto& localExts = *jsonExtsIt;
-			auto localExtIt = find_if(localExts.begin(), localExts.end(), [&ext](const json& localExt) {
-				auto jsonUriIt = localExt.find("uri");
-				if (jsonUriIt == localExt.end() || !jsonUriIt->is_string())
-					return false;
+				auto& localExts = *jsonExtsIt;
+				auto localExtIt = find_if(localExts.begin(), localExts.end(), [&ext](const json& localExt) {
+					auto jsonUriIt = localExt.find("uri");
+					if (jsonUriIt == localExt.end() || !jsonUriIt->is_string())
+						return false;
 
-				jsonUriIt = ext.find("uri");
-				if (jsonUriIt == ext.end() || !jsonUriIt->is_string())
-					return false;
+					jsonUriIt = ext.find("uri");
+					if (jsonUriIt == ext.end() || !jsonUriIt->is_string())
+						return false;
 
-				return localExt["uri"] == ext["uri"];
-			});
-
-			if (localExtIt == localExts.end())
-				continue;
-
-			/* clang-format off */
-			this->mediaObject["ext"].push_back(
-				{
-					{ "uri",   ext["uri"] },
-					{ "value", ext["id"]  }
+					return localExt["uri"] == ext["uri"];
 				});
-			/* clang-format on */
+
+				if (localExtIt == localExts.end())
+					continue;
+
+				/* clang-format off */
+				this->mediaObject["ext"].push_back(
+					{
+						{ "uri",   ext["uri"] },
+						{ "value", ext["id"]  }
+					});
+				/* clang-format on */
+			}
 		}
 
 		// Allow both 1 byte and 2 bytes length header extensions.

@@ -1,4 +1,5 @@
 #include "sdptransform.hpp"
+#include <unordered_map>
 #include <cstddef>   // size_t
 #include <memory>    // std::addressof()
 #include <sstream>   // std::stringstream, std::istringstream
@@ -338,9 +339,18 @@ namespace sdptransform
 		);
 	}
 
+	// @str parameters is a string like "profile-level-id=42e034".
 	void insertParam(json& o, const std::string& str)
 	{
 		static const std::regex KeyValueRegex("^\\s*([^= ]+)(?:\\s*=\\s*([^ ]+))?$");
+		static const std::unordered_map<std::string, char> WellKnownParameters =
+		{
+			// H264 codec parameters.
+			{ "profile-level-id",   's' },
+			{ "packetization-mode", 'd' },
+			// VP9 codec parameters.
+			{ "profile-id",         's' }
+		};
 
 		std::smatch match;
 
@@ -349,13 +359,15 @@ namespace sdptransform
 		if (match.size() == 0)
 			return;
 
-		// NOTE: match[2] maybe not exist in the given str if the param has no
-		// value. We may insert nullptr then, but it's easier to just set an empty
-		// string.
+		std::string param = match[1].str();
+		std::string value = match[2].str();
 
+		auto it = WellKnownParameters.find(param);
 		char type;
 
-		if (isInt(match[2].str()))
+		if (it != WellKnownParameters.end())
+			type = it->second;
+		else if (isInt(match[2].str()))
 			type = 'd';
 		else if (isFloat(match[2].str()))
 			type = 'f';

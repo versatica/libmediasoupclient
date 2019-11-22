@@ -88,7 +88,7 @@ SCENARIO("normalSdp", "[parse]")
 
 	auto vidFmtp = sdptransform::parseParams(video.at("fmtp")[0].at("config"));
 
-	REQUIRE(vidFmtp.at("profile-level-id") == "4d0028");
+	REQUIRE(vidFmtp.at("profile-level-id") == "42e034");
 	REQUIRE(vidFmtp.at("packetization-mode") == 1);
 	REQUIRE(vidFmtp.at("sprop-parameter-sets") == "Z0IAH5WoFAFuQA==,aM48gA==");
 
@@ -96,8 +96,8 @@ SCENARIO("normalSdp", "[parse]")
 	auto profileLevelIdIterator = vidFmtp.find("profile-level-id");
 
 	REQUIRE(profileLevelIdIterator != vidFmtp.end());
-	REQUIRE(*profileLevelIdIterator == "4d0028");
-	REQUIRE(profileLevelIdIterator->get<std::string>() == "4d0028");
+	REQUIRE(*profileLevelIdIterator == "42e034");
+	REQUIRE(profileLevelIdIterator->get<std::string>() == "42e034");
 
 	REQUIRE(video.at("fmtp")[1].at("payload") == 98);
 

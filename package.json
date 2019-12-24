@@ -1,0 +1,13 @@
+{
+  "name": "libmediasoupclient-node-utils",
+  "version": "0.0.0",
+  "private": true,
+  "os": [
+    "!win32"
+  ],
+  "devDependencies": {
+    "clang-tools-prebuilt": "^0.1.4",
+    "gulp": "^4.0.2",
+    "gulp-clang-format": "^1.0.27"
+  }
+}

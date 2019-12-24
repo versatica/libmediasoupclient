@@ -53,7 +53,7 @@ fi
 
 HEADER_FILTER_REGEX="(Consumer.hpp|Device.hpp|Exception.hpp|Handler.hpp|Logger.hpp|PeerConnection.hpp|Producer.hpp|Transport.hpp|Utils.hpp|ortc.hpp|sdp/RemoteSdp.hpp|sdp/Utils.hpp)"
 
-BIN_PATH="node_utils/node_modules/.bin"
+BIN_PATH="node_modules/.bin"
 
 # Generate compile_commands.json.
 pushd build

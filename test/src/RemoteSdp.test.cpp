@@ -90,8 +90,8 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 
 		auto sdp         = helpers::readFile("test/data/jssip.sdp");
 		auto localSdpObj = sdptransform::parse(sdp);
-		auto sdpAnswer = remoteSdp->GetSdp();
-		auto parsed    = sdptransform::parse(sdpAnswer);
+		auto sdpAnswer   = remoteSdp->GetSdp();
+		auto parsed      = sdptransform::parse(sdpAnswer);
 
 		REQUIRE(parsed.find("fingerprint") != parsed.end());
 		REQUIRE(

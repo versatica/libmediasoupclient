@@ -2,8 +2,8 @@
 #include "Exception.hpp"
 #include "FakeTransportListener.hpp"
 #include "catch.hpp"
-#include "parameters.hpp"
 #include "ortc.hpp"
+#include "parameters.hpp"
 #include <memory>
 
 TEST_CASE("Device", "[Device]")

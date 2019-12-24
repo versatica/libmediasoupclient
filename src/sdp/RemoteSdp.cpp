@@ -12,14 +12,15 @@ using json = nlohmann::json;
 
 namespace mediasoupclient
 {
-/* Sdp::RemoteSdp methods */
+	/* Sdp::RemoteSdp methods */
 
-Sdp::RemoteSdp::RemoteSdp(const json& iceParameters, const json& iceCandidates, const json& dtlsParameters)
-  : iceParameters(iceParameters), iceCandidates(iceCandidates), dtlsParameters(dtlsParameters)
-{
-	MSC_TRACE();
+	Sdp::RemoteSdp::RemoteSdp(
+	  const json& iceParameters, const json& iceCandidates, const json& dtlsParameters)
+	  : iceParameters(iceParameters), iceCandidates(iceCandidates), dtlsParameters(dtlsParameters)
+	{
+		MSC_TRACE();
 
-	/* clang-format off */
+		/* clang-format off */
 	this->sdpObject =
 	{
 		{ "id",      Utils::getRandomInteger(1000, 1000000) },
@@ -43,29 +44,29 @@ Sdp::RemoteSdp::RemoteSdp(const json& iceParameters, const json& iceCandidates, 
 		},
 		{ "media", json::array() }
 	};
-	/* clang-format on */
+		/* clang-format on */
 
-	// If ICE parameters are given, add ICE-Lite indicator.
-	if (this->iceParameters.find("iceLite") != this->iceParameters.end())
-		this->sdpObject["icelite"] = "ice-lite";
+		// If ICE parameters are given, add ICE-Lite indicator.
+		if (this->iceParameters.find("iceLite") != this->iceParameters.end())
+			this->sdpObject["icelite"] = "ice-lite";
 
-	/* clang-format off */
+		/* clang-format off */
 	this->sdpObject["msidSemantic"] =
 	{
 		{ "semantic", "WMS" },
 		{ "token",    "*"   }
 	};
-	/* clang-format on */
+		/* clang-format on */
 
-	// NOTE: We take the latest fingerprint.
-	auto numFingerprints = this->dtlsParameters["fingerprints"].size();
+		// NOTE: We take the latest fingerprint.
+		auto numFingerprints = this->dtlsParameters["fingerprints"].size();
 
-	this->sdpObject["fingerprint"] = {
-		{ "type", this->dtlsParameters.at("fingerprints")[numFingerprints - 1]["algorithm"] },
-		{ "hash", this->dtlsParameters.at("fingerprints")[numFingerprints - 1]["value"] }
-	};
+		this->sdpObject["fingerprint"] = {
+			{ "type", this->dtlsParameters.at("fingerprints")[numFingerprints - 1]["algorithm"] },
+			{ "hash", this->dtlsParameters.at("fingerprints")[numFingerprints - 1]["value"] }
+		};
 
-	/* clang-format off */
+		/* clang-format off */
 	this->sdpObject["groups"] =
 	{
 		{
@@ -73,123 +74,123 @@ Sdp::RemoteSdp::RemoteSdp(const json& iceParameters, const json& iceCandidates, 
 			{ "mids", ""       }
 		}
 	};
-	/* clang-format on */
-}
-
-void Sdp::RemoteSdp::UpdateIceParameters(const json& iceParameters)
-{
-	MSC_TRACE();
-
-	this->iceParameters = iceParameters;
-
-	if (iceParameters.find("iceLite") != iceParameters.end())
-		sdpObject["icelite"] = "ice-lite";
-
-	for (auto& kv : this->mediaSections)
-	{
-		auto* mediaSection = kv.second;
-
-		mediaSection->SetIceParameters(iceParameters);
+		/* clang-format on */
 	}
-}
 
-void Sdp::RemoteSdp::UpdateDtlsRole(const std::string& role)
-{
-	MSC_TRACE();
-
-	this->dtlsParameters["role"] = role;
-
-	if (iceParameters.find("iceLite") != iceParameters.end())
-		sdpObject["icelite"] = "ice-lite";
-
-	for (auto& kv : this->mediaSections)
+	void Sdp::RemoteSdp::UpdateIceParameters(const json& iceParameters)
 	{
-		auto* mediaSection = kv.second;
+		MSC_TRACE();
 
-		mediaSection->SetDtlsRole(role);
+		this->iceParameters = iceParameters;
+
+		if (iceParameters.find("iceLite") != iceParameters.end())
+			sdpObject["icelite"] = "ice-lite";
+
+		for (auto& kv : this->mediaSections)
+		{
+			auto* mediaSection = kv.second;
+
+			mediaSection->SetIceParameters(iceParameters);
+		}
 	}
-}
 
-void Sdp::RemoteSdp::Send(
-  nlohmann::json& offerMediaObject,
-  nlohmann::json& offerRtpParameters,
-  nlohmann::json& answerRtpParameters,
-  const nlohmann::json* codecOptions)
-{
-	MSC_TRACE();
+	void Sdp::RemoteSdp::UpdateDtlsRole(const std::string& role)
+	{
+		MSC_TRACE();
 
-	auto* mediaSection = new AnswerMediaSection(
-	  this->iceParameters,
-	  this->iceCandidates,
-	  this->dtlsParameters,
-	  offerMediaObject,
-	  offerRtpParameters,
-	  answerRtpParameters,
-	  codecOptions);
+		this->dtlsParameters["role"] = role;
 
-	this->AddMediaSection(mediaSection);
-}
+		if (iceParameters.find("iceLite") != iceParameters.end())
+			sdpObject["icelite"] = "ice-lite";
 
-void Sdp::RemoteSdp::Receive(
-  const std::string& mid,
-  const std::string& kind,
-  const nlohmann::json& offerRtpParameters,
-  const std::string& streamId,
-  const std::string& trackId)
-{
-	MSC_TRACE();
+		for (auto& kv : this->mediaSections)
+		{
+			auto* mediaSection = kv.second;
 
-	auto* mediaSection = new OfferMediaSection(
-	  this->iceParameters,
-	  this->iceCandidates,
-	  this->dtlsParameters,
-	  mid,
-	  kind,
-	  offerRtpParameters,
-	  streamId,
-	  trackId);
+			mediaSection->SetDtlsRole(role);
+		}
+	}
 
-	this->AddMediaSection(mediaSection);
-}
+	void Sdp::RemoteSdp::Send(
+	  nlohmann::json& offerMediaObject,
+	  nlohmann::json& offerRtpParameters,
+	  nlohmann::json& answerRtpParameters,
+	  const nlohmann::json* codecOptions)
+	{
+		MSC_TRACE();
 
-void Sdp::RemoteSdp::DisableMediaSection(const std::string& mid)
-{
-	MSC_TRACE();
+		auto* mediaSection = new AnswerMediaSection(
+		  this->iceParameters,
+		  this->iceCandidates,
+		  this->dtlsParameters,
+		  offerMediaObject,
+		  offerRtpParameters,
+		  answerRtpParameters,
+		  codecOptions);
 
-	// TODO: Should check that mediaSections.find(mid) exists.
+		this->AddMediaSection(mediaSection);
+	}
 
-	auto* mediaSection = this->mediaSections[mid];
+	void Sdp::RemoteSdp::Receive(
+	  const std::string& mid,
+	  const std::string& kind,
+	  const nlohmann::json& offerRtpParameters,
+	  const std::string& streamId,
+	  const std::string& trackId)
+	{
+		MSC_TRACE();
 
-	mediaSection->Disable();
-}
+		auto* mediaSection = new OfferMediaSection(
+		  this->iceParameters,
+		  this->iceCandidates,
+		  this->dtlsParameters,
+		  mid,
+		  kind,
+		  offerRtpParameters,
+		  streamId,
+		  trackId);
 
-std::string Sdp::RemoteSdp::GetSdp()
-{
-	MSC_TRACE();
+		this->AddMediaSection(mediaSection);
+	}
 
-	// Increase SDP version.
-	auto version = this->sdpObject["origin"]["sessionVersion"].get<uint32_t>();
-	this->sdpObject["origin"]["sessionVersion"] = ++version;
+	void Sdp::RemoteSdp::DisableMediaSection(const std::string& mid)
+	{
+		MSC_TRACE();
 
-	return sdptransform::write(this->sdpObject);
-}
+		// TODO: Should check that mediaSections.find(mid) exists.
 
-void Sdp::RemoteSdp::AddMediaSection(MediaSection* mediaSection)
-{
-	MSC_TRACE();
+		auto* mediaSection = this->mediaSections[mid];
 
-	// Store it in the map.
-	this->mediaSections[mediaSection->GetMid()] = mediaSection;
+		mediaSection->Disable();
+	}
 
-	// Update SDP object.
-	this->sdpObject["media"].push_back(mediaSection->GetObject());
+	std::string Sdp::RemoteSdp::GetSdp()
+	{
+		MSC_TRACE();
 
-	std::string mids = this->sdpObject["groups"][0]["mids"].get<std::string>();
-	if (mids.empty())
-		mids = mediaSection->GetMid();
-	else
-		mids.append(" ").append(mediaSection->GetMid());
+		// Increase SDP version.
+		auto version = this->sdpObject["origin"]["sessionVersion"].get<uint32_t>();
+		this->sdpObject["origin"]["sessionVersion"] = ++version;
 
-	this->sdpObject["groups"][0]["mids"] = mids;
-}
+		return sdptransform::write(this->sdpObject);
+	}
+
+	void Sdp::RemoteSdp::AddMediaSection(MediaSection* mediaSection)
+	{
+		MSC_TRACE();
+
+		// Store it in the map.
+		this->mediaSections[mediaSection->GetMid()] = mediaSection;
+
+		// Update SDP object.
+		this->sdpObject["media"].push_back(mediaSection->GetObject());
+
+		std::string mids = this->sdpObject["groups"][0]["mids"].get<std::string>();
+		if (mids.empty())
+			mids = mediaSection->GetMid();
+		else
+			mids.append(" ").append(mediaSection->GetMid());
+
+		this->sdpObject["groups"][0]["mids"] = mids;
+	}
 } // namespace mediasoupclient

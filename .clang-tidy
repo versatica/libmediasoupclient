@@ -1,5 +1,5 @@
 ---
-Checks: '*,-boost-use-to-string,-cert-*,-clang-analyzer-osx.*,-clang-analyzer-optin.osx.*,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-cppcoreguidelines-pro-bounds-constant-array-index,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-pro-type-vararg,-cppcoreguidelines-pro-type-const-cast,-cppcoreguidelines-pro-type-reinterpret-cast,-cppcoreguidelines-pro-type-union-access,-cppcoreguidelines-special-member-functions,-google-readability-*,-llvm-include-order,-google-build-using-namespace'
+Checks: '*,-boost-use-to-string,-cert-*,-clang-analyzer-osx.*,-clang-analyzer-optin.osx.*,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-cppcoreguidelines-pro-bounds-constant-array-index,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-pro-type-vararg,-cppcoreguidelines-pro-type-const-cast,-cppcoreguidelines-pro-type-reinterpret-cast,-cppcoreguidelines-pro-type-static-cast-downcast,-cppcoreguidelines-pro-type-union-access,-cppcoreguidelines-special-member-functions,-google-readability-*,-llvm-include-order,-readability-else-after-return,-readability-implicit-bool-cast,-modernize-pass-by-value,-cppcoreguidelines-no-malloc,-modernize-make-unique,-google-default-arguments'
 
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false
@@ -25,8 +25,6 @@ CheckOptions:
     value:           llvm
   - key:             modernize-use-nullptr.NullMacros
     value:           'NULL'
-  - key:             modernize-use-default-member-init.UseAssignment
-    value:           '0'
   - key:             readability-braces-around-statements.ShortStatementLines
     value:           '3'
   - key:             readability-function-size.BranchThreshold
@@ -294,4 +292,3 @@ CheckOptions:
   - key:             readability-simplify-boolean-expr.ChainedConditionalReturn
     value:           '1'
 ...
-

@@ -11,124 +11,124 @@ using json = nlohmann::json;
 
 namespace mediasoupclient
 {
-Producer::Producer(
-  Producer::PrivateListener* privateListener,
-  Producer::Listener* listener,
-  const std::string& id,
-  const std::string& localId,
-  webrtc::MediaStreamTrackInterface* track,
-  const json& rtpParameters,
-  const json& appData)
-  : privateListener(privateListener), listener(listener), id(id), localId(localId), track(track),
-    rtpParameters(rtpParameters), appData(appData)
-{
-	MSC_TRACE();
-}
-
-/**
- * Closes the Producer.
- */
-void Producer::Close()
-{
-	MSC_TRACE();
-
-	if (this->closed)
-		return;
-
-	this->closed = true;
-
-	this->privateListener->OnClose(this);
-}
-
-/**
- * Transport was closed.
- */
-void Producer::TransportClosed()
-{
-	MSC_TRACE();
-
-	if (this->closed)
-		return;
-
-	this->closed = true;
-
-	this->listener->OnTransportClose(this);
-}
-
-/**
- * Pauses sending media.
- */
-void Producer::Pause()
-{
-	MSC_TRACE();
-
-	if (this->closed)
-		return;
-
-	this->track->set_enabled(false);
-}
-
-/**
- * Resumes sending media.
- */
-void Producer::Resume()
-{
-	MSC_TRACE();
-
-	if (this->closed)
+	Producer::Producer(
+	  Producer::PrivateListener* privateListener,
+	  Producer::Listener* listener,
+	  const std::string& id,
+	  const std::string& localId,
+	  webrtc::MediaStreamTrackInterface* track,
+	  const json& rtpParameters,
+	  const json& appData)
+	  : privateListener(privateListener), listener(listener), id(id), localId(localId), track(track),
+	    rtpParameters(rtpParameters), appData(appData)
 	{
-		MSC_ERROR("producer closed");
-
-		return;
+		MSC_TRACE();
 	}
 
-	this->track->set_enabled(true);
-}
+	/**
+	 * Closes the Producer.
+	 */
+	void Producer::Close()
+	{
+		MSC_TRACE();
 
-/**
- * Replaces the current track with a new one.
- */
-void Producer::ReplaceTrack(webrtc::MediaStreamTrackInterface* track)
-{
-	MSC_TRACE();
+		if (this->closed)
+			return;
 
-	if (this->closed)
-		throw Exception("invalid state");
-	if (track == nullptr)
-		throw Exception("missing track");
-	if (track->state() == webrtc::MediaStreamTrackInterface::TrackState::kEnded)
-		throw Exception("track ended");
+		this->closed = true;
 
-	// May throw.
-	this->privateListener->OnReplaceTrack(this, track);
+		this->privateListener->OnClose(this);
+	}
 
-	auto paused = this->IsPaused();
+	/**
+	 * Transport was closed.
+	 */
+	void Producer::TransportClosed()
+	{
+		MSC_TRACE();
 
-	// Set the new track.
-	this->track = track;
+		if (this->closed)
+			return;
 
-	// Enable/Disable the new track according to current pause state.
-	this->track->set_enabled(!paused);
-}
+		this->closed = true;
 
-/**
- * Sets the max spatial layer to be sent.
- */
-void Producer::SetMaxSpatialLayer(const uint8_t spatialLayer)
-{
-	MSC_TRACE();
+		this->listener->OnTransportClose(this);
+	}
 
-	if (this->closed)
-		throw Exception("invalid state");
-	if (this->track->kind() != "video")
-		throw Exception("not a video Producer");
+	/**
+	 * Pauses sending media.
+	 */
+	void Producer::Pause()
+	{
+		MSC_TRACE();
 
-	if (spatialLayer == this->maxSpatialLayer)
-		return;
+		if (this->closed)
+			return;
 
-	// May throw.
-	this->privateListener->OnSetMaxSpatialLayer(this, spatialLayer);
+		this->track->set_enabled(false);
+	}
 
-	this->maxSpatialLayer = spatialLayer;
-}
+	/**
+	 * Resumes sending media.
+	 */
+	void Producer::Resume()
+	{
+		MSC_TRACE();
+
+		if (this->closed)
+		{
+			MSC_ERROR("producer closed");
+
+			return;
+		}
+
+		this->track->set_enabled(true);
+	}
+
+	/**
+	 * Replaces the current track with a new one.
+	 */
+	void Producer::ReplaceTrack(webrtc::MediaStreamTrackInterface* track)
+	{
+		MSC_TRACE();
+
+		if (this->closed)
+			throw Exception("invalid state");
+		if (track == nullptr)
+			throw Exception("missing track");
+		if (track->state() == webrtc::MediaStreamTrackInterface::TrackState::kEnded)
+			throw Exception("track ended");
+
+		// May throw.
+		this->privateListener->OnReplaceTrack(this, track);
+
+		auto paused = this->IsPaused();
+
+		// Set the new track.
+		this->track = track;
+
+		// Enable/Disable the new track according to current pause state.
+		this->track->set_enabled(!paused);
+	}
+
+	/**
+	 * Sets the max spatial layer to be sent.
+	 */
+	void Producer::SetMaxSpatialLayer(const uint8_t spatialLayer)
+	{
+		MSC_TRACE();
+
+		if (this->closed)
+			throw Exception("invalid state");
+		if (this->track->kind() != "video")
+			throw Exception("not a video Producer");
+
+		if (spatialLayer == this->maxSpatialLayer)
+			return;
+
+		// May throw.
+		this->privateListener->OnSetMaxSpatialLayer(this, spatialLayer);
+
+		this->maxSpatialLayer = spatialLayer;
+	}
 } // namespace mediasoupclient

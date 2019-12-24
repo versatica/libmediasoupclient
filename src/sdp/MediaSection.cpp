@@ -13,11 +13,11 @@ using json = nlohmann::json;
 
 static std::string getCodecName(const json& codec)
 {
-	static const std::regex regex("^.*/", std::regex_constants::ECMAScript);
+	static const std::regex MimeTypeRegex("^.*/", std::regex_constants::ECMAScript);
 
 	auto mimeType = codec["mimeType"].get<std::string>();
 
-	return std::regex_replace(mimeType, regex, "");
+	return std::regex_replace(mimeType, MimeTypeRegex, "");
 }
 
 namespace mediasoupclient
@@ -29,7 +29,7 @@ namespace Sdp
 		MSC_TRACE();
 
 		// Set ICE parameters.
-		this->SetIceParameters(iceParameters);
+		SetIceParameters(iceParameters);
 
 		// Set ICE candidates.
 		this->mediaObject["candidates"] = json::array();
@@ -122,30 +122,30 @@ namespace Sdp
 					if (jsonOpusStereoIt != codecOptions->end() && jsonOpusStereoIt->is_boolean())
 					{
 						auto opusStereo                          = jsonOpusStereoIt->get<bool>();
-						offerCodec["parameters"]["sprop-stereo"] = opusStereo == true ? 1 : 0;
-						codecParameters["stereo"]                = opusStereo == true ? 1 : 0;
+						offerCodec["parameters"]["sprop-stereo"] = static_cast<int>(opusStereo);
+						codecParameters["stereo"]                = static_cast<int>(opusStereo);
 					}
 
 					auto jsonOpusFecIt = codecOptions->find("opusFec");
 					if (jsonOpusFecIt != codecOptions->end() && jsonOpusFecIt->is_boolean())
 					{
 						auto opusFec                             = jsonOpusFecIt->get<bool>();
-						offerCodec["parameters"]["useinbandfec"] = opusFec == true ? 1 : 0;
-						codecParameters["useinbandfec"]          = opusFec == true ? 1 : 0;
+						offerCodec["parameters"]["useinbandfec"] = opusFec ? 1 : 0;
+						codecParameters["useinbandfec"]          = opusFec ? 1 : 0;
 					}
 
 					auto jsonOpusDtxIt = codecOptions->find("opusDtx");
 					if (jsonOpusDtxIt != codecOptions->end() && jsonOpusDtxIt->is_boolean())
 					{
 						auto opusDtx                       = jsonOpusDtxIt->get<bool>();
-						offerCodec["parameters"]["usedtx"] = opusDtx == true ? 1 : 0;
-						codecParameters["usedtx"]          = opusDtx == true ? 1 : 0;
+						offerCodec["parameters"]["usedtx"] = opusDtx ? 1 : 0;
+						codecParameters["usedtx"]          = opusDtx ? 1 : 0;
 					}
 
 					auto jsonOpusMaxPlaybackRateIt = codecOptions->find("opusMaxPlaybackRate");
 					if (jsonOpusMaxPlaybackRateIt != codecOptions->end() && jsonOpusMaxPlaybackRateIt->is_number_unsigned())
 					{
-						auto opusMaxPlaybackRate                    = jsonOpusMaxPlaybackRateIt->get<uint32_t>();
+						auto opusMaxPlaybackRate = jsonOpusMaxPlaybackRateIt->get<uint32_t>();
 						offerCodec["parameters"]["maxplaybackrate"] = opusMaxPlaybackRate;
 					}
 				}
@@ -239,10 +239,9 @@ namespace Sdp
 
 		auto jsonExtsIt = offerMediaObject.find("ext");
 		if (jsonExtsIt != offerMediaObject.end())
-		{  // Don't add a header extension if not present in the offer.
+		{ // Don't add a header extension if not present in the offer.
 			for (auto& ext : answerRtpParameters["headerExtensions"])
 			{
-
 				auto& localExts = *jsonExtsIt;
 				auto localExtIt = find_if(localExts.begin(), localExts.end(), [&ext](const json& localExt) {
 					auto jsonUriIt = localExt.find("uri");
@@ -285,7 +284,7 @@ namespace Sdp
 		this->mediaObject["rtcpRsize"] = "rtcp-rsize";
 
 		// Set DTLS role.
-		this->SetDtlsRole(dtlsParameters["role"].get<std::string>());
+		SetDtlsRole(dtlsParameters["role"].get<std::string>());
 	}
 
 	OfferMediaSection::OfferMediaSection(
@@ -460,7 +459,7 @@ namespace Sdp
 		}
 
 		// Set DTLS role.
-		this->SetDtlsRole(dtlsParameters["role"].get<std::string>());
+		SetDtlsRole(dtlsParameters["role"].get<std::string>());
 	}
 } // namespace Sdp
 } // namespace mediasoupclient

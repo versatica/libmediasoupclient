@@ -1,5 +1,5 @@
 /build/
-/utils/node_modules/
+/node_utils/node_modules/
 
 compile_commands.json
 

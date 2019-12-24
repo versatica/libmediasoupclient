@@ -6,33 +6,33 @@
 
 namespace mediasoupclient
 {
-/* Class variables. */
+	/* Class variables. */
 
-Logger::LogHandlerInterface* Logger::handler{ nullptr };
-char Logger::buffer[Logger::bufferSize];
-Logger::LogLevel Logger::logLevel = Logger::LogLevel::LOG_NONE;
+	Logger::LogHandlerInterface* Logger::handler{ nullptr };
+	char Logger::buffer[Logger::bufferSize];
+	Logger::LogLevel Logger::logLevel = Logger::LogLevel::LOG_NONE;
 
-/* Class methods. */
+	/* Class methods. */
 
-void Logger::SetLogLevel(Logger::LogLevel level)
-{
-	Logger::logLevel = level;
-}
+	void Logger::SetLogLevel(Logger::LogLevel level)
+	{
+		Logger::logLevel = level;
+	}
 
-void Logger::SetHandler(LogHandlerInterface* handler)
-{
-	Logger::handler = handler;
-}
+	void Logger::SetHandler(LogHandlerInterface* handler)
+	{
+		Logger::handler = handler;
+	}
 
-void Logger::SetDefaultHandler()
-{
-	Logger::handler = new Logger::DefaultLogHandler();
-}
+	void Logger::SetDefaultHandler()
+	{
+		Logger::handler = new Logger::DefaultLogHandler();
+	}
 
-/* DefaultLogHandler */
+	/* DefaultLogHandler */
 
-void Logger::DefaultLogHandler::OnLog(LogLevel /*level*/, char* payload, size_t /*len*/)
-{
-	std::cout << payload << std::endl;
-}
+	void Logger::DefaultLogHandler::OnLog(LogLevel /*level*/, char* payload, size_t /*len*/)
+	{
+		std::cout << payload << std::endl;
+	}
 } // namespace mediasoupclient

@@ -11,30 +11,30 @@
 
 namespace mediasoupclient
 {
-void Initialize()
-{
-	MSC_TRACE();
+	void Initialize()
+	{
+		MSC_TRACE();
 
-	MSC_DEBUG("mediasoupclient v%s", Version().c_str());
+		MSC_DEBUG("mediasoupclient v%s", Version().c_str());
 
-	rtc::InitializeSSL();
-	rtc::InitRandom(rtc::Time());
-}
+		rtc::InitializeSSL();
+		rtc::InitRandom(rtc::Time());
+	}
 
-void Cleanup()
-{
-	MSC_TRACE();
+	void Cleanup()
+	{
+		MSC_TRACE();
 
-	rtc::CleanupSSL();
-}
+		rtc::CleanupSSL();
+	}
 
-std::string Version()
-{
-	std::stringstream ss;
+	std::string Version()
+	{
+		std::stringstream ss;
 
-	ss << MEDIASOUPCLIENT_VERSION_MAJOR << "." << MEDIASOUPCLIENT_VERSION_MINOR << "."
-	   << MEDIASOUPCLIENT_VERSION_PATCH;
+		ss << MEDIASOUPCLIENT_VERSION_MAJOR << "." << MEDIASOUPCLIENT_VERSION_MINOR << "."
+		   << MEDIASOUPCLIENT_VERSION_PATCH;
 
-	return ss.str();
-}
+		return ss.str();
+	}
 } // namespace mediasoupclient

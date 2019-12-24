@@ -11,101 +11,99 @@ using json = nlohmann::json;
 
 namespace mediasoupclient
 {
-/**
- * Initialize the Device.
- */
-void Device::Load(
-  const json& routerRtpCapabilities,
-  const PeerConnection::Options* peerConnectionOptions)
-{
-	MSC_TRACE();
+	/**
+	 * Initialize the Device.
+	 */
+	void Device::Load(const json& routerRtpCapabilities, const PeerConnection::Options* peerConnectionOptions)
+	{
+		MSC_TRACE();
 
-	if (this->loaded)
-		throw Exception("already loaded");
-	else if (!routerRtpCapabilities.is_object())
-		throw Exception("missing routerRtpCapabilities");
+		if (this->loaded)
+			throw Exception("already loaded");
+		else if (!routerRtpCapabilities.is_object())
+			throw Exception("missing routerRtpCapabilities");
 
-	// Get Native RTP capabilities.
-	auto nativeRtpCapabilities = Handler::GetNativeRtpCapabilities(peerConnectionOptions);
+		// Get Native RTP capabilities.
+		auto nativeRtpCapabilities = Handler::GetNativeRtpCapabilities(peerConnectionOptions);
 
-	// Get extended RTP capabilities.
-	this->extendedRtpCapabilities =
-	  ortc::getExtendedRtpCapabilities(nativeRtpCapabilities, routerRtpCapabilities);
+		// Get extended RTP capabilities.
+		this->extendedRtpCapabilities =
+		  ortc::getExtendedRtpCapabilities(nativeRtpCapabilities, routerRtpCapabilities);
 
-	// Check whether we can produce audio/video.
-	this->canProduceByKind["audio"] = ortc::canSend("audio", this->extendedRtpCapabilities);
-	this->canProduceByKind["video"] = ortc::canSend("video", this->extendedRtpCapabilities);
+		// Check whether we can produce audio/video.
+		this->canProduceByKind["audio"] = ortc::canSend("audio", this->extendedRtpCapabilities);
+		this->canProduceByKind["video"] = ortc::canSend("video", this->extendedRtpCapabilities);
 
-	// Generate our receiving RTP capabilities for receiving media.
-	this->recvRtpCapabilities = ortc::getRecvRtpCapabilities(this->extendedRtpCapabilities);
+		// Generate our receiving RTP capabilities for receiving media.
+		this->recvRtpCapabilities = ortc::getRecvRtpCapabilities(this->extendedRtpCapabilities);
 
-	MSC_DEBUG("succeeded");
+		MSC_DEBUG("succeeded");
 
-	this->loaded = true;
-}
+		this->loaded = true;
+	}
 
-SendTransport* Device::CreateSendTransport(
-  SendTransport::Listener* listener,
-  const std::string& id,
-  const json& iceParameters,
-  const json& iceCandidates,
-  const json& dtlsParameters,
-  const PeerConnection::Options* peerConnectionOptions,
-  json appData) const
-{
-	MSC_TRACE();
+	SendTransport* Device::CreateSendTransport(
+	  SendTransport::Listener* listener,
+	  const std::string& id,
+	  const json& iceParameters,
+	  const json& iceCandidates,
+	  const json& dtlsParameters,
+	  const PeerConnection::Options* peerConnectionOptions,
+	  const json appData) const
+	{
+		MSC_TRACE();
 
-	if (!this->loaded)
-		throw Exception("not loaded");
+		if (!this->loaded)
+			throw Exception("not loaded");
 
-	// App data must be a json object.
-	if (!appData.is_object())
-		throw Exception("appData must be a JSON object");
+		// App data must be a json object.
+		if (!appData.is_object())
+			throw Exception("appData must be a JSON object");
 
-	// Create a new Transport.
-	auto* transport = new SendTransport(
-	  listener,
-	  id,
-	  iceParameters,
-	  iceCandidates,
-	  dtlsParameters,
-	  peerConnectionOptions,
-	  &this->extendedRtpCapabilities,
-	  &this->canProduceByKind,
-	  appData);
+		// Create a new Transport.
+		auto* transport = new SendTransport(
+		  listener,
+		  id,
+		  iceParameters,
+		  iceCandidates,
+		  dtlsParameters,
+		  peerConnectionOptions,
+		  &this->extendedRtpCapabilities,
+		  &this->canProduceByKind,
+		  appData);
 
-	return transport;
-}
+		return transport;
+	}
 
-RecvTransport* Device::CreateRecvTransport(
-  Transport::Listener* listener,
-  const std::string& id,
-  const json& iceParameters,
-  const json& iceCandidates,
-  const json& dtlsParameters,
-  const PeerConnection::Options* peerConnectionOptions,
-  json appData) const
-{
-	MSC_TRACE();
+	RecvTransport* Device::CreateRecvTransport(
+	  Transport::Listener* listener,
+	  const std::string& id,
+	  const json& iceParameters,
+	  const json& iceCandidates,
+	  const json& dtlsParameters,
+	  const PeerConnection::Options* peerConnectionOptions,
+	  const json appData) const
+	{
+		MSC_TRACE();
 
-	if (!this->loaded)
-		throw Exception("not loaded");
+		if (!this->loaded)
+			throw Exception("not loaded");
 
-	// App data must be a json object.
-	if (!appData.is_object())
-		throw Exception("appData must be a JSON object");
+		// App data must be a json object.
+		if (!appData.is_object())
+			throw Exception("appData must be a JSON object");
 
-	// Create a new Transport.
-	auto* transport = new RecvTransport(
-	  listener,
-	  id,
-	  iceParameters,
-	  iceCandidates,
-	  dtlsParameters,
-	  peerConnectionOptions,
-	  &this->extendedRtpCapabilities,
-	  appData);
+		// Create a new Transport.
+		auto* transport = new RecvTransport(
+		  listener,
+		  id,
+		  iceParameters,
+		  iceCandidates,
+		  dtlsParameters,
+		  peerConnectionOptions,
+		  &this->extendedRtpCapabilities,
+		  appData);
 
-	return transport;
-}
+		return transport;
+	}
 } // namespace mediasoupclient

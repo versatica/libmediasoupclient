@@ -6,7 +6,7 @@
 
 namespace mediasoupclient
 {
-nlohmann::json parseScalabilityMode(const std::string& scalabilityMode);
+	nlohmann::json parseScalabilityMode(const std::string& scalabilityMode);
 } // namespace mediasoupclient
 
 #endif

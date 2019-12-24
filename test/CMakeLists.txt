@@ -1,18 +1,19 @@
 set(
 	SOURCE_FILES
-	Device.test.cpp
-	Handler.test.cpp
-	PeerConnection.test.cpp
-	data/parameters.cpp
-	mediasoupclient.test.cpp
-	ortc.test.cpp
-	peerConnectionUtils.cpp
-	scalabilityMode.test.cpp
-	sdp/RemoteSdp.test.cpp
-	sdp/Utils.test.cpp
-	tests.cpp
-	VcmCapturer.cpp
-	VideoCapturer.cpp
+	src/Device.test.cpp
+	src/FakeVideoCapturer.cpp
+	src/Handler.test.cpp
+	src/PeerConnection.test.cpp
+	src/RemoteSdp.test.cpp
+	src/SdpUtils.test.cpp
+	src/VcmCapturer.cpp
+	src/VideoCapturer.cpp
+	src/mediasoupclient.test.cpp
+	src/ortc.test.cpp
+	src/parameters.cpp
+	src/peerConnectionUtils.cpp
+	src/scalabilityMode.test.cpp
+	src/tests.cpp
 )
 
 # Create target.
@@ -20,8 +21,9 @@ add_executable(test_mediasoupclient ${SOURCE_FILES})
 
 # Private (implementation) header files.
 target_include_directories(test_mediasoupclient PRIVATE
-	${mediasoupclient_SOURCE_DIR}/include
 	include
+	${mediasoupclient_SOURCE_DIR}/include
+	${mediasoupclient_SOURCE_DIR}/deps/catch/single_include/catch2
 )
 
 if(APPLE)

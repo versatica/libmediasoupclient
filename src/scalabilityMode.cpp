@@ -13,37 +13,37 @@ static const std::regex ScalabilityModeRegex(
 
 namespace mediasoupclient
 {
-json parseScalabilityMode(const std::string& scalabilityMode)
-{
-	/* clang-format off */
+	json parseScalabilityMode(const std::string& scalabilityMode)
+	{
+		/* clang-format off */
 	json jsonScalabilityMode
 	{
 		{ "spatialLayers",  1 },
 		{ "temporalLayers", 1 }
 	};
-	/* clang-format on */
+		/* clang-format on */
 
-	std::smatch match;
+		std::smatch match;
 
-	std::regex_match(scalabilityMode, match, ScalabilityModeRegex);
+		std::regex_match(scalabilityMode, match, ScalabilityModeRegex);
 
-	if (match.size() > 0)
-	{
-		try
+		if (!match.empty())
 		{
-			jsonScalabilityMode["spatialLayers"]  = std::stoul(match[1].str());
-			jsonScalabilityMode["temporalLayers"] = std::stoul(match[2].str());
+			try
+			{
+				jsonScalabilityMode["spatialLayers"]  = std::stoul(match[1].str());
+				jsonScalabilityMode["temporalLayers"] = std::stoul(match[2].str());
+			}
+			catch (std::exception& e)
+			{
+				MSC_WARN("invalid scalabilityMode: %s", e.what());
+			}
 		}
-		catch (std::exception& e)
+		else
 		{
-			MSC_WARN("invalid scalabilityMode: %s", e.what());
+			MSC_WARN("invalid scalabilityMode: %s", scalabilityMode.c_str());
 		}
-	}
-	else
-	{
-		MSC_WARN("invalid scalabilityMode: %s", scalabilityMode.c_str());
-	}
 
-	return jsonScalabilityMode;
-}
+		return jsonScalabilityMode;
+	}
 } // namespace mediasoupclient

@@ -8,13 +8,15 @@ PROJECT_PWD=${PWD}
 . scripts/common.sh
 
 if [ "${OS}" != "Darwin" ] && [ "${OS}" != "Linux" ] ; then
-	echo "Only available for MacOS and Linux"
-	exit 1;
+	echo "[ERROR] only available for MacOS and Linux" >&2
+
+	exit 1
 fi
 
 current_dir_name=${PROJECT_PWD##*/}
 if [ "${current_dir_name}" != "libmediasoupclient" ] && [ "${current_dir_name}" != "v3-libmediasoupclient" ] ; then
-	echo ">>> [ERROR] $(basename $0) must be called from libmediasoupclient/ root directory" >&2
+	echo "[ERROR] $(basename $0) must be called from libmediasoupclient/ root directory" >&2
+
 	exit 1
 fi
 
@@ -51,7 +53,7 @@ fi
 
 HEADER_FILTER_REGEX="(Consumer.hpp|Device.hpp|Exception.hpp|Handler.hpp|Logger.hpp|PeerConnection.hpp|Producer.hpp|Transport.hpp|Utils.hpp|ortc.hpp|sdp/RemoteSdp.hpp|sdp/Utils.hpp)"
 
-BIN_PATH="utils/node_modules/.bin"
+BIN_PATH="node_utils/node_modules/.bin"
 
 # Generate compile_commands.json.
 pushd build
@@ -60,6 +62,8 @@ mv compile_commands.json ../
 popd
 
 # Run clang-tidy.py.
+echo "[INFO] running scripts/clang-tidy.py"
+
 scripts/clang-tidy.py\
  -clang-tidy-binary=${BIN_PATH}/clang-tidy\
  -clang-apply-replacements-binary=${BIN_PATH}/clang-apply-replacements\

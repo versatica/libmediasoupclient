@@ -11,42 +11,42 @@
 
 namespace mediasoupclient
 {
-namespace Utils
-{
-	template<typename T>
-	T getRandomInteger(T min, T max);
-	std::string getRandomInteger(size_t len);
-
-	std::vector<std::string> split(const std::string& s, char delimiter);
-	std::string join(const std::vector<std::string>& v, char delimiter);
-	std::string join(const std::vector<uint32_t>& v, char delimiter);
-
-	// https://stackoverflow.com/a/447307/4827838.
-	bool isInt(const std::string& str);
-	bool isFloat(const std::string& str);
-	int toInt(const std::string& str);
-	float toFloat(const std::string& str);
-
-	/* Inline utils implementations */
-
-	template<typename T>
-	inline T getRandomInteger(T min, T max)
+	namespace Utils
 	{
-		// Seed with time.
-		static unsigned int seed = time(nullptr);
+		template<typename T>
+		T getRandomInteger(T min, T max);
+		std::string getRandomInteger(size_t len);
 
-		// Engine based on the Mersenne Twister 19937 (64 bits).
-		static std::mt19937_64 rng(seed);
+		std::vector<std::string> split(const std::string& s, char delimiter);
+		std::string join(const std::vector<std::string>& v, char delimiter);
+		std::string join(const std::vector<uint32_t>& v, char delimiter);
 
-		// Uniform distribution for integers in the [min, max) range.
-		std::uniform_int_distribution<T> dis(min, max);
+		// https://stackoverflow.com/a/447307/4827838.
+		bool isInt(const std::string& str);
+		bool isFloat(const std::string& str);
+		int toInt(const std::string& str);
+		float toFloat(const std::string& str);
 
-		return dis(rng);
-	}
+		/* Inline utils implementations */
 
-	inline std::string getRandomString(size_t len)
-	{
-		/* clang-format off */
+		template<typename T>
+		inline T getRandomInteger(T min, T max)
+		{
+			// Seed with time.
+			static unsigned int seed = time(nullptr);
+
+			// Engine based on the Mersenne Twister 19937 (64 bits).
+			static std::mt19937_64 rng(seed);
+
+			// Uniform distribution for integers in the [min, max) range.
+			std::uniform_int_distribution<T> dis(min, max);
+
+			return dis(rng);
+		}
+
+		inline std::string getRandomString(size_t len)
+		{
+			/* clang-format off */
 		static std::vector<char> chars =
 		{
 			'0','1','2','3','4','5','6','7','8','9',
@@ -57,115 +57,115 @@ namespace Utils
 			'K','L','M','N','O','P','Q','R','S','T',
 			'U','V','W','X','Y','Z'
 		};
-		/* clang-format on */
+			/* clang-format on */
 
-		// Seed with time.
-		static unsigned int seed = time(nullptr);
+			// Seed with time.
+			static unsigned int seed = time(nullptr);
 
-		// Engine based on the Mersenne Twister 19937 (64 bits).
-		static std::mt19937_64 rng(seed);
+			// Engine based on the Mersenne Twister 19937 (64 bits).
+			static std::mt19937_64 rng(seed);
 
-		// Uniform distribution for integers in the [min, max) range.
-		std::uniform_int_distribution<std::string::size_type> dis(0, chars.size());
+			// Uniform distribution for integers in the [min, max) range.
+			std::uniform_int_distribution<std::string::size_type> dis(0, chars.size());
 
-		std::string s;
+			std::string s;
 
-		s.reserve(len);
+			s.reserve(len);
 
-		while ((len--) != 0u)
-			s += chars[dis(rng)];
+			while ((len--) != 0u)
+				s += chars[dis(rng)];
 
-		return s;
-	}
-
-	inline std::vector<std::string> split(const std::string& s, char delimiter)
-	{
-		std::vector<std::string> tokens;
-		std::string token;
-		std::istringstream tokenStream(s);
-		while (std::getline(tokenStream, token, delimiter))
-		{
-			tokens.push_back(token);
-		}
-		return tokens;
-	}
-
-	inline std::string join(const std::vector<std::string>& v, char delimiter)
-	{
-		std::string s;
-
-		auto it = v.begin();
-		for (; it != v.end(); ++it)
-		{
-			s += *it;
-			if (it != v.end() - 1)
-				s += delimiter;
+			return s;
 		}
 
-		return s;
-	}
-
-	inline std::string join(const std::vector<uint32_t>& v, char delimiter)
-	{
-		std::string s;
-
-		auto it = v.begin();
-		for (; it != v.end(); ++it)
+		inline std::vector<std::string> split(const std::string& s, char delimiter)
 		{
-			s += std::to_string(*it);
-			if (it != v.end() - 1)
-				s += delimiter;
+			std::vector<std::string> tokens;
+			std::string token;
+			std::istringstream tokenStream(s);
+			while (std::getline(tokenStream, token, delimiter))
+			{
+				tokens.push_back(token);
+			}
+			return tokens;
 		}
 
-		return s;
-	}
+		inline std::string join(const std::vector<std::string>& v, char delimiter)
+		{
+			std::string s;
 
-	inline bool isInt(const std::string& str)
-	{
-		std::istringstream iss(str);
-		int64_t l;
+			auto it = v.begin();
+			for (; it != v.end(); ++it)
+			{
+				s += *it;
+				if (it != v.end() - 1)
+					s += delimiter;
+			}
 
-		iss >> std::noskipws >> l;
+			return s;
+		}
 
-		return iss.eof() && !iss.fail();
-	}
+		inline std::string join(const std::vector<uint32_t>& v, char delimiter)
+		{
+			std::string s;
 
-	inline bool isFloat(const std::string& str)
-	{
-		std::istringstream iss(str);
-		float f;
+			auto it = v.begin();
+			for (; it != v.end(); ++it)
+			{
+				s += std::to_string(*it);
+				if (it != v.end() - 1)
+					s += delimiter;
+			}
 
-		iss >> std::noskipws >> f;
+			return s;
+		}
 
-		return iss.eof() && !iss.fail();
-	}
+		inline bool isInt(const std::string& str)
+		{
+			std::istringstream iss(str);
+			int64_t l;
 
-	inline int toInt(const std::string& str)
-	{
-		std::istringstream iss(str);
-		int64_t ll;
+			iss >> std::noskipws >> l;
 
-		iss >> std::noskipws >> ll;
+			return iss.eof() && !iss.fail();
+		}
 
-		if (iss.eof() && !iss.fail())
-			return std::stoll(str);
+		inline bool isFloat(const std::string& str)
+		{
+			std::istringstream iss(str);
+			float f;
 
-		return 0;
-	}
+			iss >> std::noskipws >> f;
 
-	inline float toFloat(const std::string& str)
-	{
-		std::istringstream iss(str);
-		double d;
+			return iss.eof() && !iss.fail();
+		}
 
-		iss >> std::noskipws >> d;
+		inline int toInt(const std::string& str)
+		{
+			std::istringstream iss(str);
+			int64_t ll;
 
-		if (iss.eof() && !iss.fail())
-			return std::stod(str);
+			iss >> std::noskipws >> ll;
 
-		return 0.0f;
-	}
-} // namespace Utils
+			if (iss.eof() && !iss.fail())
+				return std::stoll(str);
+
+			return 0;
+		}
+
+		inline float toFloat(const std::string& str)
+		{
+			std::istringstream iss(str);
+			double d;
+
+			iss >> std::noskipws >> d;
+
+			if (iss.eof() && !iss.fail())
+				return std::stod(str);
+
+			return 0.0f;
+		}
+	} // namespace Utils
 } // namespace mediasoupclient
 
 #endif

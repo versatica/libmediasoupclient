@@ -476,7 +476,7 @@ namespace Sdp
 				if (answerMediaObject.find("fmtp") == answerMediaObject.end())
 					answerMediaObject["fmtp"] = json::array();
 
-				auto& fmtps      = answerMediaObject["fmtp"];
+				auto& fmtps     = answerMediaObject["fmtp"];
 				auto jsonFmtpIt = find_if(fmtps.begin(), fmtps.end(), [&codec](const json& f) {
 					return f["payload"] == codec["payloadType"];
 				});
@@ -499,7 +499,7 @@ namespace Sdp
 					if (jsonSpropStereoIt != codec["parameters"].end() && jsonSpropStereoIt->is_boolean())
 					{
 						auto spropStereo     = jsonSpropStereoIt->get<bool>();
-						parameters["stereo"] = spropStereo == true ? 1 : 0;
+						parameters["stereo"] = spropStereo ? 1 : 0;
 					}
 				}
 

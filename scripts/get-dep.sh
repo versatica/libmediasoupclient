@@ -55,14 +55,10 @@ function get_libsdptransform()
 function get_catch()
 {
 	GIT_REPO="https://github.com/philsquared/Catch.git"
-	GIT_TAG="v2.5.0"
+	GIT_TAG="v2.11.0"
 	DEST="deps/catch"
 
 	get_dep "${GIT_REPO}" "${GIT_TAG}" "${DEST}"
-
-	echo ">>> [INFO] copying include file to test/include/ directory ..."
-	cd ${PROJECT_PWD}
-	cp ${DEST}/single_include/catch2/catch.hpp test/include/
 }
 
 case "${DEP}" in

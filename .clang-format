@@ -26,9 +26,12 @@ BraceWrapping:
   AfterNamespace: true
   AfterStruct: true
   AfterUnion: true
+  AfterCaseLabel: true
+  AfterExternBlock: true
   BeforeCatch: true
   BeforeElse: true
   IndentBraces: false
+BreakBeforeBraces: Allman
 BreakBeforeBinaryOperators: None
 BreakBeforeInheritanceComma: false
 BreakBeforeTernaryOperators: true
@@ -59,7 +62,7 @@ IndentWidth: 2
 IndentWrappedFunctionNames: false
 KeepEmptyLinesAtTheStartOfBlocks: false
 MaxEmptyLinesToKeep: 1
-NamespaceIndentation: Inner
+NamespaceIndentation: All
 PenaltyBreakBeforeFirstCallParameter: 5
 PenaltyBreakComment: 100
 PenaltyBreakFirstLessLess: 200

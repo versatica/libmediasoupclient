@@ -7,21 +7,21 @@
 
 namespace mediasoupclient
 {
-class Exception : public std::exception
-{
-public:
-	explicit Exception(std::string error) : error(std::move(error))
+	class Exception : public std::exception
 	{
-	}
+	public:
+		explicit Exception(std::string error) : error(std::move(error))
+		{
+		}
 
-	const char* what() const noexcept override
-	{
-		return this->error.c_str();
-	}
+		const char* what() const noexcept override
+		{
+			return this->error.c_str();
+		}
 
-private:
-	std::string error;
-};
+	private:
+		std::string error;
+	};
 } // namespace mediasoupclient
 
 #endif

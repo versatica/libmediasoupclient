@@ -14,6 +14,12 @@ set(
 	src/peerConnectionUtils.cpp
 	src/scalabilityMode.test.cpp
 	src/tests.cpp
+	include/FakeTransportListener.hpp
+	include/VcmCapturer.hpp
+	include/VideoCapturer.hpp
+	include/helpers.hpp
+	include/parameters.hpp
+	include/peerConnectionUtils.hpp
 )
 
 # Create target.

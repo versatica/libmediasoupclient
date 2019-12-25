@@ -1,9 +1,9 @@
 #include "Device.hpp"
-#include "Exception.hpp"
 #include "FakeTransportListener.hpp"
-#include "catch.hpp"
+#include "MediaSoupClientErrors.hpp"
 #include "ortc.hpp"
 #include "parameters.hpp"
+#include <catch.hpp>
 #include <memory>
 
 TEST_CASE("Device", "[Device]")
@@ -24,13 +24,13 @@ TEST_CASE("Device", "[Device]")
 
 	SECTION("device.GetRtpCapabilities() throws if not loaded")
 	{
-		REQUIRE_THROWS_AS(device->GetRtpCapabilities(), mediasoupclient::Exception);
+		REQUIRE_THROWS_AS(device->GetRtpCapabilities(), MediaSoupClientError);
 	}
 
 	SECTION("device.CanProduce() with audio/video throws if not loaded")
 	{
-		REQUIRE_THROWS_AS(device->CanProduce("audio"), mediasoupclient::Exception);
-		REQUIRE_THROWS_AS(device->CanProduce("video"), mediasoupclient::Exception);
+		REQUIRE_THROWS_AS(device->CanProduce("audio"), MediaSoupClientError);
+		REQUIRE_THROWS_AS(device->CanProduce("video"), MediaSoupClientError);
 	}
 
 	SECTION("device.CreateSendTransport() fails if not loaded")
@@ -42,7 +42,7 @@ TEST_CASE("Device", "[Device]")
 		    TransportRemoteParameters["iceParameters"],
 		    TransportRemoteParameters["iceCandidates"],
 		    TransportRemoteParameters["dtlsParameters"]),
-		  mediasoupclient::Exception);
+		  MediaSoupClientError);
 	}
 
 	SECTION("device.CreateRecvTransport() fails if not loaded")
@@ -54,7 +54,7 @@ TEST_CASE("Device", "[Device]")
 		    TransportRemoteParameters["iceParameters"],
 		    TransportRemoteParameters["iceCandidates"],
 		    TransportRemoteParameters["dtlsParameters"]),
-		  mediasoupclient::Exception);
+		  MediaSoupClientError);
 	}
 
 	SECTION("device.Load() succeeds")
@@ -67,7 +67,7 @@ TEST_CASE("Device", "[Device]")
 
 	SECTION("device.Load() fails if already loaded")
 	{
-		REQUIRE_THROWS_AS(device->Load(routerRtpCapabilities), mediasoupclient::Exception);
+		REQUIRE_THROWS_AS(device->Load(routerRtpCapabilities), MediaSoupClientError);
 	}
 
 	SECTION("device.GetRtpCapabilities() succeeds")
@@ -83,7 +83,7 @@ TEST_CASE("Device", "[Device]")
 
 	SECTION("device.CanProduce() with invalid kind throws exception")
 	{
-		REQUIRE_THROWS_AS(device->CanProduce("chicken"), mediasoupclient::Exception);
+		REQUIRE_THROWS_AS(device->CanProduce("chicken"), MediaSoupClientError);
 	}
 
 	SECTION("device.CreateSendTransport() succeeds")

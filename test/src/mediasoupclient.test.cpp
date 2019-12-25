@@ -1,9 +1,9 @@
 #include "FakeTransportListener.hpp"
 #include "MediaSoupClientErrors.hpp"
-#include "catch.hpp"
 #include "mediasoupclient.hpp"
 #include "parameters.hpp"
 #include "peerConnectionUtils.hpp"
+#include <catch.hpp>
 #include <vector>
 
 TEST_CASE("mediasoupclient", "mediasoupclient")
@@ -42,13 +42,13 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 	SECTION("device.GetRtpCapabilities throws if not loaded")
 	{
-		REQUIRE_THROWS_AS(device->GetRtpCapabilities(), mediasoupclient::Exception);
+		REQUIRE_THROWS_AS(device->GetRtpCapabilities(), MediaSoupClientError);
 	}
 
 	SECTION("device.CanProduce() throws if not loaded")
 	{
-		REQUIRE_THROWS_AS(device->CanProduce("audio"), mediasoupclient::Exception);
-		REQUIRE_THROWS_AS(device->CanProduce("video"), mediasoupclient::Exception);
+		REQUIRE_THROWS_AS(device->CanProduce("audio"), MediaSoupClientError);
+		REQUIRE_THROWS_AS(device->CanProduce("video"), MediaSoupClientError);
 	}
 
 	SECTION("device.CreateSendTransport() throws if not loaded")
@@ -61,7 +61,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		    TransportRemoteParameters["iceCandidates"],
 		    TransportRemoteParameters["dtlsParameters"],
 		    &peerConnectionOptions),
-		  mediasoupclient::Exception);
+		  MediaSoupClientError);
 	}
 
 	// TODO: Device::Load() must do some basic checks.
@@ -95,7 +95,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 	SECTION("device.load() rejects if already loaded")
 	{
-		REQUIRE_THROWS_AS(device->Load(routerRtpCapabilities), mediasoupclient::Exception);
+		REQUIRE_THROWS_AS(device->Load(routerRtpCapabilities), MediaSoupClientError);
 	}
 
 	SECTION("device.GetRtpCapabilities() succeeds")
@@ -111,7 +111,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 	SECTION("device.CanProduce() with invalid kind throws exception")
 	{
-		REQUIRE_THROWS_AS(device->CanProduce("chicken"), mediasoupclient::Exception);
+		REQUIRE_THROWS_AS(device->CanProduce("chicken"), MediaSoupClientError);
 	}
 
 	SECTION("device.createSendTransport() for sending media succeeds")
@@ -277,8 +277,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 	SECTION("transport.produce() without track throws")
 	{
 		REQUIRE_THROWS_AS(
-		  sendTransport->Produce(&producerListener, nullptr, nullptr, nullptr),
-		  mediasoupclient::Exception);
+		  sendTransport->Produce(&producerListener, nullptr, nullptr, nullptr), MediaSoupClientError);
 	}
 
 	SECTION("transport.consume() succeeds")
@@ -540,7 +539,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 				consumerRemoteParameters["producerId"].get<std::string>(),
 				consumerRemoteParameters["kind"].get<std::string>(),
 				&consumerRemoteParameters["rtpParameters"]),
-			mediasoupclient::Exception);
+			MediaSoupClientError);
 	}
 
 	SECTION("sendTransport.GetStats() succeeds")
@@ -605,7 +604,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 	{
 		REQUIRE_THROWS_AS(
 			videoProducer->ReplaceTrack(nullptr),
-			mediasoupclient::Exception);
+			MediaSoupClientError);
 	}
 
 	SECTION("producer.SetMaxSpatialLayer() succeeds")
@@ -618,7 +617,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 	{
 		REQUIRE_THROWS_AS(
 			audioProducer->SetMaxSpatialLayer(1),
-			mediasoupclient::Exception);
+			MediaSoupClientError);
 	}
 
 	SECTION("producer.GetStats() succeeds")
@@ -656,7 +655,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 	{
 		REQUIRE_THROWS_AS(
 			audioProducer->GetStats(),
-			mediasoupclient::Exception);
+			MediaSoupClientError);
 	}
 
 	SECTION("consumer.Close() succeeds")
@@ -670,7 +669,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 	{
 		REQUIRE_THROWS_AS(
 			audioConsumer->GetStats(),
-			mediasoupclient::Exception);
+			MediaSoupClientError);
 	}
 
 	SECTION("transport.Close() fires 'OnTransportClose' in live Producers/Consumers")
@@ -704,7 +703,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 			sendTransport->Produce(
 				&producerListener,
 				audioTrack, nullptr, nullptr),
-			mediasoupclient::Exception);
+			MediaSoupClientError);
 	}
 
 	SECTION("transport.consume() throws if closed")
@@ -719,14 +718,14 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 				audioConsumerRemoteParameters["producerId"].get<std::string>(),
 				audioConsumerRemoteParameters["kind"].get<std::string>(),
 				&audioConsumerRemoteParameters["rtpParameters"]),
-			mediasoupclient::Exception);
+			MediaSoupClientError);
 	}
 
 	SECTION("transport.getStats() throws if closed")
 	{
 		REQUIRE_THROWS_AS(
 			sendTransport->GetStats(),
-			mediasoupclient::Exception);
+			MediaSoupClientError);
 	}
 
 	SECTION("transport.restartIce() throws if closed")
@@ -735,7 +734,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 		REQUIRE_THROWS_AS(
 			sendTransport->RestartIce(iceParameters),
-			mediasoupclient::Exception);
+			MediaSoupClientError);
 	}
 
 	SECTION("transport.restartIce() throws if closed")
@@ -744,6 +743,6 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 		REQUIRE_THROWS_AS(
 			sendTransport->UpdateIceServers(iceServers),
-			mediasoupclient::Exception);
+			MediaSoupClientError);
 	}
 }

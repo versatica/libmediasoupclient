@@ -1,7 +1,7 @@
 #ifndef MSC_MEDIA_SECTION_HPP
 #define MSC_MEDIA_SECTION_HPP
 
-#include "json.hpp"
+#include <json.hpp>
 #include <string>
 
 namespace mediasoupclient

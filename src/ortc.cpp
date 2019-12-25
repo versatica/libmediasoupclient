@@ -36,7 +36,13 @@ namespace mediasoupclient
 			if (!caps.is_object())
 				MSC_THROW_TYPE_ERROR("given capapbilities is not an object");
 
-			// auto codecsIt
+			// Validate codecs.
+			auto codecsIt = caps.find("codecs");
+
+			if (codecsIt != caps.end() && !codecsIt->is_array())
+				MSC_THROW_TYPE_ERROR("codecs is not an array");
+			else if (codecsIt == caps.end())
+				caps["codecs"] = json::array();
 		}
 
 		/**

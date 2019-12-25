@@ -2,9 +2,9 @@
 #define MSC_REMOTESDP_HPP
 
 #include "sdp/MediaSection.hpp"
-#include "json.hpp"
-#include <map>
+#include <json.hpp>
 #include <string>
+#include <unordered_map>
 
 namespace mediasoupclient
 {

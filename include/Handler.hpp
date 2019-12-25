@@ -3,11 +3,9 @@
 
 #include "PeerConnection.hpp"
 #include "sdp/RemoteSdp.hpp"
-#include "json.hpp"
-#include <map>
-#include <memory>
-#include <set>
+#include <json.hpp>
 #include <string>
+#include <unordered_map>
 
 namespace mediasoupclient
 {
@@ -22,10 +20,6 @@ namespace mediasoupclient
 			  webrtc::PeerConnectionInterface::IceConnectionState connectionState) = 0;
 		};
 
-		// Methods to be implemented by child classes.
-	public:
-		virtual void RestartIce(const nlohmann::json& iceParameters) = 0;
-
 	public:
 		static nlohmann::json GetNativeRtpCapabilities(
 		  const PeerConnection::Options* peerConnectionOptions = nullptr);
@@ -38,18 +32,19 @@ namespace mediasoupclient
 		  const nlohmann::json& dtlsParameters,
 		  const PeerConnection::Options* peerConnectionOptions);
 
+	public:
+		void Close();
 		nlohmann::json GetTransportStats();
 		void UpdateIceServers(const nlohmann::json& iceServerUris);
-
-		void Close();
-
-		/* Methods inherited from PeerConnectionListener. */
-	public:
-		void OnIceConnectionChange(webrtc::PeerConnectionInterface::IceConnectionState newState) override;
+		virtual void RestartIce(const nlohmann::json& iceParameters) = 0;
 
 	protected:
 		void SetupTransport(
 		  const std::string& localDtlsRole, nlohmann::json localSdpObject = nlohmann::json::object());
+
+		/* Methods inherited from PeerConnectionListener. */
+	public:
+		void OnIceConnectionChange(webrtc::PeerConnectionInterface::IceConnectionState newState) override;
 
 	protected:
 		// PrivateListener instance.
@@ -81,6 +76,7 @@ namespace mediasoupclient
 		  const nlohmann::json& sendingRtpParametersByKind,
 		  const nlohmann::json& sendingRemoteRtpParametersByKind = nlohmann::json());
 
+	public:
 		std::pair<std::string, nlohmann::json> Send(
 		  webrtc::MediaStreamTrackInterface* track,
 		  const std::vector<webrtc::RtpEncodingParameters>* encodings,
@@ -89,9 +85,6 @@ namespace mediasoupclient
 		void ReplaceTrack(const std::string& localId, webrtc::MediaStreamTrackInterface* track);
 		void SetMaxSpatialLayer(const std::string& localId, uint8_t spatialLayer);
 		nlohmann::json GetSenderStats(const std::string& localId);
-
-		/* Methods inherided from Handler. */
-	public:
 		void RestartIce(const nlohmann::json& iceParameters) override;
 
 	private:
@@ -117,25 +110,11 @@ namespace mediasoupclient
 		  const std::string& id, const std::string& kind, const nlohmann::json* rtpParameters);
 		void StopReceiving(const std::string& localId);
 		nlohmann::json GetReceiverStats(const std::string& localId);
-
-		/* Methods inherided from Handler. */
-	public:
 		void RestartIce(const nlohmann::json& iceParameters) override;
 
+	private:
 		// MID value counter. It must be incremented for each new m= section.
 		uint32_t nextMid{ 0 };
-	};
-
-	/* Inline methods */
-
-	inline nlohmann::json Handler::GetTransportStats()
-	{
-		return this->pc->GetStats();
-	}
-
-	inline void Handler::Close()
-	{
-		this->pc->Close();
 	};
 } // namespace mediasoupclient
 

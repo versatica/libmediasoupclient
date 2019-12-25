@@ -3,17 +3,126 @@
 
 #include "Transport.hpp"
 #include "Logger.hpp"
+#include "MediaSoupClientErrors.hpp"
 #include "ortc.hpp"
-#include <string>
-#include <utility>
 
 using json = nlohmann::json;
 
 namespace mediasoupclient
 {
-	/* SendTransport static variables. */
+	/* Transport */
 
-	/* SendTransport instance methods. */
+	Transport::Transport(
+	  Listener* listener,
+	  const std::string& id,
+	  const nlohmann::json* extendedRtpCapabilities,
+	  const nlohmann::json& appData)
+	  : extendedRtpCapabilities(extendedRtpCapabilities), listener(listener), id(id), appData(appData)
+	{
+		MSC_TRACE();
+	}
+
+	const std::string& Transport::GetId() const
+	{
+		MSC_TRACE();
+
+		return this->id;
+	}
+
+	bool Transport::IsClosed() const
+	{
+		MSC_TRACE();
+
+		return this->closed;
+	}
+
+	const std::string& Transport::GetConnectionState() const
+	{
+		MSC_TRACE();
+
+		return PeerConnection::iceConnectionState2String[this->connectionState];
+	}
+
+	nlohmann::json& Transport::GetAppData()
+	{
+		MSC_TRACE();
+
+		return this->appData;
+	}
+
+	void Transport::Close()
+	{
+		MSC_TRACE();
+
+		if (this->closed)
+			return;
+
+		this->closed = true;
+
+		// Close the handler.
+		this->handler->Close();
+	}
+
+	nlohmann::json Transport::GetStats() const
+	{
+		MSC_TRACE();
+
+		if (this->closed)
+			MSC_THROW_INVALID_STATE_ERROR("Transport closed");
+		else
+			return this->handler->GetTransportStats();
+	}
+
+	void Transport::RestartIce(const nlohmann::json& iceParameters)
+	{
+		MSC_TRACE();
+
+		if (this->closed)
+			MSC_THROW_INVALID_STATE_ERROR("Transport closed");
+		else
+			return this->handler->RestartIce(iceParameters);
+	}
+
+	void Transport::UpdateIceServers(const nlohmann::json& iceServers)
+	{
+		MSC_TRACE();
+
+		if (this->closed)
+			MSC_THROW_INVALID_STATE_ERROR("Transport closed");
+		else
+			return this->handler->UpdateIceServers(iceServers);
+	}
+
+	void Transport::SetHandler(Handler* handler)
+	{
+		MSC_TRACE();
+
+		this->handler = handler;
+	}
+
+	void Transport::OnConnect(json& dtlsParameters)
+	{
+		MSC_TRACE();
+
+		if (this->closed)
+			MSC_THROW_INVALID_STATE_ERROR("Transport closed");
+
+		return this->listener->OnConnect(this, dtlsParameters).get();
+	}
+
+	void Transport::OnConnectionStateChange(
+	  webrtc::PeerConnectionInterface::IceConnectionState connectionState)
+	{
+		MSC_TRACE();
+
+		// Update connection state.
+		this->connectionState = connectionState;
+
+		return this->listener->OnConnectionStateChange(
+		  this, PeerConnection::iceConnectionState2String[connectionState]);
+	}
+
+	/* SendTransport */
 
 	SendTransport::SendTransport(
 	  Listener* listener,
@@ -54,7 +163,7 @@ namespace mediasoupclient
 	}
 
 	/*
-	 * Produce a track
+	 * Produce a track.
 	 */
 	Producer* SendTransport::Produce(
 	  Producer::Listener* producerListener,
@@ -66,19 +175,19 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (this->closed)
-			throw Exception("invalid state");
-		else if (track == nullptr)
-			throw Exception("track cannot be null");
+			MSC_THROW_INVALID_STATE_ERROR("SendTransport closed");
+		else if (!track)
+			MSC_THROW_TYPE_ERROR("missing track");
 		else if (track->state() == webrtc::MediaStreamTrackInterface::TrackState::kEnded)
-			throw Exception("track ended");
+			MSC_THROW_INVALID_STATE_ERROR("track ended");
 		else if (this->canProduceByKind->find(track->kind()) == this->canProduceByKind->end())
-			throw Exception("cannot produce track kind");
+			MSC_THROW_UNSUPPORTED_ERROR("cannot produce track kind");
 
 		std::string producerId;
 
 		std::vector<webrtc::RtpEncodingParameters> normalizedEncodings;
 
-		if (encodings != nullptr)
+		if (encodings)
 		{
 			std::for_each(
 			  encodings->begin(),
@@ -108,7 +217,7 @@ namespace mediasoupclient
 			// May throw.
 			producerId = this->listener->OnProduce(this, track->kind(), rtpParameters, appData).get();
 		}
-		catch (Exception& error)
+		catch (MediaSoupClientError& error)
 		{
 			this->handler->StopSending(localId);
 
@@ -123,18 +232,24 @@ namespace mediasoupclient
 		return producer;
 	}
 
-	/* Handler::Listener methods */
-	void Transport::OnConnect(json& dtlsParameters)
+	void SendTransport::Close()
 	{
 		MSC_TRACE();
 
 		if (this->closed)
-			throw Exception("invalid state");
+			return;
 
-		return this->listener->OnConnect(this, dtlsParameters).get();
+		Transport::Close();
+
+		// Close all Producers.
+		for (auto& kv : this->producers)
+		{
+			auto* producer = kv.second;
+
+			producer->TransportClosed();
+		}
 	}
 
-	/* Producer::Listener methods */
 	void SendTransport::OnClose(Producer* producer)
 	{
 		MSC_TRACE();
@@ -167,12 +282,12 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (this->closed)
-			throw Exception("invalid state");
+			MSC_THROW_INVALID_STATE_ERROR("SendTransport closed");
 
 		return this->handler->GetSenderStats(producer->GetLocalId());
 	}
 
-	/* RecvTransport instance methods. */
+	/* RecvTransport */
 
 	RecvTransport::RecvTransport(
 	  Listener* listener,
@@ -206,23 +321,20 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		// Check if the track is a null pointer.
 		if (this->closed)
-			throw Exception("invalid state");
-
-		// RTP parameters cannot be null.
-		if (rtpParameters == nullptr)
-			throw Exception("rtpParameters cannot be null");
-
-		// App data must be a json object.
-		if (!appData.is_object())
-			throw Exception("appData must be a JSON object");
-
-		// Ensure the device can consume it.
-		auto canConsume = ortc::canReceive(*rtpParameters, *this->extendedRtpCapabilities);
-
-		if (!canConsume)
-			throw Exception("cannot consume this Producer");
+			MSC_THROW_INVALID_STATE_ERROR("RecvTransport closed");
+		else if (id.empty())
+			MSC_THROW_TYPE_ERROR("missing id");
+		else if (producerId.empty())
+			MSC_THROW_TYPE_ERROR("missing producerId");
+		else if (kind != "audio" && kind != "video")
+			MSC_THROW_TYPE_ERROR("invalid kind");
+		else if (!rtpParameters)
+			MSC_THROW_TYPE_ERROR("missing rtpParameters");
+		else if (!appData.is_object())
+			MSC_THROW_TYPE_ERROR("appData must be a JSON object");
+		else if (!ortc::canReceive(*rtpParameters, *this->extendedRtpCapabilities))
+			MSC_THROW_UNSUPPORTED_ERROR("cannot consume this Producer");
 
 		// May throw.
 		auto result = this->handler->Receive(id, kind, rtpParameters);
@@ -238,7 +350,24 @@ namespace mediasoupclient
 		return consumer;
 	}
 
-	/* Consumer::Listener methods */
+	void RecvTransport::Close()
+	{
+		MSC_TRACE();
+
+		if (this->closed)
+			return;
+
+		Transport::Close();
+
+		// Close all Producers.
+		for (auto& kv : this->consumers)
+		{
+			auto* consumer = kv.second;
+
+			consumer->TransportClosed();
+		}
+	}
+
 	void RecvTransport::OnClose(Consumer* consumer)
 	{
 		MSC_TRACE();
@@ -257,7 +386,7 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (this->closed)
-			throw Exception("invalid state");
+			MSC_THROW_INVALID_STATE_ERROR("RecvTransport closed");
 
 		return this->handler->GetReceiverStats(consumer->GetLocalId());
 	}

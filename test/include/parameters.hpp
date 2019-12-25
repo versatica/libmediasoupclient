@@ -1,7 +1,7 @@
 #ifndef MSC_TEST_PARAMETERS
 #define MSC_TEST_PARAMETERS
 
-#include "json.hpp"
+#include <json.hpp>
 
 using json = nlohmann::json;
 

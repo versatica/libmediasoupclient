@@ -37,7 +37,7 @@ namespace mediasoupclient
 	 * TODO: Tons of debug logs here are missing.
 	 * Initialize the Device.
 	 */
-	void Device::Load(const json& routerRtpCapabilities, const PeerConnection::Options* peerConnectionOptions)
+	void Device::Load(json routerRtpCapabilities, const PeerConnection::Options* peerConnectionOptions)
 	{
 		MSC_TRACE();
 
@@ -45,7 +45,7 @@ namespace mediasoupclient
 			MSC_THROW_INVALID_STATE_ERROR("already loaded");
 
 		// This may throw.
-		ortc.validateRtpCapabilities(routerRtpCapabilities);
+		ortc::validateRtpCapabilities(routerRtpCapabilities);
 
 		// Get Native RTP capabilities.
 		auto nativeRtpCapabilities = Handler::GetNativeRtpCapabilities(peerConnectionOptions);

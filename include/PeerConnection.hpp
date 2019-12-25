@@ -1,10 +1,9 @@
 #ifndef MSC_PEERCONNECTION_HPP
 #define MSC_PEERCONNECTION_HPP
 
-#include "Exception.hpp"
-#include "json.hpp"
-#include "api/peer_connection_interface.h"
+#include <api/peer_connection_interface.h>
 #include <future> // std::promise, std::future
+#include <json.hpp>
 #include <memory> // std::unique_ptr
 
 namespace mediasoupclient
@@ -112,6 +111,7 @@ namespace mediasoupclient
 		PeerConnection(PrivateListener* privateListener, const Options* options);
 		~PeerConnection() = default;
 
+		void Close();
 		webrtc::PeerConnectionInterface::RTCConfiguration GetConfiguration() const;
 		bool SetConfiguration(const webrtc::PeerConnectionInterface::RTCConfiguration& config);
 		std::string CreateOffer(const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions& options);
@@ -124,7 +124,6 @@ namespace mediasoupclient
 		rtc::scoped_refptr<webrtc::RtpTransceiverInterface> AddTransceiver(cricket::MediaType mediaType);
 		rtc::scoped_refptr<webrtc::RtpTransceiverInterface> AddTransceiver(
 		  rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track);
-		void Close();
 		std::vector<rtc::scoped_refptr<webrtc::RtpSenderInterface>> GetSenders();
 		bool RemoveTrack(webrtc::RtpSenderInterface* sender);
 		nlohmann::json GetStats();
@@ -142,90 +141,6 @@ namespace mediasoupclient
 		// PeerConnection instance.
 		rtc::scoped_refptr<webrtc::PeerConnectionInterface> pc;
 	};
-
-	/* Inline methods */
-
-	inline webrtc::PeerConnectionInterface::RTCConfiguration PeerConnection::GetConfiguration() const
-	{
-		return this->pc->GetConfiguration();
-	}
-
-	inline std::vector<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>> PeerConnection::GetTransceivers() const
-	{
-		return this->pc->GetTransceivers();
-	}
-
-	inline std::vector<rtc::scoped_refptr<webrtc::RtpSenderInterface>> PeerConnection::GetSenders()
-	{
-		return this->pc->GetSenders();
-	}
-
-	inline bool PeerConnection::RemoveTrack(webrtc::RtpSenderInterface* sender)
-	{
-		return this->pc->RemoveTrack(sender);
-	}
-
-	inline void PeerConnection::Close()
-	{
-		this->pc->Close();
-	}
-
-	/* SetSessionDescriptionObserver inline methods */
-
-	inline std::future<void> PeerConnection::SetSessionDescriptionObserver::GetFuture()
-	{
-		return this->promise.get_future();
-	}
-
-	inline void PeerConnection::SetSessionDescriptionObserver::Reject(const std::string& error)
-	{
-		this->promise.set_exception(std::make_exception_ptr(Exception(error)));
-	}
-
-	inline void PeerConnection::SetSessionDescriptionObserver::OnSuccess()
-	{
-		this->promise.set_value();
-	};
-
-	/* CreateSessionDescriptionObserver inline methods */
-
-	inline std::future<std::string> PeerConnection::CreateSessionDescriptionObserver::GetFuture()
-	{
-		return this->promise.get_future();
-	}
-
-	inline void PeerConnection::CreateSessionDescriptionObserver::Reject(const std::string& error)
-	{
-		this->promise.set_exception(std::make_exception_ptr(Exception(error)));
-	}
-
-	inline void PeerConnection::CreateSessionDescriptionObserver::OnSuccess(
-	  webrtc::SessionDescriptionInterface* desc)
-	{
-		std::string sdp;
-
-		desc->ToString(&sdp);
-		this->promise.set_value(sdp);
-	};
-
-	/* RTCStatsCollectorCallback inline methods */
-
-	inline void PeerConnection::RTCStatsCollectorCallback::OnStatsDelivered(
-	  const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report)
-	{
-		std::string s = report->ToJson();
-
-		// RtpReceiver stats JSON string is sometimes empty.
-		if (s.empty())
-			this->promise.set_value(nlohmann::json::array());
-		else
-			this->promise.set_value(nlohmann::json::parse(s));
-	};
-
-	inline std::future<nlohmann::json> PeerConnection::RTCStatsCollectorCallback::GetFuture()
-	{
-		return this->promise.get_future();
-	}
 } // namespace mediasoupclient
 
 #endif

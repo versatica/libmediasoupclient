@@ -2,19 +2,17 @@
 // #define MSC_LOG_DEV
 
 #include "Handler.hpp"
-#include "Exception.hpp"
 #include "Logger.hpp"
+#include "MediaSoupClientErrors.hpp"
 #include "PeerConnection.hpp"
 #include "sdp/Utils.hpp"
 #include "sdptransform.hpp"
-#include <list>
-#include <utility>
 
 using json = nlohmann::json;
 
 namespace mediasoupclient
 {
-	/* Handler static methods */
+	/* Handler static methods. */
 
 	json Handler::GetNativeRtpCapabilities(const PeerConnection::Options* peerConnectionOptions)
 	{
@@ -38,7 +36,7 @@ namespace mediasoupclient
 		return nativeRtpCapabilities;
 	}
 
-	/* Handler instance methods */
+	/* Handler instance methods. */
 
 	Handler::Handler(
 	  PrivateListener* privateListener,
@@ -54,6 +52,20 @@ namespace mediasoupclient
 
 		this->remoteSdp.reset(new Sdp::RemoteSdp(iceParameters, iceCandidates, dtlsParameters));
 	};
+
+	void Handler::Close()
+	{
+		MSC_TRACE();
+
+		this->pc->Close();
+	};
+
+	nlohmann::json Handler::GetTransportStats()
+	{
+		MSC_TRACE();
+
+		return this->pc->GetStats();
+	}
 
 	void Handler::UpdateIceServers(const json& iceServerUris)
 	{
@@ -71,11 +83,13 @@ namespace mediasoupclient
 		if (this->pc->SetConfiguration(configuration))
 			return;
 
-		throw Exception("UpdateIceServers() failed");
+		MSC_THROW_ERROR("failed");
 	};
 
 	void Handler::OnIceConnectionChange(webrtc::PeerConnectionInterface::IceConnectionState newState)
 	{
+		MSC_TRACE();
+
 		return this->privateListener->OnConnectionStateChange(newState);
 	}
 
@@ -100,7 +114,7 @@ namespace mediasoupclient
 		this->transportReady = true;
 	};
 
-	/* SendHandler methods */
+	/* SendHandler instance methods. */
 
 	SendHandler::SendHandler(
 	  Handler::PrivateListener* privateListener,
@@ -127,8 +141,8 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		// Check if the track is a null pointer.
-		if (track == nullptr)
-			throw Exception("track cannot be null");
+		if (!track)
+			MSC_THROW_TYPE_ERROR("missing track");
 
 		MSC_DEBUG("[kind:%s, track.id:%s]", track->kind().c_str(), track->id().c_str());
 
@@ -136,8 +150,8 @@ namespace mediasoupclient
 		// Once the issue is solved, no SDP will be required to enable simulcast.
 		webrtc::RtpTransceiverInterface* transceiver = this->pc->AddTransceiver(track);
 
-		if (transceiver == nullptr)
-			throw Exception("error creating transceiver");
+		if (!transceiver)
+			MSC_THROW_ERROR("error creating transceiver");
 
 		transceiver->SetDirection(webrtc::RtpTransceiverDirection::kSendOnly);
 
@@ -179,7 +193,7 @@ namespace mediasoupclient
 			// Set MID.
 			sendingRtpParameters["mid"] = localId;
 		}
-		catch (Exception& error)
+		catch (std::exception& error)
 		{
 			// Panic here. Try to undo things.
 			transceiver->SetDirection(webrtc::RtpTransceiverDirection::kInactive);
@@ -196,47 +210,40 @@ namespace mediasoupclient
 		json& offerMediaObject = localSdpObject["media"][numMediaSection - 1];
 
 		// Set RTCP CNAME.
-		try
-		{
-			sendingRtpParameters["rtcp"]["cname"] = Sdp::Utils::getCname(offerMediaObject);
+		sendingRtpParameters["rtcp"]["cname"] = Sdp::Utils::getCname(offerMediaObject);
 
-			// Set RTP encodings.
-			sendingRtpParameters["encodings"] = Sdp::Utils::getRtpEncodings(offerMediaObject);
+		// Set RTP encodings.
+		sendingRtpParameters["encodings"] = Sdp::Utils::getRtpEncodings(offerMediaObject);
 
-			// If VP8 and there is effective simulcast, add scalabilityMode to each encoding.
-			auto mimeType = sendingRtpParameters["codecs"][0]["mimeType"].get<std::string>();
+		// If VP8 and there is effective simulcast, add scalabilityMode to each encoding.
+		auto mimeType = sendingRtpParameters["codecs"][0]["mimeType"].get<std::string>();
 
-			std::transform(mimeType.begin(), mimeType.end(), mimeType.begin(), ::tolower);
+		std::transform(mimeType.begin(), mimeType.end(), mimeType.begin(), ::tolower);
 
-			// clang-format off
+		// clang-format off
 		if (
 			sendingRtpParameters["encodings"].size() > 1 &&
 			(mimeType == "video/vp8" || mimeType == "video/h264")
 		)
-			// clang-format on
-			{
-				for (auto& encoding : sendingRtpParameters["encodings"])
-				{
-					encoding["scalabilityMode"] = "S1T3";
-				}
-			}
-
-			this->remoteSdp->Send(
-			  offerMediaObject,
-			  sendingRtpParameters,
-			  this->sendingRemoteRtpParametersByKind[track->kind()],
-			  codecOptions);
-
-			auto answer = this->remoteSdp->GetSdp();
-
-			MSC_DEBUG("calling pc->SetRemoteDescription() [answer:%s]", answer.c_str());
-
-			this->pc->SetRemoteDescription(PeerConnection::SdpType::ANSWER, answer);
-		}
-		catch (Exception& error)
+		// clang-format on
 		{
-			throw;
+			for (auto& encoding : sendingRtpParameters["encodings"])
+			{
+				encoding["scalabilityMode"] = "S1T3";
+			}
 		}
+
+		this->remoteSdp->Send(
+		  offerMediaObject,
+		  sendingRtpParameters,
+		  this->sendingRemoteRtpParametersByKind[track->kind()],
+		  codecOptions);
+
+		auto answer = this->remoteSdp->GetSdp();
+
+		MSC_DEBUG("calling pc->SetRemoteDescription() [answer:%s]", answer.c_str());
+
+		this->pc->SetRemoteDescription(PeerConnection::SdpType::ANSWER, answer);
 
 		// Store in the map.
 		this->mapMidTransceiver[localId] = transceiver;
@@ -251,8 +258,9 @@ namespace mediasoupclient
 		MSC_DEBUG("[localId:%s]", localId.c_str());
 
 		auto jsonLocaIdIt = this->mapMidTransceiver.find(localId);
+
 		if (jsonLocaIdIt == this->mapMidTransceiver.end())
-			throw Exception("associated RtpTransceiver not found");
+			MSC_THROW_ERROR("associated RtpTransceiver not found");
 
 		auto* transceiver = jsonLocaIdIt->second;
 
@@ -289,8 +297,9 @@ namespace mediasoupclient
 		  track == nullptr ? "nullptr" : track->id().c_str());
 
 		auto jsonLocalIdIt = this->mapMidTransceiver.find(localId);
+
 		if (jsonLocalIdIt == this->mapMidTransceiver.end())
-			throw Exception("associated RtpTransceiver not found");
+			MSC_THROW_ERROR("associated RtpTransceiver not found");
 
 		auto* transceiver = jsonLocalIdIt->second;
 
@@ -304,14 +313,17 @@ namespace mediasoupclient
 		MSC_DEBUG("[localId:%s, spatialLayer:%d]", localId.c_str(), spatialLayer);
 
 		auto jsonLocalIdIt = this->mapMidTransceiver.find(localId);
+
 		if (jsonLocalIdIt == this->mapMidTransceiver.end())
-			throw Exception("associated RtpTransceiver not found");
+			MSC_THROW_ERROR("associated RtpTransceiver not found");
 
 		auto* transceiver = jsonLocalIdIt->second;
 		auto parameters   = transceiver->sender()->GetParameters();
 
 		bool hasLowEncoding{ false }, hasMediumEncoding{ false }, hasHighEncoding{ false };
-		webrtc::RtpEncodingParameters *lowEncoding, *mediumEncoding, *highEncoding;
+		webrtc::RtpEncodingParameters* lowEncoding{ nullptr };
+		webrtc::RtpEncodingParameters* mediumEncoding{ nullptr };
+		webrtc::RtpEncodingParameters* highEncoding{ nullptr };
 
 		if (!parameters.encodings.empty())
 		{
@@ -354,8 +366,9 @@ namespace mediasoupclient
 		}
 
 		auto result = transceiver->sender()->SetParameters(parameters);
+
 		if (!result.ok())
-			throw Exception(result.message());
+			MSC_THROW_ERROR("%s", result.message());
 	}
 
 	json SendHandler::GetSenderStats(const std::string& localId)
@@ -365,8 +378,9 @@ namespace mediasoupclient
 		MSC_DEBUG("[localId:%s]", localId.c_str());
 
 		auto jsonLocalIdIt = this->mapMidTransceiver.find(localId);
+
 		if (jsonLocalIdIt == this->mapMidTransceiver.end())
-			throw Exception("associated RtpTransceiver not found");
+			MSC_THROW_ERROR("associated RtpTransceiver not found");
 
 		auto* transceiver = jsonLocalIdIt->second;
 		auto stats        = this->pc->GetStats(transceiver->sender());
@@ -433,42 +447,34 @@ namespace mediasoupclient
 
 		MSC_DEBUG("calling pc->setRemoteDescription() [offer:%s]", offer.c_str());
 
-		try
-		{
-			// May throw.
-			this->pc->SetRemoteDescription(PeerConnection::SdpType::OFFER, offer);
+		// May throw.
+		this->pc->SetRemoteDescription(PeerConnection::SdpType::OFFER, offer);
 
-			webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
+		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
 
-			// May throw.
-			auto answer = this->pc->CreateAnswer(options);
+		// May throw.
+		auto answer         = this->pc->CreateAnswer(options);
+		auto localSdpObject = sdptransform::parse(answer);
+		auto jsonMediaIt    = find_if(
+      localSdpObject["media"].begin(), localSdpObject["media"].end(), [&localId](const json& m) {
+        return m["mid"].get<std::string>() == localId;
+      });
 
-			auto localSdpObject = sdptransform::parse(answer);
-			auto jsonMediaIt    = find_if(
-        localSdpObject["media"].begin(), localSdpObject["media"].end(), [&localId](const json& m) {
-          return m["mid"].get<std::string>() == localId;
-        });
+		auto& answerMediaObject = *jsonMediaIt;
 
-			auto& answerMediaObject = *jsonMediaIt;
+		// May need to modify codec parameters in the answer based on codec
+		// parameters in the offer.
+		Sdp::Utils::applyCodecParameters(*rtpParameters, answerMediaObject);
 
-			// May need to modify codec parameters in the answer based on codec
-			// parameters in the offer.
-			Sdp::Utils::applyCodecParameters(*rtpParameters, answerMediaObject);
+		answer = sdptransform::write(localSdpObject);
 
-			answer = sdptransform::write(localSdpObject);
+		if (!this->transportReady)
+			this->SetupTransport("client", localSdpObject);
 
-			if (!this->transportReady)
-				this->SetupTransport("client", localSdpObject);
+		MSC_DEBUG("calling pc->SetLocalDescription() [answer:%s]", answer.c_str());
 
-			MSC_DEBUG("calling pc->SetLocalDescription() [answer:%s]", answer.c_str());
-
-			// May throw.
-			this->pc->SetLocalDescription(PeerConnection::SdpType::ANSWER, answer);
-		}
-		catch (Exception& error)
-		{
-			throw;
-		}
+		// May throw.
+		this->pc->SetLocalDescription(PeerConnection::SdpType::ANSWER, answer);
 
 		auto transceivers  = this->pc->GetTransceivers();
 		auto transceiverIt = std::find_if(
@@ -477,7 +483,7 @@ namespace mediasoupclient
 		  });
 
 		if (transceiverIt == transceivers.end())
-			throw Exception("new RTCRtpTransceiver not found");
+			MSC_THROW_ERROR("new RTCRtpTransceiver not found");
 
 		auto& transceiver = *transceiverIt;
 
@@ -497,8 +503,9 @@ namespace mediasoupclient
 		MSC_DEBUG("[localId:%s]", localId.c_str());
 
 		auto jsonLocalIdIt = this->mapMidTransceiver.find(localId);
+
 		if (jsonLocalIdIt == this->mapMidTransceiver.end())
-			throw Exception("associated RtpTransceiver not found");
+			MSC_THROW_ERROR("associated RtpTransceiver not found");
 
 		auto& transceiver = jsonLocalIdIt->second;
 
@@ -531,8 +538,9 @@ namespace mediasoupclient
 		MSC_DEBUG("[localId:%s]", localId.c_str());
 
 		auto jsonLocalIdIt = this->mapMidTransceiver.find(localId);
+
 		if (jsonLocalIdIt == this->mapMidTransceiver.end())
-			throw Exception("associated RtpTransceiver not found");
+			MSC_THROW_ERROR("associated RtpTransceiver not found");
 
 		auto& transceiver = jsonLocalIdIt->second;
 

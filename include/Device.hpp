@@ -3,7 +3,7 @@
 
 #include "Handler.hpp"
 #include "Transport.hpp"
-#include "json.hpp"
+#include <json.hpp>
 #include <map>
 #include <string>
 
@@ -18,7 +18,7 @@ namespace mediasoupclient
 		bool IsLoaded() const;
 		const nlohmann::json& GetRtpCapabilities() const;
 		void Load(
-		  const nlohmann::json& routerRtpCapabilities,
+		  nlohmann::json routerRtpCapabilities,
 		  const PeerConnection::Options* peerConnectionOptions = nullptr);
 		bool CanProduce(const std::string& kind);
 		SendTransport* CreateSendTransport(

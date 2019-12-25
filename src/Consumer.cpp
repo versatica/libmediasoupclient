@@ -80,7 +80,7 @@ namespace mediasoupclient
 		return !this->track->enabled();
 	}
 
-	inline json& Consumer::GetAppData()
+	json& Consumer::GetAppData()
 	{
 		MSC_TRACE();
 

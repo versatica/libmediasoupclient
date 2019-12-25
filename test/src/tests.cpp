@@ -2,8 +2,8 @@
 
 #include "Logger.hpp"
 #include "PeerConnection.hpp"
-#include "catch.hpp"
 #include "mediasoupclient.hpp"
+#include <catch.hpp>
 
 int main(int argc, char* argv[])
 {

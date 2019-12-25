@@ -1,7 +1,7 @@
 #ifndef MSC_ORTC_HPP
 #define MSC_ORTC_HPP
 
-#include "json.hpp"
+#include <json.hpp>
 #include <string>
 
 namespace mediasoupclient

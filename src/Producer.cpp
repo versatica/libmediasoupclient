@@ -102,10 +102,10 @@ namespace mediasoupclient
 		this->privateListener->OnClose(this);
 	}
 
-	json Consumer::GetStats() const
+	json Producer::GetStats() const
 	{
 		if (this->closed)
-			MSC_THROW_INVALID_STATE_ERROR("Consumer closed");
+			MSC_THROW_INVALID_STATE_ERROR("Producer closed");
 
 		return this->privateListener->OnGetStats(this);
 	}
@@ -161,7 +161,7 @@ namespace mediasoupclient
 		// Do nothing if this is the same track as the current handled one.
 		if (track == this->track)
 		{
-			MSC_DEBUG('ReplaceTrack() | same track, ignored');
+			MSC_DEBUG("same track, ignored");
 
 			return;
 		}
@@ -169,12 +169,15 @@ namespace mediasoupclient
 		// May throw.
 		this->privateListener->OnReplaceTrack(this, track);
 
+		// Keep current paused state.
+		auto paused = IsPaused();
+
 		// Set the new track.
 		this->track = track;
 
 		// If this Producer was paused/resumed and the state of the new
 		// track does not match, fix it.
-		if (!IsPaused())
+		if (!paused)
 			this->track->set_enabled(true);
 		else
 			this->track->set_enabled(false);

@@ -2,11 +2,9 @@
 // #define MSC_LOG_DEV
 
 #include "sdp/RemoteSdp.hpp"
-#include "Exception.hpp"
 #include "Logger.hpp"
 #include "Utils.hpp"
 #include "sdptransform.hpp"
-#include <utility>
 
 using json = nlohmann::json;
 
@@ -20,43 +18,43 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		/* clang-format off */
-	this->sdpObject =
-	{
-		{ "id",      Utils::getRandomInteger(1000, 1000000) },
-		{ "version", 0 },
-		{ "origin",
-			{
-				{ "address",        "0.0.0.0"                        },
-				{ "ipVer",          4                                },
-				{ "netType",        "IN"                             },
-				{ "sessionId",      10000                            },
-				{ "sessionVersion", 0                                },
-				{ "username",       "libmediasoupclient"             }
-			}
-		},
-		{ "name", "-" },
-	  { "timing",
-			{
-				{ "start", 0 },
-				{ "stop",  0 }
-			}
-		},
-		{ "media", json::array() }
-	};
-		/* clang-format on */
+		// clang-format off
+		this->sdpObject =
+		{
+			{ "id",      Utils::getRandomInteger(1000, 1000000) },
+			{ "version", 0 },
+			{ "origin",
+				{
+					{ "address",        "0.0.0.0"                        },
+					{ "ipVer",          4                                },
+					{ "netType",        "IN"                             },
+					{ "sessionId",      10000                            },
+					{ "sessionVersion", 0                                },
+					{ "username",       "libmediasoupclient"             }
+				}
+			},
+			{ "name", "-" },
+		  { "timing",
+				{
+					{ "start", 0 },
+					{ "stop",  0 }
+				}
+			},
+			{ "media", json::array() }
+		};
+		// clang-format on
 
 		// If ICE parameters are given, add ICE-Lite indicator.
 		if (this->iceParameters.find("iceLite") != this->iceParameters.end())
 			this->sdpObject["icelite"] = "ice-lite";
 
-		/* clang-format off */
-	this->sdpObject["msidSemantic"] =
-	{
-		{ "semantic", "WMS" },
-		{ "token",    "*"   }
-	};
-		/* clang-format on */
+		// clang-format off
+		this->sdpObject["msidSemantic"] =
+		{
+			{ "semantic", "WMS" },
+			{ "token",    "*"   }
+		};
+		// clang-format on
 
 		// NOTE: We take the latest fingerprint.
 		auto numFingerprints = this->dtlsParameters["fingerprints"].size();
@@ -66,15 +64,15 @@ namespace mediasoupclient
 			{ "hash", this->dtlsParameters.at("fingerprints")[numFingerprints - 1]["value"] }
 		};
 
-		/* clang-format off */
-	this->sdpObject["groups"] =
-	{
+		// clang-format off
+		this->sdpObject["groups"] =
 		{
-			{ "type", "BUNDLE" },
-			{ "mids", ""       }
-		}
-	};
-		/* clang-format on */
+			{
+				{ "type", "BUNDLE" },
+				{ "mids", ""       }
+			}
+		};
+		// clang-format on
 	}
 
 	void Sdp::RemoteSdp::UpdateIceParameters(const json& iceParameters)
@@ -158,6 +156,7 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		// TODO: Should check that mediaSections.find(mid) exists.
+		// TODO: Should also really serialize the SDP with a=inactive!
 
 		auto* mediaSection = this->mediaSections[mid];
 
@@ -170,6 +169,7 @@ namespace mediasoupclient
 
 		// Increase SDP version.
 		auto version = this->sdpObject["origin"]["sessionVersion"].get<uint32_t>();
+
 		this->sdpObject["origin"]["sessionVersion"] = ++version;
 
 		return sdptransform::write(this->sdpObject);

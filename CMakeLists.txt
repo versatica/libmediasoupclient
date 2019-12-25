@@ -63,15 +63,29 @@ set(
 	src/Device.cpp
 	src/Handler.cpp
 	src/Logger.cpp
-	src/mediasoupclient.cpp
 	src/PeerConnection.cpp
 	src/Producer.cpp
 	src/Transport.cpp
+	src/mediasoupclient.cpp
 	src/ortc.cpp
 	src/scalabilityMode.cpp
 	src/sdp/MediaSection.cpp
 	src/sdp/RemoteSdp.cpp
 	src/sdp/Utils.cpp
+	include/Consumer.hpp
+	include/Device.hpp
+	include/Handler.hpp
+	include/Logger.hpp
+	include/MediaSoupClientErrors.hpp
+	include/PeerConnection.hpp
+	include/Producer.hpp
+	include/Transport.hpp
+	include/mediasoupclient.hpp
+	include/ortc.hpp
+	include/scalabilityMode.hpp
+	include/sdp/MediaSection.hpp
+	include/sdp/RemoteSdp.hpp
+	include/sdp/Utils.hpp
 )
 
 # Create target.

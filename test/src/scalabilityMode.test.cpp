@@ -1,6 +1,5 @@
-#include "Exception.hpp"
-#include "catch.hpp"
 #include "scalabilityMode.hpp"
+#include <catch.hpp>
 
 TEST_CASE("scalabilityMode", "[scalabilityMode]")
 {

@@ -1,6 +1,6 @@
-#include "catch.hpp"
 #include "helpers.hpp"
 #include "sdp/Utils.hpp"
+#include <catch.hpp>
 
 TEST_CASE("Sdp::Utils", "[Sdp][Utils]")
 {

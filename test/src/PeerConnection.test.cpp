@@ -1,8 +1,8 @@
-#include "Exception.hpp"
+#include "MediaSoupClientErrors.hpp"
 #include "PeerConnection.hpp"
-#include "catch.hpp"
 #include "helpers.hpp"
 #include "sdp/Utils.hpp"
+#include <catch.hpp>
 
 TEST_CASE("PeerConnection", "[PeerConnection]")
 {
@@ -52,7 +52,7 @@ TEST_CASE("PeerConnection", "[PeerConnection]")
 	{
 		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
 
-		REQUIRE_THROWS_AS(pc.CreateAnswer(options), mediasoupclient::Exception);
+		REQUIRE_THROWS_AS(pc.CreateAnswer(options), MediaSoupClientError);
 	}
 
 	SECTION("'pc.SetRemoteDescription()' fails if incorrect SDP is provided")
@@ -61,7 +61,7 @@ TEST_CASE("PeerConnection", "[PeerConnection]")
 
 		REQUIRE_THROWS_AS(
 		  pc.SetLocalDescription(mediasoupclient::PeerConnection::SdpType::OFFER, sdp),
-		  mediasoupclient::Exception);
+		  MediaSoupClientError);
 	}
 
 	SECTION("'pc.SetRemoteDescription()' succeeds if correct SDP is provided")

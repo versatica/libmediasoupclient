@@ -1,6 +1,6 @@
 #include "parameters.hpp"
 #include "Utils.hpp"
-#include "json.hpp"
+#include <json.hpp>
 #include <string>
 
 json generateRouterRtpCapabilities()

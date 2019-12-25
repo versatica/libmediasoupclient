@@ -2,8 +2,8 @@
 // #define MSC_LOG_DEV
 
 #include "ortc.hpp"
-#include "Exception.hpp"
 #include "Logger.hpp"
+#include "MediaSoupClientErrors.hpp"
 #include "media/base/h264_profile_level_id.h"
 #include <algorithm> // std::find_if
 #include <regex>
@@ -26,6 +26,27 @@ namespace mediasoupclient
 {
 	namespace ortc
 	{
+		/**
+		 * Validates given RTCRtpCapabilities. It throws otherwise.
+		 */
+		void validateRtpCapabilities(json& caps)
+		{
+			MSC_TRACE();
+
+			if (!caps.is_object())
+				MSC_THROW_TYPE_ERROR("given capapbilities is not an object");
+
+			// auto codecsIt
+		}
+
+		/**
+		 * Validates given RTCRtpParameters. It throws otherwise.
+		 */
+		void validateRtpParameters(json& params)
+		{
+			MSC_TRACE();
+		}
+
 		/**
 		 * Generate extended RTP capabilities for sending and receiving.
 		 */
@@ -60,7 +81,7 @@ namespace mediasoupclient
 					)
 					// clang-format on
 					{
-						throw Exception("invalid remote capabilitiy codec");
+						MSC_THROW_TYPE_ERROR("invalid remote capabilitiy codec");
 					}
 
 					std::smatch match;
@@ -68,7 +89,7 @@ namespace mediasoupclient
 
 					if (!std::regex_match(mimeType, match, MimeTypeRegex))
 					{
-						throw Exception("invalid remote capabilitiy codec");
+						MSC_THROW_TYPE_ERROR("invalid remote capabilitiy codec");
 					}
 
 					if (isRtxCodec(remoteCodec))

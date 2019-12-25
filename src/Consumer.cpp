@@ -2,11 +2,8 @@
 // #define MSC_LOG_DEV
 
 #include "Consumer.hpp"
-
-#include "Exception.hpp"
 #include "Logger.hpp"
-#include "Utils.hpp"
-#include <utility>
+#include "MediaSoupClientErrors.hpp"
 
 using json = nlohmann::json;
 
@@ -27,6 +24,69 @@ namespace mediasoupclient
 		MSC_TRACE();
 	}
 
+	const std::string& Consumer::GetId() const
+	{
+		MSC_TRACE();
+
+		return this->id;
+	}
+
+	const std::string& Consumer::GetLocalId() const
+	{
+		MSC_TRACE();
+
+		return this->localId;
+	}
+
+	const std::string& Consumer::GetProducerId() const
+	{
+		MSC_TRACE();
+
+		return this->producerId;
+	}
+
+	bool Consumer::IsClosed() const
+	{
+		MSC_TRACE();
+
+		return this->closed;
+	}
+
+	const std::string Consumer::GetKind() const
+	{
+		MSC_TRACE();
+
+		return this->track->kind();
+	}
+
+	webrtc::MediaStreamTrackInterface* Consumer::GetTrack() const
+	{
+		MSC_TRACE();
+
+		return this->track;
+	}
+
+	const nlohmann::json& Consumer::GetRtpParameters() const
+	{
+		MSC_TRACE();
+
+		return this->rtpParameters;
+	}
+
+	bool Consumer::IsPaused() const
+	{
+		MSC_TRACE();
+
+		return !this->track->enabled();
+	}
+
+	inline json& Consumer::GetAppData()
+	{
+		MSC_TRACE();
+
+		return this->appData;
+	}
+
 	/**
 	 * Closes the Consumer.
 	 */
@@ -42,19 +102,12 @@ namespace mediasoupclient
 		this->privateListener->OnClose(this);
 	}
 
-	/**
-	 * Transport was closed.
-	 */
-	void Consumer::TransportClosed()
+	json Consumer::GetStats() const
 	{
-		MSC_TRACE();
-
 		if (this->closed)
-			return;
+			MSC_THROW_INVALID_STATE_ERROR("Consumer closed");
 
-		this->closed = true;
-
-		this->listener->OnTransportClose(this);
+		return this->privateListener->OnGetStats(this);
 	}
 
 	/**
@@ -65,7 +118,11 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (this->closed)
+		{
+			MSC_ERROR("Consumer closed");
+
 			return;
+		}
 
 		this->track->set_enabled(false);
 	}
@@ -79,11 +136,26 @@ namespace mediasoupclient
 
 		if (this->closed)
 		{
-			MSC_ERROR("consumer closed");
+			MSC_ERROR("Consumer closed");
 
 			return;
 		}
 
 		this->track->set_enabled(true);
+	}
+
+	/**
+	 * Transport was closed.
+	 */
+	void Consumer::TransportClosed()
+	{
+		MSC_TRACE();
+
+		if (this->closed)
+			return;
+
+		this->closed = true;
+
+		this->listener->OnTransportClose(this);
 	}
 } // namespace mediasoupclient

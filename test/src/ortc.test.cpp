@@ -4,7 +4,11 @@
 
 using namespace mediasoupclient;
 
-TEST_CASE("GetExtendedCapabilities", "[ortc][GetExtendedCapabilities]")
+TEST_CASE("validateRtpCapabilities", "[ortc][validateRtpCapabilities]")
+{
+}
+
+TEST_CASE("getExtendedCapabilities", "[ortc][getExtendedCapabilities]")
 {
 	SECTION("succeeds if localCaps equals remoteCaps")
 	{
@@ -54,7 +58,7 @@ TEST_CASE("GetExtendedCapabilities", "[ortc][GetExtendedCapabilities]")
 	}
 }
 
-TEST_CASE("GetRecvRtpCapabilities", "[GetRecvRtpCapabilities]")
+TEST_CASE("getRecvRtpCapabilities", "[getRecvRtpCapabilities]")
 {
 	SECTION("succeeds if localCaps equals remoteCaps")
 	{
@@ -98,7 +102,7 @@ TEST_CASE("GetRecvRtpCapabilities", "[GetRecvRtpCapabilities]")
 	}
 }
 
-TEST_CASE("GetSendingRtpParameters", "[GetSendingRtpParameters]")
+TEST_CASE("getSendingRtpParameters", "[getSendingRtpParameters]")
 {
 	SECTION("succeeds if localCaps equals remoteCaps")
 	{

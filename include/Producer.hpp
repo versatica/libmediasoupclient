@@ -1,7 +1,6 @@
 #ifndef MSC_PRODUCER_HPP
 #define MSC_PRODUCER_HPP
 
-#include "Exception.hpp"
 #include "json.hpp"
 #include "api/media_stream_interface.h" // MediaStreamTrackInterface
 #include <string>
@@ -32,25 +31,6 @@ namespace mediasoupclient
 			virtual void OnTransportClose(Producer* producer) = 0;
 		};
 
-	public:
-		const std::string& GetId() const;
-		const std::string& GetLocalId() const;
-		std::string GetKind() const;
-		webrtc::MediaStreamTrackInterface* GetTrack() const;
-		const nlohmann::json& GetRtpParameters() const;
-		uint8_t GetMaxSpatialLayer() const;
-		nlohmann::json& GetAppData();
-		nlohmann::json GetStats() const;
-
-		bool IsClosed() const;
-		bool IsPaused() const;
-
-		void Close();
-		void Pause();
-		void Resume();
-		void ReplaceTrack(webrtc::MediaStreamTrackInterface* track);
-		void SetMaxSpatialLayer(uint8_t spatialLayer);
-
 	private:
 		Producer(
 		  PrivateListener* privateListener,
@@ -61,6 +41,24 @@ namespace mediasoupclient
 		  const nlohmann::json& rtpParameters,
 		  const nlohmann::json& appData);
 
+	public:
+		const std::string& GetId() const;
+		const std::string& GetLocalId() const;
+		bool IsClosed() const;
+		std::string GetKind() const;
+		webrtc::MediaStreamTrackInterface* GetTrack() const;
+		const nlohmann::json& GetRtpParameters() const;
+		bool IsPaused() const;
+		uint8_t GetMaxSpatialLayer() const;
+		nlohmann::json& GetAppData();
+		void Close();
+		nlohmann::json GetStats() const;
+		void Pause();
+		void Resume();
+		void ReplaceTrack(webrtc::MediaStreamTrackInterface* track);
+		void SetMaxSpatialLayer(uint8_t spatialLayer);
+
+	private:
 		void TransportClosed();
 
 		/* SendTransport will create instances and call private member TransporClosed */
@@ -97,61 +95,6 @@ namespace mediasoupclient
 		// App custom data.
 		nlohmann::json appData;
 	};
-
-	/* Inline methods */
-
-	inline const std::string& Producer::GetId() const
-	{
-		return this->id;
-	}
-
-	inline const std::string& Producer::GetLocalId() const
-	{
-		return this->localId;
-	}
-
-	inline std::string Producer::GetKind() const
-	{
-		return this->track->kind();
-	}
-
-	inline bool Producer::IsClosed() const
-	{
-		return this->closed;
-	}
-
-	inline bool Producer::IsPaused() const
-	{
-		return !this->track->enabled();
-	}
-
-	inline webrtc::MediaStreamTrackInterface* Producer::GetTrack() const
-	{
-		return this->track;
-	}
-
-	inline const nlohmann::json& Producer::GetRtpParameters() const
-	{
-		return this->rtpParameters;
-	}
-
-	inline uint8_t Producer::GetMaxSpatialLayer() const
-	{
-		return this->maxSpatialLayer;
-	}
-
-	inline nlohmann::json& Producer::GetAppData()
-	{
-		return this->appData;
-	}
-
-	inline nlohmann::json Producer::GetStats() const
-	{
-		if (this->closed)
-			throw Exception("Invalid state");
-		else
-			return this->privateListener->OnGetStats(this);
-	}
 } // namespace mediasoupclient
 
 #endif

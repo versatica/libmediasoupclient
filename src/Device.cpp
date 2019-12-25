@@ -2,16 +2,39 @@
 // #define MSC_LOG_DEV
 
 #include "Device.hpp"
-
 #include "Logger.hpp"
+#include "MediaSoupClientErrors.hpp"
 #include "ortc.hpp"
-#include <utility>
 
 using json = nlohmann::json;
 
 namespace mediasoupclient
 {
 	/**
+	 * Whether the Device is loaded.
+	 */
+	bool Device::IsLoaded() const
+	{
+		MSC_TRACE();
+
+		return this->loaded;
+	}
+
+	/**
+	 * RTP capabilities of the Device for receiving media.
+	 */
+	const json& Device::GetRtpCapabilities() const
+	{
+		MSC_TRACE();
+
+		if (!this->loaded)
+			MSC_THROW_INVALID_STATE_ERROR("not loaded");
+
+		return this->recvRtpCapabilities;
+	}
+
+	/**
+	 * TODO: Tons of debug logs here are missing.
 	 * Initialize the Device.
 	 */
 	void Device::Load(const json& routerRtpCapabilities, const PeerConnection::Options* peerConnectionOptions)
@@ -19,9 +42,10 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (this->loaded)
-			throw Exception("already loaded");
-		else if (!routerRtpCapabilities.is_object())
-			throw Exception("missing routerRtpCapabilities");
+			MSC_THROW_INVALID_STATE_ERROR("already loaded");
+
+		// This may throw.
+		ortc.validateRtpCapabilities(routerRtpCapabilities);
 
 		// Get Native RTP capabilities.
 		auto nativeRtpCapabilities = Handler::GetNativeRtpCapabilities(peerConnectionOptions);
@@ -42,6 +66,22 @@ namespace mediasoupclient
 		this->loaded = true;
 	}
 
+	/**
+	 * Whether we can produce audio/video.
+	 *
+	 */
+	bool Device::CanProduce(const std::string& kind)
+	{
+		MSC_TRACE();
+
+		if (!this->loaded)
+			MSC_THROW_INVALID_STATE_ERROR("not loaded");
+		else if (kind != "audio" && kind != "video")
+			MSC_THROW_TYPE_ERROR("invalid kind");
+
+		return this->canProduceByKind[kind];
+	}
+
 	SendTransport* Device::CreateSendTransport(
 	  SendTransport::Listener* listener,
 	  const std::string& id,
@@ -54,11 +94,9 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (!this->loaded)
-			throw Exception("not loaded");
-
-		// App data must be a json object.
-		if (!appData.is_object())
-			throw Exception("appData must be a JSON object");
+			MSC_THROW_INVALID_STATE_ERROR("not loaded");
+		else if (!appData.is_object())
+			MSC_THROW_TYPE_ERROR("appData must be a JSON object");
 
 		// Create a new Transport.
 		auto* transport = new SendTransport(
@@ -87,11 +125,9 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (!this->loaded)
-			throw Exception("not loaded");
-
-		// App data must be a json object.
-		if (!appData.is_object())
-			throw Exception("appData must be a JSON object");
+			MSC_THROW_INVALID_STATE_ERROR("not loaded");
+		else if (!appData.is_object())
+			MSC_THROW_TYPE_ERROR("appData must be a JSON object");
 
 		// Create a new Transport.
 		auto* transport = new RecvTransport(

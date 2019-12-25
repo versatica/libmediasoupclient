@@ -3,10 +3,9 @@
  *
  * This include file defines logging macros for source files (.cpp). Each
  * source file including Logger.hpp MUST define its own MSC_CLASS macro. Include
- * files (.h) MUST NOT include Logger.hpp.
+ * files (.hpp) MUST NOT include Logger.hpp.
  *
- * All the logging macros use the same format as printf(). The XXX version
- * of a macro logs to stdoud/stderr instead of using the Channel instance.
+ * All the logging macros use the same format as printf().
  *
  * If the macro MSC_LOG_FILE_LINE is defied, all the logging macros print more
  * verbose information, including current file and line.
@@ -14,7 +13,7 @@
  * MSC_TRACE()
  *
  *   Logs the current method/function if MSC_LOG_TRACE macro is defined and the
- *   current debug level is "debug".
+ *   current debug level is "trace".
  *
  * MSC_DEBUG(...)
  *
@@ -28,6 +27,10 @@
  *
  *   Logs an error. Must just be used for internal errors that should not
  *   happen.
+ *
+ * MSC_DUMP(...)
+ *
+ * 	 Logs always to stdout,
  *
  * MSC_ABORT(...)
  *
@@ -44,19 +47,11 @@
 #include <cstdio>  // std::snprintf(), std::fprintf(), stdout, stderr
 #include <cstdlib> // std::abort()
 #include <cstring>
-#include <string>
 
 // clang-format off
 
-#ifdef MSC_LOG_DEV
-	#define _MSC_LOG_DEV_ENABLED true
-#else
-	#define _MSC_LOG_DEV_ENABLED false
-#endif
-
 namespace mediasoupclient
 {
-
 class Logger
 {
 public:
@@ -87,7 +82,7 @@ public:
 public:
 	static LogLevel logLevel;
 	static LogHandlerInterface* handler;
-	static const size_t bufferSize {10000};
+	static const size_t bufferSize {50000};
 	static char buffer[];
 };
 
@@ -110,13 +105,10 @@ public:
 	#define MSC_TRACE() \
 		do \
 		{ \
-			if (Logger::handler) \
+			if (Logger::handler && Logger::logLevel == Logger::LogLevel::LOG_TRACE) \
 			{ \
-				if (Logger::logLevel == Logger::LogLevel::LOG_DEBUG) \
-				{ \
-					int loggerWritten = std::snprintf(Logger::buffer, Logger::bufferSize, "[TRACE]" _MSC_LOG_STR, _MSC_LOG_ARG); \
-						Logger::handler->OnLog(Logger::LogLevel::LOG_TRACE, Logger::buffer, loggerWritten); \
-				} \
+				int loggerWritten = std::snprintf(Logger::buffer, Logger::bufferSize, "[TRACE]" _MSC_LOG_STR, _MSC_LOG_ARG); \
+				Logger::handler->OnLog(Logger::LogLevel::LOG_TRACE, Logger::buffer, loggerWritten); \
 			} \
 		} \
 		while (false)
@@ -128,13 +120,10 @@ public:
 	#define MSC_DEBUG(desc, ...) \
 		do \
 		{ \
-			if (Logger::handler) \
+			if (Logger::handler && Logger::logLevel == Logger::LogLevel::LOG_DEBUG) \
 			{ \
-				if (Logger::logLevel == Logger::LogLevel::LOG_DEBUG) \
-				{ \
-					int loggerWritten = std::snprintf(Logger::buffer, Logger::bufferSize, "[DEBUG]" _MSC_LOG_STR_DESC desc, _MSC_LOG_ARG, ##__VA_ARGS__); \
-						Logger::handler->OnLog(Logger::LogLevel::LOG_DEBUG, Logger::buffer, loggerWritten); \
-				} \
+				int loggerWritten = std::snprintf(Logger::buffer, Logger::bufferSize, "[DEBUG]" _MSC_LOG_STR_DESC desc, _MSC_LOG_ARG, ##__VA_ARGS__); \
+				Logger::handler->OnLog(Logger::LogLevel::LOG_DEBUG, Logger::buffer, loggerWritten); \
 			} \
 		} \
 		while (false)
@@ -145,13 +134,10 @@ public:
 #define MSC_WARN(desc, ...) \
 	do \
 	{ \
-		if (Logger::handler) \
+		if (Logger::handler && Logger::logLevel >= Logger::LogLevel::LOG_WARN) \
 		{ \
-			if (Logger::logLevel >= Logger::LogLevel::LOG_WARN) \
-			{ \
-				int loggerWritten = std::snprintf(Logger::buffer, Logger::bufferSize, "[WARN]" _MSC_LOG_STR_DESC desc, _MSC_LOG_ARG, ##__VA_ARGS__); \
-					Logger::handler->OnLog(Logger::LogLevel::LOG_WARN, Logger::buffer, loggerWritten); \
-			} \
+			int loggerWritten = std::snprintf(Logger::buffer, Logger::bufferSize, "[WARN]" _MSC_LOG_STR_DESC desc, _MSC_LOG_ARG, ##__VA_ARGS__); \
+			Logger::handler->OnLog(Logger::LogLevel::LOG_WARN, Logger::buffer, loggerWritten); \
 		} \
 	} \
 	while (false)
@@ -167,10 +153,18 @@ public:
 	} \
 	while (false)
 
+	#define MSC_DUMP(desc, ...) \
+		do \
+		{ \
+			std::fprintf(stdout, _MSC_LOG_STR_DESC desc _MSC_LOG_SEPARATOR_CHAR, _MSC_LOG_ARG, ##__VA_ARGS__); \
+			std::fflush(stdout); \
+		} \
+		while (false)
+
 #define MSC_ABORT(desc, ...) \
 	do \
 	{ \
-		std::fprintf(stderr, "ABORT" _MSC_LOG_STR_DESC desc _MSC_LOG_SEPARATOR_CHAR, _MSC_LOG_ARG, ##__VA_ARGS__); \
+		std::fprintf(stderr, "[ABORT]" _MSC_LOG_STR_DESC desc _MSC_LOG_SEPARATOR_CHAR, _MSC_LOG_ARG, ##__VA_ARGS__); \
 		std::fflush(stderr); \
 		std::abort(); \
 	} \
@@ -181,7 +175,6 @@ public:
 	{ \
 		MSC_ABORT("failed assertion `%s': " desc, #condition, ##__VA_ARGS__); \
 	}
-
 } // namespace mediasoupclient
 
 // clang-format on

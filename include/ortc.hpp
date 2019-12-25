@@ -8,6 +8,8 @@ namespace mediasoupclient
 {
 	namespace ortc
 	{
+		void validateRtpCapabilities(nlohmann::json& caps);
+		void validateRtpParameters(nlohmann::json& params);
 		nlohmann::json getExtendedRtpCapabilities(
 		  nlohmann::json& localCaps, const nlohmann::json& remoteCaps);
 		nlohmann::json getRecvRtpCapabilities(const nlohmann::json& extendedRtpCapabilities);

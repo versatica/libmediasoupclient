@@ -1,5 +1,5 @@
-#include "Exception.hpp"
 #include "FakeTransportListener.hpp"
+#include "MediaSoupClientErrors.hpp"
 #include "catch.hpp"
 #include "mediasoupclient.hpp"
 #include "parameters.hpp"
@@ -82,7 +82,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		for (auto& codec : routerRtpCapabilities["codecs"])
 			codec.erase("mimeType");
 
-		REQUIRE_THROWS_AS(device->Load(routerRtpCapabilities), mediasoupclient::Exception);
+		REQUIRE_THROWS_AS(device->Load(routerRtpCapabilities), MediaSoupClientTypeError);
 	}
 
 	SECTION("device.load() succeeds")

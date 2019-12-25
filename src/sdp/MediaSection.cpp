@@ -13,7 +13,8 @@ using json = nlohmann::json;
 
 static std::string getCodecName(const json& codec)
 {
-	static const std::regex MimeTypeRegex("^.*/", std::regex_constants::ECMAScript);
+	static const std::regex MimeTypeRegex(
+	  "^(audio|video)/", std::regex_constants::ECMAScript | std::regex_constants::icase);
 
 	auto mimeType = codec["mimeType"].get<std::string>();
 
@@ -83,14 +84,14 @@ namespace mediasoupclient
 
 			for (auto& codec : answerRtpParameters["codecs"])
 			{
-				/* clang-format off */
-			json rtp =
-			{
-				{ "payload", codec["payloadType"] },
-				{ "codec",   getCodecName(codec)  },
-				{ "rate",    codec["clockRate"]   }
-			};
-				/* clang-format on */
+				// clang-format off
+				json rtp =
+				{
+					{ "payload", codec["payloadType"] },
+					{ "codec",   getCodecName(codec)  },
+					{ "rate",    codec["clockRate"]   }
+				};
+				// clang-format on
 
 				auto jsonChannelsIt = codec.find("channels");
 				if (jsonChannelsIt != codec.end() && jsonChannelsIt->is_number_unsigned())
@@ -176,12 +177,12 @@ namespace mediasoupclient
 					}
 				}
 
-				/* clang-format off */
-			json fmtp =
-			{
-				{ "payload", codec["payloadType"] }
-			};
-				/* clang-format on */
+				// clang-format off
+				json fmtp =
+				{
+					{ "payload", codec["payloadType"] }
+				};
+				// clang-format on
 
 				std::ostringstream config;
 
@@ -210,16 +211,17 @@ namespace mediasoupclient
 				if (jsonRtcpFeedbackIt != codec.end())
 				{
 					auto& rtcpFeedback = *jsonRtcpFeedbackIt;
+
 					for (auto& fb : rtcpFeedback)
 					{
-						/* clang-format off */
-					this->mediaObject["rtcpFb"].push_back(
-						{
-							{ "payload", codec["payloadType"] },
-							{ "type",    fb["type"]           },
-							{ "subtype", fb["parameter"]      }
-						});
-						/* clang-format on */
+						// clang-format off
+						this->mediaObject["rtcpFb"].push_back(
+							{
+								{ "payload", codec["payloadType"] },
+								{ "type",    fb["type"]           },
+								{ "subtype", fb["parameter"]      }
+							});
+						// clang-format on
 					}
 				}
 			}
@@ -260,13 +262,13 @@ namespace mediasoupclient
 					if (localExtIt == localExts.end())
 						continue;
 
-					/* clang-format off */
-				this->mediaObject["ext"].push_back(
-					{
-						{ "uri",   ext["uri"] },
-						{ "value", ext["id"]  }
-					});
-					/* clang-format on */
+					// clang-format off
+					this->mediaObject["ext"].push_back(
+						{
+							{ "uri",   ext["uri"] },
+							{ "value", ext["id"]  }
+						});
+					// clang-format on
 				}
 			}
 
@@ -274,13 +276,13 @@ namespace mediasoupclient
 			auto jsonExtmapAllowMixedIt = offerMediaObject.find("extmapAllowMixed");
 
 			// clang-format off
-		if (
-			jsonExtmapAllowMixedIt != offerMediaObject.end() &&
-			jsonExtmapAllowMixedIt->is_string()
-		)
-		{
-			this->mediaObject["extmapAllowMixed"] = "extmap-allow-mixed";
-		}
+			if (
+				jsonExtmapAllowMixedIt != offerMediaObject.end() &&
+				jsonExtmapAllowMixedIt->is_string()
+			)
+			{
+				this->mediaObject["extmapAllowMixed"] = "extmap-allow-mixed";
+			}
 
 		this->mediaObject["rtcpMux"]   = "rtcp-mux";
 		this->mediaObject["rtcpRsize"] = "rtcp-rsize";
@@ -316,14 +318,14 @@ namespace mediasoupclient
 
 		for (auto& codec : offerRtpParameters["codecs"])
 		{
-			/* clang-format off */
+			// clang-format off
 			json rtp =
 			{
 				{ "payload", codec["payloadType"] },
 				{ "codec",   getCodecName(codec)  },
 				{ "rate",    codec["clockRate"]   }
 			};
-				/* clang-format on */
+				// clang-format on
 
 				auto jsonChannelsIt = codec.find("channels");
 				if (jsonChannelsIt != codec.end() && jsonChannelsIt->is_number_unsigned())
@@ -339,12 +341,12 @@ namespace mediasoupclient
 				{
 					const json& codecParameters = codec["parameters"];
 
-					/* clang-format off */
+					// clang-format off
 				json fmtp =
 				{
 					{ "payload", codec["payloadType"] }
 				};
-					/* clang-format on */
+					// clang-format on
 
 					std::ostringstream config;
 					for (auto& item : codecParameters.items())
@@ -376,14 +378,14 @@ namespace mediasoupclient
 					auto rtcpFeedback = *jsonRtcpFeedbackIt;
 					for (auto& fb : rtcpFeedback)
 					{
-						/* clang-format off */
+						// clang-format off
 					this->mediaObject["rtcpFb"].push_back(
 						{
 							{ "payload", codec["payloadType"] },
 							{ "type",    fb["type"]           },
 							{ "subtype", fb["parameter"]      }
 						});
-						/* clang-format on */
+						// clang-format on
 					}
 				}
 
@@ -405,13 +407,13 @@ namespace mediasoupclient
 
 				for (auto& ext : offerRtpParameters["headerExtensions"])
 				{
-					/* clang-format off */
+					// clang-format off
 				this->mediaObject["ext"].push_back(
 					{
 						{ "uri",   ext["uri"] },
 						{ "value", ext["id"]  }
 					});
-					/* clang-format on */
+					// clang-format on
 				}
 
 				this->mediaObject["rtcpMux"]   = "rtcp-mux";

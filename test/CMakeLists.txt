@@ -1,7 +1,6 @@
 set(
 	SOURCE_FILES
 	src/Device.test.cpp
-	src/FakeVideoCapturer.cpp
 	src/Handler.test.cpp
 	src/PeerConnection.test.cpp
 	src/RemoteSdp.test.cpp

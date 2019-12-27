@@ -29,7 +29,7 @@ EXCLUDED_CHECKS="\
 "
 # Filterer files/lineeing checked.
 # LINE_FILTER="[\
-# {\"name\":\"FakeVideoCapturer.cpp, \"lines\":[[1, 1000]]}\
+# {\"name\":\"file.cpp, \"lines\":[[1, 1000]]}\
 # ]"
 LINE_FILTER=
 

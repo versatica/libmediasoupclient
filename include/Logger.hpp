@@ -12,12 +12,12 @@
  *
  * MSC_TRACE()
  *
- *   Logs the current method/function if MSC_LOG_TRACE macro is defined and the
- *   current debug level is "trace".
+ *   Logs the current method/function if MSC_LOG_TRACE macro is defined and
+ *   logLevel is 'debug'.
  *
  * MSC_DEBUG(...)
  *
- * 	 Logs if the current source file defines the MSC_LOG_DEV macro.
+ * 	 Logs a debug.
  *
  * MSC_WARN(...)
  *
@@ -25,12 +25,11 @@
  *
  * MSC_ERROR(...)
  *
- *   Logs an error. Must just be used for internal errors that should not
- *   happen.
+ *   Logs an error.
  *
  * MSC_DUMP(...)
  *
- * 	 Logs always to stdout,
+ * 	 Logs always to stdout.
  *
  * MSC_ABORT(...)
  *
@@ -60,8 +59,7 @@ public:
 		LOG_NONE  = 0,
 		LOG_ERROR = 1,
 		LOG_WARN  = 2,
-		LOG_DEBUG = 3,
-		LOG_TRACE = 4,
+		LOG_DEBUG = 3
 	};
 
 	class LogHandlerInterface
@@ -105,7 +103,7 @@ public:
 	#define MSC_TRACE() \
 		do \
 		{ \
-			if (Logger::handler && Logger::logLevel == Logger::LogLevel::LOG_TRACE) \
+			if (Logger::handler && Logger::logLevel == Logger::LogLevel::LOG_DEBUG) \
 			{ \
 				int loggerWritten = std::snprintf(Logger::buffer, Logger::bufferSize, "[TRACE]" _MSC_LOG_STR, _MSC_LOG_ARG); \
 				Logger::handler->OnLog(Logger::LogLevel::LOG_TRACE, Logger::buffer, loggerWritten); \
@@ -116,20 +114,17 @@ public:
 	#define MSC_TRACE() ;
 #endif
 
-#ifdef MSC_LOG_DEV
-	#define MSC_DEBUG(desc, ...) \
-		do \
+
+#define MSC_DEBUG(desc, ...) \
+	do \
+	{ \
+		if (Logger::handler && Logger::logLevel == Logger::LogLevel::LOG_DEBUG) \
 		{ \
-			if (Logger::handler && Logger::logLevel == Logger::LogLevel::LOG_DEBUG) \
-			{ \
-				int loggerWritten = std::snprintf(Logger::buffer, Logger::bufferSize, "[DEBUG]" _MSC_LOG_STR_DESC desc, _MSC_LOG_ARG, ##__VA_ARGS__); \
-				Logger::handler->OnLog(Logger::LogLevel::LOG_DEBUG, Logger::buffer, loggerWritten); \
-			} \
+			int loggerWritten = std::snprintf(Logger::buffer, Logger::bufferSize, "[DEBUG]" _MSC_LOG_STR_DESC desc, _MSC_LOG_ARG, ##__VA_ARGS__); \
+			Logger::handler->OnLog(Logger::LogLevel::LOG_DEBUG, Logger::buffer, loggerWritten); \
 		} \
-		while (false)
-#else
-	#define MSC_DEBUG(desc, ...) ;
-#endif
+	} \
+	while (false)
 
 #define MSC_WARN(desc, ...) \
 	do \
@@ -145,7 +140,7 @@ public:
 #define MSC_ERROR(desc, ...) \
 	do \
 	{ \
-		if (Logger::handler) \
+		if (Logger::handler && Logger::logLevel >= Logger::LogLevel::LOG_ERROR) \
 		{ \
 			int loggerWritten = std::snprintf(Logger::buffer, Logger::bufferSize, "[ERROR]" _MSC_LOG_STR_DESC desc, _MSC_LOG_ARG, ##__VA_ARGS__); \
 			Logger::handler->OnLog(Logger::LogLevel::LOG_ERROR, Logger::buffer, loggerWritten); \
@@ -153,13 +148,13 @@ public:
 	} \
 	while (false)
 
-	#define MSC_DUMP(desc, ...) \
-		do \
-		{ \
-			std::fprintf(stdout, _MSC_LOG_STR_DESC desc _MSC_LOG_SEPARATOR_CHAR, _MSC_LOG_ARG, ##__VA_ARGS__); \
-			std::fflush(stdout); \
-		} \
-		while (false)
+#define MSC_DUMP(desc, ...) \
+	do \
+	{ \
+		std::fprintf(stdout, _MSC_LOG_STR_DESC desc _MSC_LOG_SEPARATOR_CHAR, _MSC_LOG_ARG, ##__VA_ARGS__); \
+		std::fflush(stdout); \
+	} \
+	while (false)
 
 #define MSC_ABORT(desc, ...) \
 	do \

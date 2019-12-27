@@ -4,45 +4,59 @@
 #include "PeerConnection.hpp"
 #include "mediasoupclient.hpp"
 #include <catch.hpp>
+#include <string>
 
 int main(int argc, char* argv[])
 {
-	// Set RTC logging severity to warning.
-	// rtc::LogMessage::LogToDebug(rtc::LoggingSeverity::LS_WARNING);
-
-	// There must be exactly one instance.
+	mediasoupclient::Logger::LogLevel logLevel{ mediasoupclient::Logger::LogLevel::LOG_NONE };
+	rtc::LoggingSeverity webrtcLogLevel{ rtc::LoggingSeverity::LS_NONE };
 	Catch::Session session;
+	std::string logLevelStr;
+	std::string webrtcLogLevelStr;
+	int ret;
 
-	int logLevel = 0;
-
-	// Build a new parser on top of Catch's.
-	using namespace Catch::clara;
-	auto cli = session.cli()               // Get Catch's composite command line parser.
-	           | Opt(logLevel, "logLevel") // Bind variable to a new option.
-	               ["-L"]["--log-level"]   // The option names it will respond to.
-	           ("log level");              // Description string for the help output.
+	// Build a new parser on top of Catch.
+	// clang-format off
+	auto cli = session.cli()
+	  | Catch::clara::Opt(logLevelStr, "debug|warn|error|none")["-L"]["--log-level"]("libmediasoupclient log level (default: none)")
+	  | Catch::clara::Opt(webrtcLogLevelStr, "verbose|info|warn|error|none")["-W"]["--webrtc-log-level"]("libwebrtc log level (default: none)");
+	// clang-format on
 
 	// Now pass the new composite back to Catch so it uses that.
 	session.cli(cli);
 
 	// Let Catch (using Clara) parse the command line.
-	int returnCode = session.applyCommandLine(argc, argv);
+	ret = session.applyCommandLine(argc, argv);
 
-	if (returnCode != 0) // Indicates a command line error.
-		return returnCode;
+	if (ret != 0) // Indicates a command line error.
+		return ret;
 
-	if (logLevel > 0)
-	{
-		auto level = static_cast<mediasoupclient::Logger::LogLevel>(logLevel);
+	// Apply log levels.
+	if (logLevelStr == "debug")
+		logLevel = mediasoupclient::Logger::LogLevel::LOG_DEBUG;
+	else if (logLevelStr == "warn")
+		logLevel = mediasoupclient::Logger::LogLevel::LOG_WARN;
+	else if (logLevelStr == "error")
+		logLevel = mediasoupclient::Logger::LogLevel::LOG_ERROR;
 
-		mediasoupclient::Logger::SetLogLevel(level);
-		mediasoupclient::Logger::SetHandler(new mediasoupclient::Logger::DefaultLogHandler());
-	}
+	if (webrtcLogLevelStr == "verbose")
+		webrtcLogLevel = rtc::LoggingSeverity::LS_VERBOSE;
+	else if (webrtcLogLevelStr == "info")
+		webrtcLogLevel = rtc::LoggingSeverity::LS_INFO;
+	else if (webrtcLogLevelStr == "warn")
+		webrtcLogLevel = rtc::LoggingSeverity::LS_WARNING;
+	else if (webrtcLogLevelStr == "error")
+		webrtcLogLevel = rtc::LoggingSeverity::LS_ERROR;
+
+	mediasoupclient::Logger::SetLogLevel(logLevel);
+	mediasoupclient::Logger::SetHandler(new mediasoupclient::Logger::DefaultLogHandler());
+
+	rtc::LogMessage::LogToDebug(webrtcLogLevel);
 
 	// Initialization.
 	mediasoupclient::Initialize();
 
-	int ret = session.run(argc, argv);
+	ret = session.run(argc, argv);
 
 	// Cleanup.
 	mediasoupclient::Cleanup();

@@ -3,6 +3,7 @@
 set -e
 
 PROJECT_PWD=${PWD}
+OS="$(uname -s)"
 TEST_BINARY=""
 
 current_dir_name=${PROJECT_PWD##*/}
@@ -12,9 +13,6 @@ if [ "${current_dir_name}" != "libmediasoupclient" ] && [ "${current_dir_name}" 
 
 	exit 1
 fi
-
-# Load common script.
-. scripts/common.sh
 
 # Rebuild everything.
 if [ "$1" == "build" ]; then

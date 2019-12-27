@@ -7,6 +7,7 @@
   ],
   "devDependencies": {
     "clang-tools-prebuilt": "^0.1.4",
+    "del": "^5.1.0",
     "gulp": "^4.0.2",
     "gulp-clang-format": "^1.0.27"
   }

@@ -3,9 +3,14 @@
 set -e
 
 PROJECT_PWD=${PWD}
+OS="$(uname -s)"
+NUM_CORES=1
 
-# Import utils // OS, NUM_CORES
-. scripts/common.sh
+case "${OS}" in
+	Linux*)  NUM_CORES=$(nproc);;
+	Darwin*) NUM_CORES=$(sysctl -n hw.ncpu);;
+	*)       NUM_CORES=1;;
+esac
 
 if [ "${OS}" != "Darwin" ] && [ "${OS}" != "Linux" ] ; then
 	echo "[ERROR] only available for MacOS and Linux" >&2

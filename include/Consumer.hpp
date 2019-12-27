@@ -1,8 +1,8 @@
 #ifndef MSC_CONSUMER_HPP
 #define MSC_CONSUMER_HPP
 
-#include <api/media_stream_interface.h> // MediaStreamTrackInterface
 #include <json.hpp>
+#include <api/media_stream_interface.h> // MediaStreamTrackInterface
 #include <string>
 
 namespace mediasoupclient

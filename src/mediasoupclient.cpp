@@ -4,14 +4,14 @@
 #include "mediasoupclient.hpp"
 #include "Logger.hpp"
 #include "version.hpp"
-#include "rtc_base/helpers.h"
-#include "rtc_base/ssl_adapter.h"
-#include "rtc_base/time_utils.h"
+#include <rtc_base/helpers.h>
+#include <rtc_base/ssl_adapter.h>
+#include <rtc_base/time_utils.h>
 #include <sstream>
 
 namespace mediasoupclient
 {
-	void Initialize()
+	void Initialize() // NOLINT(readability-identifier-naming)
 	{
 		MSC_TRACE();
 
@@ -21,14 +21,14 @@ namespace mediasoupclient
 		rtc::InitRandom(rtc::Time());
 	}
 
-	void Cleanup()
+	void Cleanup() // NOLINT(readability-identifier-naming)
 	{
 		MSC_TRACE();
 
 		rtc::CleanupSSL();
 	}
 
-	std::string Version()
+	std::string Version() // NOLINT(readability-identifier-naming)
 	{
 		std::stringstream ss;
 

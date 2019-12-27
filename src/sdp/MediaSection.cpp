@@ -323,7 +323,14 @@ namespace mediasoupclient
 		this->mediaObject["rtcpRsize"] = "rtcp-rsize";
 
 		// Set DTLS role.
-		SetDtlsRole(dtlsParameters["role"].get<std::string>());
+		std::string dtlsRole = dtlsParameters["role"].get<std::string>();
+
+		if (dtlsRole == "client")
+			this->mediaObject["setup"] = "active";
+		else if (dtlsRole == "server")
+			this->mediaObject["setup"] = "passive";
+		else if (dtlsRole == "auto")
+			this->mediaObject["setup"] = "actpass";
 	}
 
 	void AnswerMediaSection::SetDtlsRole(const std::string& role)
@@ -341,7 +348,7 @@ namespace mediasoupclient
 	OfferMediaSection::OfferMediaSection(
 	  const nlohmann::json& iceParameters,
 	  const nlohmann::json& iceCandidates,
-	  const nlohmann::json& dtlsParameters,
+	  const nlohmann::json& /*dtlsParameters*/,
 	  const std::string& mid,
 	  const std::string& kind,
 	  const nlohmann::json& offerRtpParameters,
@@ -510,13 +517,14 @@ namespace mediasoupclient
 			}
 
 			// Set DTLS role.
-			SetDtlsRole(dtlsParameters["role"].get<std::string>());
+			this->mediaObject["setup"] = "actpass";
 		}
 
 		void OfferMediaSection::SetDtlsRole(const std::string& /* role */)
 		{
 			MSC_TRACE();
 
+			// The SDP offer must always have a=setup:actpass.
 			this->mediaObject["setup"] = "actpass";
 		}
 	} // namespace Sdp

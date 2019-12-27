@@ -4,7 +4,6 @@
 #include "scalabilityMode.hpp"
 #include "Logger.hpp"
 #include <regex>
-#include <string>
 
 using json = nlohmann::json;
 

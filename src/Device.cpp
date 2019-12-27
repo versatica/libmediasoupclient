@@ -89,7 +89,7 @@ namespace mediasoupclient
 	  const json& iceCandidates,
 	  const json& dtlsParameters,
 	  const PeerConnection::Options* peerConnectionOptions,
-	  const json appData) const
+	  const json& appData) const
 	{
 		MSC_TRACE();
 
@@ -120,7 +120,7 @@ namespace mediasoupclient
 	  const json& iceCandidates,
 	  const json& dtlsParameters,
 	  const PeerConnection::Options* peerConnectionOptions,
-	  const json appData) const
+	  const json& appData) const
 	{
 		MSC_TRACE();
 

@@ -1,6 +1,6 @@
 #include "helpers.hpp"
-#include "sdp/RemoteSdp.hpp"
 #include "sdptransform.hpp"
+#include "sdp/RemoteSdp.hpp"
 #include <catch.hpp>
 
 TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")

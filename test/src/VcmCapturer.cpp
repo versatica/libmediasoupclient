@@ -1,78 +1,76 @@
 #include "VcmCapturer.hpp"
-
+#include <rtc_base/checks.h>
+#include <rtc_base/logging.h>
+#include <cstdint>
 #include <memory>
-#include <stdint.h>
+#include <modules/video_capture/video_capture_factory.h>
 
-#include "modules/video_capture/video_capture_factory.h"
-#include "rtc_base/checks.h"
-#include "rtc_base/logging.h"
-
-VcmCapturer::VcmCapturer() : vcm_(nullptr)
+VcmCapturer::VcmCapturer() : vcm(nullptr)
 {
 }
 
-bool VcmCapturer::Init(size_t width, size_t height, size_t target_fps, size_t capture_device_index)
+bool VcmCapturer::Init(size_t width, size_t height, size_t targetFps, size_t captureDeviceIndex)
 {
-	std::unique_ptr<webrtc::VideoCaptureModule::DeviceInfo> device_info(
+	std::unique_ptr<webrtc::VideoCaptureModule::DeviceInfo> deviceInfo(
 	  webrtc::VideoCaptureFactory::CreateDeviceInfo());
 
-	char device_name[256];
-	char unique_name[256];
+	char deviceName[256];
+	char uniqueName[256];
 	if (
-	  device_info->GetDeviceName(
-	    static_cast<uint32_t>(capture_device_index),
-	    device_name,
-	    sizeof(device_name),
-	    unique_name,
-	    sizeof(unique_name)) != 0)
+	  deviceInfo->GetDeviceName(
+	    static_cast<uint32_t>(captureDeviceIndex),
+	    deviceName,
+	    sizeof(deviceName),
+	    uniqueName,
+	    sizeof(uniqueName)) != 0)
 	{
 		Destroy();
 		return false;
 	}
 
-	vcm_ = webrtc::VideoCaptureFactory::Create(unique_name);
-	vcm_->RegisterCaptureDataCallback(this);
+	this->vcm = webrtc::VideoCaptureFactory::Create(uniqueName);
+	this->vcm->RegisterCaptureDataCallback(this);
 
-	device_info->GetCapability(vcm_->CurrentDeviceName(), 0, capability_);
+	deviceInfo->GetCapability(this->vcm->CurrentDeviceName(), 0, this->capability);
 
-	capability_.width     = static_cast<int32_t>(width);
-	capability_.height    = static_cast<int32_t>(height);
-	capability_.maxFPS    = static_cast<int32_t>(target_fps);
-	capability_.videoType = webrtc::VideoType::kI420;
+	this->capability.width     = static_cast<int32_t>(width);
+	this->capability.height    = static_cast<int32_t>(height);
+	this->capability.maxFPS    = static_cast<int32_t>(targetFps);
+	this->capability.videoType = webrtc::VideoType::kI420;
 
-	if (vcm_->StartCapture(capability_) != 0)
+	if (this->vcm->StartCapture(this->capability) != 0)
 	{
 		Destroy();
 		return false;
 	}
 
-	RTC_CHECK(vcm_->CaptureStarted());
+	RTC_CHECK(this->vcm->CaptureStarted());
 
 	return true;
 }
 
-VcmCapturer* VcmCapturer::Create(
-  size_t width, size_t height, size_t target_fps, size_t capture_device_index)
+VcmCapturer* VcmCapturer::Create(size_t width, size_t height, size_t targetFps, size_t captureDeviceIndex)
 {
-	std::unique_ptr<VcmCapturer> vcm_capturer(new VcmCapturer());
-	if (!vcm_capturer->Init(width, height, target_fps, capture_device_index))
+	std::unique_ptr<VcmCapturer> vcmCapturer(new VcmCapturer());
+
+	if (!vcmCapturer->Init(width, height, targetFps, captureDeviceIndex))
 	{
 		RTC_LOG(LS_WARNING) << "Failed to create VcmCapturer(w = " << width << ", h = " << height
-		                    << ", fps = " << target_fps << ")";
+		                    << ", fps = " << targetFps << ")";
 		return nullptr;
 	}
-	return vcm_capturer.release();
+	return vcmCapturer.release();
 }
 
 void VcmCapturer::Destroy()
 {
-	if (!vcm_)
+	if (!this->vcm)
 		return;
 
-	vcm_->StopCapture();
-	vcm_->DeRegisterCaptureDataCallback();
+	this->vcm->StopCapture();
+	this->vcm->DeRegisterCaptureDataCallback();
 	// Release reference to VCM.
-	vcm_ = nullptr;
+	this->vcm = nullptr;
 }
 
 VcmCapturer::~VcmCapturer()

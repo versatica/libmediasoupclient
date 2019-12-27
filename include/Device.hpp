@@ -28,7 +28,7 @@ namespace mediasoupclient
 		  const nlohmann::json& iceCandidates,
 		  const nlohmann::json& dtlsParameters,
 		  const PeerConnection::Options* peerConnectionOptions = nullptr,
-		  nlohmann::json appData                               = nlohmann::json::object()) const;
+		  const nlohmann::json& appData                        = nlohmann::json::object()) const;
 		RecvTransport* CreateRecvTransport(
 		  RecvTransport::Listener* listener,
 		  const std::string& id,
@@ -36,7 +36,7 @@ namespace mediasoupclient
 		  const nlohmann::json& iceCandidates,
 		  const nlohmann::json& dtlsParameters,
 		  const PeerConnection::Options* peerConnectionOptions = nullptr,
-		  nlohmann::json appData                               = nlohmann::json::object()) const;
+		  const nlohmann::json& appData                        = nlohmann::json::object()) const;
 
 	private:
 		// Loaded flag.

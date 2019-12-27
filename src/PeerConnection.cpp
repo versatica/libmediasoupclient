@@ -5,12 +5,12 @@
 #include "Logger.hpp"
 #include "MediaSoupClientErrors.hpp"
 #include "Utils.hpp"
-#include "api/audio_codecs/builtin_audio_decoder_factory.h"
-#include "api/audio_codecs/builtin_audio_encoder_factory.h"
-#include "api/create_peerconnection_factory.h"
-#include "api/video_codecs/builtin_video_decoder_factory.h"
-#include "api/video_codecs/builtin_video_encoder_factory.h"
-#include "rtc_base/ssl_adapter.h"
+#include <api/audio_codecs/builtin_audio_decoder_factory.h>
+#include <api/audio_codecs/builtin_audio_encoder_factory.h>
+#include <api/create_peerconnection_factory.h>
+#include <api/video_codecs/builtin_video_decoder_factory.h>
+#include <api/video_codecs/builtin_video_encoder_factory.h>
+#include <rtc_base/ssl_adapter.h>
 
 using json = nlohmann::json;
 
@@ -295,7 +295,8 @@ namespace mediasoupclient
 		webrtc::RtpTransceiverInit rtpTransceiverInit;
 		rtpTransceiverInit.stream_ids.emplace_back("0");
 
-		auto result = this->pc->AddTransceiver(track, rtpTransceiverInit);
+		auto result = this->pc->AddTransceiver(
+		  track, rtpTransceiverInit); // NOLINT(performance-unnecessary-value-param)
 
 		if (!result.ok())
 		{

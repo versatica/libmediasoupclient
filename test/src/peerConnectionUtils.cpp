@@ -1,25 +1,23 @@
 #include "peerConnectionUtils.hpp"
 #include "VcmCapturer.hpp"
-#include "modules/audio_device/include/fake_audio_device.h"
-#include "modules/video_capture/video_capture.h"
-#include "modules/video_capture/video_capture_factory.h"
-#include "pc/video_track_source.h"
-#include "api/audio_codecs/builtin_audio_decoder_factory.h"
-#include "api/audio_codecs/builtin_audio_encoder_factory.h"
-#include "api/create_peerconnection_factory.h"
-#include "api/video_codecs/builtin_video_decoder_factory.h"
-#include "api/video_codecs/builtin_video_encoder_factory.h"
+#include <api/audio_codecs/builtin_audio_decoder_factory.h>
+#include <api/audio_codecs/builtin_audio_encoder_factory.h>
+#include <api/create_peerconnection_factory.h>
+#include <api/video_codecs/builtin_video_decoder_factory.h>
+#include <api/video_codecs/builtin_video_encoder_factory.h>
+#include <pc/video_track_source.h>
 #include <iostream>
-
-static rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peerConnectionFactory{ nullptr };
-
-static rtc::scoped_refptr<webrtc::AudioSourceInterface> audioSource{ nullptr };
+#include <modules/audio_device/include/fake_audio_device.h>
+#include <modules/video_capture/video_capture.h>
+#include <modules/video_capture/video_capture_factory.h>
 
 class CapturerTrackSource;
-static rtc::scoped_refptr<CapturerTrackSource> videoDevice{ nullptr };
 
-static rtc::Thread* signalingThread{ nullptr };
-static rtc::Thread* workerThread{ nullptr };
+static rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> PeerConnectionFactory{ nullptr };
+static rtc::scoped_refptr<webrtc::AudioSourceInterface> AudioSource{ nullptr };
+static rtc::scoped_refptr<CapturerTrackSource> VideoDevice{ nullptr };
+static rtc::Thread* SignalingThread{ nullptr };
+static rtc::Thread* WorkerThread{ nullptr };
 
 class CapturerTrackSource : public webrtc::VideoTrackSource
 {
@@ -60,10 +58,10 @@ static void createAudioSource()
 {
 	cricket::AudioOptions options;
 
-	if (peerConnectionFactory == nullptr)
-		peerConnectionFactory = createPeerConnectionFactory();
+	if (PeerConnectionFactory == nullptr)
+		PeerConnectionFactory = createPeerConnectionFactory();
 
-	audioSource = peerConnectionFactory->CreateAudioSource(options);
+	AudioSource = PeerConnectionFactory->CreateAudioSource(options);
 }
 
 // PeerConnection factory creation.
@@ -71,21 +69,21 @@ rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> createPeerConnectionF
 {
 	webrtc::PeerConnectionInterface::RTCConfiguration config;
 
-	signalingThread = new rtc::Thread();
-	workerThread    = new rtc::Thread();
+	SignalingThread = new rtc::Thread();
+	WorkerThread    = new rtc::Thread();
 
-	signalingThread->SetName("signaling_thread", nullptr);
-	workerThread->SetName("worker_thread", nullptr);
+	SignalingThread->SetName("signaling_thread", nullptr);
+	WorkerThread->SetName("worker_thread", nullptr);
 
-	if (!signalingThread->Start() || !workerThread->Start())
+	if (!SignalingThread->Start() || !WorkerThread->Start())
 		throw std::runtime_error("Thread start errored");
 
 	rtc::scoped_refptr<webrtc::AudioDeviceModule> audioDeviceModule(new webrtc::FakeAudioDeviceModule());
 
-	peerConnectionFactory = webrtc::CreatePeerConnectionFactory(
-	  workerThread,
-	  workerThread,
-	  signalingThread,
+	PeerConnectionFactory = webrtc::CreatePeerConnectionFactory(
+	  WorkerThread,
+	  WorkerThread,
+	  SignalingThread,
 	  audioDeviceModule,
 	  webrtc::CreateBuiltinAudioEncoderFactory(),
 	  webrtc::CreateBuiltinAudioDecoderFactory(),
@@ -94,26 +92,26 @@ rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> createPeerConnectionF
 	  nullptr /*audio_mixer_module*/,
 	  nullptr /*audio_processing_module*/);
 
-	return peerConnectionFactory;
+	return PeerConnectionFactory;
 }
 
 // Audio track creation.
 rtc::scoped_refptr<webrtc::AudioTrackInterface> createAudioTrack(const std::string& label)
 {
-	if (audioSource == nullptr)
+	if (AudioSource == nullptr)
 		createAudioSource();
 
-	return peerConnectionFactory->CreateAudioTrack(label, audioSource);
+	return PeerConnectionFactory->CreateAudioTrack(label, AudioSource);
 }
 
 // Video track creation.
 rtc::scoped_refptr<webrtc::VideoTrackInterface> createVideoTrack(const std::string& label)
 {
-	if (peerConnectionFactory == nullptr)
-		peerConnectionFactory = createPeerConnectionFactory();
+	if (PeerConnectionFactory == nullptr)
+		PeerConnectionFactory = createPeerConnectionFactory();
 
-	if (videoDevice == nullptr)
-		videoDevice = CapturerTrackSource::Create();
+	if (VideoDevice == nullptr)
+		VideoDevice = CapturerTrackSource::Create();
 
-	return peerConnectionFactory->CreateVideoTrack(label, videoDevice);
+	return PeerConnectionFactory->CreateVideoTrack(label, VideoDevice);
 }

@@ -4,7 +4,6 @@
 #include "Producer.hpp"
 #include "Logger.hpp"
 #include "MediaSoupClientErrors.hpp"
-#include <utility>
 
 using json = nlohmann::json;
 

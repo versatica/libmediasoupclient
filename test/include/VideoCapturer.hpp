@@ -1,10 +1,10 @@
 #ifndef MSC_TEST_VIDEO_CAPTURER_HPP
 #define MSC_TEST_VIDEO_CAPTURER_HPP
 
-#include "media/base/video_adapter.h"
-#include "media/base/video_broadcaster.h"
-#include "api/video/video_frame.h"
-#include "api/video/video_source_interface.h"
+#include <api/video/video_frame.h>
+#include <api/video/video_source_interface.h>
+#include <media/base/video_adapter.h>
+#include <media/base/video_broadcaster.h>
 #include <memory>
 #include <stddef.h>
 
@@ -26,7 +26,7 @@ private:
 	void UpdateVideoAdapter();
 
 	rtc::VideoBroadcaster broadcaster;
-	cricket::VideoAdapter video_adapter;
+	cricket::VideoAdapter videoAdapter;
 };
 
 #endif

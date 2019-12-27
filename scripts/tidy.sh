@@ -6,6 +6,14 @@ PROJECT_PWD=${PWD}
 OS="$(uname -s)"
 NUM_CORES=1
 
+current_dir_name=${PROJECT_PWD##*/}
+
+if [ "${current_dir_name}" != "libmediasoupclient" ] && [ "${current_dir_name}" != "v3-libmediasoupclient" ] ; then
+	echo "[ERROR] $(basename $0) must be called from libmediasoupclient/ root directory" >&2
+
+	exit 1
+fi
+
 case "${OS}" in
 	Linux*)  NUM_CORES=$(nproc);;
 	Darwin*) NUM_CORES=$(sysctl -n hw.ncpu);;
@@ -18,13 +26,6 @@ if [ "${OS}" != "Darwin" ] && [ "${OS}" != "Linux" ] ; then
 	exit 1
 fi
 
-current_dir_name=${PROJECT_PWD##*/}
-if [ "${current_dir_name}" != "libmediasoupclient" ] && [ "${current_dir_name}" != "v3-libmediasoupclient" ] ; then
-	echo "[ERROR] $(basename $0) must be called from libmediasoupclient/ root directory" >&2
-
-	exit 1
-fi
-
 # Excluded checks.
 EXCLUDED_CHECKS="\
 -google-runtime-references,\
@@ -32,16 +33,16 @@ EXCLUDED_CHECKS="\
 -misc-throw-by-value-catch-by-reference,\
 -readability-function-size
 "
+
 # Filterer files/lineeing checked.
 # LINE_FILTER="[\
 # {\"name\":\"file.cpp, \"lines\":[[1, 1000]]}\
 # ]"
-LINE_FILTER=
-
-echo "line_filter: ${LINE_FILTER}"
+LINE_FILTER=""
 
 # Checks to be performed.
 CHECKS=""
+
 # If certains checks are defined, just run those.
 if [ ! -z ${MSC_TIDY_CHECKS} ] ; then
 	CHECKS="-*,${MSC_TIDY_CHECKS}"
@@ -52,11 +53,12 @@ fi
 
 # Whether replacements should be done.
 FIX=${MSC_TIDY_FIX:=}
+
 if [ ! -z ${MSC_TIDY_FIX} ] ; then
 	FIX="-fix"
 fi
 
-HEADER_FILTER_REGEX="(Consumer.hpp|Device.hpp|Exception.hpp|Handler.hpp|Logger.hpp|PeerConnection.hpp|Producer.hpp|Transport.hpp|Utils.hpp|ortc.hpp|sdp/RemoteSdp.hpp|sdp/Utils.hpp)"
+HEADER_FILTER_REGEX="(Consumer.hpp|Device.hpp|Handler.hpp|Logger.hpp|MediaSoupClientErrors.hpp|PeerConnection.hpp|Producer.hpp|Transport.hpp|mediasoupclient.hpp|ortc.hpp|scalabilityMode.hpp|sdp/RemoteSdp.hpp|sdp/Utils.hpp)"
 
 BIN_PATH="node_modules/.bin"
 
@@ -69,12 +71,12 @@ popd
 # Run clang-tidy.py.
 echo "[INFO] running scripts/clang-tidy.py"
 
-scripts/clang-tidy.py\
- -clang-tidy-binary=${BIN_PATH}/clang-tidy\
- -clang-apply-replacements-binary=${BIN_PATH}/clang-apply-replacements\
- -header-filter=${HEADER_FILTER_REGEX}\
- -line-filter=${LINE_FILTER}\
- -p=.\
- -j=${NUM_CORES}\
- -checks=${CHECKS}\
- ${FIX}
+scripts/clang-tidy.py \
+	-clang-tidy-binary=${BIN_PATH}/clang-tidy \
+	-clang-apply-replacements-binary=${BIN_PATH}/clang-apply-replacements \
+	-header-filter=${HEADER_FILTER_REGEX} \
+	-line-filter=${LINE_FILTER} \
+	-p=. \
+	-j=${NUM_CORES} \
+	-checks=${CHECKS} \
+	${FIX}

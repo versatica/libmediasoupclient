@@ -4,7 +4,6 @@ set -e
 
 PROJECT_PWD=${PWD}
 OS="$(uname -s)"
-TEST_BINARY=""
 
 current_dir_name=${PROJECT_PWD##*/}
 
@@ -15,8 +14,8 @@ if [ "${current_dir_name}" != "libmediasoupclient" ] && [ "${current_dir_name}" 
 fi
 
 # Rebuild everything.
-if [ "$1" == "build" ]; then
-	echo "[INFO] rebuilding everything: cmake . -Bbuild [...]"
+if [ "$1" == "rebuild" ]; then
+	echo "[INFO] rebuilding CMake project: cmake . -Bbuild [...]"
 
 	rm -rf build/
 	cmake . -Bbuild \
@@ -30,7 +29,7 @@ if [ "$1" == "build" ]; then
 fi
 
 # Compile.
-echo "[INFO] compiling: cmake --build build"
+echo "[INFO] compiling libmediasoupclient and test_mediasoupclient: cmake --build build"
 
 cmake --build build
 
@@ -41,6 +40,6 @@ else
 fi
 
 # Run test.
-echo "[INFO] running test: ${TEST_BINARY} $@"
+echo "[INFO] running tests: ${TEST_BINARY} $@"
 
 ${TEST_BINARY} $@

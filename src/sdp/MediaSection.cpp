@@ -59,6 +59,41 @@ namespace mediasoupclient
 			this->mediaObject["iceOptions"]      = "renomination";
 		}
 
+		std::string MediaSection::GetMid() const
+		{
+			MSC_TRACE();
+
+			return this->mediaObject["mid"].get<std::string>();
+		}
+
+		nlohmann::json MediaSection::GetObject() const
+		{
+			MSC_TRACE();
+
+			return this->mediaObject;
+		}
+
+		void MediaSection::SetIceParameters(const nlohmann::json& iceParameters)
+		{
+			MSC_TRACE();
+
+			this->mediaObject["iceUfrag"] = iceParameters["usernameFragment"];
+			this->mediaObject["icePwd"]   = iceParameters["password"];
+		}
+
+		void MediaSection::Disable()
+		{
+			MSC_TRACE();
+
+			this->mediaObject["direction"] = "inactive";
+
+			this->mediaObject.erase("ext");
+			this->mediaObject.erase("ssrcs");
+			this->mediaObject.erase("ssrcGroups");
+			this->mediaObject.erase("simulcast");
+			this->mediaObject.erase("rids");
+		}
+
 		AnswerMediaSection::AnswerMediaSection(
 		  const nlohmann::json& iceParameters,
 		  const nlohmann::json& iceCandidates,
@@ -291,6 +326,18 @@ namespace mediasoupclient
 		SetDtlsRole(dtlsParameters["role"].get<std::string>());
 	}
 
+	void AnswerMediaSection::SetDtlsRole(const std::string& role)
+	{
+		MSC_TRACE();
+
+		if (role == "client")
+			this->mediaObject["setup"] = "active";
+		else if (role == "server")
+			this->mediaObject["setup"] = "passive";
+		else if (role == "auto")
+			this->mediaObject["setup"] = "actpass";
+	}
+
 	OfferMediaSection::OfferMediaSection(
 	  const nlohmann::json& iceParameters,
 	  const nlohmann::json& iceCandidates,
@@ -464,6 +511,13 @@ namespace mediasoupclient
 
 			// Set DTLS role.
 			SetDtlsRole(dtlsParameters["role"].get<std::string>());
+		}
+
+		void OfferMediaSection::SetDtlsRole(const std::string& /* role */)
+		{
+			MSC_TRACE();
+
+			this->mediaObject["setup"] = "actpass";
 		}
 	} // namespace Sdp
 } // namespace mediasoupclient

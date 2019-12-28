@@ -9,9 +9,15 @@ namespace mediasoupclient
 	namespace ortc
 	{
 		void validateRtpCapabilities(nlohmann::json& caps);
+		void validateRtpCodecCapability(nlohmann::json& codec);
+		void validateRtcpFeedback(nlohmann::json& fb);
+		void validateRtpHeaderExtension(nlohmann::json& ext);
 		void validateRtpParameters(nlohmann::json& params);
-		nlohmann::json getExtendedRtpCapabilities(
-		  nlohmann::json& localCaps, const nlohmann::json& remoteCaps);
+		void validateRtpCodecParameters(nlohmann::json& codec);
+		void validateRtpHeaderExtensionParameters(nlohmann::json& ext);
+		void validateRtpEncodingParameters(nlohmann::json& encoding);
+		void validateRtcpParameters(nlohmann::json& rtcp);
+		nlohmann::json getExtendedRtpCapabilities(nlohmann::json& localCaps, nlohmann::json& remoteCaps);
 		nlohmann::json getRecvRtpCapabilities(const nlohmann::json& extendedRtpCapabilities);
 		nlohmann::json getSendingRtpParameters(
 		  const std::string& kind, const nlohmann::json& extendedRtpCapabilities);

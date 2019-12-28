@@ -44,9 +44,6 @@ namespace mediasoupclient
 		if (this->loaded)
 			MSC_THROW_INVALID_STATE_ERROR("already loaded");
 
-		// This may throw.
-		ortc::validateRtpCapabilities(routerRtpCapabilities);
-
 		// Get Native RTP capabilities.
 		auto nativeRtpCapabilities = Handler::GetNativeRtpCapabilities(peerConnectionOptions);
 

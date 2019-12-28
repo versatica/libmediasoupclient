@@ -4,7 +4,6 @@
 #include "ortc.hpp"
 #include "parameters.hpp"
 #include <catch.hpp>
-#include <memory>
 
 TEST_CASE("Device", "[Device]")
 {
@@ -24,13 +23,13 @@ TEST_CASE("Device", "[Device]")
 
 	SECTION("device.GetRtpCapabilities() throws if not loaded")
 	{
-		REQUIRE_THROWS_AS(device->GetRtpCapabilities(), MediaSoupClientError);
+		REQUIRE_THROWS_AS(device->GetRtpCapabilities(), MediaSoupClientInvalidStateError);
 	}
 
 	SECTION("device.CanProduce() with audio/video throws if not loaded")
 	{
-		REQUIRE_THROWS_AS(device->CanProduce("audio"), MediaSoupClientError);
-		REQUIRE_THROWS_AS(device->CanProduce("video"), MediaSoupClientError);
+		REQUIRE_THROWS_AS(device->CanProduce("audio"), MediaSoupClientInvalidStateError);
+		REQUIRE_THROWS_AS(device->CanProduce("video"), MediaSoupClientInvalidStateError);
 	}
 
 	SECTION("device.CreateSendTransport() fails if not loaded")
@@ -42,7 +41,7 @@ TEST_CASE("Device", "[Device]")
 		    TransportRemoteParameters["iceParameters"],
 		    TransportRemoteParameters["iceCandidates"],
 		    TransportRemoteParameters["dtlsParameters"]),
-		  MediaSoupClientError);
+		  MediaSoupClientInvalidStateError);
 	}
 
 	SECTION("device.CreateRecvTransport() fails if not loaded")
@@ -54,7 +53,7 @@ TEST_CASE("Device", "[Device]")
 		    TransportRemoteParameters["iceParameters"],
 		    TransportRemoteParameters["iceCandidates"],
 		    TransportRemoteParameters["dtlsParameters"]),
-		  MediaSoupClientError);
+		  MediaSoupClientInvalidStateError);
 	}
 
 	SECTION("device.Load() succeeds")
@@ -67,7 +66,7 @@ TEST_CASE("Device", "[Device]")
 
 	SECTION("device.Load() fails if already loaded")
 	{
-		REQUIRE_THROWS_AS(device->Load(routerRtpCapabilities), MediaSoupClientError);
+		REQUIRE_THROWS_AS(device->Load(routerRtpCapabilities), MediaSoupClientInvalidStateError);
 	}
 
 	SECTION("device.GetRtpCapabilities() succeeds")

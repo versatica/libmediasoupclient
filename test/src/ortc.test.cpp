@@ -20,12 +20,11 @@ TEST_CASE("getExtendedCapabilities", "[ortc][getExtendedCapabilities]")
 		REQUIRE(extendedRtpCapabilities["codecs"].size() == 3);
 
 		auto codecs = extendedRtpCapabilities["codecs"];
-		REQUIRE(codecs[0]["mimeType"] == "audio/opus");
 
+		REQUIRE(codecs[0]["mimeType"] == "audio/opus");
 		REQUIRE(codecs[1]["mimeType"] == "video/VP8");
 		REQUIRE(codecs[1]["remoteRtxPayloadType"] == 102);
 		REQUIRE(codecs[1]["localRtxPayloadType"] == 102);
-
 		REQUIRE(codecs[2]["mimeType"] == "video/H264");
 		REQUIRE(codecs[2]["remoteRtxPayloadType"] == 104);
 		REQUIRE(codecs[2]["localRtxPayloadType"] == 104);
@@ -38,8 +37,9 @@ TEST_CASE("getExtendedCapabilities", "[ortc][getExtendedCapabilities]")
 		json remoteCaps = generateRouterRtpCapabilities();
 		json localCaps  = generateRouterRtpCapabilities();
 
-		// Remove the second codec "VP8"
+		// Remove the second VP8 codec.
 		auto it = localCaps["codecs"].begin();
+
 		it++;
 		localCaps["codecs"].erase(it);
 
@@ -48,8 +48,8 @@ TEST_CASE("getExtendedCapabilities", "[ortc][getExtendedCapabilities]")
 		REQUIRE(extendedRtpCapabilities["codecs"].size() == 2);
 
 		auto codecs = extendedRtpCapabilities["codecs"];
-		REQUIRE(codecs[0]["mimeType"] == "audio/opus");
 
+		REQUIRE(codecs[0]["mimeType"] == "audio/opus");
 		REQUIRE(codecs[1]["mimeType"] == "video/H264");
 		REQUIRE(codecs[1]["remoteRtxPayloadType"] == 104);
 		REQUIRE(codecs[1]["localRtxPayloadType"] == 104);
@@ -84,9 +84,10 @@ TEST_CASE("getRecvRtpCapabilities", "[getRecvRtpCapabilities]")
 		json remoteCaps = generateRouterRtpCapabilities();
 		json localCaps  = generateRouterRtpCapabilities();
 
-		// Remove the second codec "VP8"
+		// Remove the second VP8 codec VP8.
 		auto it = localCaps["codecs"].begin();
 		it++;
+
 		localCaps["codecs"].erase(it);
 
 		auto extendedRtpCapabilities = ortc::getExtendedRtpCapabilities(localCaps, remoteCaps);

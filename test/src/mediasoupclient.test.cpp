@@ -80,7 +80,9 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		routerRtpCapabilities = generateRouterRtpCapabilities();
 
 		for (auto& codec : routerRtpCapabilities["codecs"])
+		{
 			codec.erase("mimeType");
+		}
 
 		REQUIRE_THROWS_AS(device->Load(routerRtpCapabilities), MediaSoupClientTypeError);
 	}

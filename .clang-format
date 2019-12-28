@@ -54,7 +54,7 @@ IncludeCategories:
     Priority: 1
   - Regex:    '^<(json|sdptransform)(.|/)'
     Priority: 3
-  - Regex:    '^<(api|media_base|rtc_base|pc)(.|/)'
+  - Regex:    '^<(api|media|rtc_base|pc)(.|/)'
     Priority: 4
   - Regex:    '<*>'
     Priority: 5

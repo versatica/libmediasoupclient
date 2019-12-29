@@ -24,7 +24,7 @@ namespace mediasoupclient
 		nlohmann::json getSendingRemoteRtpParameters(
 		  const std::string& kind, const nlohmann::json& extendedRtpCapabilities);
 		bool canSend(const std::string& kind, const nlohmann::json& extendedRtpCapabilities);
-		bool canReceive(const nlohmann::json& rtpParameters, const nlohmann::json& extendedRtpCapabilities);
+		bool canReceive(nlohmann::json& rtpParameters, const nlohmann::json& extendedRtpCapabilities);
 	} // namespace ortc
 } // namespace mediasoupclient
 

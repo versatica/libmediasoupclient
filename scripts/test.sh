@@ -24,22 +24,22 @@ if [ "$1" == "rebuild" ]; then
 		-DMEDIASOUPCLIENT_BUILD_TESTS="true" \
 		-DCMAKE_CXX_FLAGS="-fvisibility=hidden"
 
-	# Remove the 'build' argument.
+	# Remove the 'rebuild' argument.
 	shift
 fi
 
 # Compile.
-echo "[INFO] compiling libmediasoupclient and test_mediasoupclient: cmake --build build"
+echo "[INFO] compiling mediasoupclient and test_mediasoupclient: cmake --build build"
 
 cmake --build build
 
+# Run test.
 if [ "${OS}" = "Darwin" ]; then
 	TEST_BINARY=./build/test/test_mediasoupclient.app/Contents/MacOS/test_mediasoupclient
 else
 	TEST_BINARY=./build/test/test_mediasoupclient
 fi
 
-# Run test.
 echo "[INFO] running tests: ${TEST_BINARY} $@"
 
 ${TEST_BINARY} $@

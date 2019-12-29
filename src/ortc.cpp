@@ -110,15 +110,15 @@ namespace mediasoupclient
 			codec["kind"] = mimeTypeMatch[1].str();
 
 			// preferredPayloadType is optional.
-			if (preferredPayloadTypeIt != codec.end() && !preferredPayloadTypeIt->is_number_unsigned())
+			if (preferredPayloadTypeIt != codec.end() && !preferredPayloadTypeIt->is_number_integer())
 				MSC_THROW_TYPE_ERROR("invalid codec.preferredPayloadType");
 
 			// clockRate is mandatory.
-			if (clockRateIt == codec.end() || !clockRateIt->is_number_unsigned())
+			if (clockRateIt == codec.end() || !clockRateIt->is_number_integer())
 				MSC_THROW_TYPE_ERROR("missing codec.clockRate");
 
 			// channels is optional. If unset, set it to 1.
-			if (channelsIt == codec.end() || !channelsIt->is_number_unsigned())
+			if (channelsIt == codec.end() || !channelsIt->is_number_integer())
 				codec["channels"] = 1;
 
 			// parameters is optional. If unset, set it to an empty object.
@@ -206,7 +206,7 @@ namespace mediasoupclient
 				MSC_THROW_TYPE_ERROR("missing ext.uri");
 
 			// preferredId is optional.
-			if (preferredIdIt != ext.end() && !preferredIdIt->is_number_unsigned())
+			if (preferredIdIt != ext.end() && !preferredIdIt->is_number_integer())
 				MSC_THROW_TYPE_ERROR("invalid ext.preferredId");
 
 			// preferredEncrypt is optional. If unset set it to false.
@@ -250,7 +250,7 @@ namespace mediasoupclient
 
 			for (auto& codec : *codecsIt)
 			{
-				validateRtpCodecCapability(codec);
+				validateRtpCodecParameters(codec);
 			}
 
 			// headerExtensions is optional. If unset, fill with an empty array.
@@ -332,15 +332,15 @@ namespace mediasoupclient
 				MSC_THROW_TYPE_ERROR("invalid codec.mimeType");
 
 			// payloadType is mandatory.
-			if (payloadTypeIt == codec.end() || !payloadTypeIt->is_number_unsigned())
+			if (payloadTypeIt == codec.end() || !payloadTypeIt->is_number_integer())
 				MSC_THROW_TYPE_ERROR("missing codec.payloadType");
 
 			// clockRate is mandatory.
-			if (clockRateIt == codec.end() || !clockRateIt->is_number_unsigned())
+			if (clockRateIt == codec.end() || !clockRateIt->is_number_integer())
 				MSC_THROW_TYPE_ERROR("missing codec.clockRate");
 
 			// channels is optional. If unset, set it to 1.
-			if (channelsIt == codec.end() || !channelsIt->is_number_unsigned())
+			if (channelsIt == codec.end() || !channelsIt->is_number_integer())
 				codec["channels"] = 1;
 
 			// parameters is optional. If unset, set it to an empty object.
@@ -393,7 +393,7 @@ namespace mediasoupclient
 				MSC_THROW_TYPE_ERROR("missing ext.uri");
 
 			// id is optional.
-			if (idIt != ext.end() && !idIt->is_number_unsigned())
+			if (idIt != ext.end() && !idIt->is_number_integer())
 				MSC_THROW_TYPE_ERROR("invalid ext.id");
 
 			// encrypt is optional. If unset set it to false.
@@ -437,7 +437,7 @@ namespace mediasoupclient
 			auto scalabilityModeIt = encoding.find("scalabilityMode");
 
 			// ssrc is optional.
-			if (ssrcIt != encoding.end() && !ssrcIt->is_number_unsigned())
+			if (ssrcIt != encoding.end() && !ssrcIt->is_number_integer())
 				MSC_THROW_TYPE_ERROR("invalid encoding.ssrc");
 
 			// rid is optional.
@@ -454,7 +454,7 @@ namespace mediasoupclient
 				auto rtxSsrcIt = rtxIt->find("ssrc");
 
 				// RTX ssrc is mandatory if rtx is present.
-				if (rtxSsrcIt == encoding.end() || !rtxSsrcIt->is_number_unsigned())
+				if (rtxSsrcIt == rtxIt->end() || !rtxSsrcIt->is_number_integer())
 					MSC_THROW_TYPE_ERROR("missing encoding.rtx.ssrc");
 			}
 
@@ -1022,9 +1022,12 @@ namespace mediasoupclient
 		 * Whether the given RTP parameters can be received with the given RTP
 		 * capabilities.
 		 */
-		bool canReceive(const json& rtpParameters, const json& extendedRtpCapabilities)
+		bool canReceive(json& rtpParameters, const json& extendedRtpCapabilities)
 		{
 			MSC_TRACE();
+
+			// This may throw.
+			validateRtpParameters(rtpParameters);
 
 			if (rtpParameters["codecs"].empty())
 				return false;
@@ -1094,7 +1097,7 @@ static uint8_t getH264LevelAssimetryAllowed(const json& codec)
 	// clang-format off
 	if (
 		jsonLevelAssimetryAllowedIt == jsonParametersIt->end() ||
-		!jsonLevelAssimetryAllowedIt->is_number_unsigned()
+		!jsonLevelAssimetryAllowedIt->is_number_integer()
 	)
 	// clang-format on
 	{

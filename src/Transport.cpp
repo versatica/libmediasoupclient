@@ -316,7 +316,7 @@ namespace mediasoupclient
 	  const std::string& id,
 	  const std::string& producerId,
 	  const std::string& kind,
-	  const json* rtpParameters,
+	  json* rtpParameters,
 	  json appData)
 	{
 		MSC_TRACE();

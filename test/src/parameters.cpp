@@ -171,6 +171,7 @@ json generateRtpParametersByKind()
 	/* clang-format on */
 
 	auto codecs = generateRouterRtpCapabilities()["codecs"];
+
 	for (auto& codec : codecs)
 	{
 		codec["payloadType"] = codec["preferredPayloadType"];

@@ -345,7 +345,9 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		[
 			{
 				"id":  1,
-				"uri": "urn:ietf:params:rtp-hdrext:ssrc-audio-level"
+				"uri": "urn:ietf:params:rtp-hdrext:ssrc-audio-level",
+				"encrypt": false,
+				"parameters": {}
 			}
 		])"_json);
 
@@ -386,8 +388,9 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 		REQUIRE(codecs[0] == R"(
 		{
-			"clockRate":   90000,
-			"mimeType":    "video/VP8",
+			"clockRate": 90000,
+			"mimeType": "video/VP8",
+			"channels" : 1,
 			"parameters":
 			{
 				"x-google-start-bitrate": "1500"
@@ -396,43 +399,46 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 			"rtcpFeedback":
 			[
 				{
-				  "type": "nack"
+				  "type": "nack",
+				  "parameter": ""
 				},
 				{
-				  "parameter": "pli",
-				  "type":      "nack"
+					"type": "nack",
+				  "parameter" : "pli"
 				},
 				{
-				  "parameter": "sli",
-				  "type":      "nack"
+				  "type": "nack",
+				  "parameter": "sli"
 				},
 				{
-				  "parameter": "rpsi",
-				  "type":      "nack"
+					"type": "nack",
+				  "parameter": "rpsi"
 				},
 				{
-				  "parameter": "app",
-				  "type":      "nack"
+					"type": "nack",
+				  "parameter": "app"
 				},
 				{
-				  "parameter": "fir",
-				  "type":      "ccm"
+					"type": "ccm",
+				  "parameter": "fir"
 				},
 				{
-				  "type":      "goog-remb"
+				  "type": "goog-remb",
+				  "parameter": ""
 				}
 			]
 		})"_json);
 
 		REQUIRE(codecs[1] == R"(
 		{
-			"clockRate":  90000,
-			"mimeType":   "video/rtx",
+			"clockRate": 90000,
+			"mimeType": "video/rtx",
+			"channels": 1,
 			"parameters":
 			{
 			  "apt": "101"
 			},
-			"payloadType":  102,
+			"payloadType": 102,
 			"rtcpFeedback": []
 		})"_json);
 
@@ -440,12 +446,16 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE(headerExtensions == R"(
 		[
 			{
-			  "id":  2,
-			  "uri": "urn:ietf:params:rtp-hdrext:toffset"
+			  "id": 2,
+			  "uri": "urn:ietf:params:rtp-hdrext:toffset",
+			  "encrypt": false,
+			  "parameters": {}
 			},
 			{
-			  "id":  3,
-			  "uri": "http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time"
+			  "id": 3,
+			  "uri": "http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time",
+			  "encrypt": false,
+			  "parameters": {}
 			}
 		])"_json);
 
@@ -494,14 +504,14 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 		REQUIRE(codecs[0] == R"(
 		{
-			"channels":    2,
-			"clockRate":   48000,
-			"mimeType":    "audio/opus",
+			"channels": 2,
+			"clockRate": 48000,
+			"mimeType": "audio/opus",
 			"parameters":
 			{
 				"useinbandfec": "1"
 			},
-			"payloadType":  100,
+			"payloadType": 100,
 			"rtcpFeedback": []
 		})"_json);
 
@@ -509,8 +519,10 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE(headerExtensions == R"(
 		[
 			{
-				"id":  1,
-				"uri": "urn:ietf:params:rtp-hdrext:ssrc-audio-level"
+				"id": 1,
+				"uri": "urn:ietf:params:rtp-hdrext:ssrc-audio-level",
+				"encrypt": false,
+				"parameters": {}
 			}
 		])"_json);
 

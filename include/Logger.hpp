@@ -47,44 +47,47 @@
 #include <cstdlib> // std::abort()
 #include <cstring>
 
-// clang-format off
-
 namespace mediasoupclient
 {
-class Logger
-{
-public:
-	enum class LogLevel : uint8_t
-	{
-		LOG_NONE  = 0,
-		LOG_ERROR = 1,
-		LOG_WARN  = 2,
-		LOG_DEBUG = 3
-	};
-
-	class LogHandlerInterface
+	class Logger
 	{
 	public:
-		virtual void OnLog(LogLevel level, char* payload, size_t len) = 0;
+		enum class LogLevel : uint8_t
+		{
+			LOG_NONE  = 0,
+			LOG_ERROR = 1,
+			LOG_WARN  = 2,
+			LOG_DEBUG = 3
+		};
+
+		class LogHandlerInterface
+		{
+		public:
+			virtual void OnLog(LogLevel level, char* payload, size_t len) = 0;
+		};
+
+		class DefaultLogHandler : public LogHandlerInterface
+		{
+			void OnLog(LogLevel level, char* payload, size_t len) override;
+		};
+
+		static void SetLogLevel(LogLevel level);
+		static void SetHandler(LogHandlerInterface* handler);
+		static void SetDefaultHandler();
+
+	public:
+		static LogLevel logLevel;
+		static LogHandlerInterface* handler;
+		static const size_t bufferSize{ 50000 };
+		static char buffer[];
 	};
+} // namespace mediasoupclient
 
-	class DefaultLogHandler : public LogHandlerInterface
-	{
-		void OnLog(LogLevel level, char* payload, size_t len) override;
-	};
-
-	static void SetLogLevel(LogLevel level);
-	static void SetHandler(LogHandlerInterface* handler);
-	static void SetDefaultHandler();
-
-public:
-	static LogLevel logLevel;
-	static LogHandlerInterface* handler;
-	static const size_t bufferSize {50000};
-	static char buffer[];
-};
+// clang-format off
 
 /* Logging macros. */
+
+using Logger = mediasoupclient::Logger;
 
 #define _MSC_LOG_SEPARATOR_CHAR "\n"
 
@@ -113,7 +116,6 @@ public:
 #else
 	#define MSC_TRACE() ;
 #endif
-
 
 #define MSC_DEBUG(desc, ...) \
 	do \
@@ -170,7 +172,6 @@ public:
 	{ \
 		MSC_ABORT("failed assertion `%s': " desc, #condition, ##__VA_ARGS__); \
 	}
-} // namespace mediasoupclient
 
 // clang-format on
 

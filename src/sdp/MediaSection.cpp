@@ -129,7 +129,7 @@ namespace mediasoupclient
 				// clang-format on
 
 				auto jsonChannelsIt = codec.find("channels");
-				if (jsonChannelsIt != codec.end() && jsonChannelsIt->is_number_unsigned())
+				if (jsonChannelsIt != codec.end() && jsonChannelsIt->is_number_integer())
 				{
 					auto channels = jsonChannelsIt->get<uint8_t>();
 					if (channels > 1)
@@ -179,7 +179,7 @@ namespace mediasoupclient
 						}
 
 						auto jsonOpusMaxPlaybackRateIt = codecOptions->find("opusMaxPlaybackRate");
-						if (jsonOpusMaxPlaybackRateIt != codecOptions->end() && jsonOpusMaxPlaybackRateIt->is_number_unsigned())
+						if (jsonOpusMaxPlaybackRateIt != codecOptions->end() && jsonOpusMaxPlaybackRateIt->is_number_integer())
 						{
 							auto opusMaxPlaybackRate = jsonOpusMaxPlaybackRateIt->get<uint32_t>();
 							offerCodec["parameters"]["maxplaybackrate"] = opusMaxPlaybackRate;
@@ -190,21 +190,21 @@ namespace mediasoupclient
 						auto jsonVideoGoogleStartBitrateIt = codecOptions->find("videoGoogleStartBitrate");
 						if (
 						  jsonVideoGoogleStartBitrateIt != codecOptions->end() &&
-						  jsonVideoGoogleStartBitrateIt->is_number_unsigned())
+						  jsonVideoGoogleStartBitrateIt->is_number_integer())
 						{
 							auto startBitrate = jsonVideoGoogleStartBitrateIt->get<uint32_t>();
 							offerCodec["parameters"]["x-google-start-bitrate"] = startBitrate;
 						}
 
 						auto jsonVideoGoogleMaxBitrateIt = codecOptions->find("videoGoogleMaxBitrate");
-						if (jsonVideoGoogleMaxBitrateIt != codecOptions->end() && jsonVideoGoogleMaxBitrateIt->is_number_unsigned())
+						if (jsonVideoGoogleMaxBitrateIt != codecOptions->end() && jsonVideoGoogleMaxBitrateIt->is_number_integer())
 						{
 							auto maxBitrate = jsonVideoGoogleMaxBitrateIt->get<uint32_t>();
 							offerCodec["parameters"]["x-google-max-bitrate"] = maxBitrate;
 						}
 
 						auto jsonVideoGoogleMinBitrateIt = codecOptions->find("videoGoogleMinBitrate");
-						if (jsonVideoGoogleMinBitrateIt != codecOptions->end() && jsonVideoGoogleMinBitrateIt->is_number_unsigned())
+						if (jsonVideoGoogleMinBitrateIt != codecOptions->end() && jsonVideoGoogleMinBitrateIt->is_number_integer())
 						{
 							auto minBitrate = jsonVideoGoogleMinBitrateIt->get<uint32_t>();
 							offerCodec["parameters"]["x-google-min-bitrate"] = minBitrate;
@@ -382,7 +382,7 @@ namespace mediasoupclient
 				// clang-format on
 
 				auto jsonChannelsIt = codec.find("channels");
-				if (jsonChannelsIt != codec.end() && jsonChannelsIt->is_number_unsigned())
+				if (jsonChannelsIt != codec.end() && jsonChannelsIt->is_number_integer())
 				{
 					auto channels = (*jsonChannelsIt).get<uint8_t>();
 					if (channels > 1)

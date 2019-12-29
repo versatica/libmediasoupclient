@@ -168,7 +168,7 @@ namespace mediasoupclient
 		  const std::string& id,
 		  const std::string& producerId,
 		  const std::string& kind,
-		  const nlohmann::json* rtpParameters,
+		  nlohmann::json* rtpParameters,
 		  nlohmann::json appData = nlohmann::json::object());
 
 		/* Virtual methods inherited from Transport. */

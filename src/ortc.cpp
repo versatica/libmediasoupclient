@@ -534,33 +534,34 @@ namespace mediasoupclient
 					  return matchCodecs(localCodec, remoteCodec, /*strict*/ true, /*modify*/ true);
 				  });
 
-				if (matchingLocalCodecIt != localCodecs.end())
+				if (matchingLocalCodecIt == localCodecs.end())
+					continue;
+
+				auto& localCodec = *matchingLocalCodecIt;
+
+				// clang-format off
+				json extendedCodec =
 				{
-					auto& localCodec = *matchingLocalCodecIt;
+					{ "mimeType",             localCodec["mimeType"]                      },
+					{ "kind",                 localCodec["kind"]                          },
+					{ "clockRate",            localCodec["clockRate"]                     },
+					{ "channels",             localCodec["channels"]                      },
+					{ "localPayloadType",     localCodec["preferredPayloadType"]          },
+					{ "localRtxPayloadType",  nullptr                                     },
+					{ "remotePayloadType",    remoteCodec["preferredPayloadType"]         },
+					{ "remoteRtxPayloadType", nullptr                                     },
+					{ "localParameters",      localCodec["parameters"]                    },
+					{ "remoteParameters",     remoteCodec["parameters"]                   },
+					{ "rtcpFeedback",         reduceRtcpFeedback(localCodec, remoteCodec) }
+				};
+				// clang-format on
 
-					// clang-format off
-					json extendedCodec =
-					{
-						{ "mimeType",             localCodec["mimeType"]                      },
-						{ "kind",                 localCodec["kind"]                          },
-						{ "clockRate",            localCodec["clockRate"]                     },
-						{ "channels",             localCodec["channels"]                      },
-						{ "localPayloadType",     localCodec["preferredPayloadType"]          },
-						{ "localRtxPayloadType",  nullptr                                     },
-						{ "remotePayloadType",    remoteCodec["preferredPayloadType"]         },
-						{ "remoteRtxPayloadType", nullptr                                     },
-						{ "rtcpFeedback",         reduceRtcpFeedback(localCodec, remoteCodec) },
-						{ "localParameters",      localCodec["parameters"]                    },
-						{ "remoteParameters",     remoteCodec["parameters"]                   }
-					};
-					// clang-format on
-
-					extendedRtpCapabilities["codecs"].push_back(extendedCodec);
-				}
+				extendedRtpCapabilities["codecs"].push_back(extendedCodec);
 			}
 
 			// Match RTX codecs.
 			json& extendedCodecs = extendedRtpCapabilities["codecs"];
+
 			for (json& extendedCodec : extendedCodecs)
 			{
 				auto localCodecs      = localCaps["codecs"];
@@ -592,6 +593,7 @@ namespace mediasoupclient
 
 			// Match header extensions.
 			auto remoteExts = remoteCaps["headerExtensions"];
+
 			for (auto& remoteExt : remoteExts)
 			{
 				auto localExts = localCaps["headerExtensions"];
@@ -605,14 +607,16 @@ namespace mediasoupclient
 
 				auto& matchingLocalExt = *jsonLocalExtIt;
 
+				// TODO: Must do stuff for encrypted extensions.
+
 				// clang-format off
 				json extendedExt =
 				{
-					{ "kind",      remoteExt["kind"]               },
-					{ "uri",       remoteExt["uri"]                },
-					{ "sendId",    matchingLocalExt["preferredId"] },
-					{ "recvId",    remoteExt["preferredId"]        },
-					{ "direction", remoteExt["sendrecv"]           }
+					{ "kind",    remoteExt["kind"]                    },
+					{ "uri",     remoteExt["uri"]                     },
+					{ "sendId",  matchingLocalExt["preferredId"]      },
+					{ "recvId",  remoteExt["preferredId"]             },
+					{ "encrypt", matchingLocalExt["preferredEncrypt"] }
 				};
 				// clang-format on
 
@@ -660,8 +664,8 @@ namespace mediasoupclient
 					{ "preferredPayloadType", extendedCodec["remotePayloadType"] },
 					{ "clockRate",            extendedCodec["clockRate"]         },
 					{ "channels",             extendedCodec["channels"]          },
+					{ "parameters",           extendedCodec["localParameters"]   },
 					{ "rtcpFeedback",         extendedCodec["rtcpFeedback"]      },
-					{ "parameters",           extendedCodec["localParameters"]   }
 				};
 				// clang-format on
 
@@ -670,23 +674,23 @@ namespace mediasoupclient
 				// Add RTX codec.
 				if (extendedCodec["remoteRtxPayloadType"] != nullptr)
 				{
-					auto mimeType = extendedCodec["kind"].get<std::string>();
-					mimeType.append("/rtx");
+					auto mimeType = extendedCodec["kind"].get<std::string>().append("/rtx");
 
 					// clang-format off
 					json rtxCodec =
 					{
 						{ "mimeType",             mimeType                              },
 						{ "kind",                 extendedCodec["kind"]                 },
-						{ "clockRate",            extendedCodec["clockRate"]            },
 						{ "preferredPayloadType", extendedCodec["remoteRtxPayloadType"] },
-						{ "rtcpFeedback",         json::array()                         },
+						{ "clockRate",            extendedCodec["clockRate"]            },
+						{ "channels",             1                                     },
 						{
 							"parameters",
 							{
 								{ "apt", extendedCodec["remotePayloadType"].get<uint8_t>() }
 							}
-						}
+						},
+						{ "rtcpFeedback", json::array() }
 					};
 					// clang-format on
 
@@ -698,13 +702,7 @@ namespace mediasoupclient
 
 			for (auto& extendedExtension : extendedRtpCapabilities["headerExtensions"])
 			{
-				auto jsonDirectionIt = extendedExtension.find("direction");
-				std::string direction;
-
-				if (jsonDirectionIt != extendedExtension.end() && jsonDirectionIt->is_string())
-					direction = jsonDirectionIt->get<std::string>();
-				else
-					direction = "sendrecv";
+				std::string direction = extendedExtension["direction"].get<std::string>();
 
 				// Ignore RTP extensions not valid for receiving.
 				if (direction != "sendrecv" && direction != "recvonly")
@@ -713,9 +711,11 @@ namespace mediasoupclient
 				// clang-format off
 				json ext =
 				{
-					{ "kind",        extendedExtension["kind"]   },
-					{ "uri",         extendedExtension["uri"]    },
-					{ "preferredId", extendedExtension["recvId"] }
+					{ "kind",             extendedExtension["kind"]      },
+					{ "uri",              extendedExtension["uri"]       },
+					{ "preferredId",      extendedExtension["recvId"]    },
+					{ "preferredEncrypt", extendedExtension["encrypt"]   },
+					{ "direction",        extendedExtension["direction"] }
 				};
 				// clang-format on
 
@@ -755,13 +755,12 @@ namespace mediasoupclient
 				// clang-format off
 				json codec =
 				{
-					{ "mimeType",             extendedCodec["mimeType"]         },
-					{ "kind",                 extendedCodec["kind"]             },
-					{ "clockRate",            extendedCodec["clockRate"]        },
-					{ "channels",             extendedCodec["channels"]         },
-					{ "payloadType",          extendedCodec["localPayloadType"] },
-					{ "rtcpFeedback",         extendedCodec["rtcpFeedback"]     },
-					{ "parameters",           extendedCodec["localParameters"]  }
+					{ "mimeType",     extendedCodec["mimeType"]         },
+					{ "payloadType",  extendedCodec["localPayloadType"] },
+					{ "clockRate",    extendedCodec["clockRate"]        },
+					{ "channels",     extendedCodec["channels"]         },
+					{ "parameters",   extendedCodec["localParameters"]  },
+					{ "rtcpFeedback", extendedCodec["rtcpFeedback"]     }
 				};
 				// clang-format on
 
@@ -770,22 +769,22 @@ namespace mediasoupclient
 				// Add RTX codec.
 				if (extendedCodec["localRtxPayloadType"] != nullptr)
 				{
-					auto mimeType = extendedCodec["kind"].get<std::string>();
-					mimeType.append("/rtx");
+					auto mimeType = extendedCodec["kind"].get<std::string>().append("/rtx");
 
 					// clang-format off
 					json rtxCodec =
 					{
-						{ "mimeType",     mimeType                             },
-						{ "clockRate",    extendedCodec["clockRate"]           },
-						{ "payloadType",  extendedCodec["localRtxPayloadType"] },
-						{ "rtcpFeedback", json::array()                        },
+						{ "mimeType",    mimeType                             },
+						{ "payloadType", extendedCodec["localRtxPayloadType"] },
+						{ "clockRate",   extendedCodec["clockRate"]           },
+						{ "channels",    1                                    },
 						{
 							"parameters",
 							{
 								{ "apt", extendedCodec["localPayloadType"].get<uint8_t>() }
 							}
-						}
+						},
+						{ "rtcpFeedback", json::array() }
 					};
 					// clang-format on
 
@@ -802,13 +801,7 @@ namespace mediasoupclient
 				if (kind != extendedExtension["kind"].get<std::string>())
 					continue;
 
-				auto jsonDirectionIt = extendedExtension.find("direction");
-				std::string direction;
-
-				if (jsonDirectionIt != extendedExtension.end() && jsonDirectionIt->is_string())
-					direction = jsonDirectionIt->get<std::string>();
-				else
-					direction = "sendrecv";
+				std::string direction = extendedExtension["direction"].get<std::string>();
 
 				// Ignore RTP extensions not valid for sending.
 				if (direction != "sendrecv" && direction != "sendonly")
@@ -817,8 +810,10 @@ namespace mediasoupclient
 				// clang-format off
 				json ext =
 				{
-					{ "uri", extendedExtension["uri"]    },
-					{ "id",  extendedExtension["recvId"] }
+					{ "uri",       extendedExtension["uri"]       },
+					{ "id",        extendedExtension["recvId"]    },
+					{ "encrypt",   extendedExtension["encrypt"]   },
+					{ "direction", extendedExtension["direction"] }
 				};
 				// clang-format on
 
@@ -854,13 +849,12 @@ namespace mediasoupclient
 				// clang-format off
 				json codec =
 				{
-					{ "mimeType",             extendedCodec["mimeType"]         },
-					{ "kind",                 extendedCodec["kind"]             },
-					{ "clockRate",            extendedCodec["clockRate"]        },
-					{ "channels",             extendedCodec["channels"]         },
-					{ "payloadType",          extendedCodec["localPayloadType"] },
-					{ "rtcpFeedback",         extendedCodec["rtcpFeedback"]     },
-					{ "parameters",           extendedCodec["remoteParameters"] }
+					{ "mimeType",     extendedCodec["mimeType"]         },
+					{ "clockRate",    extendedCodec["clockRate"]        },
+					{ "channels",     extendedCodec["channels"]         },
+					{ "payloadType",  extendedCodec["localPayloadType"] },
+					{ "parameters",   extendedCodec["remoteParameters"] },
+					{ "rtcpFeedback", extendedCodec["rtcpFeedback"]     }
 				};
 				// clang-format on
 
@@ -869,22 +863,22 @@ namespace mediasoupclient
 				// Add RTX codec.
 				if (extendedCodec["localRtxPayloadType"] != nullptr)
 				{
-					auto mimeType = extendedCodec["kind"].get<std::string>();
-					mimeType.append("/rtx");
+					auto mimeType = extendedCodec["kind"].get<std::string>().append("/rtx");
 
 					// clang-format off
 					json rtxCodec =
 					{
-						{ "mimeType",     mimeType                             },
-						{ "clockRate",    extendedCodec["clockRate"]           },
-						{ "payloadType",  extendedCodec["localRtxPayloadType"] },
-						{ "rtcpFeedback", json::array()                        },
+						{ "mimeType",    mimeType                             },
+						{ "payloadType", extendedCodec["localRtxPayloadType"] },
+						{ "clockRate",   extendedCodec["clockRate"]           },
+						{ "channels",    1                                    },
 						{
 							"parameters",
 							{
 								{ "apt", extendedCodec["localPayloadType"].get<uint8_t>() }
 							}
-						}
+						},
+						{ "rtcpFeedback", json::array() }
 					};
 					// clang-format on
 
@@ -892,7 +886,6 @@ namespace mediasoupclient
 				}
 
 				// NOTE: We assume a single media codec plus an optional RTX codec.
-				// TODO: In the future, we need to add FEC, CN, etc, codecs.
 				break;
 			}
 
@@ -901,13 +894,7 @@ namespace mediasoupclient
 				if (kind != extendedExtension["kind"].get<std::string>())
 					continue;
 
-				auto jsonDirectionIt = extendedExtension.find("direction");
-				std::string direction;
-
-				if (jsonDirectionIt != extendedExtension.end() && jsonDirectionIt->is_string())
-					direction = jsonDirectionIt->get<std::string>();
-				else
-					direction = "sendrecv";
+				std::string direction = extendedExtension["direction"].get<std::string>();
 
 				// Ignore RTP extensions not valid for sending.
 				if (direction != "sendrecv" && direction != "sendonly")
@@ -916,24 +903,26 @@ namespace mediasoupclient
 				// clang-format off
 				json ext =
 				{
-					{ "uri", extendedExtension["uri"]    },
-					{ "id",  extendedExtension["recvId"] }
+					{ "uri",       extendedExtension["uri"]       },
+					{ "id",        extendedExtension["recvId"]    },
+					{ "encrypt",   extendedExtension["encrypt"]   },
+					{ "direction", extendedExtension["direction"] }
 				};
 				// clang-format on
 
 				rtpParameters["headerExtensions"].push_back(ext);
 			}
 
+			auto headerExtensionsIt = rtpParameters.find("headerExtensions");
+
 			// Reduce codecs' RTCP feedback. Use Transport-CC if available, REMB otherwise.
-			auto jsonHeaderExtensionIt = std::find_if(
-			  rtpParameters["headerExtensions"].begin(),
-			  rtpParameters["headerExtensions"].end(),
-			  [](json& ext) {
+			auto headerExtensionIt =
+			  std::find_if(headerExtensionsIt->begin(), headerExtensionsIt->end(), [](json& ext) {
 				  return ext["uri"].get<std::string>() ==
 				         "http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01";
 			  });
 
-			if (jsonHeaderExtensionIt != rtpParameters["headerExtensions"].end())
+			if (headerExtensionIt != headerExtensionsIt->end())
 			{
 				for (auto& codec : rtpParameters["codecs"])
 				{
@@ -954,15 +943,13 @@ namespace mediasoupclient
 				return rtpParameters;
 			}
 
-			jsonHeaderExtensionIt = std::find_if(
-			  rtpParameters["headerExtensions"].begin(),
-			  rtpParameters["headerExtensions"].end(),
-			  [](json& ext) {
+			headerExtensionIt =
+			  std::find_if(headerExtensionsIt->begin(), headerExtensionsIt->end(), [](json& ext) {
 				  return ext["uri"].get<std::string>() ==
 				         "http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time";
 			  });
 
-			if (jsonHeaderExtensionIt != rtpParameters["headerExtensions"].end())
+			if (headerExtensionIt != headerExtensionsIt->end())
 			{
 				for (auto& codec : rtpParameters["codecs"])
 				{
@@ -1224,33 +1211,17 @@ static json reduceRtcpFeedback(const json& codecA, const json& codecB)
 	MSC_TRACE();
 
 	auto reducedRtcpFeedback = json::array();
+	auto jsonRtcpFeedbackAIt = codecA.find("rtcpFeedback");
+	auto jsonRtcpFeedbackBIt = codecB.find("rtcpFeedback");
 
-	auto jsonRtcpFeedbackAIt = codecA["rtcpFeedback"];
-	auto jsonRtcpFeedbackBIt = codecB["rtcpFeedback"];
-
-	for (auto& aFb : jsonRtcpFeedbackAIt)
+	for (auto& aFb : *jsonRtcpFeedbackAIt)
 	{
 		auto jsonRtcpFeedbackIt =
-		  std::find_if(jsonRtcpFeedbackBIt.begin(), jsonRtcpFeedbackBIt.end(), [&aFb](const json& bFb) {
-			  if (aFb["type"] != bFb["type"])
-				  return false;
-
-			  auto jsonParameterAIt = aFb.find("parameter");
-			  auto jsonParameterBIt = bFb.find("parameter");
-
-			  if (jsonParameterAIt == aFb.end() && jsonParameterBIt != bFb.end())
-				  return false;
-
-			  if (jsonParameterAIt != aFb.end() && jsonParameterBIt == bFb.end())
-				  return false;
-
-			  if (jsonParameterAIt == aFb.end())
-				  return true;
-
-			  return (*jsonParameterAIt) == (*jsonParameterBIt);
+		  std::find_if(jsonRtcpFeedbackBIt->begin(), jsonRtcpFeedbackBIt->end(), [&aFb](const json& bFb) {
+			  return (aFb["type"] == bFb["type"] && aFb["parameter"] == bFb["parameter"]);
 		  });
 
-		if (jsonRtcpFeedbackIt != jsonRtcpFeedbackBIt.end())
+		if (jsonRtcpFeedbackIt != jsonRtcpFeedbackBIt->end())
 			reducedRtcpFeedback.push_back(*jsonRtcpFeedbackIt);
 	}
 

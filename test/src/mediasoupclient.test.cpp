@@ -42,13 +42,13 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 	SECTION("device.GetRtpCapabilities throws if not loaded")
 	{
-		REQUIRE_THROWS_AS(device->GetRtpCapabilities(), MediaSoupClientError);
+		REQUIRE_THROWS_AS(device->GetRtpCapabilities(), MediaSoupClientInvalidStateError);
 	}
 
 	SECTION("device.CanProduce() throws if not loaded")
 	{
-		REQUIRE_THROWS_AS(device->CanProduce("audio"), MediaSoupClientError);
-		REQUIRE_THROWS_AS(device->CanProduce("video"), MediaSoupClientError);
+		REQUIRE_THROWS_AS(device->CanProduce("audio"), MediaSoupClientInvalidStateError);
+		REQUIRE_THROWS_AS(device->CanProduce("video"), MediaSoupClientInvalidStateError);
 	}
 
 	SECTION("device.CreateSendTransport() throws if not loaded")
@@ -61,19 +61,19 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		    TransportRemoteParameters["iceCandidates"],
 		    TransportRemoteParameters["dtlsParameters"],
 		    &peerConnectionOptions),
-		  MediaSoupClientError);
+		  MediaSoupClientInvalidStateError);
 	}
 
-	// TODO: Device::Load() must do some basic checks.
-	/*
-	SECTION("device.load() without routerRtpCapabilities rejects with TypeError")
+	SECTION("device.Load() with invalid routerRtpCapabilities rejects with TypeError")
 	{
-	  routerRtpCapabilities = json::object();
+		auto routerRtpCapabilities = R"(
+		{
+			"codecs" : {}
+		})"_json;
 
-	  REQUIRE_NOTHROW(device->Load(routerRtpCapabilities));
-	  REQUIRE(device->IsLoaded() == false);
+		REQUIRE_THROWS_AS(device->Load(routerRtpCapabilities), MediaSoupClientTypeError);
+		REQUIRE(device->IsLoaded() == false);
 	}
-	*/
 
 	SECTION("device.load() with invalid routerRtpCapabilities throws")
 	{
@@ -97,7 +97,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 	SECTION("device.load() rejects if already loaded")
 	{
-		REQUIRE_THROWS_AS(device->Load(routerRtpCapabilities), MediaSoupClientError);
+		REQUIRE_THROWS_AS(device->Load(routerRtpCapabilities), MediaSoupClientInvalidStateError);
 	}
 
 	SECTION("device.GetRtpCapabilities() succeeds")
@@ -113,7 +113,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 	SECTION("device.CanProduce() with invalid kind throws exception")
 	{
-		REQUIRE_THROWS_AS(device->CanProduce("chicken"), MediaSoupClientError);
+		REQUIRE_THROWS_AS(device->CanProduce("chicken"), MediaSoupClientTypeError);
 	}
 
 	SECTION("device.createSendTransport() for sending media succeeds")
@@ -279,7 +279,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 	SECTION("transport.produce() without track throws")
 	{
 		REQUIRE_THROWS_AS(
-		  sendTransport->Produce(&producerListener, nullptr, nullptr, nullptr), MediaSoupClientError);
+		  sendTransport->Produce(&producerListener, nullptr, nullptr, nullptr), MediaSoupClientTypeError);
 	}
 
 	SECTION("transport.consume() succeeds")

@@ -213,6 +213,9 @@ namespace mediasoupclient
 
 		try
 		{
+			// This will fill rtpParameters's missing fields with default values.
+			ortc::validateRtpParameters(rtpParameters);
+
 			// May throw.
 			producerId = this->listener->OnProduce(this, track->kind(), rtpParameters, appData).get();
 		}

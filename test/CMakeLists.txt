@@ -1,17 +1,17 @@
 set(
 	SOURCE_FILES
-	src/Device.test.cpp
-	src/Handler.test.cpp
-	src/PeerConnection.test.cpp
-	src/RemoteSdp.test.cpp
-	src/SdpUtils.test.cpp
+	# src/Device.test.cpp
+	# src/Handler.test.cpp
+	# src/PeerConnection.test.cpp
+	# src/RemoteSdp.test.cpp
+	# src/SdpUtils.test.cpp
 	src/VcmCapturer.cpp
 	src/VideoCapturer.cpp
 	src/mediasoupclient.test.cpp
-	src/ortc.test.cpp
+	# src/ortc.test.cpp
 	src/parameters.cpp
 	src/peerConnectionUtils.cpp
-	src/scalabilityMode.test.cpp
+	# src/scalabilityMode.test.cpp
 	src/tests.cpp
 	include/FakeTransportListener.hpp
 	include/VcmCapturer.hpp

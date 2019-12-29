@@ -77,19 +77,21 @@ namespace mediasoupclient
 		}
 		else
 		{
-			this->signalingThread.reset(new rtc::Thread());
-			this->workerThread.reset(new rtc::Thread());
+			this->networkThread = rtc::Thread::CreateWithSocketServer();
+			this->signalingThread = rtc::Thread::Create();
+			this->workerThread = rtc::Thread::Create();
 
+			this->signalingThread->SetName("network_thread", nullptr);
 			this->signalingThread->SetName("signaling_thread", nullptr);
 			this->workerThread->SetName("worker_thread", nullptr);
 
-			if (!this->signalingThread->Start() || !this->workerThread->Start())
+			if (!this->networkThread->Start() || !this->signalingThread->Start() || !this->workerThread->Start())
 			{
 				MSC_THROW_INVALID_STATE_ERROR("thread start errored");
 			}
 
 			this->peerConnectionFactory = webrtc::CreatePeerConnectionFactory(
-			  this->workerThread.get(),
+			  this->networkThread.get(),
 			  this->workerThread.get(),
 			  this->signalingThread.get(),
 			  nullptr /*default_adm*/,
@@ -105,7 +107,7 @@ namespace mediasoupclient
 		config.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
 
 		// Create the webrtc::Peerconnection.
-		this->pc = peerConnectionFactory->CreatePeerConnection(config, nullptr, nullptr, privateListener);
+		this->pc = this->peerConnectionFactory->CreatePeerConnection(config, nullptr, nullptr, privateListener);
 	}
 
 	void PeerConnection::Close()
@@ -126,16 +128,16 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		webrtc::RTCError error;
+		webrtc::RTCError error = this->pc->SetConfiguration(config);
 
-		if (this->pc->SetConfiguration(config, &error))
+		if (error.ok())
 		{
 			return true;
 		}
 
 		MSC_WARN(
-		  "webrtc::PeerConnection::SetConfiguration failed [%s]: %s",
-		  webrtc::ToString(error.type()).data(),
+		  "webrtc::PeerConnection::SetConfiguration failed [%s:%s]",
+		  webrtc::ToString(error.type()),
 		  error.message());
 
 		return false;
@@ -330,7 +332,7 @@ namespace mediasoupclient
 
 		auto future = callback->GetFuture();
 
-		this->pc->GetStats(callback);
+		this->pc->GetStats(callback.get());
 
 		return future.get();
 	}
@@ -391,8 +393,8 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		MSC_WARN(
-		  "webtc::SetSessionDescriptionObserver failure [%s]: %s",
-		  webrtc::ToString(error.type()).data(),
+		  "webtc::SetSessionDescriptionObserver failure [%s:%s]",
+		  webrtc::ToString(error.type()),
 		  error.message());
 
 		auto message = std::string(error.message());
@@ -432,8 +434,8 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		MSC_WARN(
-		  "webtc::CreateSessionDescriptionObserver failure [%s]: %s",
-		  webrtc::ToString(error.type()).data(),
+		  "webtc::CreateSessionDescriptionObserver failure [%s:%s]",
+		  webrtc::ToString(error.type()),
 		  error.message());
 
 		auto message = std::string(error.message());

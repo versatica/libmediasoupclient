@@ -22,9 +22,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 	static std::unique_ptr<mediasoupclient::Consumer> videoConsumer;
 	static std::unique_ptr<mediasoupclient::Consumer> audioConsumer2;
 
-	static mediasoupclient::PeerConnection::Options peerConnectionOptions;
-
-	peerConnectionOptions.factory = createPeerConnectionFactory();
+	static std::unique_ptr<PeerConnectionFactoryWrapper> peerConnectionFactory(new PeerConnectionFactoryWrapper());
 
 	static rtc::scoped_refptr<webrtc::AudioTrackInterface> audioTrack;
 	static rtc::scoped_refptr<webrtc::VideoTrackInterface> videoTrack;
@@ -60,7 +58,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		    TransportRemoteParameters["iceParameters"],
 		    TransportRemoteParameters["iceCandidates"],
 		    TransportRemoteParameters["dtlsParameters"],
-		    &peerConnectionOptions),
+		    nullptr),
 		  MediaSoupClientInvalidStateError);
 	}
 
@@ -131,7 +129,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		  TransportRemoteParameters["iceParameters"],
 		  TransportRemoteParameters["iceCandidates"],
 		  TransportRemoteParameters["dtlsParameters"],
-		  &peerConnectionOptions,
+		  nullptr,
 		  appData)));
 
 		REQUIRE(sendTransport->GetId() == TransportRemoteParameters["id"].get<std::string>());
@@ -148,7 +146,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		  TransportRemoteParameters["iceParameters"],
 		  TransportRemoteParameters["iceCandidates"],
 		  TransportRemoteParameters["dtlsParameters"],
-		  &peerConnectionOptions)));
+		  nullptr)));
 
 		REQUIRE(recvTransport->GetId() == TransportRemoteParameters["id"].get<std::string>());
 		REQUIRE(!recvTransport->IsClosed());
@@ -171,8 +169,8 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		encodings.emplace_back(webrtc::RtpEncodingParameters());
 		encodings.emplace_back(webrtc::RtpEncodingParameters());
 
-		audioTrack = createAudioTrack("audio-track-id");
-		videoTrack = createVideoTrack("video-track-id");
+		audioTrack = peerConnectionFactory->CreateAudioTrack("audio-track-id");
+		videoTrack = peerConnectionFactory->CreateVideoTrack("video-track-id");
 
 		json codecs;
 		json headerExtensions;
@@ -450,15 +448,15 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE(headerExtensions == R"(
 		[
 			{
+			  "encrypt": false,
 			  "id": 2,
 			  "uri": "urn:ietf:params:rtp-hdrext:toffset",
-			  "encrypt": false,
 			  "parameters": {}
 			},
 			{
+			  "encrypt": false,
 			  "id": 3,
 			  "uri": "http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time",
-			  "encrypt": false,
 			  "parameters": {}
 			}
 		])"_json);
@@ -524,9 +522,9 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE(headerExtensions == R"(
 		[
 			{
+				"encrypt": false,
 				"id": 1,
 				"uri": "urn:ietf:params:rtp-hdrext:ssrc-audio-level",
-				"encrypt": false,
 				"parameters": {}
 			}
 		])"_json);
@@ -599,7 +597,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		// Have the audio Producer paused.
 		audioProducer->Pause();
 
-		auto newAudioTrack = createAudioTrack("audio-track-id-2");
+		auto newAudioTrack = peerConnectionFactory->CreateAudioTrack("audio-track-id-2");
 
 		REQUIRE_NOTHROW(audioProducer->ReplaceTrack(newAudioTrack));
 		REQUIRE(audioProducer->GetTrack() == newAudioTrack);
@@ -609,7 +607,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		// Reset the audio paused state.
 		audioProducer->Resume();
 
-		auto newVideoTrack = createVideoTrack("video-track-id-2");
+		auto newVideoTrack = peerConnectionFactory->CreateVideoTrack("video-track-id-2");
 
 		REQUIRE_NOTHROW(videoProducer->ReplaceTrack(newVideoTrack));
 		REQUIRE(videoProducer->GetTrack() == newVideoTrack);

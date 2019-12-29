@@ -1,15 +1,26 @@
 #ifndef MSC_TEST_PEERCONNECTION_UTILS_HPP
 #define MSC_TEST_PEERCONNECTION_UTILS_HPP
 
-#include <api/create_peerconnection_factory.h>
+#include "api/create_peerconnection_factory.h"
+#include <memory>
 
-// Create PeerConnection factory.
-rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> createPeerConnectionFactory();
+class PeerConnectionFactoryWrapper
+{
+	public:
+		PeerConnectionFactoryWrapper();
 
-// Audio track creation.
-rtc::scoped_refptr<webrtc::AudioTrackInterface> createAudioTrack(const std::string& label);
+		rtc::scoped_refptr<webrtc::AudioTrackInterface> CreateAudioTrack(const std::string& label);
 
-// Video track creation.
-rtc::scoped_refptr<webrtc::VideoTrackInterface> createVideoTrack(const std::string& label);
+		rtc::scoped_refptr<webrtc::VideoTrackInterface> CreateVideoTrack(const std::string& label);
+
+	private:
+		// Signaling and worker threads.
+		std::unique_ptr<rtc::Thread> networkThread;
+		std::unique_ptr<rtc::Thread> signalingThread;
+		std::unique_ptr<rtc::Thread> workerThread;
+
+		// PeerConnection factory.
+		rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> factory;
+};
 
 #endif

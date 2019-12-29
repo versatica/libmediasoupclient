@@ -57,7 +57,8 @@ namespace mediasoupclient
 			LOG_NONE  = 0,
 			LOG_ERROR = 1,
 			LOG_WARN  = 2,
-			LOG_DEBUG = 3
+			LOG_DEBUG = 3,
+			LOG_TRACE = 4
 		};
 
 		class LogHandlerInterface

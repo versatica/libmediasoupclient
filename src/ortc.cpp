@@ -544,7 +544,7 @@ namespace mediasoupclient
 						{ "mimeType",             localCodec["mimeType"]                      },
 						{ "kind",                 localCodec["kind"]                          },
 						{ "clockRate",            localCodec["clockRate"]                     },
-						{ "channels",             localCodec["channels"]                     },
+						{ "channels",             localCodec["channels"]                      },
 						{ "localPayloadType",     localCodec["preferredPayloadType"]          },
 						{ "localRtxPayloadType",  nullptr                                     },
 						{ "remotePayloadType",    remoteCodec["preferredPayloadType"]         },
@@ -776,10 +776,10 @@ namespace mediasoupclient
 					// clang-format off
 					json rtxCodec =
 					{
-						{ "mimeType",     mimeType                            },
-						{ "clockRate",    extendedCodec["clockRate"]          },
+						{ "mimeType",     mimeType                             },
+						{ "clockRate",    extendedCodec["clockRate"]           },
 						{ "payloadType",  extendedCodec["localRtxPayloadType"] },
-						{ "rtcpFeedback", json::array()                       },
+						{ "rtcpFeedback", json::array()                        },
 						{
 							"parameters",
 							{
@@ -875,10 +875,10 @@ namespace mediasoupclient
 					// clang-format off
 					json rtxCodec =
 					{
-						{ "mimeType",     mimeType                            },
-						{ "clockRate",    extendedCodec["clockRate"]          },
+						{ "mimeType",     mimeType                             },
+						{ "clockRate",    extendedCodec["clockRate"]           },
 						{ "payloadType",  extendedCodec["localRtxPayloadType"] },
-						{ "rtcpFeedback", json::array()                       },
+						{ "rtcpFeedback", json::array()                        },
 						{
 							"parameters",
 							{

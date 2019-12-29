@@ -1,5 +1,4 @@
 #define MSC_CLASS "Logger"
-// #define MSC_LOG_DEV
 
 #include "Logger.hpp"
 #include <iostream>

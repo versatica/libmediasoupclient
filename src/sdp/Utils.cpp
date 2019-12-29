@@ -1,5 +1,4 @@
 #define MSC_CLASS "Sdp::Utils"
-// #define MSC_LOG_DEV
 
 #include "sdp/Utils.hpp"
 #include "Logger.hpp"

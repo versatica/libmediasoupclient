@@ -1,5 +1,4 @@
 #define MSC_CLASS "scalabilityMode"
-// #define MSC_LOG_DEV
 
 #include "scalabilityMode.hpp"
 #include "Logger.hpp"

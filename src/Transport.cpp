@@ -1,5 +1,4 @@
 #define MSC_CLASS "Transport"
-// #define MSC_LOG_DEV
 
 #include "Transport.hpp"
 #include "Logger.hpp"

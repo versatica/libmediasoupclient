@@ -1,5 +1,4 @@
 #define MSC_CLASS "Consumer"
-// #define MSC_LOG_DEV
 
 #include "Consumer.hpp"
 #include "Logger.hpp"

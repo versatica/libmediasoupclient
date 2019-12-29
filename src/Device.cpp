@@ -1,5 +1,4 @@
 #define MSC_CLASS "Device"
-// #define MSC_LOG_DEV
 
 #include "Device.hpp"
 #include "Logger.hpp"

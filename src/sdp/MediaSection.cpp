@@ -1,5 +1,4 @@
 #define MSC_CLASS "Sdp::MediaSection"
-// #define MSC_LOG_DEV
 
 #include "sdp/MediaSection.hpp"
 #include "Logger.hpp"

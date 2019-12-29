@@ -1,5 +1,4 @@
 #define MSC_CLASS "PeerConnection"
-// #define MSC_LOG_DEV
 
 #include "PeerConnection.hpp"
 #include "Logger.hpp"
@@ -135,7 +134,7 @@ namespace mediasoupclient
 		}
 
 		MSC_WARN(
-		  "webrtc::PeerConnection::SetConfiguration failed [%s:%s]",
+		  "webrtc::PeerConnection::SetConfiguration failed [%s]: %s",
 		  webrtc::ToString(error.type()).data(),
 		  error.message());
 
@@ -188,7 +187,7 @@ namespace mediasoupclient
 		if (sessionDescription == nullptr)
 		{
 			MSC_WARN(
-			  "webrtc::CreateSessionDescription failed [%s:%s]",
+			  "webrtc::CreateSessionDescription failed [%s]: %s",
 			  error.line.c_str(),
 			  error.description.c_str());
 
@@ -218,7 +217,7 @@ namespace mediasoupclient
 		if (sessionDescription == nullptr)
 		{
 			MSC_WARN(
-			  "webrtc::CreateSessionDescription failed [%s:%s]",
+			  "webrtc::CreateSessionDescription failed [%s]: %s",
 			  error.line.c_str(),
 			  error.description.c_str());
 
@@ -392,7 +391,7 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		MSC_WARN(
-		  "webtc::SetSessionDescriptionObserver failure [%s:%s]",
+		  "webtc::SetSessionDescriptionObserver failure [%s]: %s",
 		  webrtc::ToString(error.type()).data(),
 		  error.message());
 
@@ -433,7 +432,7 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		MSC_WARN(
-		  "webtc::CreateSessionDescriptionObserver failure [%s:%s]",
+		  "webtc::CreateSessionDescriptionObserver failure [%s]: %s",
 		  webrtc::ToString(error.type()).data(),
 		  error.message());
 
@@ -475,7 +474,7 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		MSC_DEBUG("new SignalingState:[%s]", PeerConnection::signalingState2String[newState].c_str());
+		MSC_DEBUG("[newState:%s]", PeerConnection::signalingState2String[newState].c_str());
 	}
 
 	/**
@@ -526,8 +525,7 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		MSC_DEBUG(
-		  "new IceConnectionState:[%s]", PeerConnection::iceConnectionState2String[newState].c_str());
+		MSC_DEBUG("[newState:%s]", PeerConnection::iceConnectionState2String[newState].c_str());
 	}
 
 	/**
@@ -538,8 +536,7 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		MSC_DEBUG(
-		  "new IceGatheringState:[%s]", PeerConnection::iceGatheringState2String[newState].c_str());
+		MSC_DEBUG("[newState:%s]", PeerConnection::iceGatheringState2String[newState].c_str());
 	}
 
 	/**
@@ -549,15 +546,11 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-#ifndef MSC_LOG_DEV
-		(void)candidate;
-#else
 		std::string candidateStr;
 
 		candidate->ToString(&candidateStr);
 
-		MSC_DEBUG("new IceCandidate:[%s]", candidateStr.c_str());
-#endif
+		MSC_DEBUG("[candidate:%s]", candidateStr.c_str());
 	}
 
 	/**

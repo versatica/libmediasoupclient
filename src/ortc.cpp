@@ -1,5 +1,4 @@
 #define MSC_CLASS "ortc"
-// #define MSC_LOG_DEV
 
 #include "ortc.hpp"
 #include "Logger.hpp"

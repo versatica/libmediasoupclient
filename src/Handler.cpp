@@ -1,5 +1,4 @@
 #define MSC_CLASS "Handler"
-// #define MSC_LOG_DEV
 
 #include "Handler.hpp"
 #include "Logger.hpp"

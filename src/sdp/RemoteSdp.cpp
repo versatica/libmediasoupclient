@@ -1,5 +1,4 @@
 #define MSC_CLASS "Sdp::RemoteSdp"
-// #define MSC_LOG_DEV
 
 #include "sdp/RemoteSdp.hpp"
 #include "Logger.hpp"

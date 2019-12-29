@@ -1,5 +1,4 @@
 #define MSC_CLASS "Producer"
-// #define MSC_LOG_DEV
 
 #include "Producer.hpp"
 #include "Logger.hpp"

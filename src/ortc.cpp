@@ -129,10 +129,18 @@ namespace mediasoupclient
 
 			for (auto it = parametersIt->begin(); it != parametersIt->end(); ++it)
 			{
+				auto& key = it.key();
 				auto& value = it.value();
 
 				if (!value.is_string() && !value.is_number())
 					MSC_THROW_TYPE_ERROR("invalid codec parameter");
+
+				// Specific parameters validation.
+				if (key == "apt")
+				{
+					if (!value.is_number_integer())
+						MSC_THROW_TYPE_ERROR("invalid codec apt parameter");
+				}
 			}
 
 			// rtcpFeedback is optional. If unset, set it to an empty array.
@@ -351,10 +359,18 @@ namespace mediasoupclient
 
 			for (auto it = parametersIt->begin(); it != parametersIt->end(); ++it)
 			{
+				auto& key = it.key();
 				auto& value = it.value();
 
 				if (!value.is_string() && !value.is_number())
 					MSC_THROW_TYPE_ERROR("invalid codec parameter");
+
+				// Specific parameters validation.
+				if (key == "apt")
+				{
+					if (!value.is_number_integer())
+						MSC_THROW_TYPE_ERROR("invalid codec apt parameter");
+				}
 			}
 
 			// rtcpFeedback is optional. If unset, set it to an empty array.

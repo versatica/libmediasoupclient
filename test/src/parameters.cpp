@@ -422,7 +422,7 @@ json generateConsumerRemoteParameters(const std::string& codecMimeType)
 						"rtcpFeedback" : [],
 						"parameters"   :
 						{
-							"apt" : "101"
+							"apt" : 101
 						}
 					}
 				],

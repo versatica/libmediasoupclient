@@ -436,7 +436,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 			"channels": 1,
 			"parameters":
 			{
-			  "apt": "101"
+			  "apt": 101
 			},
 			"payloadType": 102,
 			"rtcpFeedback": []

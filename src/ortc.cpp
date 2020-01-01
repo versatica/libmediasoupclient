@@ -212,8 +212,8 @@ namespace mediasoupclient
 			if (uriIt == ext.end() || !uriIt->is_string() || uriIt->get<std::string>().empty())
 				MSC_THROW_TYPE_ERROR("missing ext.uri");
 
-			// preferredId is optional.
-			if (preferredIdIt != ext.end() && !preferredIdIt->is_number_integer())
+			// preferredId is mandatory.
+			if (preferredIdIt == ext.end() || !preferredIdIt->is_number_integer())
 				MSC_THROW_TYPE_ERROR("invalid ext.preferredId");
 
 			// preferredEncrypt is optional. If unset set it to false.

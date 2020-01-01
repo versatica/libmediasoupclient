@@ -14,12 +14,12 @@ static constexpr uint32_t ProbatorSsrc{ 1234u };
 
 // Static functions declaration.
 static bool isRtxCodec(const json& codec);
-static uint8_t getH264PacketizationMode(const json& codec);
-static uint8_t getH264LevelAssimetryAllowed(const json& codec);
-static std::string getH264ProfileLevelId(const json& codec);
 static bool matchCodecs(json& aCodec, const json& bCodec, bool strict = false, bool modify = false);
 static bool matchHeaderExtensions(const json& aExt, const json& bExt);
 static json reduceRtcpFeedback(const json& codecA, const json& codecB);
+static uint8_t getH264PacketizationMode(const json& codec);
+static uint8_t getH264LevelAssimetryAllowed(const json& codec);
+static std::string getH264ProfileLevelId(const json& codec);
 
 namespace mediasoupclient
 {
@@ -129,7 +129,7 @@ namespace mediasoupclient
 
 			for (auto it = parametersIt->begin(); it != parametersIt->end(); ++it)
 			{
-				auto& key = it.key();
+				auto& key   = it.key();
 				auto& value = it.value();
 
 				if (!value.is_string() && !value.is_number())
@@ -359,7 +359,7 @@ namespace mediasoupclient
 
 			for (auto it = parametersIt->begin(); it != parametersIt->end(); ++it)
 			{
-				auto& key = it.key();
+				auto& key   = it.key();
 				auto& value = it.value();
 
 				if (!value.is_string() && !value.is_number())
@@ -1061,74 +1061,6 @@ static bool isRtxCodec(const json& codec)
 	return std::regex_match(mimeType, match, RtxMimeTypeRegex);
 }
 
-static uint8_t getH264PacketizationMode(const json& codec)
-{
-	MSC_TRACE();
-
-	auto jsonParametersIt = codec.find("parameters");
-
-	if (jsonParametersIt == codec.end() || !jsonParametersIt->is_object())
-		return 0;
-
-	auto jsonPacketizationModeIt = jsonParametersIt->find("packetization-mode");
-
-	// clang-format off
-	if (
-		jsonPacketizationModeIt == jsonParametersIt->end() ||
-		!jsonPacketizationModeIt->is_number()
-	)
-	// clang-format on
-	{
-		return 0;
-	}
-
-	return jsonPacketizationModeIt->get<uint8_t>();
-}
-
-static uint8_t getH264LevelAssimetryAllowed(const json& codec)
-{
-	MSC_TRACE();
-
-	auto jsonParametersIt = codec.find("parameters");
-
-	if (jsonParametersIt == codec.end() || !jsonParametersIt->is_object())
-		return 0;
-
-	auto jsonLevelAssimetryAllowedIt = jsonParametersIt->find("level-assimetry-allowed");
-
-	// clang-format off
-	if (
-		jsonLevelAssimetryAllowedIt == jsonParametersIt->end() ||
-		!jsonLevelAssimetryAllowedIt->is_number_integer()
-	)
-	// clang-format on
-	{
-		return 0;
-	}
-
-	return jsonLevelAssimetryAllowedIt->get<uint8_t>();
-}
-
-static std::string getH264ProfileLevelId(const json& codec)
-{
-	MSC_TRACE();
-
-	auto jsonParametersIt = codec.find("parameters");
-
-	if (jsonParametersIt == codec.end() || !jsonParametersIt->is_object())
-		return "";
-
-	auto jsonAprofileLevelIdIt = jsonParametersIt->find("profile-level-id");
-
-	if (jsonAprofileLevelIdIt == jsonParametersIt->end())
-		return "";
-
-	if (jsonAprofileLevelIdIt->is_number())
-		return std::to_string(jsonAprofileLevelIdIt->get<uint32_t>());
-	else
-		return jsonAprofileLevelIdIt->get<std::string>();
-}
-
 static bool matchCodecs(json& aCodec, const json& bCodec, bool strict, bool modify)
 {
 	MSC_TRACE();
@@ -1242,4 +1174,72 @@ static json reduceRtcpFeedback(const json& codecA, const json& codecB)
 	}
 
 	return reducedRtcpFeedback;
+}
+
+static uint8_t getH264PacketizationMode(const json& codec)
+{
+	MSC_TRACE();
+
+	auto jsonParametersIt = codec.find("parameters");
+
+	if (jsonParametersIt == codec.end() || !jsonParametersIt->is_object())
+		return 0;
+
+	auto jsonPacketizationModeIt = jsonParametersIt->find("packetization-mode");
+
+	// clang-format off
+	if (
+		jsonPacketizationModeIt == jsonParametersIt->end() ||
+		!jsonPacketizationModeIt->is_number()
+	)
+	// clang-format on
+	{
+		return 0;
+	}
+
+	return jsonPacketizationModeIt->get<uint8_t>();
+}
+
+static uint8_t getH264LevelAssimetryAllowed(const json& codec)
+{
+	MSC_TRACE();
+
+	auto jsonParametersIt = codec.find("parameters");
+
+	if (jsonParametersIt == codec.end() || !jsonParametersIt->is_object())
+		return 0;
+
+	auto jsonLevelAssimetryAllowedIt = jsonParametersIt->find("level-assimetry-allowed");
+
+	// clang-format off
+	if (
+		jsonLevelAssimetryAllowedIt == jsonParametersIt->end() ||
+		!jsonLevelAssimetryAllowedIt->is_number_integer()
+	)
+	// clang-format on
+	{
+		return 0;
+	}
+
+	return jsonLevelAssimetryAllowedIt->get<uint8_t>();
+}
+
+static std::string getH264ProfileLevelId(const json& codec)
+{
+	MSC_TRACE();
+
+	auto jsonParametersIt = codec.find("parameters");
+
+	if (jsonParametersIt == codec.end() || !jsonParametersIt->is_object())
+		return "";
+
+	auto jsonAprofileLevelIdIt = jsonParametersIt->find("profile-level-id");
+
+	if (jsonAprofileLevelIdIt == jsonParametersIt->end())
+		return "";
+
+	if (jsonAprofileLevelIdIt->is_number())
+		return std::to_string(jsonAprofileLevelIdIt->get<uint32_t>());
+	else
+		return jsonAprofileLevelIdIt->get<std::string>();
 }

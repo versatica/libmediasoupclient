@@ -214,7 +214,7 @@ namespace mediasoupclient
 
 			// preferredId is mandatory.
 			if (preferredIdIt == ext.end() || !preferredIdIt->is_number_integer())
-				MSC_THROW_TYPE_ERROR("invalid ext.preferredId");
+				MSC_THROW_TYPE_ERROR("missing ext.preferredId");
 
 			// preferredEncrypt is optional. If unset set it to false.
 			if (preferredEncryptIt != ext.end() && !preferredEncryptIt->is_boolean())

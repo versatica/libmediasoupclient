@@ -311,7 +311,7 @@ namespace mediasoupclient
 		 * fields with default values.
 		 * It throws if invalid.
 		 */
-		void validateRtpCodecParameters(nlohmann::json& codec)
+		void validateRtpCodecParameters(json& codec)
 		{
 			MSC_TRACE();
 
@@ -391,7 +391,7 @@ namespace mediasoupclient
 		 * fields with default values.
 		 * It throws if invalid.
 		 */
-		void validateRtpHeaderExtensionParameters(nlohmann::json& ext)
+		void validateRtpHeaderExtensionParameters(json& ext)
 		{
 			MSC_TRACE();
 
@@ -438,7 +438,7 @@ namespace mediasoupclient
 		 * fields with default values.
 		 * It throws if invalid.
 		 */
-		void validateRtpEncodingParameters(nlohmann::json& encoding)
+		void validateRtpEncodingParameters(json& encoding)
 		{
 			MSC_TRACE();
 
@@ -494,7 +494,7 @@ namespace mediasoupclient
 		 * fields with default values.
 		 * It throws if invalid.
 		 */
-		void validateRtcpParameters(nlohmann::json& rtcp)
+		void validateRtcpParameters(json& rtcp)
 		{
 			MSC_TRACE();
 

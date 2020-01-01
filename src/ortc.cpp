@@ -553,22 +553,22 @@ namespace mediasoupclient
 				if (matchingLocalCodecIt == localCodecs.end())
 					continue;
 
-				auto& localCodec = *matchingLocalCodecIt;
+				auto& matchingLocalCodec = *matchingLocalCodecIt;
 
 				// clang-format off
 				json extendedCodec =
 				{
-					{ "mimeType",             localCodec["mimeType"]                      },
-					{ "kind",                 localCodec["kind"]                          },
-					{ "clockRate",            localCodec["clockRate"]                     },
-					{ "channels",             localCodec["channels"]                      },
-					{ "localPayloadType",     localCodec["preferredPayloadType"]          },
-					{ "localRtxPayloadType",  nullptr                                     },
-					{ "remotePayloadType",    remoteCodec["preferredPayloadType"]         },
-					{ "remoteRtxPayloadType", nullptr                                     },
-					{ "localParameters",      localCodec["parameters"]                    },
-					{ "remoteParameters",     remoteCodec["parameters"]                   },
-					{ "rtcpFeedback",         reduceRtcpFeedback(localCodec, remoteCodec) }
+					{ "mimeType",             matchingLocalCodec["mimeType"]                      },
+					{ "kind",                 matchingLocalCodec["kind"]                          },
+					{ "clockRate",            matchingLocalCodec["clockRate"]                     },
+					{ "channels",             matchingLocalCodec["channels"]                      },
+					{ "localPayloadType",     matchingLocalCodec["preferredPayloadType"]          },
+					{ "localRtxPayloadType",  nullptr                                             },
+					{ "remotePayloadType",    remoteCodec["preferredPayloadType"]                 },
+					{ "remoteRtxPayloadType", nullptr                                             },
+					{ "localParameters",      matchingLocalCodec["parameters"]                    },
+					{ "remoteParameters",     remoteCodec["parameters"]                           },
+					{ "rtcpFeedback",         reduceRtcpFeedback(matchingLocalCodec, remoteCodec) }
 				};
 				// clang-format on
 
@@ -580,48 +580,48 @@ namespace mediasoupclient
 
 			for (json& extendedCodec : extendedCodecs)
 			{
-				auto localCodecs      = localCaps["codecs"];
-				auto jsonLocalCodecIt = std::find_if(
+				auto& localCodecs = localCaps["codecs"];
+				auto localCodecIt = std::find_if(
 				  localCodecs.begin(), localCodecs.end(), [&extendedCodec](const json& localCodec) {
 					  return isRtxCodec(localCodec) &&
 					         localCodec["parameters"]["apt"] == extendedCodec["localPayloadType"];
 				  });
 
-				if (jsonLocalCodecIt == localCodecs.end())
+				if (localCodecIt == localCodecs.end())
 					continue;
 
-				auto& matchingLocalRtxCodec = *jsonLocalCodecIt;
-				auto remoteCodecs           = remoteCaps["codecs"];
-				auto jsonRemoteCodecIt      = std::find_if(
+				auto& matchingLocalRtxCodec = *localCodecIt;
+				auto& remoteCodecs          = remoteCaps["codecs"];
+				auto remoteCodecIt          = std::find_if(
           remoteCodecs.begin(), remoteCodecs.end(), [&extendedCodec](const json& remoteCodec) {
             return isRtxCodec(remoteCodec) &&
                    remoteCodec["parameters"]["apt"] == extendedCodec["remotePayloadType"];
           });
 
-				if (jsonRemoteCodecIt == remoteCodecs.end())
+				if (remoteCodecIt == remoteCodecs.end())
 					continue;
 
-				auto& matchingRemoteRtxCodec = *jsonRemoteCodecIt;
+				auto& matchingRemoteRtxCodec = *remoteCodecIt;
 
 				extendedCodec["localRtxPayloadType"]  = matchingLocalRtxCodec["preferredPayloadType"];
 				extendedCodec["remoteRtxPayloadType"] = matchingRemoteRtxCodec["preferredPayloadType"];
 			}
 
 			// Match header extensions.
-			auto remoteExts = remoteCaps["headerExtensions"];
+			auto& remoteExts = remoteCaps["headerExtensions"];
 
 			for (auto& remoteExt : remoteExts)
 			{
-				auto localExts = localCaps["headerExtensions"];
-				auto jsonLocalExtIt =
+				auto& localExts = localCaps["headerExtensions"];
+				auto localExtIt =
 				  std::find_if(localExts.begin(), localExts.end(), [&remoteExt](const json& localExt) {
 					  return matchHeaderExtensions(localExt, remoteExt);
 				  });
 
-				if (jsonLocalExtIt == localExts.end())
+				if (localExtIt == localExts.end())
 					continue;
 
-				auto& matchingLocalExt = *jsonLocalExtIt;
+				auto& matchingLocalExt = *localExtIt;
 
 				// TODO: Must do stuff for encrypted extensions.
 
@@ -1012,12 +1012,12 @@ namespace mediasoupclient
 		{
 			MSC_TRACE();
 
-			auto& codecs     = extendedRtpCapabilities["codecs"];
-			auto jsonCodecIt = std::find_if(codecs.begin(), codecs.end(), [&kind](const json& codec) {
+			auto& codecs = extendedRtpCapabilities["codecs"];
+			auto codecIt = std::find_if(codecs.begin(), codecs.end(), [&kind](const json& codec) {
 				return kind == codec["kind"].get<std::string>();
 			});
 
-			return jsonCodecIt != codecs.end();
+			return codecIt != codecs.end();
 		}
 
 		/**
@@ -1036,12 +1036,12 @@ namespace mediasoupclient
 
 			auto& firstMediaCodec = rtpParameters["codecs"][0];
 			auto& codecs          = extendedRtpCapabilities["codecs"];
-			auto jsonCodecIt =
+			auto codecIt =
 			  std::find_if(codecs.begin(), codecs.end(), [&firstMediaCodec](const json& codec) {
 				  return codec["remotePayloadType"] == firstMediaCodec["payloadType"];
 			  });
 
-			return jsonCodecIt != codecs.end();
+			return codecIt != codecs.end();
 		}
 	} // namespace ortc
 } // namespace mediasoupclient
@@ -1087,16 +1087,16 @@ static bool matchCodecs(json& aCodec, const json& bCodec, bool strict, bool modi
 	if (aCodec["clockRate"] != bCodec["clockRate"])
 		return false;
 
-	auto jsonChannelsAIt = aCodec.find("channels");
-	auto jsonChannelsBIt = bCodec.find("channels");
+	auto channelsAIt = aCodec.find("channels");
+	auto channelsBIt = bCodec.find("channels");
 
-	if (jsonChannelsAIt == aCodec.end() && jsonChannelsBIt != bCodec.end())
+	if (channelsAIt == aCodec.end() && channelsBIt != bCodec.end())
 		return false;
 
-	if (jsonChannelsAIt != aCodec.end() && jsonChannelsBIt == bCodec.end())
+	if (channelsAIt != aCodec.end() && channelsBIt == bCodec.end())
 		return false;
 
-	if (jsonChannelsAIt != aCodec.end() && aCodec["channels"] != bCodec["channels"])
+	if (channelsAIt != aCodec.end() && aCodec["channels"] != bCodec["channels"])
 		return false;
 
 	// Match H264 parameters.
@@ -1159,18 +1159,18 @@ static json reduceRtcpFeedback(const json& codecA, const json& codecB)
 	MSC_TRACE();
 
 	auto reducedRtcpFeedback = json::array();
-	auto jsonRtcpFeedbackAIt = codecA.find("rtcpFeedback");
-	auto jsonRtcpFeedbackBIt = codecB.find("rtcpFeedback");
+	auto rtcpFeedbackAIt     = codecA.find("rtcpFeedback");
+	auto rtcpFeedbackBIt     = codecB.find("rtcpFeedback");
 
-	for (auto& aFb : *jsonRtcpFeedbackAIt)
+	for (auto& aFb : *rtcpFeedbackAIt)
 	{
-		auto jsonRtcpFeedbackIt =
-		  std::find_if(jsonRtcpFeedbackBIt->begin(), jsonRtcpFeedbackBIt->end(), [&aFb](const json& bFb) {
+		auto rtcpFeedbackIt =
+		  std::find_if(rtcpFeedbackBIt->begin(), rtcpFeedbackBIt->end(), [&aFb](const json& bFb) {
 			  return (aFb["type"] == bFb["type"] && aFb["parameter"] == bFb["parameter"]);
 		  });
 
-		if (jsonRtcpFeedbackIt != jsonRtcpFeedbackBIt->end())
-			reducedRtcpFeedback.push_back(*jsonRtcpFeedbackIt);
+		if (rtcpFeedbackIt != rtcpFeedbackBIt->end())
+			reducedRtcpFeedback.push_back(*rtcpFeedbackIt);
 	}
 
 	return reducedRtcpFeedback;
@@ -1180,66 +1180,66 @@ static uint8_t getH264PacketizationMode(const json& codec)
 {
 	MSC_TRACE();
 
-	auto jsonParametersIt = codec.find("parameters");
+	auto parametersIt = codec.find("parameters");
 
-	if (jsonParametersIt == codec.end() || !jsonParametersIt->is_object())
+	if (parametersIt == codec.end() || !parametersIt->is_object())
 		return 0;
 
-	auto jsonPacketizationModeIt = jsonParametersIt->find("packetization-mode");
+	auto packetizationModeIt = parametersIt->find("packetization-mode");
 
 	// clang-format off
 	if (
-		jsonPacketizationModeIt == jsonParametersIt->end() ||
-		!jsonPacketizationModeIt->is_number()
+		packetizationModeIt == parametersIt->end() ||
+		!packetizationModeIt->is_number()
 	)
 	// clang-format on
 	{
 		return 0;
 	}
 
-	return jsonPacketizationModeIt->get<uint8_t>();
+	return packetizationModeIt->get<uint8_t>();
 }
 
 static uint8_t getH264LevelAssimetryAllowed(const json& codec)
 {
 	MSC_TRACE();
 
-	auto jsonParametersIt = codec.find("parameters");
+	auto parametersIt = codec.find("parameters");
 
-	if (jsonParametersIt == codec.end() || !jsonParametersIt->is_object())
+	if (parametersIt == codec.end() || !parametersIt->is_object())
 		return 0;
 
-	auto jsonLevelAssimetryAllowedIt = jsonParametersIt->find("level-assimetry-allowed");
+	auto levelAssimetryAllowedIt = parametersIt->find("level-assimetry-allowed");
 
 	// clang-format off
 	if (
-		jsonLevelAssimetryAllowedIt == jsonParametersIt->end() ||
-		!jsonLevelAssimetryAllowedIt->is_number_integer()
+		levelAssimetryAllowedIt == parametersIt->end() ||
+		!levelAssimetryAllowedIt->is_number_integer()
 	)
 	// clang-format on
 	{
 		return 0;
 	}
 
-	return jsonLevelAssimetryAllowedIt->get<uint8_t>();
+	return levelAssimetryAllowedIt->get<uint8_t>();
 }
 
 static std::string getH264ProfileLevelId(const json& codec)
 {
 	MSC_TRACE();
 
-	auto jsonParametersIt = codec.find("parameters");
+	auto parametersIt = codec.find("parameters");
 
-	if (jsonParametersIt == codec.end() || !jsonParametersIt->is_object())
+	if (parametersIt == codec.end() || !parametersIt->is_object())
 		return "";
 
-	auto jsonAprofileLevelIdIt = jsonParametersIt->find("profile-level-id");
+	auto profileLevelIdIt = parametersIt->find("profile-level-id");
 
-	if (jsonAprofileLevelIdIt == jsonParametersIt->end())
+	if (profileLevelIdIt == parametersIt->end())
 		return "";
 
-	if (jsonAprofileLevelIdIt->is_number())
-		return std::to_string(jsonAprofileLevelIdIt->get<uint32_t>());
+	if (profileLevelIdIt->is_number())
+		return std::to_string(profileLevelIdIt->get<uint32_t>());
 	else
-		return jsonAprofileLevelIdIt->get<std::string>();
+		return profileLevelIdIt->get<std::string>();
 }

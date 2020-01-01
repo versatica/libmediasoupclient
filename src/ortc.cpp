@@ -407,9 +407,9 @@ namespace mediasoupclient
 			if (uriIt == ext.end() || !uriIt->is_string() || uriIt->get<std::string>().empty())
 				MSC_THROW_TYPE_ERROR("missing ext.uri");
 
-			// id is optional.
-			if (idIt != ext.end() && !idIt->is_number_integer())
-				MSC_THROW_TYPE_ERROR("invalid ext.id");
+			// id is mandatory.
+			if (idIt == ext.end() || !idIt->is_number_integer())
+				MSC_THROW_TYPE_ERROR("missing ext.id");
 
 			// encrypt is optional. If unset set it to false.
 			if (encryptIt != ext.end() && !encryptIt->is_boolean())

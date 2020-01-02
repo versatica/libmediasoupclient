@@ -531,8 +531,7 @@ namespace mediasoupclient
 			json extendedRtpCapabilities =
 			{
 				{ "codecs",           json::array() },
-				{ "headerExtensions", json::array() },
-				{ "fecMechanisms",    json::array() }
+				{ "headerExtensions", json::array() }
 			};
 			// clang-format on
 
@@ -665,8 +664,7 @@ namespace mediasoupclient
 			json rtpCapabilities =
 			{
 				{ "codecs",           json::array() },
-				{ "headerExtensions", json::array() },
-				{ "fecMechanisms",    json::array() }
+				{ "headerExtensions", json::array() }
 			};
 			// clang-format on
 
@@ -688,30 +686,30 @@ namespace mediasoupclient
 				rtpCapabilities["codecs"].push_back(codec);
 
 				// Add RTX codec.
-				if (extendedCodec["remoteRtxPayloadType"] != nullptr)
+				if (extendedCodec["remoteRtxPayloadType"] == nullptr)
+					continue;
+
+				auto mimeType = extendedCodec["kind"].get<std::string>().append("/rtx");
+
+				// clang-format off
+				json rtxCodec =
 				{
-					auto mimeType = extendedCodec["kind"].get<std::string>().append("/rtx");
-
-					// clang-format off
-					json rtxCodec =
+					{ "mimeType",             mimeType                              },
+					{ "kind",                 extendedCodec["kind"]                 },
+					{ "preferredPayloadType", extendedCodec["remoteRtxPayloadType"] },
+					{ "clockRate",            extendedCodec["clockRate"]            },
+					{ "channels",             1                                     },
 					{
-						{ "mimeType",             mimeType                              },
-						{ "kind",                 extendedCodec["kind"]                 },
-						{ "preferredPayloadType", extendedCodec["remoteRtxPayloadType"] },
-						{ "clockRate",            extendedCodec["clockRate"]            },
-						{ "channels",             1                                     },
+						"parameters",
 						{
-							"parameters",
-							{
-								{ "apt", extendedCodec["remotePayloadType"].get<uint8_t>() }
-							}
-						},
-						{ "rtcpFeedback", json::array() }
-					};
-					// clang-format on
+							{ "apt", extendedCodec["remotePayloadType"].get<uint8_t>() }
+						}
+					},
+					{ "rtcpFeedback", json::array() }
+				};
+				// clang-format on
 
-					rtpCapabilities["codecs"].push_back(rtxCodec);
-				}
+				rtpCapabilities["codecs"].push_back(rtxCodec);
 
 				// TODO: In the future, we need to add FEC, CN, etc, codecs.
 			}
@@ -738,10 +736,8 @@ namespace mediasoupclient
 				rtpCapabilities["headerExtensions"].push_back(ext);
 			}
 
-			rtpCapabilities["fecMechanisms"] = extendedRtpCapabilities["fecMechanisms"];
-
 			return rtpCapabilities;
-		};
+		}
 
 		/**
 		 * Generate RTP parameters of the given kind for sending media.
@@ -808,7 +804,6 @@ namespace mediasoupclient
 				}
 
 				// NOTE: We assume a single media codec plus an optional RTX codec.
-				// TODO: In the future, we need to add FEC, CN, etc, codecs.
 				break;
 			}
 
@@ -826,10 +821,9 @@ namespace mediasoupclient
 				// clang-format off
 				json ext =
 				{
-					{ "uri",       extendedExtension["uri"]       },
-					{ "id",        extendedExtension["recvId"]    },
-					{ "encrypt",   extendedExtension["encrypt"]   },
-					{ "direction", extendedExtension["direction"] }
+					{ "uri",       extendedExtension["uri"]     },
+					{ "id",        extendedExtension["recvId"]  },
+					{ "encrypt",   extendedExtension["encrypt"] }
 				};
 				// clang-format on
 
@@ -837,7 +831,7 @@ namespace mediasoupclient
 			}
 
 			return rtpParameters;
-		};
+		}
 
 		/**
 		 * Generate RTP parameters of the given kind for sending media.
@@ -866,9 +860,9 @@ namespace mediasoupclient
 				json codec =
 				{
 					{ "mimeType",     extendedCodec["mimeType"]         },
+					{ "payloadType",  extendedCodec["localPayloadType"] },
 					{ "clockRate",    extendedCodec["clockRate"]        },
 					{ "channels",     extendedCodec["channels"]         },
-					{ "payloadType",  extendedCodec["localPayloadType"] },
 					{ "parameters",   extendedCodec["remoteParameters"] },
 					{ "rtcpFeedback", extendedCodec["rtcpFeedback"]     }
 				};
@@ -919,10 +913,9 @@ namespace mediasoupclient
 				// clang-format off
 				json ext =
 				{
-					{ "uri",       extendedExtension["uri"]       },
-					{ "id",        extendedExtension["recvId"]    },
-					{ "encrypt",   extendedExtension["encrypt"]   },
-					{ "direction", extendedExtension["direction"] }
+					{ "uri",       extendedExtension["uri"]     },
+					{ "id",        extendedExtension["recvId"]  },
+					{ "encrypt",   extendedExtension["encrypt"] }
 				};
 				// clang-format on
 
@@ -1003,7 +996,60 @@ namespace mediasoupclient
 			}
 
 			return rtpParameters;
-		};
+		}
+
+		/**
+		 * Create RTP parameters for a Consumer for the RTP probator.
+		 */
+		json generateProbatorRtpParameters(json& videoRtpParameters)
+		{
+			MSC_TRACE();
+
+			// This may throw.
+			ortc::validateRtpParameters(videoRtpParameters);
+
+			// clang-format off
+			json rtpParameters =
+			{
+				{ "mid",              nullptr        },
+				{ "codecs",           json::array()  },
+				{ "headerExtensions", json::array()  },
+				{ "encodings",        json::array()  },
+				{
+					"rtcp",
+					{
+						{ "cname", "probator" }
+					}
+				}
+			};
+			// clang-format on
+
+			rtpParameters["codecs"].push_back(videoRtpParameters["codecs"][0]);
+
+			for (auto& ext : videoRtpParameters["headerExtensions"])
+			{
+				// clang-format off
+				if (
+					ext["uri"] == "http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time" ||
+					ext["uri"] == "http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01"
+				)
+				// clang-format on
+				{
+					rtpParameters["headerExtensions"].push_back(ext);
+				}
+			}
+
+			// clang-format off
+			json encoding =
+			{
+				"ssrc", ProbatorSsrc
+			};
+			// clang-format on
+
+			rtpParameters["encodings"].push_back(encoding);
+
+			return rtpParameters;
+		}
 
 		/**
 		 * Whether media can be sent based on the given RTP capabilities.

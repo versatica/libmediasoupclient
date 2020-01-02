@@ -407,7 +407,7 @@ namespace mediasoupclient
 				}
 
 				if (ssrcs.empty())
-					throw new std::runtime_error("no a=ssrc lines found");
+					MSC_THROW_ERROR("no a=ssrc lines found");
 
 				// Get media and RTX SSRCs.
 

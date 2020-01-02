@@ -349,6 +349,29 @@ namespace mediasoupclient
 
 		this->consumers[consumer->GetId()] = consumer;
 
+		// If this is the first video Consumer and the Consumer for RTP probation
+		// has not yet been created, create it now.
+		if (!this->probatorConsumerCreated && kind == "video")
+		{
+			try
+			{
+				auto probatorRtpParameters =
+				  ortc::generateProbatorRtpParameters(consumer->GetRtpParameters());
+				std::string probatorId{ "probator" };
+
+				// May throw.
+				auto result = this->handler->Receive(probatorId, kind, &probatorRtpParameters);
+
+				MSC_DEBUG("Consumer for RTP probation created");
+
+				this->probatorConsumerCreated = true;
+			}
+			catch (std::runtime_error& error)
+			{
+				MSC_ERROR("failed to create Consumer for RTP probation: %s", error.what());
+			}
+		}
+
 		return consumer;
 	}
 

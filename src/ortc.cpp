@@ -1158,12 +1158,15 @@ namespace mediasoupclient
 		/**
 		 * Create RTP parameters for a Consumer for the RTP probator.
 		 */
-		json generateProbatorRtpParameters(json& videoRtpParameters)
+		const json generateProbatorRtpParameters(const json& videoRtpParameters)
 		{
 			MSC_TRACE();
 
 			// This may throw.
-			ortc::validateRtpParameters(videoRtpParameters);
+			json vaidatedRtpParameters = videoRtpParameters;
+
+			// This may throw.
+			ortc::validateRtpParameters(vaidatedRtpParameters);
 
 			// clang-format off
 			json rtpParameters =
@@ -1181,9 +1184,9 @@ namespace mediasoupclient
 			};
 			// clang-format on
 
-			rtpParameters["codecs"].push_back(videoRtpParameters["codecs"][0]);
+			rtpParameters["codecs"].push_back(vaidatedRtpParameters["codecs"][0]);
 
-			for (auto& ext : videoRtpParameters["headerExtensions"])
+			for (auto& ext : vaidatedRtpParameters["headerExtensions"])
 			{
 				// clang-format off
 				if (
@@ -1196,12 +1199,9 @@ namespace mediasoupclient
 				}
 			}
 
-			// clang-format off
-			json encoding =
-			{
-				"ssrc", ProbatorSsrc
-			};
-			// clang-format on
+			json encoding = json::object();
+
+			encoding["ssrc"] = ProbatorSsrc;
 
 			rtpParameters["encodings"].push_back(encoding);
 

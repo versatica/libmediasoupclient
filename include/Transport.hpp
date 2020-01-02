@@ -62,6 +62,9 @@ namespace mediasoupclient
 		// Extended RTP capabilities.
 		const nlohmann::json* extendedRtpCapabilities{ nullptr };
 
+		// Whether the Consumer for RTP probation has been created.
+		bool probatorConsumerCreated{ false };
+
 	private:
 		// Listener.
 		Listener* listener{ nullptr };

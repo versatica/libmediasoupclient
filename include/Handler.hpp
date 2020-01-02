@@ -4,6 +4,7 @@
 #include "PeerConnection.hpp"
 #include "sdp/RemoteSdp.hpp"
 #include <json.hpp>
+#include <api/rtp_transceiver_interface.h>
 #include <string>
 #include <unordered_map>
 
@@ -23,6 +24,7 @@ namespace mediasoupclient
 	public:
 		static nlohmann::json GetNativeRtpCapabilities(
 		  const PeerConnection::Options* peerConnectionOptions = nullptr);
+		static nlohmann::json GetNativeSctpCapabilities();
 
 	public:
 		explicit Handler(

@@ -7,6 +7,7 @@
 #include <json.hpp>
 #include <api/media_stream_interface.h>    // MediaStreamTrackInterface
 #include <api/peer_connection_interface.h> // IceConnectionState
+#include <api/rtp_parameters.h>
 #include <future>
 #include <map>
 #include <memory> // unique_ptr
@@ -105,6 +106,7 @@ namespace mediasoupclient
 		  const nlohmann::json& iceParameters,
 		  const nlohmann::json& iceCandidates,
 		  const nlohmann::json& dtlsParameters,
+		  const nlohmann::json& sctpParameters,
 		  const PeerConnection::Options* peerConnectionOptions,
 		  const nlohmann::json* extendedRtpCapabilities,
 		  const std::map<std::string, bool>* canProduceByKind,
@@ -156,6 +158,7 @@ namespace mediasoupclient
 		  const nlohmann::json& iceParameters,
 		  const nlohmann::json& iceCandidates,
 		  const nlohmann::json& dtlsParameters,
+		  const nlohmann::json& sctpParameters,
 		  const PeerConnection::Options* peerConnectionOptions,
 		  const nlohmann::json* extendedRtpCapabilities,
 		  const nlohmann::json& appData);

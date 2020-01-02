@@ -127,13 +127,10 @@ namespace mediasoupclient
 				};
 				// clang-format on
 
-				auto jsonChannelsIt = codec.find("channels");
-				if (jsonChannelsIt != codec.end() && jsonChannelsIt->is_number_integer())
-				{
-					auto channels = jsonChannelsIt->get<uint8_t>();
-					if (channels > 1)
-						rtp["encoding"] = channels;
-				}
+				auto channels = codec["channels"].get<uint8_t>();
+
+				if (channels > 1)
+					rtp["encoding"] = channels;
 
 				this->mediaObject["rtp"].push_back(rtp);
 
@@ -142,70 +139,67 @@ namespace mediasoupclient
 				if (codecOptions != nullptr && !codecOptions->empty())
 				{
 					auto& offerCodecs = offerRtpParameters["codecs"];
-					auto jsonCodecIt =
-					  find_if(offerCodecs.begin(), offerCodecs.end(), [&codec](json& offerCodec) {
-						  return offerCodec["payloadType"] == codec["payloadType"];
-					  });
+					auto codecIt = find_if(offerCodecs.begin(), offerCodecs.end(), [&codec](json& offerCodec) {
+						return offerCodec["payloadType"] == codec["payloadType"];
+					});
 
-					auto& offerCodec = *jsonCodecIt;
+					auto& offerCodec = *codecIt;
 					auto mimeType    = codec["mimeType"].get<std::string>();
 					std::transform(mimeType.begin(), mimeType.end(), mimeType.begin(), ::tolower);
 
 					if (mimeType == "audio/opus")
 					{
-						auto jsonOpusStereoIt = codecOptions->find("opusStereo");
-						if (jsonOpusStereoIt != codecOptions->end() && jsonOpusStereoIt->is_boolean())
+						auto opusStereoIt = codecOptions->find("opusStereo");
+						if (opusStereoIt != codecOptions->end() && opusStereoIt->is_boolean())
 						{
-							auto opusStereo                          = jsonOpusStereoIt->get<bool>();
+							auto opusStereo                          = opusStereoIt->get<bool>();
 							offerCodec["parameters"]["sprop-stereo"] = static_cast<int>(opusStereo);
 							codecParameters["stereo"]                = static_cast<int>(opusStereo);
 						}
 
-						auto jsonOpusFecIt = codecOptions->find("opusFec");
-						if (jsonOpusFecIt != codecOptions->end() && jsonOpusFecIt->is_boolean())
+						auto opusFecIt = codecOptions->find("opusFec");
+						if (opusFecIt != codecOptions->end() && opusFecIt->is_boolean())
 						{
-							auto opusFec                             = jsonOpusFecIt->get<bool>();
+							auto opusFec                             = opusFecIt->get<bool>();
 							offerCodec["parameters"]["useinbandfec"] = opusFec ? 1 : 0;
 							codecParameters["useinbandfec"]          = opusFec ? 1 : 0;
 						}
 
-						auto jsonOpusDtxIt = codecOptions->find("opusDtx");
-						if (jsonOpusDtxIt != codecOptions->end() && jsonOpusDtxIt->is_boolean())
+						auto opusDtxIt = codecOptions->find("opusDtx");
+						if (opusDtxIt != codecOptions->end() && opusDtxIt->is_boolean())
 						{
-							auto opusDtx                       = jsonOpusDtxIt->get<bool>();
+							auto opusDtx                       = opusDtxIt->get<bool>();
 							offerCodec["parameters"]["usedtx"] = opusDtx ? 1 : 0;
 							codecParameters["usedtx"]          = opusDtx ? 1 : 0;
 						}
 
-						auto jsonOpusMaxPlaybackRateIt = codecOptions->find("opusMaxPlaybackRate");
-						if (jsonOpusMaxPlaybackRateIt != codecOptions->end() && jsonOpusMaxPlaybackRateIt->is_number_integer())
+						auto opusMaxPlaybackRateIt = codecOptions->find("opusMaxPlaybackRate");
+						if (opusMaxPlaybackRateIt != codecOptions->end() && opusMaxPlaybackRateIt->is_number_integer())
 						{
-							auto opusMaxPlaybackRate = jsonOpusMaxPlaybackRateIt->get<uint32_t>();
+							auto opusMaxPlaybackRate                    = opusMaxPlaybackRateIt->get<uint32_t>();
 							offerCodec["parameters"]["maxplaybackrate"] = opusMaxPlaybackRate;
 						}
 					}
 					else if (mimeType == "video/vp8" || mimeType == "video/vp9" || mimeType == "video/h264" || mimeType == "video/h265")
 					{
-						auto jsonVideoGoogleStartBitrateIt = codecOptions->find("videoGoogleStartBitrate");
-						if (
-						  jsonVideoGoogleStartBitrateIt != codecOptions->end() &&
-						  jsonVideoGoogleStartBitrateIt->is_number_integer())
+						auto videoGoogleStartBitrateIt = codecOptions->find("videoGoogleStartBitrate");
+						if (videoGoogleStartBitrateIt != codecOptions->end() && videoGoogleStartBitrateIt->is_number_integer())
 						{
-							auto startBitrate = jsonVideoGoogleStartBitrateIt->get<uint32_t>();
+							auto startBitrate = videoGoogleStartBitrateIt->get<uint32_t>();
 							offerCodec["parameters"]["x-google-start-bitrate"] = startBitrate;
 						}
 
-						auto jsonVideoGoogleMaxBitrateIt = codecOptions->find("videoGoogleMaxBitrate");
-						if (jsonVideoGoogleMaxBitrateIt != codecOptions->end() && jsonVideoGoogleMaxBitrateIt->is_number_integer())
+						auto videoGoogleMaxBitrateIt = codecOptions->find("videoGoogleMaxBitrate");
+						if (videoGoogleMaxBitrateIt != codecOptions->end() && videoGoogleMaxBitrateIt->is_number_integer())
 						{
-							auto maxBitrate = jsonVideoGoogleMaxBitrateIt->get<uint32_t>();
+							auto maxBitrate = videoGoogleMaxBitrateIt->get<uint32_t>();
 							offerCodec["parameters"]["x-google-max-bitrate"] = maxBitrate;
 						}
 
-						auto jsonVideoGoogleMinBitrateIt = codecOptions->find("videoGoogleMinBitrate");
-						if (jsonVideoGoogleMinBitrateIt != codecOptions->end() && jsonVideoGoogleMinBitrateIt->is_number_integer())
+						auto videoGoogleMinBitrateIt = codecOptions->find("videoGoogleMinBitrate");
+						if (videoGoogleMinBitrateIt != codecOptions->end() && videoGoogleMinBitrateIt->is_number_integer())
 						{
-							auto minBitrate = jsonVideoGoogleMinBitrateIt->get<uint32_t>();
+							auto minBitrate = videoGoogleMinBitrateIt->get<uint32_t>();
 							offerCodec["parameters"]["x-google-min-bitrate"] = minBitrate;
 						}
 					}
@@ -241,22 +235,16 @@ namespace mediasoupclient
 					this->mediaObject["fmtp"].push_back(fmtp);
 				}
 
-				auto jsonRtcpFeedbackIt = codec.find("rtcpFeedback");
-				if (jsonRtcpFeedbackIt != codec.end())
+				for (auto& fb : codec["rtcpFeedback"])
 				{
-					auto& rtcpFeedback = *jsonRtcpFeedbackIt;
-
-					for (auto& fb : rtcpFeedback)
-					{
-						// clang-format off
-						this->mediaObject["rtcpFb"].push_back(
-							{
-								{ "payload", codec["payloadType"] },
-								{ "type",    fb["type"]           },
-								{ "subtype", fb["parameter"]      }
-							});
-						// clang-format on
-					}
+					// clang-format off
+					this->mediaObject["rtcpFb"].push_back(
+						{
+							{ "payload", codec["payloadType"] },
+							{ "type",    fb["type"]           },
+							{ "subtype", fb["parameter"]      }
+						});
+					// clang-format on
 				}
 			}
 
@@ -275,19 +263,19 @@ namespace mediasoupclient
 			this->mediaObject["payloads"] = payloads;
 			this->mediaObject["ext"]      = json::array();
 
-			auto jsonExtsIt = offerMediaObject.find("ext");
-			if (jsonExtsIt != offerMediaObject.end())
+			auto extsIt = offerMediaObject.find("ext");
+			if (extsIt != offerMediaObject.end())
 			{ // Don't add a header extension if not present in the offer.
 				for (auto& ext : answerRtpParameters["headerExtensions"])
 				{
-					auto& localExts = *jsonExtsIt;
+					auto& localExts = *extsIt;
 					auto localExtIt = find_if(localExts.begin(), localExts.end(), [&ext](const json& localExt) {
-						auto jsonUriIt = localExt.find("uri");
-						if (jsonUriIt == localExt.end() || !jsonUriIt->is_string())
+						auto uriIt = localExt.find("uri");
+						if (uriIt == localExt.end() || !uriIt->is_string())
 							return false;
 
-						jsonUriIt = ext.find("uri");
-						if (jsonUriIt == ext.end() || !jsonUriIt->is_string())
+						uriIt = ext.find("uri");
+						if (uriIt == ext.end() || !uriIt->is_string())
 							return false;
 
 						return localExt["uri"] == ext["uri"];
@@ -307,86 +295,84 @@ namespace mediasoupclient
 			}
 
 			// Allow both 1 byte and 2 bytes length header extensions.
-			auto jsonExtmapAllowMixedIt = offerMediaObject.find("extmapAllowMixed");
+			auto extmapAllowMixedIt = offerMediaObject.find("extmapAllowMixed");
 
 			// clang-format off
 			if (
-				jsonExtmapAllowMixedIt != offerMediaObject.end() &&
-				jsonExtmapAllowMixedIt->is_string()
+				extmapAllowMixedIt != offerMediaObject.end() &&
+				extmapAllowMixedIt->is_string()
 			)
+			// clang-format on
 			{
 				this->mediaObject["extmapAllowMixed"] = "extmap-allow-mixed";
 			}
 
-		this->mediaObject["rtcpMux"]   = "rtcp-mux";
-		this->mediaObject["rtcpRsize"] = "rtcp-rsize";
+			this->mediaObject["rtcpMux"]   = "rtcp-mux";
+			this->mediaObject["rtcpRsize"] = "rtcp-rsize";
 
-		// Set DTLS role.
-		std::string dtlsRole = dtlsParameters["role"].get<std::string>();
+			// Set DTLS role.
+			std::string dtlsRole = dtlsParameters["role"].get<std::string>();
 
-		if (dtlsRole == "client")
-			this->mediaObject["setup"] = "active";
-		else if (dtlsRole == "server")
-			this->mediaObject["setup"] = "passive";
-		else if (dtlsRole == "auto")
-			this->mediaObject["setup"] = "actpass";
-	}
+			if (dtlsRole == "client")
+				this->mediaObject["setup"] = "active";
+			else if (dtlsRole == "server")
+				this->mediaObject["setup"] = "passive";
+			else if (dtlsRole == "auto")
+				this->mediaObject["setup"] = "actpass";
+		}
 
-	void AnswerMediaSection::SetDtlsRole(const std::string& role)
-	{
-		MSC_TRACE();
-
-		if (role == "client")
-			this->mediaObject["setup"] = "active";
-		else if (role == "server")
-			this->mediaObject["setup"] = "passive";
-		else if (role == "auto")
-			this->mediaObject["setup"] = "actpass";
-	}
-
-	OfferMediaSection::OfferMediaSection(
-	  const nlohmann::json& iceParameters,
-	  const nlohmann::json& iceCandidates,
-	  const nlohmann::json& /*dtlsParameters*/,
-	  const std::string& mid,
-	  const std::string& kind,
-	  const nlohmann::json& offerRtpParameters,
-	  const std::string& streamId,
-	  const std::string& trackId)
-	  : MediaSection(iceParameters, iceCandidates)
-	{
-		MSC_TRACE();
-
-		this->mediaObject["mid"]  = mid;
-		this->mediaObject["type"] = kind;
-
-		this->mediaObject["connection"] = { { "ip", "127.0.0.1" }, { "version", 4 } };
-		this->mediaObject["protocol"]   = "UDP/TLS/RTP/SAVPF";
-		this->mediaObject["port"]       = 7;
-		this->mediaObject["direction"]  = "sendonly";
-
-		this->mediaObject["rtp"]    = json::array();
-		this->mediaObject["rtcpFb"] = json::array();
-		this->mediaObject["fmtp"]   = json::array();
-
-		for (auto& codec : offerRtpParameters["codecs"])
+		void AnswerMediaSection::SetDtlsRole(const std::string& role)
 		{
-			// clang-format off
-			json rtp =
+			MSC_TRACE();
+
+			if (role == "client")
+				this->mediaObject["setup"] = "active";
+			else if (role == "server")
+				this->mediaObject["setup"] = "passive";
+			else if (role == "auto")
+				this->mediaObject["setup"] = "actpass";
+		}
+
+		OfferMediaSection::OfferMediaSection(
+		  const nlohmann::json& iceParameters,
+		  const nlohmann::json& iceCandidates,
+		  const nlohmann::json& /*dtlsParameters*/,
+		  const std::string& mid,
+		  const std::string& kind,
+		  const nlohmann::json& offerRtpParameters,
+		  const std::string& streamId,
+		  const std::string& trackId)
+		  : MediaSection(iceParameters, iceCandidates)
+		{
+			MSC_TRACE();
+
+			this->mediaObject["mid"]  = mid;
+			this->mediaObject["type"] = kind;
+
+			this->mediaObject["connection"] = { { "ip", "127.0.0.1" }, { "version", 4 } };
+			this->mediaObject["protocol"]   = "UDP/TLS/RTP/SAVPF";
+			this->mediaObject["port"]       = 7;
+			this->mediaObject["direction"]  = "sendonly";
+
+			this->mediaObject["rtp"]    = json::array();
+			this->mediaObject["rtcpFb"] = json::array();
+			this->mediaObject["fmtp"]   = json::array();
+
+			for (auto& codec : offerRtpParameters["codecs"])
 			{
-				{ "payload", codec["payloadType"] },
-				{ "codec",   getCodecName(codec)  },
-				{ "rate",    codec["clockRate"]   }
-			};
+				// clang-format off
+				json rtp =
+				{
+					{ "payload", codec["payloadType"] },
+					{ "codec",   getCodecName(codec)  },
+					{ "rate",    codec["clockRate"]   }
+				};
 				// clang-format on
 
-				auto jsonChannelsIt = codec.find("channels");
-				if (jsonChannelsIt != codec.end() && jsonChannelsIt->is_number_integer())
-				{
-					auto channels = (*jsonChannelsIt).get<uint8_t>();
-					if (channels > 1)
-						rtp["encoding"] = channels;
-				}
+				auto channels = codec["channels"].get<uint8_t>();
+
+				if (channels > 1)
+					rtp["encoding"] = channels;
 
 				this->mediaObject["rtp"].push_back(rtp);
 
@@ -395,10 +381,10 @@ namespace mediasoupclient
 					const json& codecParameters = codec["parameters"];
 
 					// clang-format off
-				json fmtp =
-				{
-					{ "payload", codec["payloadType"] }
-				};
+					json fmtp =
+					{
+						{ "payload", codec["payloadType"] }
+					};
 					// clang-format on
 
 					std::ostringstream config;
@@ -424,22 +410,16 @@ namespace mediasoupclient
 					}
 				}
 
-				auto jsonRtcpFeedbackIt = codec.find("rtcpFeedback");
-				if (codec.find("rtcpFeedback") != codec.end())
+				for (auto& fb : codec["rtcpFeedback"])
 				{
-					// TODO: If we use auto& here it produces SIGABRT.
-					auto rtcpFeedback = *jsonRtcpFeedbackIt;
-					for (auto& fb : rtcpFeedback)
-					{
-						// clang-format off
+					// clang-format off
 					this->mediaObject["rtcpFb"].push_back(
 						{
 							{ "payload", codec["payloadType"] },
 							{ "type",    fb["type"]           },
 							{ "subtype", fb["parameter"]      }
 						});
-						// clang-format on
-					}
+					// clang-format on
 				}
 
 				std::string payloads;
@@ -461,11 +441,11 @@ namespace mediasoupclient
 				for (auto& ext : offerRtpParameters["headerExtensions"])
 				{
 					// clang-format off
-				this->mediaObject["ext"].push_back(
-					{
-						{ "uri",   ext["uri"] },
-						{ "value", ext["id"]  }
-					});
+					this->mediaObject["ext"].push_back(
+						{
+							{ "uri",   ext["uri"] },
+							{ "value", ext["id"]  }
+						});
 					// clang-format on
 				}
 
@@ -476,8 +456,8 @@ namespace mediasoupclient
 				auto ssrc      = encoding["ssrc"].get<uint32_t>();
 				uint32_t rtxSsrc;
 
-				auto jsonRtxIt = encoding.find("rtx");
-				if ((jsonRtxIt != encoding.end()) && ((*jsonRtxIt).find("ssrc") != (*jsonRtxIt).end()))
+				auto rtxIt = encoding.find("rtx");
+				if ((rtxIt != encoding.end()) && ((*rtxIt).find("ssrc") != (*rtxIt).end()))
 					rtxSsrc = encoding["rtx"]["ssrc"].get<uint32_t>();
 				else
 					rtxSsrc = 0u;
@@ -485,10 +465,10 @@ namespace mediasoupclient
 				this->mediaObject["ssrcs"]      = json::array();
 				this->mediaObject["ssrcGroups"] = json::array();
 
-				auto jsonCnameIt = offerRtpParameters["rtcp"].find("cname");
-				if (jsonCnameIt != offerRtpParameters["rtcp"].end() && jsonCnameIt->is_string())
+				auto cnameIt = offerRtpParameters["rtcp"].find("cname");
+				if (cnameIt != offerRtpParameters["rtcp"].end() && cnameIt->is_string())
 				{
-					auto cname = (*jsonCnameIt).get<std::string>();
+					auto cname = (*cnameIt).get<std::string>();
 
 					std::string msid(streamId);
 					msid.append(" ").append(trackId);

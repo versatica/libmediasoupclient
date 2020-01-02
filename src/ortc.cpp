@@ -6,6 +6,7 @@
 #include <media/base/h264_profile_level_id.h>
 #include <algorithm> // std::find_if
 #include <regex>
+#include <stdexcept>
 #include <string>
 
 using json = nlohmann::json;
@@ -20,6 +21,7 @@ static json reduceRtcpFeedback(const json& codecA, const json& codecB);
 static uint8_t getH264PacketizationMode(const json& codec);
 static uint8_t getH264LevelAssimetryAllowed(const json& codec);
 static std::string getH264ProfileLevelId(const json& codec);
+static std::string getVP9ProfileId(const json& codec);
 
 namespace mediasoupclient
 {
@@ -1112,17 +1114,9 @@ static bool matchCodecs(json& aCodec, const json& bCodec, bool strict, bool modi
 	MSC_TRACE();
 
 	auto aMimeTypeIt = aCodec.find("mimeType");
-
-	if (aMimeTypeIt == aCodec.end() || !aMimeTypeIt->is_string())
-		return false;
-
 	auto bMimeTypeIt = bCodec.find("mimeType");
-
-	if (bMimeTypeIt == bCodec.end() || !bMimeTypeIt->is_string())
-		return false;
-
-	auto aMimeType = aMimeTypeIt->get<std::string>();
-	auto bMimeType = bMimeTypeIt->get<std::string>();
+	auto aMimeType   = aMimeTypeIt->get<std::string>();
+	auto bMimeType   = bMimeTypeIt->get<std::string>();
 
 	std::transform(aMimeType.begin(), aMimeType.end(), aMimeType.begin(), ::tolower);
 	std::transform(bMimeType.begin(), bMimeType.end(), bMimeType.begin(), ::tolower);
@@ -1133,16 +1127,7 @@ static bool matchCodecs(json& aCodec, const json& bCodec, bool strict, bool modi
 	if (aCodec["clockRate"] != bCodec["clockRate"])
 		return false;
 
-	auto channelsAIt = aCodec.find("channels");
-	auto channelsBIt = bCodec.find("channels");
-
-	if (channelsAIt == aCodec.end() && channelsBIt != bCodec.end())
-		return false;
-
-	if (channelsAIt != aCodec.end() && channelsBIt == bCodec.end())
-		return false;
-
-	if (channelsAIt != aCodec.end() && aCodec["channels"] != bCodec["channels"])
+	if (aCodec["channels"] != bCodec["channels"])
 		return false;
 
 	// Match H264 parameters.
@@ -1154,37 +1139,56 @@ static bool matchCodecs(json& aCodec, const json& bCodec, bool strict, bool modi
 		if (aPacketizationMode != bPacketizationMode)
 			return false;
 
-		auto aProfileLevelId = getH264ProfileLevelId(aCodec);
-		auto bProfileLevelId = getH264ProfileLevelId(bCodec);
+		// If strict matching check profile-level-id.
+		if (strict)
+		{
+			webrtc::H264::CodecParameterMap aParameters;
+			webrtc::H264::CodecParameterMap bParameters;
 
-		if (aProfileLevelId.empty() || bProfileLevelId.empty())
-			return false;
+			aParameters["level-asymmetry-allowed"] = std::to_string(getH264LevelAssimetryAllowed(aCodec));
+			aParameters["packetization-mode"]      = std::to_string(aPacketizationMode);
+			aParameters["profile-level-id"]        = getH264ProfileLevelId(aCodec);
+			bParameters["level-asymmetry-allowed"] = std::to_string(getH264LevelAssimetryAllowed(bCodec));
+			bParameters["packetization-mode"]      = std::to_string(bPacketizationMode);
+			bParameters["profile-level-id"]        = getH264ProfileLevelId(bCodec);
 
-		webrtc::H264::CodecParameterMap aParameters;
-		webrtc::H264::CodecParameterMap bParameters;
+			if (!webrtc::H264::IsSameH264Profile(aParameters, bParameters))
+				return false;
 
-		// Check H264 profile.
-		aParameters["level-asymmetry-allowed"] = std::to_string(getH264LevelAssimetryAllowed(aCodec));
-		aParameters["packetization-mode"]      = std::to_string(aPacketizationMode);
-		aParameters["profile-level-id"]        = aProfileLevelId;
+			webrtc::H264::CodecParameterMap newParameters;
 
-		bParameters["level-asymmetry-allowed"] = std::to_string(getH264LevelAssimetryAllowed(bCodec));
-		bParameters["packetization-mode"]      = std::to_string(bPacketizationMode);
-		bParameters["profile-level-id"]        = bProfileLevelId;
+			try
+			{
+				webrtc::H264::GenerateProfileLevelIdForAnswer(aParameters, bParameters, &newParameters);
+			}
+			catch (std::runtime_error)
+			{
+				return false;
+			}
 
-		if (!webrtc::H264::IsSameH264Profile(aParameters, bParameters))
-			return false;
+			if (modify)
+			{
+				auto profileLevelIdIt = newParameters.find("profile-level-id");
 
-		webrtc::H264::CodecParameterMap newParameters;
+				if (profileLevelIdIt != newParameters.end())
+					aCodec["parameters"]["profile-level-id"] = profileLevelIdIt->second;
+				else
+					aCodec["parameters"].erase("profile-level-id");
+			}
+		}
+	}
+	// Match VP9 parameters.
+	else if (aMimeType == "video/vp9")
+	{
+		// If strict matching check profile-id.
+		if (strict)
+		{
+			auto aProfileId = getVP9ProfileId(aCodec);
+			auto bProfileId = getVP9ProfileId(bCodec);
 
-		webrtc::H264::GenerateProfileLevelIdForAnswer(aParameters, bParameters, &newParameters);
-
-		auto profileLevelIdIt = newParameters.find("profile-level-id");
-
-		if (profileLevelIdIt != newParameters.end())
-			aCodec["parameters"]["profile-level-id"] = profileLevelIdIt->second;
-		else
-			aCodec["parameters"].erase("profile-level-id");
+			if (aProfileId != bProfileId)
+				return false;
+		}
 	}
 
 	return true;
@@ -1226,17 +1230,13 @@ static uint8_t getH264PacketizationMode(const json& codec)
 {
 	MSC_TRACE();
 
-	auto parametersIt = codec.find("parameters");
-
-	if (parametersIt == codec.end() || !parametersIt->is_object())
-		return 0;
-
-	auto packetizationModeIt = parametersIt->find("packetization-mode");
+	auto& parameters         = codec["parameters"];
+	auto packetizationModeIt = parameters.find("packetization-mode");
 
 	// clang-format off
 	if (
-		packetizationModeIt == parametersIt->end() ||
-		!packetizationModeIt->is_number()
+		packetizationModeIt == parameters.end() ||
+		!packetizationModeIt->is_number_integer()
 	)
 	// clang-format on
 	{
@@ -1250,16 +1250,12 @@ static uint8_t getH264LevelAssimetryAllowed(const json& codec)
 {
 	MSC_TRACE();
 
-	auto parametersIt = codec.find("parameters");
-
-	if (parametersIt == codec.end() || !parametersIt->is_object())
-		return 0;
-
-	auto levelAssimetryAllowedIt = parametersIt->find("level-assimetry-allowed");
+	auto& parameters             = codec["parameters"];
+	auto levelAssimetryAllowedIt = parameters.find("level-asymmetry-allowed");
 
 	// clang-format off
 	if (
-		levelAssimetryAllowedIt == parametersIt->end() ||
+		levelAssimetryAllowedIt == parameters.end() ||
 		!levelAssimetryAllowedIt->is_number_integer()
 	)
 	// clang-format on
@@ -1274,18 +1270,29 @@ static std::string getH264ProfileLevelId(const json& codec)
 {
 	MSC_TRACE();
 
-	auto parametersIt = codec.find("parameters");
+	auto& parameters      = codec["parameters"];
+	auto profileLevelIdIt = parameters.find("profile-level-id");
 
-	if (parametersIt == codec.end() || !parametersIt->is_object())
+	if (profileLevelIdIt == parameters.end())
 		return "";
-
-	auto profileLevelIdIt = parametersIt->find("profile-level-id");
-
-	if (profileLevelIdIt == parametersIt->end())
-		return "";
-
-	if (profileLevelIdIt->is_number())
-		return std::to_string(profileLevelIdIt->get<uint32_t>());
+	else if (profileLevelIdIt->is_number())
+		return std::to_string(profileLevelIdIt->get<int32_t>());
 	else
 		return profileLevelIdIt->get<std::string>();
+}
+
+static std::string getVP9ProfileId(const json& codec)
+{
+	MSC_TRACE();
+
+	auto& parameters = codec["parameters"];
+	auto profileIdIt = parameters.find("profile-id");
+
+	if (profileIdIt == parameters.end())
+		return "0";
+
+	if (profileIdIt->is_number())
+		return std::to_string(profileIdIt->get<int32_t>());
+	else
+		return profileIdIt->get<std::string>();
 }

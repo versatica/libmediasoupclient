@@ -28,7 +28,7 @@ namespace mediasoupclient
 	namespace ortc
 	{
 		/**
-		 * Validates RTCRtpCapabilities. It may modify given data by adding missing
+		 * Validates RtpCapabilities. It may modify given data by adding missing
 		 * fields with default values.
 		 * It throws if invalid.
 		 */
@@ -513,6 +513,161 @@ namespace mediasoupclient
 			// reducedSize is optional. If unset set it to true.
 			if (reducedSizeIt == rtcp.end() || !reducedSizeIt->is_boolean())
 				rtcp["reducedSize"] = true;
+		}
+
+		/**
+		 * Validates SctpCapabilities. It may modify given data by adding missing
+		 * fields with default values.
+		 * It throws if invalid.
+		 */
+		void validateSctpCapabilities(json& caps)
+		{
+			MSC_TRACE();
+
+			if (!caps.is_object())
+				MSC_THROW_TYPE_ERROR("caps is not an object");
+
+			auto numStreamsIt = caps.find("numStreams");
+
+			// numStreams is mandatory.
+			if (numStreamsIt == caps.end() || !numStreamsIt->is_object())
+				MSC_THROW_TYPE_ERROR("missing caps.numStreams");
+
+			ortc::validateNumSctpStreams(*numStreamsIt);
+		}
+
+		/**
+		 * Validates NumSctpStreams. It may modify given data by adding missing
+		 * fields with default values.
+		 * It throws if invalid.
+		 */
+		void validateNumSctpStreams(json& numStreams)
+		{
+			MSC_TRACE();
+
+			if (!numStreams.is_object())
+				MSC_THROW_TYPE_ERROR("numStreams is not an object");
+
+			auto osIt  = numStreams.find("OS");
+			auto misIt = numStreams.find("MIS");
+
+			// OS is mandatory.
+			if (osIt == numStreams.end() || !osIt->is_number_integer())
+				MSC_THROW_TYPE_ERROR("missing numStreams.OS");
+
+			// MIS is mandatory.
+			if (misIt == numStreams.end() || !misIt->is_number_integer())
+				MSC_THROW_TYPE_ERROR("missing numStreams.MIS");
+		}
+
+		/**
+		 * Validates SctpParameters. It may modify given data by adding missing
+		 * fields with default values.
+		 * It throws if invalid.
+		 */
+		void validateSctpParameters(json& params)
+		{
+			MSC_TRACE();
+
+			if (!params.is_object())
+				MSC_THROW_TYPE_ERROR("params is not an object");
+
+			auto portIt           = params.find("port");
+			auto osIt             = params.find("OS");
+			auto misIt            = params.find("MIS");
+			auto maxMessageSizeIt = params.find("maxMessageSize");
+
+			// port is mandatory.
+			if (portIt == params.end() || !portIt->is_number_integer())
+				MSC_THROW_TYPE_ERROR("missing params.port");
+
+			// OS is mandatory.
+			if (osIt == params.end() || !osIt->is_number_integer())
+				MSC_THROW_TYPE_ERROR("missing params.OS");
+
+			// MIS is mandatory.
+			if (misIt == params.end() || !misIt->is_number_integer())
+				MSC_THROW_TYPE_ERROR("missing params.MIS");
+
+			// maxMessageSize is mandatory.
+			if (maxMessageSizeIt == params.end() || !maxMessageSizeIt->is_number_integer())
+				MSC_THROW_TYPE_ERROR("missing params.maxMessageSize");
+		}
+
+		/**
+		 * Validates SctpStreamParameters. It may modify given data by adding missing
+		 * fields with default values.
+		 * It throws if invalid.
+		 */
+		void validateSctpStreamParameters(json& params)
+		{
+			MSC_TRACE();
+
+			if (!params.is_object())
+				MSC_THROW_TYPE_ERROR("params is not an object");
+
+			auto streamIdIt          = params.find("streamId");
+			auto orderedIt           = params.find("ordered");
+			auto maxPacketLifeTimeIt = params.find("maxPacketLifeTime");
+			auto maxRetransmitsIt    = params.find("maxRetransmits");
+			auto priorityIt          = params.find("priority");
+			auto labelIt             = params.find("label");
+			auto protocolIt          = params.find("protocol");
+
+			// streamId is mandatory.
+			if (streamIdIt == params.end() || !streamIdIt->is_number_integer())
+				MSC_THROW_TYPE_ERROR("missing params.streamId");
+
+			// ordered is optional.
+			bool orderedGiven = false;
+
+			if (orderedIt != params.end() && orderedIt->is_boolean())
+				orderedGiven = true;
+			else
+				params["ordered"] = true;
+
+			// maxPacketLifeTime is optional. If unset set it to 0.
+			if (maxPacketLifeTimeIt == params.end() || !maxPacketLifeTimeIt->is_number_integer())
+				params["maxPacketLifeTime"] = 0u;
+
+			// maxRetransmits is optional. If unset set it to 0.
+			if (maxRetransmitsIt == params.end() || !maxRetransmitsIt->is_number_integer())
+				params["maxRetransmits"] = 0u;
+
+			if (maxPacketLifeTimeIt != params.end() && maxRetransmitsIt != params.end())
+				MSC_THROW_TYPE_ERROR("cannot provide both maxPacketLifeTime and maxRetransmits");
+
+			// clang-format off
+			if (
+				orderedGiven &&
+				params["ordered"] == true &&
+				(maxPacketLifeTimeIt != params.end() || maxRetransmitsIt != params.end())
+			)
+			// clang-format on
+			{
+				MSC_THROW_TYPE_ERROR("cannot be ordered with maxPacketLifeTime or maxRetransmits");
+			}
+			// clang-format off
+			else if (
+				!orderedGiven &&
+				(maxPacketLifeTimeIt != params.end() || maxRetransmitsIt != params.end())
+			)
+			// clang-format on
+			{
+				params["ordered"] = false;
+			}
+
+			// priority is optional. If unset set it to empty string.
+			if (priorityIt == params.end() || !priorityIt->is_string())
+				params["priority"] = "";
+
+			// label is optional. If unset set it to empty string.
+			if (labelIt == params.end() || !labelIt->is_string())
+				params["label"] = "";
+
+			// protocol is optional. If unset set it to empty string.
+			if (protocolIt == params.end() || !protocolIt->is_string())
+				params["protocol"] = "";
 		}
 
 		/**

@@ -17,15 +17,13 @@ MediaTrackFactory::MediaTrackFactory()
 {
 	webrtc::PeerConnectionInterface::RTCConfiguration config;
 
-	this->networkThread = rtc::Thread::CreateWithSocketServer();
 	this->signalingThread = rtc::Thread::Create();
 	this->workerThread = rtc::Thread::Create();
 
-	this->networkThread->SetName("test:network_thread", nullptr);
 	this->signalingThread->SetName("test:signaling_thread", nullptr);
 	this->workerThread->SetName("test_worker_thread", nullptr);
 
-	if (!this->networkThread->Start() || !this->signalingThread->Start() || !this->workerThread->Start())
+	if (!this->signalingThread->Start() || !this->workerThread->Start())
 	{
 		MSC_THROW_INVALID_STATE_ERROR("thread start errored");
 	}
@@ -36,7 +34,7 @@ MediaTrackFactory::MediaTrackFactory()
   }
 
 	this->factory = webrtc::CreatePeerConnectionFactory(
-			this->networkThread.get(),
+			this->workerThread.get(),
 			this->workerThread.get(),
 			this->signalingThread.get(),
 			fakeAudioCaptureModule,

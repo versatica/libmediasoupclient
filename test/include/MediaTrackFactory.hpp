@@ -15,7 +15,6 @@ class MediaTrackFactory
 
 	private:
 		// Signaling and worker threads.
-		std::unique_ptr<rtc::Thread> networkThread;
 		std::unique_ptr<rtc::Thread> signalingThread;
 		std::unique_ptr<rtc::Thread> workerThread;
 

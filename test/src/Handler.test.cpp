@@ -1,7 +1,7 @@
 #include "Handler.hpp"
 #include "MediaSoupClientErrors.hpp"
 #include "fakeParameters.hpp"
-#include "peerConnectionUtils.hpp"
+#include "MediaTrackFactory.hpp"
 #include <catch.hpp>
 #include <memory>
 #include <iostream>
@@ -51,7 +51,7 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 	static std::unique_ptr<mediasoupclient::PeerConnection> pc(
 	  new mediasoupclient::PeerConnection(nullptr, &PeerConnectionOptions));
 
-	static std::unique_ptr<PeerConnectionFactoryWrapper> peerConnectionFactory(new PeerConnectionFactoryWrapper());
+	static std::unique_ptr<MediaTrackFactory> mediaTrackFactory(new MediaTrackFactory());
 
 	static rtc::scoped_refptr<webrtc::AudioTrackInterface> track;
 
@@ -64,7 +64,7 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 
 	SECTION("sendHandler.Send() succeeds if a track is provided")
 	{
-		track = peerConnectionFactory->CreateAudioTrack("test-track-id");
+		track = mediaTrackFactory->CreateAudioTrack("test-track-id");
 
 		mediasoupclient::SendHandler::SendData sendData;
 
@@ -88,7 +88,7 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 
 	SECTION("sendHandler.ReplaceTrack() succeeds if a new track is provided")
 	{
-		auto newTrack = peerConnectionFactory->CreateAudioTrack("test-new-track-id");
+		auto newTrack = mediaTrackFactory->CreateAudioTrack("test-new-track-id");
 
 		REQUIRE_NOTHROW(sendHandler.ReplaceTrack(localId, newTrack));
 

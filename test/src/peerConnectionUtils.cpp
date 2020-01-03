@@ -56,27 +56,25 @@ PeerConnectionFactoryWrapper::PeerConnectionFactoryWrapper()
 // Audio track creation.
 rtc::scoped_refptr<webrtc::AudioTrackInterface> PeerConnectionFactoryWrapper::CreateAudioTrack(const std::string& label)
 {
-	if (!this->factory)
-	{
-		MSC_THROW_ERROR("error ocurred creating peerconnection factory");
-	}
-
 	cricket::AudioOptions options;
 	options.highpass_filter = false;
 
 	rtc::scoped_refptr<webrtc::AudioSourceInterface> source =
 		this->factory->CreateAudioSource(options);
 
-  return this->factory->CreateAudioTrack(label, source);
+	auto track = this->factory->CreateAudioTrack(label, source);
+
+	track->AddRef();
+
+	return track;
 }
 
 // Video track creation.
 rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionFactoryWrapper::CreateVideoTrack(const std::string& label)
 {
-	if (!this->factory)
-	{
-		MSC_THROW_ERROR("error ocurred creating peerconnection factory");
-	}
+	auto track = this->factory->CreateVideoTrack(label, webrtc::FakeVideoTrackSource::Create());
 
-  return this->factory->CreateVideoTrack(label, webrtc::FakeVideoTrackSource::Create());
+	track->AddRef();
+
+	return track;
 }

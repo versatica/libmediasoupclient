@@ -1,7 +1,7 @@
-#define MSC_CLASS "PeerConnectionFactoryWrapper"
+#define MSC_CLASS "MediaTrackFactory"
 
-#include "peerConnectionUtils.hpp"
 #include "MediaSoupClientErrors.hpp"
+#include "MediaTrackFactory.hpp"
 #include "pc/test/fake_audio_capture_module.h"
 #include "pc/test/fake_video_track_source.h"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
@@ -13,7 +13,7 @@
 using namespace mediasoupclient;
 
 // Create PeerConnectionFactory.
-PeerConnectionFactoryWrapper::PeerConnectionFactoryWrapper()
+MediaTrackFactory::MediaTrackFactory()
 {
 	webrtc::PeerConnectionInterface::RTCConfiguration config;
 
@@ -54,7 +54,7 @@ PeerConnectionFactoryWrapper::PeerConnectionFactoryWrapper()
 }
 
 // Audio track creation.
-rtc::scoped_refptr<webrtc::AudioTrackInterface> PeerConnectionFactoryWrapper::CreateAudioTrack(const std::string& label)
+rtc::scoped_refptr<webrtc::AudioTrackInterface> MediaTrackFactory::CreateAudioTrack(const std::string& label)
 {
 	cricket::AudioOptions options;
 	options.highpass_filter = false;
@@ -70,7 +70,7 @@ rtc::scoped_refptr<webrtc::AudioTrackInterface> PeerConnectionFactoryWrapper::Cr
 }
 
 // Video track creation.
-rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionFactoryWrapper::CreateVideoTrack(const std::string& label)
+rtc::scoped_refptr<webrtc::VideoTrackInterface> MediaTrackFactory::CreateVideoTrack(const std::string& label)
 {
 	auto track = this->factory->CreateVideoTrack(label, webrtc::FakeVideoTrackSource::Create());
 

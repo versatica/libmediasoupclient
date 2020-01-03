@@ -8,17 +8,17 @@ set(
 	src/VcmCapturer.cpp
 	src/VideoCapturer.cpp
 	src/mediasoupclient.test.cpp
+	src/MediaTrackFactory.cpp
 	src/ortc.test.cpp
 	src/fakeParameters.cpp
-	src/peerConnectionUtils.cpp
 	src/scalabilityMode.test.cpp
 	src/tests.cpp
 	include/FakeTransportListener.hpp
+	include/MediaTrackFactory.hpp
 	include/VcmCapturer.hpp
 	include/VideoCapturer.hpp
 	include/helpers.hpp
 	include/fakeParameters.hpp
-	include/peerConnectionUtils.hpp
 )
 
 # Create target.

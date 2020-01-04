@@ -8,13 +8,13 @@ set(
 	src/VcmCapturer.cpp
 	src/VideoCapturer.cpp
 	src/mediasoupclient.test.cpp
-	src/MediaTrackFactory.cpp
+	src/MediaStreamTrackFactory.cpp
 	src/ortc.test.cpp
 	src/fakeParameters.cpp
 	src/scalabilityMode.test.cpp
 	src/tests.cpp
 	include/FakeTransportListener.hpp
-	include/MediaTrackFactory.hpp
+	include/MediaStreamTrackFactory.hpp
 	include/VcmCapturer.hpp
 	include/VideoCapturer.hpp
 	include/helpers.hpp

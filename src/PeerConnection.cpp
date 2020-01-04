@@ -77,9 +77,9 @@ namespace mediasoupclient
 		}
 		else
 		{
-			this->networkThread = rtc::Thread::CreateWithSocketServer();
+			this->networkThread   = rtc::Thread::CreateWithSocketServer();
 			this->signalingThread = rtc::Thread::Create();
-			this->workerThread = rtc::Thread::Create();
+			this->workerThread    = rtc::Thread::Create();
 
 			this->signalingThread->SetName("network_thread", nullptr);
 			this->signalingThread->SetName("signaling_thread", nullptr);

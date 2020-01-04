@@ -1,8 +1,8 @@
 #include "FakeTransportListener.hpp"
 #include "MediaSoupClientErrors.hpp"
 #include "fakeParameters.hpp"
+#include "MediaStreamTrackFactory.hpp"
 #include "mediasoupclient.hpp"
-#include "MediaTrackFactory.hpp"
 #include <catch.hpp>
 #include <vector>
 
@@ -21,8 +21,6 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 	static std::unique_ptr<mediasoupclient::Consumer> audioConsumer;
 	static std::unique_ptr<mediasoupclient::Consumer> videoConsumer;
 	static std::unique_ptr<mediasoupclient::Consumer> audioConsumer2;
-
-	static std::unique_ptr<MediaTrackFactory> mediaTrackFactory(new MediaTrackFactory());
 
 	static rtc::scoped_refptr<webrtc::AudioTrackInterface> audioTrack;
 	static rtc::scoped_refptr<webrtc::VideoTrackInterface> videoTrack;
@@ -169,8 +167,8 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		encodings.emplace_back(webrtc::RtpEncodingParameters());
 		encodings.emplace_back(webrtc::RtpEncodingParameters());
 
-		audioTrack = mediaTrackFactory->CreateAudioTrack("audio-track-id");
-		videoTrack = mediaTrackFactory->CreateVideoTrack("video-track-id");
+		audioTrack = createAudioTrack("audio-track-id");
+		videoTrack = createVideoTrack("video-track-id");
 
 		json codecs;
 		json headerExtensions;
@@ -597,7 +595,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		// Have the audio Producer paused.
 		audioProducer->Pause();
 
-		auto newAudioTrack = mediaTrackFactory->CreateAudioTrack("audio-track-id-2");
+		auto newAudioTrack = createAudioTrack("audio-track-id-2");
 
 		REQUIRE_NOTHROW(audioProducer->ReplaceTrack(newAudioTrack));
 		REQUIRE(audioProducer->GetTrack() == newAudioTrack);
@@ -607,7 +605,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		// Reset the audio paused state.
 		audioProducer->Resume();
 
-		auto newVideoTrack = mediaTrackFactory->CreateVideoTrack("video-track-id-2");
+		auto newVideoTrack = createVideoTrack("video-track-id-2");
 
 		REQUIRE_NOTHROW(videoProducer->ReplaceTrack(newVideoTrack));
 		REQUIRE(videoProducer->GetTrack() == newVideoTrack);

@@ -63,6 +63,9 @@ namespace mediasoupclient
 		// Extended RTP capabilities.
 		const nlohmann::json* extendedRtpCapabilities{ nullptr };
 
+		// SCTP max message size if enabled, null otherwise.
+		size_t maxSctpMessageSize{ 0u };
+
 		// Whether the Consumer for RTP probation has been created.
 		bool probatorConsumerCreated{ false };
 

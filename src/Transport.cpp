@@ -140,6 +140,14 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
+		if (sctpParameters != nullptr && sctpParameters.is_object())
+		{
+			auto maxMessageSizeIt = sctpParameters.find("maxMessageSize");
+
+			if (maxMessageSizeIt->is_number_integer())
+				this->maxSctpMessageSize = maxMessageSizeIt->get<size_t>();
+		}
+
 		json sendingRtpParametersByKind = {
 			{ "audio", ortc::getSendingRtpParameters("audio", *extendedRtpCapabilities) },
 			{ "video", ortc::getSendingRtpParameters("video", *extendedRtpCapabilities) }
@@ -306,6 +314,14 @@ namespace mediasoupclient
 	  : Transport(listener, id, extendedRtpCapabilities, appData)
 	{
 		MSC_TRACE();
+
+		if (sctpParameters != nullptr && sctpParameters.is_object())
+		{
+			auto maxMessageSizeIt = sctpParameters.find("maxMessageSize");
+
+			if (maxMessageSizeIt->is_number_integer())
+				this->maxSctpMessageSize = maxMessageSizeIt->get<size_t>();
+		}
 
 		this->handler.reset(new RecvHandler(
 		  this, iceParameters, iceCandidates, dtlsParameters, sctpParameters, peerConnectionOptions));

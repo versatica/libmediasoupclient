@@ -1,6 +1,6 @@
 #include "Handler.hpp"
 #include "MediaSoupClientErrors.hpp"
-#include "parameters.hpp"
+#include "fakeParameters.hpp"
 #include "peerConnectionUtils.hpp"
 #include <catch.hpp>
 #include <memory>

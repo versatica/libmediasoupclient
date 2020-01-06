@@ -9,7 +9,7 @@ set(
 	src/VideoCapturer.cpp
 	src/mediasoupclient.test.cpp
 	src/ortc.test.cpp
-	src/parameters.cpp
+	src/fakeParameters.cpp
 	src/peerConnectionUtils.cpp
 	src/scalabilityMode.test.cpp
 	src/tests.cpp
@@ -17,7 +17,7 @@ set(
 	include/VcmCapturer.hpp
 	include/VideoCapturer.hpp
 	include/helpers.hpp
-	include/parameters.hpp
+	include/fakeParameters.hpp
 	include/peerConnectionUtils.hpp
 )
 

@@ -70,34 +70,24 @@ namespace mediasoupclient
 	private:
 		// PrivateListener instance.
 		PrivateListener* privateListener;
-
 		// Public Listener instance.
 		Listener* listener;
-
 		// Id.
 		std::string id;
-
 		// localId.
 		std::string localId;
-
 		// Closed flag.
 		bool closed{ false };
-
 		// Associated RTCRtpSender.
 		webrtc::RtpSenderInterface* rtpSender{ nullptr };
-
 		// Local track.
 		webrtc::MediaStreamTrackInterface* track{ nullptr };
-
 		// RTP parameters.
 		nlohmann::json rtpParameters;
-
 		// Paused flag.
 		bool paused{ false };
-
 		// Video Max spatial layer.
 		uint8_t maxSpatialLayer{ 0 };
-
 		// App custom data.
 		nlohmann::json appData;
 	};

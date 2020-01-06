@@ -1,5 +1,5 @@
-#ifndef MSC_TEST_PARAMETERS
-#define MSC_TEST_PARAMETERS
+#ifndef MSC_TEST_FAKE_PARAMETERS
+#define MSC_TEST_FAKE_PARAMETERS
 
 #include <json.hpp>
 

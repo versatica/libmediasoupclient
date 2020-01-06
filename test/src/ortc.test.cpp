@@ -1,5 +1,5 @@
+#include "fakeParameters.hpp"
 #include "ortc.hpp"
-#include "parameters.hpp"
 #include <catch.hpp>
 
 using namespace mediasoupclient;

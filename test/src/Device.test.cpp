@@ -1,8 +1,8 @@
 #include "Device.hpp"
 #include "FakeTransportListener.hpp"
 #include "MediaSoupClientErrors.hpp"
+#include "fakeParameters.hpp"
 #include "ortc.hpp"
-#include "parameters.hpp"
 #include <catch.hpp>
 
 TEST_CASE("Device", "[Device]")

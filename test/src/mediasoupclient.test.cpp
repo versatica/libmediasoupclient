@@ -1,7 +1,7 @@
 #include "FakeTransportListener.hpp"
 #include "MediaSoupClientErrors.hpp"
+#include "fakeParameters.hpp"
 #include "mediasoupclient.hpp"
-#include "parameters.hpp"
 #include "peerConnectionUtils.hpp"
 #include <catch.hpp>
 #include <vector>

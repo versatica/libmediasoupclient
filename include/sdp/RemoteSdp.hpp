@@ -41,19 +41,15 @@ namespace mediasoupclient
 		protected:
 			// Generic sending RTP parameters for audio and video.
 			nlohmann::json rtpParametersByKind = nlohmann::json::object();
-
 			// Transport remote parameters, including ICE parameters, ICE candidates
 			// and DTLS parameteres.
 			nlohmann::json iceParameters  = nlohmann::json::object();
 			nlohmann::json iceCandidates  = nlohmann::json::object();
 			nlohmann::json dtlsParameters = nlohmann::json::object();
-
 			// MediaSection instances indexed by MID.
 			std::unordered_map<std::string, MediaSection*> mediaSections;
-
 			// Generic sending RTP parameters for audio and video.
 			nlohmann::json sendingRtpParametersByKind = nlohmann::json::object();
-
 			// SDP global fields.
 			nlohmann::json sdpObject = nlohmann::json::object();
 		};

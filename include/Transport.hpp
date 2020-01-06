@@ -60,31 +60,24 @@ namespace mediasoupclient
 	protected:
 		// Closed flag.
 		bool closed{ false };
-
 		// Extended RTP capabilities.
 		const nlohmann::json* extendedRtpCapabilities{ nullptr };
-
 		// SCTP max message size if enabled, null otherwise.
 		size_t maxSctpMessageSize{ 0u };
-
 		// Whether the Consumer for RTP probation has been created.
 		bool probatorConsumerCreated{ false };
 
 	private:
 		// Listener.
 		Listener* listener{ nullptr };
-
 		// Id.
 		std::string id;
-
 		// Transport (IceConneciton) connection state.
 		webrtc::PeerConnectionInterface::IceConnectionState connectionState{
 			webrtc::PeerConnectionInterface::IceConnectionState::kIceConnectionNew
 		};
-
 		// Handler.
 		Handler* handler{ nullptr };
-
 		// App custom data.
 		nlohmann::json appData = nlohmann::json::object();
 	};
@@ -141,14 +134,11 @@ namespace mediasoupclient
 	private:
 		// Listener instance.
 		Listener* listener;
-
 		// Map of Producers indexed by id.
 		std::unordered_map<std::string, Producer*> producers;
-
 		// Whether we can produce audio/video based on computed extended RTP
 		// capabilities.
 		const std::map<std::string, bool>* canProduceByKind{ nullptr };
-
 		// SendHandler instance.
 		std::unique_ptr<SendHandler> sendHandler;
 	};
@@ -193,7 +183,6 @@ namespace mediasoupclient
 	private:
 		// Map of Consumers indexed by id.
 		std::unordered_map<std::string, Consumer*> consumers;
-
 		// SendHandler instance.
 		std::unique_ptr<RecvHandler> recvHandler;
 	};

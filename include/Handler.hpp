@@ -58,17 +58,12 @@ namespace mediasoupclient
 	protected:
 		// PrivateListener instance.
 		PrivateListener* privateListener{ nullptr };
-
 		// Remote SDP instance.
 		std::unique_ptr<Sdp::RemoteSdp> remoteSdp;
-
 		// Got transport local and remote parameters.
 		bool transportReady{ false };
-
 		// Map of RTCTransceivers indexed by MID.
-		// @type {Map<String, RTCTransceiver>}
 		std::unordered_map<std::string, webrtc::RtpTransceiverInterface*> mapMidTransceiver;
-
 		// PeerConnection instance.
 		std::unique_ptr<PeerConnection> pc;
 	};
@@ -108,7 +103,6 @@ namespace mediasoupclient
 	private:
 		// Generic sending RTP parameters for audio and video.
 		nlohmann::json sendingRtpParametersByKind;
-
 		// Generic sending RTP parameters for audio and video suitable for the SDP
 		// remote answer.
 		nlohmann::json sendingRemoteRtpParametersByKind;

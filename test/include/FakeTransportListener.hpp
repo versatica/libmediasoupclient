@@ -1,8 +1,8 @@
 #ifndef MSC_TEST_FAKE_TRANSPORT_LISTENER_HPP
 #define MSC_TEST_FAKE_TRANSPORT_LISTENER_HPP
 
+#include "fakeParameters.hpp"
 #include "mediasoupclient.hpp"
-#include "parameters.hpp"
 #include <catch.hpp>
 
 class FakeSendTransportListener : public mediasoupclient::SendTransport::Listener

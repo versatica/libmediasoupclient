@@ -74,7 +74,7 @@ namespace mediasoupclient
 		Listener* listener{ nullptr };
 
 		// Id.
-		std::string id{};
+		std::string id;
 
 		// Transport (IceConneciton) connection state.
 		webrtc::PeerConnectionInterface::IceConnectionState connectionState{

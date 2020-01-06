@@ -171,8 +171,8 @@ namespace mediasoupclient
 		Transport::SetHandler(this->sendHandler.get());
 	}
 
-	/*
-	 * Produce a track.
+	/**
+	 * Create a Producer.
 	 */
 	Producer* SendTransport::Produce(
 	  Producer::Listener* producerListener,
@@ -193,7 +193,6 @@ namespace mediasoupclient
 			MSC_THROW_UNSUPPORTED_ERROR("cannot produce track kind");
 
 		std::string producerId;
-
 		std::vector<webrtc::RtpEncodingParameters> normalizedEncodings;
 
 		if (encodings)
@@ -205,11 +204,12 @@ namespace mediasoupclient
 				  webrtc::RtpEncodingParameters encoding;
 
 				  encoding.active                   = entry.active;
-				  encoding.dtx                      = entry.dtx;
 				  encoding.max_bitrate_bps          = entry.max_bitrate_bps;
 				  encoding.max_framerate            = entry.max_framerate;
 				  encoding.scale_framerate_down_by  = entry.scale_framerate_down_by;
 				  encoding.scale_resolution_down_by = entry.scale_resolution_down_by;
+				  encoding.dtx                      = entry.dtx;
+				  encoding.network_priority         = entry.network_priority;
 
 				  normalizedEncodings.push_back(encoding);
 			  });
@@ -321,8 +321,8 @@ namespace mediasoupclient
 		Transport::SetHandler(this->recvHandler.get());
 	}
 
-	/*
-	 * Consume a remote Producer.
+	/**
+	 * Create a Consumer.
 	 */
 	Consumer* RecvTransport::Consume(
 	  Consumer::Listener* consumerListener,

@@ -85,9 +85,12 @@ namespace mediasoupclient
 
 		auto configuration = this->pc->GetConfiguration();
 
+		configuration.servers.clear();
+
 		for (auto& iceServerUri : iceServerUris)
 		{
 			webrtc::PeerConnectionInterface::IceServer iceServer;
+
 			iceServer.uri = iceServerUri;
 			configuration.servers.push_back(iceServer);
 		}
@@ -95,7 +98,7 @@ namespace mediasoupclient
 		if (this->pc->SetConfiguration(configuration))
 			return;
 
-		MSC_THROW_ERROR("failed");
+		MSC_THROW_ERROR("failed to update ICE servers");
 	};
 
 	void Handler::OnIceConnectionChange(webrtc::PeerConnectionInterface::IceConnectionState newState)

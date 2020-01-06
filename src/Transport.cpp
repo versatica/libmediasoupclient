@@ -158,7 +158,7 @@ namespace mediasoupclient
 			{ "video", ortc::getSendingRemoteRtpParameters("video", *extendedRtpCapabilities) }
 		};
 
-		this->handler.reset(new SendHandler(
+		this->sendHandler.reset(new SendHandler(
 		  this,
 		  iceParameters,
 		  iceCandidates,
@@ -168,7 +168,7 @@ namespace mediasoupclient
 		  sendingRtpParametersByKind,
 		  sendingRemoteRtpParametersByKind));
 
-		Transport::SetHandler(this->handler.get());
+		Transport::SetHandler(this->sendHandler.get());
 	}
 
 	/*
@@ -216,7 +216,7 @@ namespace mediasoupclient
 		}
 
 		// May throw.
-		auto result = this->handler->Send(track, &normalizedEncodings, codecOptions);
+		auto result = this->sendHandler->Send(track, &normalizedEncodings, codecOptions);
 
 		auto& localId       = result.first;
 		auto& rtpParameters = result.second;
@@ -231,7 +231,7 @@ namespace mediasoupclient
 		}
 		catch (MediaSoupClientError& error)
 		{
-			this->handler->StopSending(localId);
+			this->sendHandler->StopSending(localId);
 
 			throw;
 		}
@@ -272,21 +272,21 @@ namespace mediasoupclient
 			return;
 
 		// May throw.
-		this->handler->StopSending(producer->GetLocalId());
+		this->sendHandler->StopSending(producer->GetLocalId());
 	}
 
 	void SendTransport::OnReplaceTrack(const Producer* producer, webrtc::MediaStreamTrackInterface* track)
 	{
 		MSC_TRACE();
 
-		return this->handler->ReplaceTrack(producer->GetLocalId(), track);
+		return this->sendHandler->ReplaceTrack(producer->GetLocalId(), track);
 	}
 
 	void SendTransport::OnSetMaxSpatialLayer(const Producer* producer, uint8_t maxSpatialLayer)
 	{
 		MSC_TRACE();
 
-		return this->handler->SetMaxSpatialLayer(producer->GetLocalId(), maxSpatialLayer);
+		return this->sendHandler->SetMaxSpatialLayer(producer->GetLocalId(), maxSpatialLayer);
 	}
 
 	json SendTransport::OnGetStats(const Producer* producer)
@@ -296,7 +296,7 @@ namespace mediasoupclient
 		if (this->closed)
 			MSC_THROW_INVALID_STATE_ERROR("SendTransport closed");
 
-		return this->handler->GetSenderStats(producer->GetLocalId());
+		return this->sendHandler->GetSenderStats(producer->GetLocalId());
 	}
 
 	/* RecvTransport */
@@ -315,18 +315,10 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		if (sctpParameters != nullptr && sctpParameters.is_object())
-		{
-			auto maxMessageSizeIt = sctpParameters.find("maxMessageSize");
-
-			if (maxMessageSizeIt->is_number_integer())
-				this->maxSctpMessageSize = maxMessageSizeIt->get<size_t>();
-		}
-
-		this->handler.reset(new RecvHandler(
+		this->recvHandler.reset(new RecvHandler(
 		  this, iceParameters, iceCandidates, dtlsParameters, sctpParameters, peerConnectionOptions));
 
-		Transport::SetHandler(this->handler.get());
+		Transport::SetHandler(this->recvHandler.get());
 	}
 
 	/*
@@ -358,7 +350,7 @@ namespace mediasoupclient
 			MSC_THROW_UNSUPPORTED_ERROR("cannot consume this Producer");
 
 		// May throw.
-		auto result = this->handler->Receive(id, kind, rtpParameters);
+		auto result = this->recvHandler->Receive(id, kind, rtpParameters);
 
 		auto& localId = result.first;
 		auto* track   = result.second;
@@ -379,7 +371,7 @@ namespace mediasoupclient
 				std::string probatorId{ "probator" };
 
 				// May throw.
-				auto result = this->handler->Receive(probatorId, kind, &probatorRtpParameters);
+				auto result = this->recvHandler->Receive(probatorId, kind, &probatorRtpParameters);
 
 				MSC_DEBUG("Consumer for RTP probation created");
 
@@ -422,7 +414,7 @@ namespace mediasoupclient
 			return;
 
 		// May throw.
-		this->handler->StopReceiving(consumer->GetLocalId());
+		this->recvHandler->StopReceiving(consumer->GetLocalId());
 	}
 
 	json RecvTransport::OnGetStats(const Consumer* consumer)
@@ -432,6 +424,6 @@ namespace mediasoupclient
 		if (this->closed)
 			MSC_THROW_INVALID_STATE_ERROR("RecvTransport closed");
 
-		return this->handler->GetReceiverStats(consumer->GetLocalId());
+		return this->recvHandler->GetReceiverStats(consumer->GetLocalId());
 	}
 } // namespace mediasoupclient

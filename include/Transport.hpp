@@ -149,7 +149,7 @@ namespace mediasoupclient
 		const std::map<std::string, bool>* canProduceByKind{ nullptr };
 
 		// SendHandler instance.
-		std::unique_ptr<SendHandler> handler;
+		std::unique_ptr<SendHandler> sendHandler;
 	};
 
 	class RecvTransport : public Transport, public Consumer::PrivateListener
@@ -194,7 +194,7 @@ namespace mediasoupclient
 		std::unordered_map<std::string, Consumer*> consumers;
 
 		// SendHandler instance.
-		std::unique_ptr<RecvHandler> handler;
+		std::unique_ptr<RecvHandler> recvHandler;
 	};
 } // namespace mediasoupclient
 #endif

@@ -44,6 +44,7 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 	  TransportRemoteParameters["iceParameters"],
 	  TransportRemoteParameters["iceCandidates"],
 	  TransportRemoteParameters["dtlsParameters"],
+	  TransportRemoteParameters["sctpParameters"],
 	  &PeerConnectionOptions,
 	  RtpParametersByKind,
 	  RtpParametersByKind);
@@ -152,6 +153,7 @@ TEST_CASE("RecvHandler", "[Handler][RecvHandler]")
 	  TransportRemoteParameters["iceParameters"],
 	  TransportRemoteParameters["iceCandidates"],
 	  TransportRemoteParameters["dtlsParameters"],
+	  TransportRemoteParameters["sctpParameters"],
 	  &PeerConnectionOptions);
 
 	SECTION("recvHander.Receive() succeeds if correct rtpParameters are provided")

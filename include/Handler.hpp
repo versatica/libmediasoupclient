@@ -32,6 +32,7 @@ namespace mediasoupclient
 		  const nlohmann::json& iceParameters,
 		  const nlohmann::json& iceCandidates,
 		  const nlohmann::json& dtlsParameters,
+		  const nlohmann::json& sctpParameters,
 		  const PeerConnection::Options* peerConnectionOptions);
 
 	public:
@@ -74,6 +75,7 @@ namespace mediasoupclient
 		  const nlohmann::json& iceParameters,
 		  const nlohmann::json& iceCandidates,
 		  const nlohmann::json& dtlsParameters,
+		  const nlohmann::json& sctpParameters,
 		  const PeerConnection::Options* peerConnectionOptions,
 		  const nlohmann::json& sendingRtpParametersByKind,
 		  const nlohmann::json& sendingRemoteRtpParametersByKind = nlohmann::json());
@@ -106,6 +108,7 @@ namespace mediasoupclient
 		  const nlohmann::json& iceParameters,
 		  const nlohmann::json& iceCandidates,
 		  const nlohmann::json& dtlsParameters,
+		  const nlohmann::json& sctpParameters,
 		  const PeerConnection::Options* peerConnectionOptions);
 
 		std::pair<std::string, webrtc::MediaStreamTrackInterface*> Receive(

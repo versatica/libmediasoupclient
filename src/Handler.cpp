@@ -54,6 +54,7 @@ namespace mediasoupclient
 	  const json& iceParameters,
 	  const json& iceCandidates,
 	  const json& dtlsParameters,
+	  const json& sctpParameters,
 	  const PeerConnection::Options* peerConnectionOptions)
 	  : privateListener(privateListener)
 	{
@@ -132,10 +133,12 @@ namespace mediasoupclient
 	  const json& iceParameters,
 	  const json& iceCandidates,
 	  const json& dtlsParameters,
+	  const json& sctpParameters,
 	  const PeerConnection::Options* peerConnectionOptions,
 	  const json& sendingRtpParametersByKind,
 	  const json& sendingRemoteRtpParametersByKind)
-	  : Handler(privateListener, iceParameters, iceCandidates, dtlsParameters, peerConnectionOptions)
+	  : Handler(
+	      privateListener, iceParameters, iceCandidates, dtlsParameters, sctpParameters, peerConnectionOptions)
 	{
 		MSC_TRACE();
 
@@ -436,8 +439,10 @@ namespace mediasoupclient
 	  const json& iceParameters,
 	  const json& iceCandidates,
 	  const json& dtlsParameters,
+	  const json& sctpParameters,
 	  const PeerConnection::Options* peerConnectionOptions)
-	  : Handler(privateListener, iceParameters, iceCandidates, dtlsParameters, peerConnectionOptions)
+	  : Handler(
+	      privateListener, iceParameters, iceCandidates, dtlsParameters, sctpParameters, peerConnectionOptions)
 	{
 		MSC_TRACE();
 	};

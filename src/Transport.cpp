@@ -155,6 +155,7 @@ namespace mediasoupclient
 		  iceParameters,
 		  iceCandidates,
 		  dtlsParameters,
+		  sctpParameters,
 		  peerConnectionOptions,
 		  sendingRtpParametersByKind,
 		  sendingRemoteRtpParametersByKind));
@@ -306,8 +307,8 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		this->handler.reset(
-		  new RecvHandler(this, iceParameters, iceCandidates, dtlsParameters, peerConnectionOptions));
+		this->handler.reset(new RecvHandler(
+		  this, iceParameters, iceCandidates, dtlsParameters, sctpParameters, peerConnectionOptions));
 
 		Transport::SetHandler(this->handler.get());
 	}

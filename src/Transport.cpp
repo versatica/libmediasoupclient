@@ -216,28 +216,33 @@ namespace mediasoupclient
 		}
 
 		// May throw.
-		auto result = this->sendHandler->Send(track, &normalizedEncodings, codecOptions);
-
-		auto& localId       = result.first;
-		auto& rtpParameters = result.second;
+		auto sendData = this->sendHandler->Send(track, &normalizedEncodings, codecOptions);
 
 		try
 		{
 			// This will fill rtpParameters's missing fields with default values.
-			ortc::validateRtpParameters(rtpParameters);
+			ortc::validateRtpParameters(sendData.rtpParameters);
 
 			// May throw.
-			producerId = this->listener->OnProduce(this, track->kind(), rtpParameters, appData).get();
+			producerId =
+			  this->listener->OnProduce(this, track->kind(), sendData.rtpParameters, appData).get();
 		}
 		catch (MediaSoupClientError& error)
 		{
-			this->sendHandler->StopSending(localId);
+			this->sendHandler->StopSending(sendData.localId);
 
 			throw;
 		}
 
-		auto* producer =
-		  new Producer(this, producerListener, producerId, localId, track, rtpParameters, appData);
+		auto* producer = new Producer(
+		  this,
+		  producerListener,
+		  producerId,
+		  sendData.localId,
+		  sendData.rtpSender,
+		  track,
+		  sendData.rtpParameters,
+		  appData);
 
 		this->producers[producer->GetId()] = producer;
 
@@ -350,13 +355,18 @@ namespace mediasoupclient
 			MSC_THROW_UNSUPPORTED_ERROR("cannot consume this Producer");
 
 		// May throw.
-		auto result = this->recvHandler->Receive(id, kind, rtpParameters);
+		auto recvData = this->recvHandler->Receive(id, kind, rtpParameters);
 
-		auto& localId = result.first;
-		auto* track   = result.second;
-
-		auto* consumer =
-		  new Consumer(this, consumerListener, id, localId, producerId, track, *rtpParameters, appData);
+		auto* consumer = new Consumer(
+		  this,
+		  consumerListener,
+		  id,
+		  recvData.localId,
+		  producerId,
+		  recvData.rtpReceiver,
+		  recvData.track,
+		  *rtpParameters,
+		  appData);
 
 		this->consumers[consumer->GetId()] = consumer;
 

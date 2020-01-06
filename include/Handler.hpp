@@ -4,7 +4,13 @@
 #include "PeerConnection.hpp"
 #include "sdp/RemoteSdp.hpp"
 #include <json.hpp>
-#include <api/rtp_transceiver_interface.h>
+#include <api/media_stream_interface.h>    // webrtc::MediaStreamTrackInterface
+#include <api/peer_connection_interface.h> // webrtc::PeerConnectionInterface
+#include <api/rtp_parameters.h>            // webrtc::RtpEncodingParameters
+#include <api/rtp_receiver_interface.h>    // webrtc::RtpReceiverInterface
+#include <api/rtp_sender_interface.h>      // webrtc::RtpSenderInterface
+#include <api/rtp_transceiver_interface.h> // webrtc::RtpTransceiverInterface
+
 #include <string>
 #include <unordered_map>
 
@@ -70,6 +76,14 @@ namespace mediasoupclient
 	class SendHandler : public Handler
 	{
 	public:
+		struct SendData
+		{
+			std::string localId;
+			webrtc::RtpSenderInterface* rtpSender{ nullptr };
+			nlohmann::json rtpParameters;
+		};
+
+	public:
 		SendHandler(
 		  Handler::PrivateListener* privateListener,
 		  const nlohmann::json& iceParameters,
@@ -81,7 +95,7 @@ namespace mediasoupclient
 		  const nlohmann::json& sendingRemoteRtpParametersByKind = nlohmann::json());
 
 	public:
-		std::pair<std::string, nlohmann::json> Send(
+		SendData Send(
 		  webrtc::MediaStreamTrackInterface* track,
 		  const std::vector<webrtc::RtpEncodingParameters>* encodings,
 		  const nlohmann::json* codecOptions);
@@ -103,6 +117,14 @@ namespace mediasoupclient
 	class RecvHandler : public Handler
 	{
 	public:
+		struct RecvData
+		{
+			std::string localId;
+			webrtc::RtpReceiverInterface* rtpReceiver{ nullptr };
+			webrtc::MediaStreamTrackInterface* track{ nullptr };
+		};
+
+	public:
 		RecvHandler(
 		  Handler::PrivateListener* privateListener,
 		  const nlohmann::json& iceParameters,
@@ -111,8 +133,7 @@ namespace mediasoupclient
 		  const nlohmann::json& sctpParameters,
 		  const PeerConnection::Options* peerConnectionOptions);
 
-		std::pair<std::string, webrtc::MediaStreamTrackInterface*> Receive(
-		  const std::string& id, const std::string& kind, const nlohmann::json* rtpParameters);
+		RecvData Receive(const std::string& id, const std::string& kind, const nlohmann::json* rtpParameters);
 		void StopReceiving(const std::string& localId);
 		nlohmann::json GetReceiverStats(const std::string& localId);
 		void RestartIce(const nlohmann::json& iceParameters) override;

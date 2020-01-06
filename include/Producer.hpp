@@ -2,7 +2,8 @@
 #define MSC_PRODUCER_HPP
 
 #include <json.hpp>
-#include <api/media_stream_interface.h> // MediaStreamTrackInterface
+#include <api/media_stream_interface.h> // webrtc::MediaStreamTrackInterface
+#include <api/rtp_sender_interface.h>   // webrtc::RtpSenderInterface
 #include <string>
 
 namespace mediasoupclient
@@ -37,6 +38,7 @@ namespace mediasoupclient
 		  Listener* listener,
 		  const std::string& id,
 		  const std::string& localId,
+		  webrtc::RtpSenderInterface* rtpSender,
 		  webrtc::MediaStreamTrackInterface* track,
 		  const nlohmann::json& rtpParameters,
 		  const nlohmann::json& appData);
@@ -46,6 +48,7 @@ namespace mediasoupclient
 		const std::string& GetLocalId() const;
 		bool IsClosed() const;
 		std::string GetKind() const;
+		webrtc::RtpSenderInterface* GetRtpSender() const;
 		webrtc::MediaStreamTrackInterface* GetTrack() const;
 		const nlohmann::json& GetRtpParameters() const;
 		bool IsPaused() const;
@@ -80,14 +83,17 @@ namespace mediasoupclient
 		// Closed flag.
 		bool closed{ false };
 
-		// Paused flag.
-		bool paused{ false };
+		// Associated RTCRtpSender.
+		webrtc::RtpSenderInterface* rtpSender{ nullptr };
 
 		// Local track.
-		webrtc::MediaStreamTrackInterface* track;
+		webrtc::MediaStreamTrackInterface* track{ nullptr };
 
 		// RTP parameters.
 		nlohmann::json rtpParameters;
+
+		// Paused flag.
+		bool paused{ false };
 
 		// Video Max spatial layer.
 		uint8_t maxSpatialLayer{ 0 };

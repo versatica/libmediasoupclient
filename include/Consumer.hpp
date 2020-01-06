@@ -2,7 +2,8 @@
 #define MSC_CONSUMER_HPP
 
 #include <json.hpp>
-#include <api/media_stream_interface.h> // MediaStreamTrackInterface
+#include <api/media_stream_interface.h> // webrtc::MediaStreamTrackInterface
+#include <api/rtp_receiver_interface.h> // webrtc::RtpReceiverInterface
 #include <string>
 
 namespace mediasoupclient
@@ -35,6 +36,7 @@ namespace mediasoupclient
 		  const std::string& id,
 		  const std::string& localId,
 		  const std::string& producerId,
+		  webrtc::RtpReceiverInterface* rtpReceiver,
 		  webrtc::MediaStreamTrackInterface* track,
 		  const nlohmann::json& rtpParameters,
 		  const nlohmann::json& appData);
@@ -45,6 +47,7 @@ namespace mediasoupclient
 		const std::string& GetProducerId() const;
 		bool IsClosed() const;
 		const std::string GetKind() const;
+		webrtc::RtpReceiverInterface* GetRtpReceiver() const;
 		webrtc::MediaStreamTrackInterface* GetTrack() const;
 		const nlohmann::json& GetRtpParameters() const;
 		bool IsPaused() const;
@@ -79,8 +82,11 @@ namespace mediasoupclient
 		// Closed flag.
 		bool closed{ false };
 
+		// Associated RTCRtpReceiver.
+		webrtc::RtpReceiverInterface* rtpReceiver{ nullptr };
+
 		// Local track.
-		webrtc::MediaStreamTrackInterface* track;
+		webrtc::MediaStreamTrackInterface* track{ nullptr };
 
 		// RTP parameters.
 		nlohmann::json rtpParameters;

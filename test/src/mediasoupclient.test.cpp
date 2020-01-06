@@ -207,6 +207,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE(audioProducer->GetId() == sendTransportListener.audioProducerId);
 		REQUIRE(!audioProducer->IsClosed());
 		REQUIRE(audioProducer->GetKind() == "audio");
+		REQUIRE(audioProducer->GetRtpSender() != nullptr);
 		REQUIRE(audioProducer->GetTrack() == audioTrack);
 		REQUIRE(audioProducer->IsPaused());
 		REQUIRE(audioProducer->GetMaxSpatialLayer() == 0);
@@ -246,6 +247,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE(videoProducer->GetId() == sendTransportListener.videoProducerId);
 		REQUIRE(!videoProducer->IsClosed());
 		REQUIRE(videoProducer->GetKind() == "video");
+		REQUIRE(videoProducer->GetRtpSender() != nullptr);
 		REQUIRE(videoProducer->GetTrack() == videoTrack);
 		REQUIRE(!videoProducer->GetRtpParameters()["codecs"].empty());
 
@@ -322,6 +324,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 		REQUIRE(!audioConsumer->IsClosed());
 		REQUIRE(audioConsumer->GetKind() == "audio");
+		REQUIRE(audioConsumer->GetRtpReceiver() != nullptr);
 		REQUIRE(audioConsumer->GetRtpParameters()["codecs"].is_array());
 		REQUIRE(audioConsumer->GetRtpParameters()["codecs"].size() == 1);
 
@@ -381,6 +384,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 		REQUIRE(!videoConsumer->IsClosed());
 		REQUIRE(videoConsumer->GetKind() == "video");
+		REQUIRE(videoConsumer->GetRtpReceiver() != nullptr);
 		REQUIRE(videoConsumer->GetRtpParameters()["codecs"].is_array());
 		REQUIRE(videoConsumer->GetRtpParameters()["codecs"].size() == 2);
 
@@ -497,6 +501,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 
 		REQUIRE(!audioConsumer2->IsClosed());
 		REQUIRE(audioConsumer2->GetKind() == "audio");
+		REQUIRE(audioConsumer2->GetRtpReceiver() != nullptr);
 		REQUIRE(audioConsumer2->GetRtpParameters()["codecs"].is_array());
 		REQUIRE(audioConsumer2->GetRtpParameters()["codecs"].size() == 1);
 

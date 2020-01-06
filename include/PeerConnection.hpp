@@ -2,9 +2,9 @@
 #define MSC_PEERCONNECTION_HPP
 
 #include <json.hpp>
-#include <api/peer_connection_interface.h>
-#include <future> // std::promise, std::future
-#include <memory> // std::unique_ptr
+#include <api/peer_connection_interface.h> // webrtc::PeerConnectionInterface
+#include <future>                          // std::promise, std::future
+#include <memory>                          // std::unique_ptr
 
 namespace mediasoupclient
 {

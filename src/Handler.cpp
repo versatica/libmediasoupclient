@@ -150,7 +150,7 @@ namespace mediasoupclient
 		this->sendingRemoteRtpParametersByKind = sendingRemoteRtpParametersByKind;
 	};
 
-	std::pair<std::string, nlohmann::json> SendHandler::Send(
+	SendHandler::SendData SendHandler::Send(
 	  webrtc::MediaStreamTrackInterface* track,
 	  const std::vector<webrtc::RtpEncodingParameters>* encodings,
 	  const json* codecOptions)
@@ -265,7 +265,13 @@ namespace mediasoupclient
 		// Store in the map.
 		this->mapMidTransceiver[localId] = transceiver;
 
-		return std::make_pair(localId, sendingRtpParameters);
+		SendData sendData;
+
+		sendData.localId       = localId;
+		sendData.rtpSender     = transceiver->sender();
+		sendData.rtpParameters = sendingRtpParameters;
+
+		return sendData;
 	}
 
 	void SendHandler::StopSending(const std::string& localId)
@@ -450,7 +456,7 @@ namespace mediasoupclient
 		MSC_TRACE();
 	};
 
-	std::pair<std::string, webrtc::MediaStreamTrackInterface*> RecvHandler::Receive(
+	RecvHandler::RecvData RecvHandler::Receive(
 	  const std::string& id, const std::string& kind, const json* rtpParameters)
 	{
 		MSC_TRACE();
@@ -512,7 +518,13 @@ namespace mediasoupclient
 		// Increase next MID.
 		this->nextMid++;
 
-		return std::make_pair(localId, transceiver->receiver()->track());
+		RecvData recvData;
+
+		recvData.localId     = localId;
+		recvData.rtpReceiver = transceiver->receiver();
+		recvData.track       = transceiver->receiver()->track();
+
+		return recvData;
 	}
 
 	void RecvHandler::StopReceiving(const std::string& localId)

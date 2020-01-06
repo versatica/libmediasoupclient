@@ -63,15 +63,14 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 	{
 		track = createAudioTrack("test-track-id");
 
-		std::pair<std::string, nlohmann::json> result;
+		mediasoupclient::SendHandler::SendData sendData;
 
-		REQUIRE_NOTHROW(result = sendHandler.Send(track, nullptr, nullptr));
+		REQUIRE_NOTHROW(sendData = sendHandler.Send(track, nullptr, nullptr));
 
-		localId            = result.first;
-		json rtpParameters = result.second;
+		localId = sendData.localId;
 
-		REQUIRE(rtpParameters["codecs"].size() == 1);
-		REQUIRE(rtpParameters["headerExtensions"].size() == 3);
+		REQUIRE(sendData.rtpParameters["codecs"].size() == 1);
+		REQUIRE(sendData.rtpParameters["headerExtensions"].size() == 3);
 	}
 
 	SECTION("sendHandler.Send() succeeds if track is already handled")
@@ -158,11 +157,11 @@ TEST_CASE("RecvHandler", "[Handler][RecvHandler]")
 
 	SECTION("recvHander.Receive() succeeds if correct rtpParameters are provided")
 	{
-		std::pair<std::string, webrtc::MediaStreamTrackInterface*> result;
+		mediasoupclient::RecvHandler::RecvData recvData;
 
-		REQUIRE_NOTHROW(result = recvHandler.Receive("test", "audio", &rtpParameters));
+		REQUIRE_NOTHROW(recvData = recvHandler.Receive("test", "audio", &rtpParameters));
 
-		localId = result.first;
+		localId = recvData.localId;
 	}
 
 	SECTION("recvHandler.GetReceiverStats() fails if unknown receiver id is provided")

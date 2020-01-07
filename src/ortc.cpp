@@ -1100,7 +1100,7 @@ namespace mediasoupclient
 						auto type = fb["type"].get<std::string>();
 
 						if (type == "goog-remb")
-							it = fb.erase(it);
+							it = rtcpFeedback.erase(it);
 						else
 							++it;
 					}

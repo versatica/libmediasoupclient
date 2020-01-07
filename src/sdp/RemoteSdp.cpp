@@ -12,8 +12,12 @@ namespace mediasoupclient
 	/* Sdp::RemoteSdp methods */
 
 	Sdp::RemoteSdp::RemoteSdp(
-	  const json& iceParameters, const json& iceCandidates, const json& dtlsParameters)
-	  : iceParameters(iceParameters), iceCandidates(iceCandidates), dtlsParameters(dtlsParameters)
+	  const json& iceParameters,
+	  const json& iceCandidates,
+	  const json& dtlsParameters,
+	  const json& sctpParameters)
+	  : iceParameters(iceParameters), iceCandidates(iceCandidates), dtlsParameters(dtlsParameters),
+	    sctpParameters(sctpParameters)
 	{
 		MSC_TRACE();
 
@@ -109,10 +113,7 @@ namespace mediasoupclient
 	}
 
 	void Sdp::RemoteSdp::Send(
-	  nlohmann::json& offerMediaObject,
-	  nlohmann::json& offerRtpParameters,
-	  nlohmann::json& answerRtpParameters,
-	  const nlohmann::json* codecOptions)
+	  json& offerMediaObject, json& offerRtpParameters, json& answerRtpParameters, const json* codecOptions)
 	{
 		MSC_TRACE();
 
@@ -120,6 +121,7 @@ namespace mediasoupclient
 		  this->iceParameters,
 		  this->iceCandidates,
 		  this->dtlsParameters,
+		  this->sctpParameters,
 		  offerMediaObject,
 		  offerRtpParameters,
 		  answerRtpParameters,
@@ -131,7 +133,7 @@ namespace mediasoupclient
 	void Sdp::RemoteSdp::Receive(
 	  const std::string& mid,
 	  const std::string& kind,
-	  const nlohmann::json& offerRtpParameters,
+	  const json& offerRtpParameters,
 	  const std::string& streamId,
 	  const std::string& trackId)
 	{
@@ -141,6 +143,7 @@ namespace mediasoupclient
 		  this->iceParameters,
 		  this->iceCandidates,
 		  this->dtlsParameters,
+		  nullptr, // sctpParameters must be null here.
 		  mid,
 		  kind,
 		  offerRtpParameters,

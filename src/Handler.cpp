@@ -62,7 +62,8 @@ namespace mediasoupclient
 
 		this->pc.reset(new PeerConnection(this, peerConnectionOptions));
 
-		this->remoteSdp.reset(new Sdp::RemoteSdp(iceParameters, iceCandidates, dtlsParameters));
+		this->remoteSdp.reset(
+		  new Sdp::RemoteSdp(iceParameters, iceCandidates, dtlsParameters, sctpParameters));
 	};
 
 	void Handler::Close()
@@ -72,7 +73,7 @@ namespace mediasoupclient
 		this->pc->Close();
 	};
 
-	nlohmann::json Handler::GetTransportStats()
+	json Handler::GetTransportStats()
 	{
 		MSC_TRACE();
 

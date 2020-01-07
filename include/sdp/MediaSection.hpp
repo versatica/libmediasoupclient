@@ -16,9 +16,11 @@ namespace mediasoupclient
 
 		public:
 			std::string GetMid() const;
+			bool IsClosed() const;
 			nlohmann::json GetObject() const;
 			void SetIceParameters(const nlohmann::json& iceParameters);
 			void Disable();
+			void Close();
 
 		public:
 			virtual void SetDtlsRole(const std::string& role) = 0;
@@ -34,6 +36,7 @@ namespace mediasoupclient
 			  const nlohmann::json& iceParameters,
 			  const nlohmann::json& iceCandidates,
 			  const nlohmann::json& dtlsParameters,
+			  const nlohmann::json& sctpParameters,
 			  const nlohmann::json& offerMediaObject,
 			  nlohmann::json& offerRtpParameters,
 			  nlohmann::json& answerRtpParameters,
@@ -50,6 +53,7 @@ namespace mediasoupclient
 			  const nlohmann::json& iceParameters,
 			  const nlohmann::json& iceCandidates,
 			  const nlohmann::json& dtlsParameters,
+			  const nlohmann::json& sctpParameters,
 			  const std::string& mid,
 			  const std::string& kind,
 			  const nlohmann::json& offerRtpParameters,

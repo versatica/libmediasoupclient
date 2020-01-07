@@ -74,7 +74,7 @@ namespace mediasoupclient
 		return this->track;
 	}
 
-	const nlohmann::json& Consumer::GetRtpParameters() const
+	const json& Consumer::GetRtpParameters() const
 	{
 		MSC_TRACE();
 

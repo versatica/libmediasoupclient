@@ -7,18 +7,6 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 {
 	SECTION("audio only", "[CreateAnswerSdp]")
 	{
-		auto dtlsParameters = R"(
-		{
-			"role"         : "client",
-			"fingerprints" :
-			[
-				{
-					"algorithm" : "sha-256",
-					"value"     : "79:14:AB:AB:93:7F:07:E8:91:1A:11:16:36:D0:11:66:C4:4F:31:A0:74:46:65:58:70:E5:09:95:48:F4:4B:D9"
-				}
-			]
-		})"_json;
-
 		auto iceParameters = R"(
 		{
 			"usernameFragment" : "5I2uVefP13X1wzOY",
@@ -38,6 +26,26 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 				"generation" : 0
 			}
 		])"_json;
+
+		auto dtlsParameters = R"(
+		{
+			"role"         : "client",
+			"fingerprints" :
+			[
+				{
+					"algorithm" : "sha-256",
+					"value"     : "79:14:AB:AB:93:7F:07:E8:91:1A:11:16:36:D0:11:66:C4:4F:31:A0:74:46:65:58:70:E5:09:95:48:F4:4B:D9"
+				}
+			]
+		})"_json;
+
+		auto sctpParameters = R"(
+		{
+			"port" : 5000,
+			"OS"   : 1024,
+			"MIS"  : 1024,
+			"maxMessageSize" : 65536
+		})"_json;
 
 		auto audioCodecs = R"(
 		[
@@ -85,8 +93,8 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 
 		/* clang-format on */
 
-		auto* remoteSdp =
-		  new mediasoupclient::Sdp::RemoteSdp(iceParameters, iceCandidates, dtlsParameters);
+		auto* remoteSdp = new mediasoupclient::Sdp::RemoteSdp(
+		  iceParameters, iceCandidates, dtlsParameters, sctpParameters);
 
 		auto sdp         = helpers::readFile("test/data/jssip.sdp");
 		auto localSdpObj = sdptransform::parse(sdp);
@@ -175,18 +183,6 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 
 	SECTION("audio and video", "[CreateAnswerSdp]")
 	{
-		auto dtlsParameters = R"(
-		{
-			"role"         : "client",
-			"fingerprints" :
-			[
-				{
-					"algorithm" : "sha-256",
-					"value"     : "79:14:AB:AB:93:7F:07:E8:91:1A:11:16:36:D0:11:66:C4:4F:31:A0:74:46:65:58:70:E5:09:95:48:F4:4B:D9"
-				}
-			]
-		})"_json;
-
 		auto iceParameters = R"(
 		{
 			"usernameFragment" : "5I2uVefP13X1wzOY",
@@ -206,6 +202,26 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 				"generation" : 0
 			}
 		])"_json;
+
+		auto dtlsParameters = R"(
+		{
+			"role"         : "client",
+			"fingerprints" :
+			[
+				{
+					"algorithm" : "sha-256",
+					"value"     : "79:14:AB:AB:93:7F:07:E8:91:1A:11:16:36:D0:11:66:C4:4F:31:A0:74:46:65:58:70:E5:09:95:48:F4:4B:D9"
+				}
+			]
+		})"_json;
+
+		auto sctpParameters = R"(
+		{
+			"port" : 5000,
+			"OS"   : 1024,
+			"MIS"  : 1024,
+			"maxMessageSize" : 65536
+		})"_json;
 
 		auto audioCodecs = R"(
 		[
@@ -259,8 +275,8 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 		};
 		/* clang-format on */
 
-		auto* remoteSdp =
-		  new mediasoupclient::Sdp::RemoteSdp(iceParameters, iceCandidates, dtlsParameters);
+		auto* remoteSdp = new mediasoupclient::Sdp::RemoteSdp(
+		  iceParameters, iceCandidates, dtlsParameters, sctpParameters);
 
 		auto sdp         = helpers::readFile("test/data/audio_video.sdp");
 		auto localSdpObj = sdptransform::parse(sdp);

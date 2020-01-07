@@ -443,7 +443,7 @@ namespace mediasoupclient
 
 	/* RTCStatsCollectorCallback */
 
-	std::future<nlohmann::json> PeerConnection::RTCStatsCollectorCallback::GetFuture()
+	std::future<json> PeerConnection::RTCStatsCollectorCallback::GetFuture()
 	{
 		MSC_TRACE();
 
@@ -459,9 +459,9 @@ namespace mediasoupclient
 
 		// RtpReceiver stats JSON string is sometimes empty.
 		if (s.empty())
-			this->promise.set_value(nlohmann::json::array());
+			this->promise.set_value(json::array());
 		else
-			this->promise.set_value(nlohmann::json::parse(s));
+			this->promise.set_value(json::parse(s));
 	};
 
 	/* PeerConnection::PrivateListener */

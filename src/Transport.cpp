@@ -12,10 +12,7 @@ namespace mediasoupclient
 	/* Transport */
 
 	Transport::Transport(
-	  Listener* listener,
-	  const std::string& id,
-	  const nlohmann::json* extendedRtpCapabilities,
-	  const nlohmann::json& appData)
+	  Listener* listener, const std::string& id, const json* extendedRtpCapabilities, const json& appData)
 	  : extendedRtpCapabilities(extendedRtpCapabilities), listener(listener), id(id), appData(appData)
 	{
 		MSC_TRACE();
@@ -42,7 +39,7 @@ namespace mediasoupclient
 		return PeerConnection::iceConnectionState2String[this->connectionState];
 	}
 
-	nlohmann::json& Transport::GetAppData()
+	json& Transport::GetAppData()
 	{
 		MSC_TRACE();
 
@@ -62,7 +59,7 @@ namespace mediasoupclient
 		this->handler->Close();
 	}
 
-	nlohmann::json Transport::GetStats() const
+	json Transport::GetStats() const
 	{
 		MSC_TRACE();
 
@@ -72,7 +69,7 @@ namespace mediasoupclient
 			return this->handler->GetTransportStats();
 	}
 
-	void Transport::RestartIce(const nlohmann::json& iceParameters)
+	void Transport::RestartIce(const json& iceParameters)
 	{
 		MSC_TRACE();
 
@@ -82,7 +79,7 @@ namespace mediasoupclient
 			return this->handler->RestartIce(iceParameters);
 	}
 
-	void Transport::UpdateIceServers(const nlohmann::json& iceServers)
+	void Transport::UpdateIceServers(const json& iceServers)
 	{
 		MSC_TRACE();
 

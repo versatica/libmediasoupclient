@@ -16,7 +16,8 @@ namespace mediasoupclient
 			RemoteSdp(
 			  const nlohmann::json& iceParameters,
 			  const nlohmann::json& iceCandidates,
-			  const nlohmann::json& dtlsParameters);
+			  const nlohmann::json& dtlsParameters,
+			  const nlohmann::json& sctpParameters);
 
 		public:
 			void Send(
@@ -41,11 +42,12 @@ namespace mediasoupclient
 		protected:
 			// Generic sending RTP parameters for audio and video.
 			nlohmann::json rtpParametersByKind = nlohmann::json::object();
-			// Transport remote parameters, including ICE parameters, ICE candidates
-			// and DTLS parameteres.
+			// Transport remote parameters, including ICE parameters, ICE candidates,
+			// DTLS parameteres and SCTP parameters.
 			nlohmann::json iceParameters  = nlohmann::json::object();
 			nlohmann::json iceCandidates  = nlohmann::json::object();
 			nlohmann::json dtlsParameters = nlohmann::json::object();
+			nlohmann::json sctpParameters = nlohmann::json::object();
 			// MediaSection instances indexed by MID.
 			std::unordered_map<std::string, MediaSection*> mediaSections;
 			// Generic sending RTP parameters for audio and video.

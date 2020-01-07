@@ -5,8 +5,6 @@ set(
 	src/PeerConnection.test.cpp
 	src/RemoteSdp.test.cpp
 	src/SdpUtils.test.cpp
-	src/VcmCapturer.cpp
-	src/VideoCapturer.cpp
 	src/mediasoupclient.test.cpp
 	src/MediaStreamTrackFactory.cpp
 	src/ortc.test.cpp
@@ -15,8 +13,6 @@ set(
 	src/tests.cpp
 	include/FakeTransportListener.hpp
 	include/MediaStreamTrackFactory.hpp
-	include/VcmCapturer.hpp
-	include/VideoCapturer.hpp
 	include/helpers.hpp
 	include/fakeParameters.hpp
 )

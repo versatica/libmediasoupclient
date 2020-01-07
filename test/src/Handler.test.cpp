@@ -1,12 +1,7 @@
 #include "Handler.hpp"
 #include "MediaSoupClientErrors.hpp"
-<<<<<<< HEAD
 #include "fakeParameters.hpp"
-#include "MediaTrackFactory.hpp"
-=======
 #include "MediaStreamTrackFactory.hpp"
-#include "parameters.hpp"
->>>>>>> test: avoid PeerConnectionFactory threads being destructed before tracks
 #include <catch.hpp>
 #include <iostream>
 #include <memory>

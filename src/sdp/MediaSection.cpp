@@ -10,15 +10,8 @@
 
 using json = nlohmann::json;
 
-static std::string getCodecName(const json& codec)
-{
-	static const std::regex MimeTypeRegex(
-	  "^(audio|video)/", std::regex_constants::ECMAScript | std::regex_constants::icase);
-
-	auto mimeType = codec["mimeType"].get<std::string>();
-
-	return std::regex_replace(mimeType, MimeTypeRegex, "");
-}
+// Static functions declaration.
+static std::string getCodecName(const json& codec);
 
 namespace mediasoupclient
 {
@@ -576,3 +569,15 @@ namespace mediasoupclient
 		}
 	} // namespace Sdp
 } // namespace mediasoupclient
+
+// Private helpers used in this file.
+
+static std::string getCodecName(const json& codec)
+{
+	static const std::regex MimeTypeRegex(
+	  "^(audio|video)/", std::regex_constants::ECMAScript | std::regex_constants::icase);
+
+	auto mimeType = codec["mimeType"].get<std::string>();
+
+	return std::regex_replace(mimeType, MimeTypeRegex, "");
+}

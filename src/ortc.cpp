@@ -978,9 +978,10 @@ namespace mediasoupclient
 				// clang-format off
 				json ext =
 				{
-					{ "uri",       extendedExtension["uri"]     },
-					{ "id",        extendedExtension["recvId"]  },
-					{ "encrypt",   extendedExtension["encrypt"] }
+					{ "uri",        extendedExtension["uri"]     },
+					{ "id",         extendedExtension["recvId"]  },
+					{ "encrypt",    extendedExtension["encrypt"] },
+					{ "parameters", json::object()               }
 				};
 				// clang-format on
 
@@ -1070,9 +1071,10 @@ namespace mediasoupclient
 				// clang-format off
 				json ext =
 				{
-					{ "uri",       extendedExtension["uri"]     },
-					{ "id",        extendedExtension["recvId"]  },
-					{ "encrypt",   extendedExtension["encrypt"] }
+					{ "uri",        extendedExtension["uri"]     },
+					{ "id",         extendedExtension["recvId"]  },
+					{ "encrypt",    extendedExtension["encrypt"] },
+					{ "parameters", json::object()               }
 				};
 				// clang-format on
 

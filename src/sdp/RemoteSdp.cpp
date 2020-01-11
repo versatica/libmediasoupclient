@@ -2,7 +2,6 @@
 
 #include "sdp/RemoteSdp.hpp"
 #include "Logger.hpp"
-#include "Utils.hpp"
 #include "sdptransform.hpp"
 
 using json = nlohmann::json;
@@ -24,7 +23,6 @@ namespace mediasoupclient
 		// clang-format off
 		this->sdpObject =
 		{
-			{ "id",      Utils::getRandomInteger(1000, 1000000) },
 			{ "version", 0 },
 			{ "origin",
 				{

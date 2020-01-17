@@ -134,7 +134,7 @@ namespace mediasoupclient
 				auto& key   = it.key();
 				auto& value = it.value();
 
-				if (!value.is_string() && !value.is_number())
+				if (!value.is_string() && !value.is_number() && value != nullptr)
 					MSC_THROW_TYPE_ERROR("invalid codec parameter");
 
 				// Specific parameters validation.
@@ -364,7 +364,7 @@ namespace mediasoupclient
 				auto& key   = it.key();
 				auto& value = it.value();
 
-				if (!value.is_string() && !value.is_number())
+				if (!value.is_string() && !value.is_number() && value != nullptr)
 					MSC_THROW_TYPE_ERROR("invalid codec parameter");
 
 				// Specific parameters validation.

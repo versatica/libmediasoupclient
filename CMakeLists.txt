@@ -16,6 +16,7 @@ configure_file (
 # C++ standard requirements.
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Project options.
 option(MEDIASOUPCLIENT_BUILD_TESTS "Build unit tests" OFF)

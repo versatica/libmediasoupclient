@@ -10,15 +10,8 @@
 
 using json = nlohmann::json;
 
-static std::string getCodecName(const json& codec)
-{
-	static const std::regex MimeTypeRegex(
-	  "^(audio|video)/", std::regex_constants::ECMAScript | std::regex_constants::icase);
-
-	auto mimeType = codec["mimeType"].get<std::string>();
-
-	return std::regex_replace(mimeType, MimeTypeRegex, "");
-}
+// Static functions declaration.
+static std::string getCodecName(const json& codec);
 
 namespace mediasoupclient
 {
@@ -191,8 +184,8 @@ namespace mediasoupclient
 							if (opusStereoIt != codecOptions->end() && opusStereoIt->is_boolean())
 							{
 								auto opusStereo                          = opusStereoIt->get<bool>();
-								offerCodec["parameters"]["sprop-stereo"] = static_cast<int>(opusStereo);
-								codecParameters["stereo"]                = static_cast<int>(opusStereo);
+								offerCodec["parameters"]["sprop-stereo"] = opusStereo ? 1 : 0;
+								codecParameters["stereo"]                = opusStereo ? 1 : 0;
 							}
 
 							auto opusFecIt = codecOptions->find("opusFec");
@@ -214,8 +207,8 @@ namespace mediasoupclient
 							auto opusMaxPlaybackRateIt = codecOptions->find("opusMaxPlaybackRate");
 							if (opusMaxPlaybackRateIt != codecOptions->end() && opusMaxPlaybackRateIt->is_number_integer())
 							{
-								auto opusMaxPlaybackRate = opusMaxPlaybackRateIt->get<uint32_t>();
-								offerCodec["parameters"]["maxplaybackrate"] = opusMaxPlaybackRate;
+								auto opusMaxPlaybackRate           = opusMaxPlaybackRateIt->get<uint32_t>();
+								codecParameters["maxplaybackrate"] = opusMaxPlaybackRate;
 							}
 						}
 						else if (mimeType == "video/vp8" || mimeType == "video/vp9" || mimeType == "video/h264" || mimeType == "video/h265")
@@ -223,22 +216,22 @@ namespace mediasoupclient
 							auto videoGoogleStartBitrateIt = codecOptions->find("videoGoogleStartBitrate");
 							if (videoGoogleStartBitrateIt != codecOptions->end() && videoGoogleStartBitrateIt->is_number_integer())
 							{
-								auto startBitrate = videoGoogleStartBitrateIt->get<uint32_t>();
-								offerCodec["parameters"]["x-google-start-bitrate"] = startBitrate;
+								auto videoGoogleStartBitrate = videoGoogleStartBitrateIt->get<uint32_t>();
+								codecParameters["x-google-start-bitrate"] = videoGoogleStartBitrate;
 							}
 
 							auto videoGoogleMaxBitrateIt = codecOptions->find("videoGoogleMaxBitrate");
 							if (videoGoogleMaxBitrateIt != codecOptions->end() && videoGoogleMaxBitrateIt->is_number_integer())
 							{
-								auto maxBitrate = videoGoogleMaxBitrateIt->get<uint32_t>();
-								offerCodec["parameters"]["x-google-max-bitrate"] = maxBitrate;
+								auto videoGoogleMaxBitrate              = videoGoogleMaxBitrateIt->get<uint32_t>();
+								codecParameters["x-google-max-bitrate"] = videoGoogleMaxBitrate;
 							}
 
 							auto videoGoogleMinBitrateIt = codecOptions->find("videoGoogleMinBitrate");
 							if (videoGoogleMinBitrateIt != codecOptions->end() && videoGoogleMinBitrateIt->is_number_integer())
 							{
-								auto minBitrate = videoGoogleMinBitrateIt->get<uint32_t>();
-								offerCodec["parameters"]["x-google-min-bitrate"] = minBitrate;
+								auto videoGoogleMinBitrate              = videoGoogleMinBitrateIt->get<uint32_t>();
+								codecParameters["x-google-min-bitrate"] = videoGoogleMinBitrate;
 							}
 						}
 					}
@@ -576,3 +569,15 @@ namespace mediasoupclient
 		}
 	} // namespace Sdp
 } // namespace mediasoupclient
+
+// Private helpers used in this file.
+
+static std::string getCodecName(const json& codec)
+{
+	static const std::regex MimeTypeRegex(
+	  "^(audio|video)/", std::regex_constants::ECMAScript | std::regex_constants::icase);
+
+	auto mimeType = codec["mimeType"].get<std::string>();
+
+	return std::regex_replace(mimeType, MimeTypeRegex, "");
+}

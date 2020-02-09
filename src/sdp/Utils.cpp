@@ -16,7 +16,7 @@ namespace mediasoupclient
 	{
 		namespace Utils
 		{
-			json extractRtpCapabilities(const json& sdpObj)
+			json extractRtpCapabilities(const json& sdpObject)
 			{
 				MSC_TRACE();
 
@@ -30,7 +30,7 @@ namespace mediasoupclient
 				bool gotAudio = false;
 				bool gotVideo = false;
 
-				for (auto& m : sdpObj["media"])
+				for (auto& m : sdpObject["media"])
 				{
 					auto kind = m["type"].get<std::string>();
 
@@ -156,14 +156,14 @@ namespace mediasoupclient
 				return rtpCapabilities;
 			}
 
-			json extractDtlsParameters(const json& sdpObj)
+			json extractDtlsParameters(const json& sdpObject)
 			{
 				MSC_TRACE();
 
 				json m, fingerprint;
 				std::string role;
 
-				for (auto& media : sdpObj["media"])
+				for (auto& media : sdpObject["media"])
 				{
 					if (media.find("iceUfrag") != media.end() && media["port"] != 0)
 					{
@@ -174,8 +174,8 @@ namespace mediasoupclient
 
 				if (m.find("fingerprint") != m.end())
 					fingerprint = m["fingerprint"];
-				else if (sdpObj.find("fingerprint") != sdpObj.end())
-					fingerprint = sdpObj["fingerprint"];
+				else if (sdpObject.find("fingerprint") != sdpObject.end())
+					fingerprint = sdpObject["fingerprint"];
 
 				if (m.find("setup") != m.end())
 				{

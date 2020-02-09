@@ -135,7 +135,7 @@ namespace mediasoupclient
 				auto& key   = it.key();
 				auto& value = it.value();
 
-				if (!value.is_string() && !value.is_number())
+				if (!value.is_string() && !value.is_number() && value != nullptr)
 					MSC_THROW_TYPE_ERROR("invalid codec parameter");
 
 				// Specific parameters validation.
@@ -365,7 +365,7 @@ namespace mediasoupclient
 				auto& key   = it.key();
 				auto& value = it.value();
 
-				if (!value.is_string() && !value.is_number())
+				if (!value.is_string() && !value.is_number() && value != nullptr)
 					MSC_THROW_TYPE_ERROR("invalid codec parameter");
 
 				// Specific parameters validation.
@@ -979,9 +979,10 @@ namespace mediasoupclient
 				// clang-format off
 				json ext =
 				{
-					{ "uri",       extendedExtension["uri"]     },
-					{ "id",        extendedExtension["recvId"]  },
-					{ "encrypt",   extendedExtension["encrypt"] }
+					{ "uri",        extendedExtension["uri"]     },
+					{ "id",         extendedExtension["recvId"]  },
+					{ "encrypt",    extendedExtension["encrypt"] },
+					{ "parameters", json::object()               }
 				};
 				// clang-format on
 
@@ -1071,9 +1072,10 @@ namespace mediasoupclient
 				// clang-format off
 				json ext =
 				{
-					{ "uri",       extendedExtension["uri"]     },
-					{ "id",        extendedExtension["recvId"]  },
-					{ "encrypt",   extendedExtension["encrypt"] }
+					{ "uri",        extendedExtension["uri"]     },
+					{ "id",         extendedExtension["recvId"]  },
+					{ "encrypt",    extendedExtension["encrypt"] },
+					{ "parameters", json::object()               }
 				};
 				// clang-format on
 

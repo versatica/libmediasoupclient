@@ -92,7 +92,7 @@ namespace mediasoupclient
 	public:
 		SendData Send(
 		  webrtc::MediaStreamTrackInterface* track,
-		  const std::vector<webrtc::RtpEncodingParameters>* encodings,
+		  std::vector<webrtc::RtpEncodingParameters>* encodings,
 		  const nlohmann::json* codecOptions);
 		void StopSending(const std::string& localId);
 		void ReplaceTrack(const std::string& localId, webrtc::MediaStreamTrackInterface* track);

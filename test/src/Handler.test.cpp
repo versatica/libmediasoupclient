@@ -1,8 +1,9 @@
 #include "Handler.hpp"
 #include "MediaSoupClientErrors.hpp"
 #include "fakeParameters.hpp"
-#include "peerConnectionUtils.hpp"
+#include "MediaStreamTrackFactory.hpp"
 #include <catch.hpp>
+#include <iostream>
 #include <memory>
 
 static const json TransportRemoteParameters = generateTransportRemoteParameters();
@@ -35,8 +36,6 @@ TEST_CASE("Handler", "[Handler]")
 
 TEST_CASE("SendHandler", "[Handler][SendHandler]")
 {
-	static rtc::scoped_refptr<webrtc::AudioTrackInterface> track;
-
 	static FakeHandlerListener handlerListener;
 
 	static mediasoupclient::SendHandler sendHandler(
@@ -51,6 +50,8 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 
 	static std::unique_ptr<mediasoupclient::PeerConnection> pc(
 	  new mediasoupclient::PeerConnection(nullptr, &PeerConnectionOptions));
+
+	static rtc::scoped_refptr<webrtc::AudioTrackInterface> track;
 
 	static std::string localId;
 

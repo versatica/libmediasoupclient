@@ -1,8 +1,8 @@
 #include "FakeTransportListener.hpp"
 #include "MediaSoupClientErrors.hpp"
 #include "fakeParameters.hpp"
+#include "MediaStreamTrackFactory.hpp"
 #include "mediasoupclient.hpp"
-#include "peerConnectionUtils.hpp"
 #include <catch.hpp>
 #include <vector>
 
@@ -21,10 +21,6 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 	static std::unique_ptr<mediasoupclient::Consumer> audioConsumer;
 	static std::unique_ptr<mediasoupclient::Consumer> videoConsumer;
 	static std::unique_ptr<mediasoupclient::Consumer> audioConsumer2;
-
-	static mediasoupclient::PeerConnection::Options peerConnectionOptions;
-
-	peerConnectionOptions.factory = createPeerConnectionFactory();
 
 	static rtc::scoped_refptr<webrtc::AudioTrackInterface> audioTrack;
 	static rtc::scoped_refptr<webrtc::VideoTrackInterface> videoTrack;
@@ -60,7 +56,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		    TransportRemoteParameters["iceParameters"],
 		    TransportRemoteParameters["iceCandidates"],
 		    TransportRemoteParameters["dtlsParameters"],
-		    &peerConnectionOptions),
+		    nullptr),
 		  MediaSoupClientInvalidStateError);
 	}
 
@@ -131,7 +127,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		  TransportRemoteParameters["iceParameters"],
 		  TransportRemoteParameters["iceCandidates"],
 		  TransportRemoteParameters["dtlsParameters"],
-		  &peerConnectionOptions,
+		  nullptr,
 		  appData)));
 
 		REQUIRE(sendTransport->GetId() == TransportRemoteParameters["id"].get<std::string>());
@@ -148,7 +144,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		  TransportRemoteParameters["iceParameters"],
 		  TransportRemoteParameters["iceCandidates"],
 		  TransportRemoteParameters["dtlsParameters"],
-		  &peerConnectionOptions)));
+		  nullptr)));
 
 		REQUIRE(recvTransport->GetId() == TransportRemoteParameters["id"].get<std::string>());
 		REQUIRE(!recvTransport->IsClosed());
@@ -450,15 +446,15 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE(headerExtensions == R"(
 		[
 			{
+			  "encrypt": false,
 			  "id": 2,
 			  "uri": "urn:ietf:params:rtp-hdrext:toffset",
-			  "encrypt": false,
 			  "parameters": {}
 			},
 			{
+			  "encrypt": false,
 			  "id": 3,
 			  "uri": "http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time",
-			  "encrypt": false,
 			  "parameters": {}
 			}
 		])"_json);
@@ -524,9 +520,9 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE(headerExtensions == R"(
 		[
 			{
+				"encrypt": false,
 				"id": 1,
 				"uri": "urn:ietf:params:rtp-hdrext:ssrc-audio-level",
-				"encrypt": false,
 				"parameters": {}
 			}
 		])"_json);

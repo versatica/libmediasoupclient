@@ -10,6 +10,7 @@
 #include <string>
 
 using json = nlohmann::json;
+using namespace mediasoupclient;
 
 static constexpr uint32_t ProbatorSsrc{ 1234u };
 

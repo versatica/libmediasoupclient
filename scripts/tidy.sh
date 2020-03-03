@@ -58,6 +58,9 @@ if [ ! -z ${MSC_TIDY_FIX} ] ; then
 	FIX="-fix"
 fi
 
+# Exclude dependencies, files which absolute path containins /deps/.
+FILES="^((?!\/deps\/).)*$"
+
 HEADER_FILTER_REGEX="(Consumer.hpp|Device.hpp|Handler.hpp|Logger.hpp|MediaSoupClientErrors.hpp|PeerConnection.hpp|Producer.hpp|Transport.hpp|mediasoupclient.hpp|ortc.hpp|scalabilityMode.hpp|sdp/RemoteSdp.hpp|sdp/Utils.hpp)"
 
 BIN_PATH="node_modules/.bin"
@@ -79,4 +82,5 @@ scripts/clang-tidy.py \
 	-p=. \
 	-j=${NUM_CORES} \
 	-checks=${CHECKS} \
-	${FIX}
+	${FIX} \
+	files $FILES

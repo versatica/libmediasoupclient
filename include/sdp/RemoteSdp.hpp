@@ -50,7 +50,6 @@ namespace mediasoupclient
 			void AddMediaSection(MediaSection* mediaSection);
 			void ReplaceMediaSection(MediaSection* newMediaSection, std::string reuseMid);
 			void RegenerateBundleMids();
-			void UpdateMediaSectionObject();
 
 		protected:
 			// Generic sending RTP parameters for audio and video.
@@ -62,7 +61,7 @@ namespace mediasoupclient
 			nlohmann::json dtlsParameters = nlohmann::json::object();
 			nlohmann::json sctpParameters = nlohmann::json::object();
 			// MediaSection instances indexed by MID.
-			std::map<std::string, MediaSection*> mediaSections;
+			std::vector<MediaSection*> mediaSections;
 			// First MID.
 			std::string firstMid;
 			// Generic sending RTP parameters for audio and video.

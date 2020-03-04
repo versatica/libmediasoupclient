@@ -197,8 +197,6 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		MSC_ERROR("mid: %s", mid.c_str());
-
 		size_t idx = 0;
 		for (auto* mediaSection : this->mediaSections)
 		{
@@ -287,8 +285,6 @@ namespace mediasoupclient
 
 		for (const auto* mediaSection : this->mediaSections)
 		{
-			MSC_ERROR("mediaSection->GetMid(): %s", mediaSection->GetMid().c_str());
-
 			if (!mediaSection->IsClosed())
 			{
 				if (mids.empty())
@@ -299,6 +295,5 @@ namespace mediasoupclient
 		}
 
 		this->sdpObject["groups"][0]["mids"] = mids;
-		MSC_ERROR("groups 0 mids: %s", mids.c_str());
 	}
 } // namespace mediasoupclient

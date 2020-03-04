@@ -190,43 +190,28 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		size_t idx = 0;
-		for (auto* mediaSection : this->mediaSections)
-		{
-			if (mediaSection->GetMid() == mid)
-			{
-				mediaSection->Disable();
+		const auto idx = this->midToIndex[mid];
+		auto* mediaSection = this->mediaSections[idx];
 
-				// Update SDP media section.
-				this->sdpObject["media"][idx] = mediaSection->GetObject();
-			}
-
-			idx++;
-		}
+		mediaSection->Disable();
 	}
 
 	void Sdp::RemoteSdp::CloseMediaSection(const std::string& mid)
 	{
 		MSC_TRACE();
 
-		size_t idx = 0;
-		for (auto* mediaSection : this->mediaSections)
-		{
-			if (mediaSection->GetMid() == mid)
-			{
-				// NOTE: Closing the first m section is a pain since it invalidates the
-				// bundled transport, so let's avoid it.
-				if (mid == this->firstMid)
-					mediaSection->Disable();
-				else
-					mediaSection->Close();
+		const auto idx = this->midToIndex[mid];
+		auto* mediaSection = this->mediaSections[idx];
 
-				// Update SDP media section.
-				this->sdpObject["media"][idx] = mediaSection->GetObject();
-			}
+		// NOTE: Closing the first m section is a pain since it invalidates the
+		// bundled transport, so let's avoid it.
+		if (mid == this->firstMid)
+			mediaSection->Disable();
+		else
+			mediaSection->Close();
 
-			idx++;
-		}
+		// Update SDP media section.
+		this->sdpObject["media"][idx] = mediaSection->GetObject();
 
 		// Regenerate BUNDLE mids.
 		this->RegenerateBundleMids();
@@ -251,10 +236,13 @@ namespace mediasoupclient
 		if (this->firstMid.empty())
 			this->firstMid = newMediaSection->GetMid();
 
-		// Store it in the map.
+		// Add it in the vector.
 		this->mediaSections.push_back(newMediaSection);
 
-		// Update SDP object.
+		// Add to the map.
+		this->midToIndex[newMediaSection->GetMid()] = this->mediaSections.size() - 1;
+
+		// Add to the SDP object.
 		this->sdpObject["media"].push_back(newMediaSection->GetObject());
 
 		this->RegenerateBundleMids();
@@ -267,29 +255,35 @@ namespace mediasoupclient
 		// Store it in the map.
 		if (!reuseMid.empty())
 		{
-			size_t idx = 0;
-			for (const auto* mediaSection : this->mediaSections)
-			{
-				if (mediaSection->GetMid() == reuseMid)
-				{
-					this->mediaSections[idx] = newMediaSection;
-					this->sdpObject["media"][idx] = newMediaSection->GetObject();
+			const auto idx = this->midToIndex[reuseMid];
+			const auto oldMediaSection = this->mediaSections[idx];
 
-					// Delete old MediaSection.
-					delete mediaSection;
-				}
+			// Replace the index in the vector with the new media section.
+			this->mediaSections[idx] = newMediaSection;
 
-				idx++;
-			}
+			// Update the map.
+			this->midToIndex.erase(oldMediaSection->GetMid());
+			this->midToIndex[newMediaSection->GetMid()] = idx;
+
+			// Delete old MediaSection.
+			delete oldMediaSection;
+
+			// Update the SDP object.
+			this->sdpObject["media"][idx] = newMediaSection->GetObject();
+
+			// Regenerate BUNDLE mids.
+			this->RegenerateBundleMids();
 		}
 		else
 		{
-			this->mediaSections.push_back(newMediaSection);
+			const auto idx = this->midToIndex[newMediaSection->GetMid()];
+
+			// Replace the index in the vector with the new media section.
+			this->mediaSections[idx] = newMediaSection;
+
+			// Update the SDP object.
 			this->sdpObject["media"][this->mediaSections.size() - 1] = newMediaSection->GetObject();
 		}
-
-		// Regenerate BUNDLE mids.
-		this->RegenerateBundleMids();
 	}
 
 	void Sdp::RemoteSdp::RegenerateBundleMids()

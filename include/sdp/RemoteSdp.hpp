@@ -62,6 +62,8 @@ namespace mediasoupclient
 			nlohmann::json sctpParameters = nlohmann::json::object();
 			// MediaSection instances.
 			std::vector<MediaSection*> mediaSections;
+			// MediaSection indices indexed by MID.
+			std::map<std::string, size_t> midToIndex;
 			// First MID.
 			std::string firstMid;
 			// Generic sending RTP parameters for audio and video.

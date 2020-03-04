@@ -266,7 +266,7 @@ namespace mediasoupclient
 		sendingRtpParameters["rtcp"]["cname"] = Sdp::Utils::getCname(offerMediaObject);
 
 		// Set RTP encodings by parsing the SDP offer if no encodings are given.
-		if (encodings == nullptr || encodings->size() == 0)
+		if (encodings == nullptr || encodings->empty())
 		{
 			sendingRtpParameters["encodings"] = Sdp::Utils::getRtpEncodings(offerMediaObject);
 		}
@@ -285,7 +285,7 @@ namespace mediasoupclient
 		{
 			sendingRtpParameters["encodings"] = json::array();
 
-			for (auto encoding : *encodings)
+			for (const auto& encoding : *encodings)
 			{
 				json jsonEncoding = {};
 

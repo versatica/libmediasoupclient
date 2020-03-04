@@ -68,7 +68,7 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 		})"_json;
 
 		REQUIRE_THROWS_AS(device->Load(routerRtpCapabilities), MediaSoupClientTypeError);
-		REQUIRE(device->IsLoaded() == false);
+		REQUIRE(!device->IsLoaded());
 	}
 
 	SECTION("device.load() with invalid routerRtpCapabilities throws")

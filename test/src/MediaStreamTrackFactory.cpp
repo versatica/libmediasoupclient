@@ -12,26 +12,26 @@
 
 using namespace mediasoupclient;
 
-static rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> factory;
+static rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> Factory;
 
 /* MediaStreamTrack holds reference to the threads of the PeerConnectionFactory.
  * Use plain pointers in order to avoid threads being destructed before tracks.
  */
-static rtc::Thread* networkThread;
-static rtc::Thread* signalingThread;
-static rtc::Thread* workerThread;
+static rtc::Thread* NetworkThread;
+static rtc::Thread* SignalingThread;
+static rtc::Thread* WorkerThread;
 
 static void createFactory()
 {
-	networkThread   = rtc::Thread::Create().release();
-	signalingThread = rtc::Thread::Create().release();
-	workerThread    = rtc::Thread::Create().release();
+	NetworkThread   = rtc::Thread::Create().release();
+	SignalingThread = rtc::Thread::Create().release();
+	WorkerThread    = rtc::Thread::Create().release();
 
-	networkThread->SetName("network_thread", nullptr);
-	signalingThread->SetName("signaling_thread", nullptr);
-	workerThread->SetName("worker_thread", nullptr);
+	NetworkThread->SetName("network_thread", nullptr);
+	SignalingThread->SetName("signaling_thread", nullptr);
+	WorkerThread->SetName("worker_thread", nullptr);
 
-	if (!networkThread->Start() || !signalingThread->Start() || !workerThread->Start())
+	if (!NetworkThread->Start() || !SignalingThread->Start() || !WorkerThread->Start())
 	{
 		MSC_THROW_INVALID_STATE_ERROR("thread start errored");
 	}
@@ -44,10 +44,10 @@ static void createFactory()
 		MSC_THROW_INVALID_STATE_ERROR("audio capture module creation errored");
 	}
 
-	factory = webrtc::CreatePeerConnectionFactory(
-	  networkThread,
-	  workerThread,
-	  signalingThread,
+	Factory = webrtc::CreatePeerConnectionFactory(
+	  NetworkThread,
+	  WorkerThread,
+	  SignalingThread,
 	  fakeAudioCaptureModule,
 	  webrtc::CreateBuiltinAudioEncoderFactory(),
 	  webrtc::CreateBuiltinAudioDecoderFactory(),
@@ -56,7 +56,7 @@ static void createFactory()
 	  nullptr /*audio_mixer*/,
 	  nullptr /*audio_processing*/);
 
-	if (!factory)
+	if (!Factory)
 	{
 		MSC_THROW_ERROR("error ocurred creating peerconnection factory");
 	}
@@ -65,22 +65,22 @@ static void createFactory()
 // Audio track creation.
 rtc::scoped_refptr<webrtc::AudioTrackInterface> createAudioTrack(const std::string& label)
 {
-	if (!factory)
+	if (!Factory)
 		createFactory();
 
 	cricket::AudioOptions options;
 	options.highpass_filter = false;
 
-	rtc::scoped_refptr<webrtc::AudioSourceInterface> source = factory->CreateAudioSource(options);
+	rtc::scoped_refptr<webrtc::AudioSourceInterface> source = Factory->CreateAudioSource(options);
 
-	return factory->CreateAudioTrack(label, source);
+	return Factory->CreateAudioTrack(label, source);
 }
 
 // Video track creation.
 rtc::scoped_refptr<webrtc::VideoTrackInterface> createVideoTrack(const std::string& label)
 {
-	if (!factory)
+	if (!Factory)
 		createFactory();
 
-	return factory->CreateVideoTrack(label, webrtc::FakeVideoTrackSource::Create());
+	return Factory->CreateVideoTrack(label, webrtc::FakeVideoTrackSource::Create());
 }

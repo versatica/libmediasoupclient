@@ -85,9 +85,15 @@ namespace mediasoupclient
 		if (iceParameters.find("iceLite") != iceParameters.end())
 			sdpObject["icelite"] = "ice-lite";
 
+		size_t idx = 0;
 		for (auto* mediaSection : this->mediaSections)
 		{
 			mediaSection->SetIceParameters(iceParameters);
+
+			// Update SDP media section.
+			this->sdpObject["media"][idx] = mediaSection->GetObject();
+
+			idx++;
 		}
 	}
 
@@ -100,9 +106,15 @@ namespace mediasoupclient
 		if (iceParameters.find("iceLite") != iceParameters.end())
 			sdpObject["icelite"] = "ice-lite";
 
+		size_t idx = 0;
 		for (auto* mediaSection : this->mediaSections)
 		{
 			mediaSection->SetDtlsRole(role);
+
+			// Update SDP media section.
+			this->sdpObject["media"][idx] = mediaSection->GetObject();
+
+			idx++;
 		}
 	}
 
@@ -185,7 +197,7 @@ namespace mediasoupclient
 			{
 				mediaSection->Disable();
 
-				// Update SDP media sections.
+				// Update SDP media section.
 				this->sdpObject["media"][idx] = mediaSection->GetObject();
 			}
 
@@ -209,7 +221,7 @@ namespace mediasoupclient
 				else
 					mediaSection->Close();
 
-				// Update SDP media sections.
+				// Update SDP media section.
 				this->sdpObject["media"][idx] = mediaSection->GetObject();
 			}
 

@@ -118,6 +118,15 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 		REQUIRE_THROWS_AS(sendHandler.StopSending(""), MediaSoupClientError);
 	}
 
+	SECTION("sendHandler.Sends() succeeds after stopping if track if provided")
+	{
+		mediasoupclient::SendHandler::SendData sendData;
+
+		REQUIRE_NOTHROW(sendData = sendHandler.Send(track, nullptr, nullptr));
+
+		localId = sendData.localId;
+	}
+
 	SECTION("sendHandler.StopSending() succeeds if track is being sent")
 	{
 		REQUIRE_NOTHROW(sendHandler.StopSending(localId));

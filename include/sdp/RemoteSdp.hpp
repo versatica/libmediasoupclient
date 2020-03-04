@@ -30,7 +30,7 @@ namespace mediasoupclient
 			Sdp::RemoteSdp::MediaSectionIdx GetNextMediaSectionIdx();
 			void Send(
 			  nlohmann::json& offerMediaObject,
-			  std::string reuseMid,
+			  const std::string& reuseMid,
 			  nlohmann::json& offerRtpParameters,
 			  nlohmann::json& answerRtpParameters,
 			  const nlohmann::json* codecOptions);
@@ -43,12 +43,12 @@ namespace mediasoupclient
 			void UpdateIceParameters(const nlohmann::json& iceParameters);
 			void UpdateDtlsRole(const std::string& role);
 			void DisableMediaSection(const std::string& mid);
-			void CloseMediaSection(std::string mid);
+			void CloseMediaSection(const std::string& mid);
 			std::string GetSdp();
 
 		private:
-			void AddMediaSection(MediaSection* mediaSection);
-			void ReplaceMediaSection(MediaSection* newMediaSection, std::string reuseMid);
+			void AddMediaSection(MediaSection* newMediaSection);
+			void ReplaceMediaSection(MediaSection* newMediaSection, const std::string& reuseMid);
 			void RegenerateBundleMids();
 
 		protected:

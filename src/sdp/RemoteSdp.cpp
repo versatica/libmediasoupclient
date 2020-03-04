@@ -138,7 +138,7 @@ namespace mediasoupclient
 	}
 
 	void Sdp::RemoteSdp::Send(
-	  json& offerMediaObject, std::string reuseMid, json& offerRtpParameters, json& answerRtpParameters, const json* codecOptions)
+	  json& offerMediaObject, const std::string& reuseMid, json& offerRtpParameters, json& answerRtpParameters, const json* codecOptions)
 	{
 		MSC_TRACE();
 
@@ -205,7 +205,7 @@ namespace mediasoupclient
 		}
 	}
 
-	void Sdp::RemoteSdp::CloseMediaSection(std::string mid)
+	void Sdp::RemoteSdp::CloseMediaSection(const std::string& mid)
 	{
 		MSC_TRACE();
 
@@ -260,14 +260,14 @@ namespace mediasoupclient
 		this->RegenerateBundleMids();
 	}
 
-	void Sdp::RemoteSdp::ReplaceMediaSection(MediaSection* newMediaSection, std::string reuseMid)
+	void Sdp::RemoteSdp::ReplaceMediaSection(MediaSection* newMediaSection, const std::string& reuseMid)
 	{
 		MSC_TRACE();
 
 		// Store it in the map.
 		if (!reuseMid.empty())
 		{
-			size_t idx=0;
+			size_t idx = 0;
 			for (const auto* mediaSection : this->mediaSections)
 			{
 				if (mediaSection->GetMid() == reuseMid)

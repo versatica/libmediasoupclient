@@ -118,7 +118,7 @@ namespace mediasoupclient
 		  webrtc::MediaStreamTrackInterface* track,
 		  const std::vector<webrtc::RtpEncodingParameters>* encodings,
 		  const nlohmann::json* codecOptions,
-		  nlohmann::json appData = nlohmann::json::object());
+		  const nlohmann::json& appData = nlohmann::json::object());
 
 		/* Virtual methods inherited from Transport. */
 	public:
@@ -169,7 +169,7 @@ namespace mediasoupclient
 		  const std::string& producerId,
 		  const std::string& kind,
 		  nlohmann::json* rtpParameters,
-		  nlohmann::json appData = nlohmann::json::object());
+		  const nlohmann::json& appData = nlohmann::json::object());
 
 		/* Virtual methods inherited from Transport. */
 	public:

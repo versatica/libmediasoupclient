@@ -176,7 +176,7 @@ namespace mediasoupclient
 	  webrtc::MediaStreamTrackInterface* track,
 	  const std::vector<webrtc::RtpEncodingParameters>* encodings,
 	  const json* codecOptions,
-	  json appData)
+	  const json& appData)
 	{
 		MSC_TRACE();
 
@@ -332,7 +332,7 @@ namespace mediasoupclient
 	  const std::string& producerId,
 	  const std::string& kind,
 	  json* rtpParameters,
-	  json appData)
+	  const json& appData)
 	{
 		MSC_TRACE();
 

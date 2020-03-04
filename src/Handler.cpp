@@ -12,6 +12,31 @@ using json = nlohmann::json;
 
 static json SctpNumStreams = { { "OS", 1024u }, { "MIS", 1024u } };
 
+static void fillJsonRtpEncodingParameters(json& jsonEncoding, const webrtc::RtpEncodingParameters& encoding)
+{
+	jsonEncoding["active"] = encoding.active;
+
+	if (!encoding.rid.empty())
+		jsonEncoding["rid"] = encoding.rid;
+
+	if (encoding.max_bitrate_bps)
+		jsonEncoding["maxBitrate"] = *encoding.max_bitrate_bps;
+
+	if (encoding.max_framerate)
+		jsonEncoding["maxFramerate"] = *encoding.max_framerate;
+
+	if (encoding.scale_framerate_down_by)
+		jsonEncoding["scaleFramerateDownBy"] = *encoding.scale_framerate_down_by;
+
+	if (encoding.scale_resolution_down_by)
+		jsonEncoding["scaleResolutionDownBy"] = *encoding.scale_resolution_down_by;
+
+	if (encoding.dtx && encoding.dtx == webrtc::DtxStatus::ENABLED)
+		jsonEncoding["dtx"] = true;
+
+	jsonEncoding["networkPriority"] = encoding.network_priority;
+}
+
 namespace mediasoupclient
 {
 	/* Handler static methods. */
@@ -122,6 +147,7 @@ namespace mediasoupclient
 		// Set our DTLS role.
 		dtlsParameters["role"] = localDtlsRole;
 
+		// Update the remote DTLS role in the SDP.
 		std::string remoteDtlsRole = localDtlsRole == "client" ? "server" : "client";
 		this->remoteSdp->UpdateDtlsRole(remoteDtlsRole);
 
@@ -153,7 +179,7 @@ namespace mediasoupclient
 
 	SendHandler::SendData SendHandler::Send(
 	  webrtc::MediaStreamTrackInterface* track,
-	  const std::vector<webrtc::RtpEncodingParameters>* encodings,
+	  std::vector<webrtc::RtpEncodingParameters>* encodings,
 	  const json* codecOptions)
 	{
 		MSC_TRACE();
@@ -163,6 +189,15 @@ namespace mediasoupclient
 			MSC_THROW_TYPE_ERROR("missing track");
 
 		MSC_DEBUG("[kind:%s, track->id():%s]", track->kind().c_str(), track->id().c_str());
+
+		if (encodings && encodings->size() > 1)
+		{
+			uint8_t idx = 0;
+			for (webrtc::RtpEncodingParameters& encoding : *encodings)
+			{
+				encoding.rid = std::string("r").append(std::to_string(idx++));
+			}
+		}
 
 		// https://bugs.chromium.org/p/webrtc/issues/detail?id=7600
 		// Once the issue is solved, no SDP will be required to enable simulcast.
@@ -230,8 +265,34 @@ namespace mediasoupclient
 		// Set RTCP CNAME.
 		sendingRtpParameters["rtcp"]["cname"] = Sdp::Utils::getCname(offerMediaObject);
 
-		// Set RTP encodings.
-		sendingRtpParameters["encodings"] = Sdp::Utils::getRtpEncodings(offerMediaObject);
+		// Set RTP encodings by parsing the SDP offer if no encodings are given.
+		if (encodings == nullptr || encodings->empty())
+		{
+			sendingRtpParameters["encodings"] = Sdp::Utils::getRtpEncodings(offerMediaObject);
+		}
+		// Set RTP encodings by parsing the SDP offer and complete them with given
+		// one if just a single encoding has been given.
+		else if (encodings->size() == 1)
+		{
+			auto newEncodings = Sdp::Utils::getRtpEncodings(offerMediaObject);
+
+			fillJsonRtpEncodingParameters(newEncodings.front(), encodings->front());
+			sendingRtpParameters["encodings"] = newEncodings;
+		}
+
+		// Otherwise if more than 1 encoding are given use them verbatim.
+		else
+		{
+			sendingRtpParameters["encodings"] = json::array();
+
+			for (const auto& encoding : *encodings)
+			{
+				json jsonEncoding = {};
+
+				fillJsonRtpEncodingParameters(jsonEncoding, encoding);
+				sendingRtpParameters["encodings"].push_back(jsonEncoding);
+			}
+		}
 
 		// If VP8 and there is effective simulcast, add scalabilityMode to each encoding.
 		auto mimeType = sendingRtpParameters["codecs"][0]["mimeType"].get<std::string>();

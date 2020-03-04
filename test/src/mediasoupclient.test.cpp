@@ -6,7 +6,7 @@
 #include <catch.hpp>
 #include <vector>
 
-TEST_CASE("mediasoupclient", "mediasoupclient")
+TEST_CASE("mediasoupclient", "[mediasoupclient]")
 {
 	static const json TransportRemoteParameters = generateTransportRemoteParameters();
 
@@ -68,7 +68,7 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		})"_json;
 
 		REQUIRE_THROWS_AS(device->Load(routerRtpCapabilities), MediaSoupClientTypeError);
-		REQUIRE(device->IsLoaded() == false);
+		REQUIRE(!device->IsLoaded());
 	}
 
 	SECTION("device.load() with invalid routerRtpCapabilities throws")
@@ -257,12 +257,8 @@ TEST_CASE("mediasoupclient", "mediasoupclient")
 		REQUIRE(enc.is_array());
 		REQUIRE(enc.size() == 3);
 		REQUIRE(enc[0].is_object());
-		REQUIRE(enc[0].find("ssrc") != enc[0].end());
-		REQUIRE(enc[0].find("rtx") != enc[0].end());
-		REQUIRE(enc[0]["ssrc"].is_number());
-		REQUIRE(enc[0]["rtx"].is_object());
-		REQUIRE(enc[0]["rtx"].find("ssrc") != enc[0]["rtx"].end());
-		REQUIRE(enc[0]["rtx"]["ssrc"].is_number());
+		REQUIRE(enc[0].find("rid") != enc[0].end());
+		REQUIRE(enc[0]["rid"] == "r0");
 
 		rtcp = videoProducer->GetRtpParameters()["rtcp"];
 		REQUIRE(rtcp.is_object());

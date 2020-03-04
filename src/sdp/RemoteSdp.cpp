@@ -281,15 +281,15 @@ namespace mediasoupclient
 
 				idx++;
 			}
-
-			// Regenerate BUNDLE mids.
-			this->RegenerateBundleMids();
 		}
 		else
 		{
 			this->mediaSections.push_back(newMediaSection);
 			this->sdpObject["media"][this->mediaSections.size() - 1] = newMediaSection->GetObject();
 		}
+
+		// Regenerate BUNDLE mids.
+		this->RegenerateBundleMids();
 	}
 
 	void Sdp::RemoteSdp::RegenerateBundleMids()

@@ -262,6 +262,9 @@ namespace mediasoupclient
 				{
 					this->mediaSections[idx] = newMediaSection;
 					this->sdpObject["media"][idx] = newMediaSection->GetObject();
+
+					// Delete old MediaSection.
+					delete mediaSection;
 				}
 
 				idx++;

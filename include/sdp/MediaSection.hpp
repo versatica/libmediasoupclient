@@ -12,6 +12,7 @@ namespace mediasoupclient
 		{
 		public:
 			MediaSection() = default;
+			virtual ~MediaSection() = default;
 			MediaSection(const nlohmann::json& iceParameters, const nlohmann::json& iceCandidates);
 
 		public:

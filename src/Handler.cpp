@@ -25,14 +25,14 @@ static void fillJsonRtpEncodingParameters(json& jsonEncoding, const webrtc::RtpE
 	if (encoding.max_framerate)
 		jsonEncoding["maxFramerate"] = *encoding.max_framerate;
 
-	if (encoding.scale_framerate_down_by)
-		jsonEncoding["scaleFramerateDownBy"] = *encoding.scale_framerate_down_by;
+	// if (encoding.scale_framerate_down_by)
+	// 	jsonEncoding["scaleFramerateDownBy"] = *encoding.scale_framerate_down_by;
 
 	if (encoding.scale_resolution_down_by)
 		jsonEncoding["scaleResolutionDownBy"] = *encoding.scale_resolution_down_by;
 
-	if (encoding.dtx && encoding.dtx == webrtc::DtxStatus::ENABLED)
-		jsonEncoding["dtx"] = true;
+	// if (encoding.dtx && encoding.dtx == webrtc::DtxStatus::ENABLED)
+	// 	jsonEncoding["dtx"] = true;
 
 	jsonEncoding["networkPriority"] = encoding.network_priority;
 }

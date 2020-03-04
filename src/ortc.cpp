@@ -103,7 +103,8 @@ namespace mediasoupclient
 				MSC_THROW_TYPE_ERROR("missing codec.mimeType");
 
 			std::smatch mimeTypeMatch;
-			std::regex_match(mimeTypeIt->get<std::string>(), mimeTypeMatch, MimeTypeRegex);
+			std::string tmp = mimeTypeIt->get<std::string>();
+			std::regex_match(tmp, mimeTypeMatch, MimeTypeRegex);
 
 			if (mimeTypeMatch.empty())
 				MSC_THROW_TYPE_ERROR("invalid codec.mimeType");
@@ -336,7 +337,8 @@ namespace mediasoupclient
 				MSC_THROW_TYPE_ERROR("missing codec.mimeType");
 
 			std::smatch mimeTypeMatch;
-			std::regex_match(mimeTypeIt->get<std::string>(), mimeTypeMatch, MimeTypeRegex);
+			std::string tmp = mimeTypeIt->get<std::string>();
+			std::regex_match(tmp, mimeTypeMatch, MimeTypeRegex);
 
 			if (mimeTypeMatch.empty())
 				MSC_THROW_TYPE_ERROR("invalid codec.mimeType");

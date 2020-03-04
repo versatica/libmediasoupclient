@@ -60,7 +60,7 @@ namespace mediasoupclient
 			nlohmann::json iceCandidates  = nlohmann::json::object();
 			nlohmann::json dtlsParameters = nlohmann::json::object();
 			nlohmann::json sctpParameters = nlohmann::json::object();
-			// MediaSection instances indexed by MID.
+			// MediaSection instances.
 			std::vector<MediaSection*> mediaSections;
 			// First MID.
 			std::string firstMid;

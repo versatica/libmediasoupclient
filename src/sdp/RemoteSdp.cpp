@@ -85,15 +85,14 @@ namespace mediasoupclient
 		if (iceParameters.find("iceLite") != iceParameters.end())
 			sdpObject["icelite"] = "ice-lite";
 
-		size_t idx = 0;
-		for (auto* mediaSection : this->mediaSections)
+		for (auto idx{ 0u }; idx < this->mediaSections.size(); ++idx)
 		{
+			auto* mediaSection = this->mediaSections[idx];
+
 			mediaSection->SetIceParameters(iceParameters);
 
 			// Update SDP media section.
 			this->sdpObject["media"][idx] = mediaSection->GetObject();
-
-			idx++;
 		}
 	}
 
@@ -106,15 +105,14 @@ namespace mediasoupclient
 		if (iceParameters.find("iceLite") != iceParameters.end())
 			sdpObject["icelite"] = "ice-lite";
 
-		size_t idx = 0;
-		for (auto* mediaSection : this->mediaSections)
+		for (auto idx{ 0u }; idx < this->mediaSections.size(); ++idx)
 		{
+			auto* mediaSection = this->mediaSections[idx];
+
 			mediaSection->SetDtlsRole(role);
 
 			// Update SDP media section.
 			this->sdpObject["media"][idx] = mediaSection->GetObject();
-
-			idx++;
 		}
 	}
 
@@ -122,15 +120,13 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		size_t idx = 0;
-
 		// If a closed media section is found, return its index.
-		for (const auto* mediaSection : this->mediaSections)
+		for (auto idx{ 0u }; idx < this->mediaSections.size(); ++idx)
 		{
+			auto* mediaSection = this->mediaSections[idx];
+
 			if (mediaSection->IsClosed())
 				return { idx, mediaSection->GetMid() };
-
-			idx++;
 		}
 
 		// If no closed media section is found, return next one.

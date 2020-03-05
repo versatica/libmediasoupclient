@@ -13,6 +13,13 @@ namespace mediasoupclient
 		class RemoteSdp
 		{
 		public:
+			struct MediaSectionIdx
+			{
+				size_t idx;
+				std::string reuseMid;
+			};
+
+		public:
 			RemoteSdp(
 			  const nlohmann::json& iceParameters,
 			  const nlohmann::json& iceCandidates,
@@ -20,8 +27,10 @@ namespace mediasoupclient
 			  const nlohmann::json& sctpParameters);
 
 		public:
+			Sdp::RemoteSdp::MediaSectionIdx GetNextMediaSectionIdx();
 			void Send(
 			  nlohmann::json& offerMediaObject,
+			  const std::string& reuseMid,
 			  nlohmann::json& offerRtpParameters,
 			  nlohmann::json& answerRtpParameters,
 			  const nlohmann::json* codecOptions);
@@ -34,10 +43,13 @@ namespace mediasoupclient
 			void UpdateIceParameters(const nlohmann::json& iceParameters);
 			void UpdateDtlsRole(const std::string& role);
 			void DisableMediaSection(const std::string& mid);
+			void CloseMediaSection(const std::string& mid);
 			std::string GetSdp();
 
 		private:
-			void AddMediaSection(MediaSection* mediaSection);
+			void AddMediaSection(MediaSection* newMediaSection);
+			void ReplaceMediaSection(MediaSection* newMediaSection, const std::string& reuseMid);
+			void RegenerateBundleMids();
 
 		protected:
 			// Generic sending RTP parameters for audio and video.
@@ -48,8 +60,12 @@ namespace mediasoupclient
 			nlohmann::json iceCandidates  = nlohmann::json::object();
 			nlohmann::json dtlsParameters = nlohmann::json::object();
 			nlohmann::json sctpParameters = nlohmann::json::object();
-			// MediaSection instances indexed by MID.
-			std::unordered_map<std::string, MediaSection*> mediaSections;
+			// MediaSection instances.
+			std::vector<MediaSection*> mediaSections;
+			// MediaSection indices indexed by MID.
+			std::map<std::string, size_t> midToIndex;
+			// First MID.
+			std::string firstMid;
 			// Generic sending RTP parameters for audio and video.
 			nlohmann::json sendingRtpParametersByKind = nlohmann::json::object();
 			// SDP global fields.

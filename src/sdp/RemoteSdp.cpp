@@ -85,11 +85,14 @@ namespace mediasoupclient
 		if (iceParameters.find("iceLite") != iceParameters.end())
 			sdpObject["icelite"] = "ice-lite";
 
-		for (auto& kv : this->mediaSections)
+		for (auto idx{ 0u }; idx < this->mediaSections.size(); ++idx)
 		{
-			auto* mediaSection = kv.second;
+			auto* mediaSection = this->mediaSections[idx];
 
 			mediaSection->SetIceParameters(iceParameters);
+
+			// Update SDP media section.
+			this->sdpObject["media"][idx] = mediaSection->GetObject();
 		}
 	}
 
@@ -102,16 +105,36 @@ namespace mediasoupclient
 		if (iceParameters.find("iceLite") != iceParameters.end())
 			sdpObject["icelite"] = "ice-lite";
 
-		for (auto& kv : this->mediaSections)
+		for (auto idx{ 0u }; idx < this->mediaSections.size(); ++idx)
 		{
-			auto* mediaSection = kv.second;
+			auto* mediaSection = this->mediaSections[idx];
 
 			mediaSection->SetDtlsRole(role);
+
+			// Update SDP media section.
+			this->sdpObject["media"][idx] = mediaSection->GetObject();
 		}
 	}
 
+	Sdp::RemoteSdp::MediaSectionIdx Sdp::RemoteSdp::GetNextMediaSectionIdx()
+	{
+		MSC_TRACE();
+
+		// If a closed media section is found, return its index.
+		for (auto idx{ 0u }; idx < this->mediaSections.size(); ++idx)
+		{
+			auto* mediaSection = this->mediaSections[idx];
+
+			if (mediaSection->IsClosed())
+				return { idx, mediaSection->GetMid() };
+		}
+
+		// If no closed media section is found, return next one.
+		return { this->mediaSections.size() };
+	}
+
 	void Sdp::RemoteSdp::Send(
-	  json& offerMediaObject, json& offerRtpParameters, json& answerRtpParameters, const json* codecOptions)
+	  json& offerMediaObject, const std::string& reuseMid, json& offerRtpParameters, json& answerRtpParameters, const json* codecOptions)
 	{
 		MSC_TRACE();
 
@@ -125,7 +148,15 @@ namespace mediasoupclient
 		  answerRtpParameters,
 		  codecOptions);
 
-		this->AddMediaSection(mediaSection);
+		// Closed media section replacement.
+		if (!reuseMid.empty())
+		{
+			this->ReplaceMediaSection(mediaSection, reuseMid);
+		}
+		else
+		{
+			this->AddMediaSection(mediaSection);
+		}
 	}
 
 	void Sdp::RemoteSdp::Receive(
@@ -155,12 +186,31 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		// TODO: Should check that mediaSections.find(mid) exists.
-		// TODO: Should also really serialize the SDP with a=inactive!
-
-		auto* mediaSection = this->mediaSections[mid];
+		const auto idx = this->midToIndex[mid];
+		auto* mediaSection = this->mediaSections[idx];
 
 		mediaSection->Disable();
+	}
+
+	void Sdp::RemoteSdp::CloseMediaSection(const std::string& mid)
+	{
+		MSC_TRACE();
+
+		const auto idx = this->midToIndex[mid];
+		auto* mediaSection = this->mediaSections[idx];
+
+		// NOTE: Closing the first m section is a pain since it invalidates the
+		// bundled transport, so let's avoid it.
+		if (mid == this->firstMid)
+			mediaSection->Disable();
+		else
+			mediaSection->Close();
+
+		// Update SDP media section.
+		this->sdpObject["media"][idx] = mediaSection->GetObject();
+
+		// Regenerate BUNDLE mids.
+		this->RegenerateBundleMids();
 	}
 
 	std::string Sdp::RemoteSdp::GetSdp()
@@ -175,21 +225,83 @@ namespace mediasoupclient
 		return sdptransform::write(this->sdpObject);
 	}
 
-	void Sdp::RemoteSdp::AddMediaSection(MediaSection* mediaSection)
+	void Sdp::RemoteSdp::AddMediaSection(MediaSection* newMediaSection)
+	{
+		MSC_TRACE();
+
+		if (this->firstMid.empty())
+			this->firstMid = newMediaSection->GetMid();
+
+		// Add it in the vector.
+		this->mediaSections.push_back(newMediaSection);
+
+		// Add to the map.
+		this->midToIndex[newMediaSection->GetMid()] = this->mediaSections.size() - 1;
+
+		// Add to the SDP object.
+		this->sdpObject["media"].push_back(newMediaSection->GetObject());
+
+		this->RegenerateBundleMids();
+	}
+
+	void Sdp::RemoteSdp::ReplaceMediaSection(MediaSection* newMediaSection, const std::string& reuseMid)
 	{
 		MSC_TRACE();
 
 		// Store it in the map.
-		this->mediaSections[mediaSection->GetMid()] = mediaSection;
+		if (!reuseMid.empty())
+		{
+			const auto idx = this->midToIndex[reuseMid];
+			const auto oldMediaSection = this->mediaSections[idx];
 
-		// Update SDP object.
-		this->sdpObject["media"].push_back(mediaSection->GetObject());
+			// Replace the index in the vector with the new media section.
+			this->mediaSections[idx] = newMediaSection;
 
-		std::string mids = this->sdpObject["groups"][0]["mids"].get<std::string>();
-		if (mids.empty())
-			mids = mediaSection->GetMid();
+			// Update the map.
+			this->midToIndex.erase(oldMediaSection->GetMid());
+			this->midToIndex[newMediaSection->GetMid()] = idx;
+
+			// Delete old MediaSection.
+			delete oldMediaSection;
+
+			// Update the SDP object.
+			this->sdpObject["media"][idx] = newMediaSection->GetObject();
+
+			// Regenerate BUNDLE mids.
+			this->RegenerateBundleMids();
+		}
 		else
-			mids.append(" ").append(mediaSection->GetMid());
+		{
+			const auto idx = this->midToIndex[newMediaSection->GetMid()];
+			const auto oldMediaSection = this->mediaSections[idx];
+
+			// Replace the index in the vector with the new media section.
+			this->mediaSections[idx] = newMediaSection;
+
+			// Delete old MediaSection.
+			delete oldMediaSection;
+
+			// Update the SDP object.
+			this->sdpObject["media"][this->mediaSections.size() - 1] = newMediaSection->GetObject();
+		}
+	}
+
+	void Sdp::RemoteSdp::RegenerateBundleMids()
+	{
+		MSC_TRACE();
+
+		std::string mids;
+
+		for (const auto* mediaSection : this->mediaSections)
+		{
+			if (!mediaSection->IsClosed())
+			{
+				if (mids.empty())
+					mids = mediaSection->GetMid();
+				else
+					mids.append(" ").append(mediaSection->GetMid());
+			}
+		}
 
 		this->sdpObject["groups"][0]["mids"] = mids;
 	}

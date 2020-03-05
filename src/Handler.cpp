@@ -199,6 +199,8 @@ namespace mediasoupclient
 			}
 		}
 
+		const Sdp::RemoteSdp::MediaSectionIdx mediaSectionIdx = this->remoteSdp->GetNextMediaSectionIdx();
+
 		// https://bugs.chromium.org/p/webrtc/issues/detail?id=7600
 		// Once the issue is solved, no SDP will be required to enable simulcast.
 		webrtc::RtpTransceiverInterface* transceiver = this->pc->AddTransceiver(track);
@@ -227,9 +229,7 @@ namespace mediasoupclient
 			{
 				MSC_DEBUG("enabling legacy simulcast");
 
-				// We know that our media section is the last one.
-				auto numMediaSection   = localSdpObject["media"].size();
-				json& offerMediaObject = localSdpObject["media"][numMediaSection - 1];
+				json& offerMediaObject = localSdpObject["media"][mediaSectionIdx.idx];
 
 				Sdp::Utils::addLegacySimulcast(offerMediaObject, encodings->size());
 
@@ -258,9 +258,7 @@ namespace mediasoupclient
 		auto localSdp       = this->pc->GetLocalDescription();
 		auto localSdpObject = sdptransform::parse(localSdp);
 
-		// We know that our media section is the last one.
-		auto numMediaSection   = localSdpObject["media"].size();
-		json& offerMediaObject = localSdpObject["media"][numMediaSection - 1];
+		json& offerMediaObject = localSdpObject["media"][mediaSectionIdx.idx];
 
 		// Set RTCP CNAME.
 		sendingRtpParameters["rtcp"]["cname"] = Sdp::Utils::getCname(offerMediaObject);
@@ -314,6 +312,7 @@ namespace mediasoupclient
 
 		this->remoteSdp->Send(
 		  offerMediaObject,
+		  mediaSectionIdx.reuseMid,
 		  sendingRtpParameters,
 		  this->sendingRemoteRtpParametersByKind[track->kind()],
 		  codecOptions);
@@ -351,7 +350,7 @@ namespace mediasoupclient
 
 		transceiver->sender()->SetTrack(nullptr);
 		this->pc->RemoveTrack(transceiver->sender());
-		this->remoteSdp->DisableMediaSection(transceiver->mid().value());
+		this->remoteSdp->CloseMediaSection(transceiver->mid().value());
 
 		// May throw.
 		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
@@ -604,7 +603,7 @@ namespace mediasoupclient
 
 		MSC_DEBUG("disabling mid:%s", transceiver->mid().value().c_str());
 
-		this->remoteSdp->DisableMediaSection(transceiver->mid().value());
+		this->remoteSdp->CloseMediaSection(transceiver->mid().value());
 
 		auto offer = this->remoteSdp->GetSdp();
 

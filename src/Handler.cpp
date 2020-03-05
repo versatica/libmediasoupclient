@@ -524,7 +524,15 @@ namespace mediasoupclient
 
 		MSC_DEBUG("[id:%s, kind:%s]", id.c_str(), kind.c_str());
 
-		auto localId = std::to_string(this->nextMid);
+		std::string localId;
+
+		// mid is optional, check whether it exists and is a non empty string.
+		auto midIt = rtpParameters->find("mid");
+		if (midIt != rtpParameters->end() && (midIt->is_string() && !midIt->get<std::string>().empty()))
+			localId = midIt->get<std::string>();
+		else
+			localId = std::to_string(this->mapMidTransceiver.size());
+
 		auto& cname  = (*rtpParameters)["rtcp"]["cname"];
 
 		this->remoteSdp->Receive(localId, kind, *rtpParameters, cname, id);

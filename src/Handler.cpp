@@ -584,9 +584,6 @@ namespace mediasoupclient
 		// Store in the map.
 		this->mapMidTransceiver[localId] = transceiver;
 
-		// Increase next MID.
-		this->nextMid++;
-
 		RecvData recvData;
 
 		recvData.localId     = localId;

@@ -131,10 +131,6 @@ namespace mediasoupclient
 		void StopReceiving(const std::string& localId);
 		nlohmann::json GetReceiverStats(const std::string& localId);
 		void RestartIce(const nlohmann::json& iceParameters) override;
-
-	private:
-		// MID value counter. It must be incremented for each new m= section.
-		uint32_t nextMid{ 0 };
 	};
 } // namespace mediasoupclient
 

@@ -533,7 +533,7 @@ namespace mediasoupclient
 		else
 			localId = std::to_string(this->mapMidTransceiver.size());
 
-		auto& cname  = (*rtpParameters)["rtcp"]["cname"];
+		auto& cname = (*rtpParameters)["rtcp"]["cname"];
 
 		this->remoteSdp->Receive(localId, kind, *rtpParameters, cname, id);
 

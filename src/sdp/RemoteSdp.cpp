@@ -134,7 +134,11 @@ namespace mediasoupclient
 	}
 
 	void Sdp::RemoteSdp::Send(
-	  json& offerMediaObject, const std::string& reuseMid, json& offerRtpParameters, json& answerRtpParameters, const json* codecOptions)
+	  json& offerMediaObject,
+	  const std::string& reuseMid,
+	  json& offerRtpParameters,
+	  json& answerRtpParameters,
+	  const json* codecOptions)
 	{
 		MSC_TRACE();
 
@@ -186,7 +190,7 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		const auto idx = this->midToIndex[mid];
+		const auto idx     = this->midToIndex[mid];
 		auto* mediaSection = this->mediaSections[idx];
 
 		mediaSection->Disable();
@@ -196,7 +200,7 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		const auto idx = this->midToIndex[mid];
+		const auto idx     = this->midToIndex[mid];
 		auto* mediaSection = this->mediaSections[idx];
 
 		// NOTE: Closing the first m section is a pain since it invalidates the
@@ -251,7 +255,7 @@ namespace mediasoupclient
 		// Store it in the map.
 		if (!reuseMid.empty())
 		{
-			const auto idx = this->midToIndex[reuseMid];
+			const auto idx             = this->midToIndex[reuseMid];
 			const auto oldMediaSection = this->mediaSections[idx];
 
 			// Replace the index in the vector with the new media section.
@@ -272,7 +276,7 @@ namespace mediasoupclient
 		}
 		else
 		{
-			const auto idx = this->midToIndex[newMediaSection->GetMid()];
+			const auto idx             = this->midToIndex[newMediaSection->GetMid()];
 			const auto oldMediaSection = this->mediaSections[idx];
 
 			// Replace the index in the vector with the new media section.

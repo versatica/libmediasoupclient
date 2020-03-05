@@ -1,7 +1,7 @@
 #include "Handler.hpp"
 #include "MediaSoupClientErrors.hpp"
-#include "fakeParameters.hpp"
 #include "MediaStreamTrackFactory.hpp"
+#include "fakeParameters.hpp"
 #include <catch.hpp>
 #include <iostream>
 #include <memory>

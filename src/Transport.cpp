@@ -189,6 +189,9 @@ namespace mediasoupclient
 		else if (this->canProduceByKind->find(track->kind()) == this->canProduceByKind->end())
 			MSC_THROW_UNSUPPORTED_ERROR("cannot produce track kind");
 
+		if (codecOptions)
+			ortc::validateProducerCodecOptions(const_cast<json&>(*codecOptions));
+
 		std::string producerId;
 		std::vector<webrtc::RtpEncodingParameters> normalizedEncodings;
 

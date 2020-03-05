@@ -21,6 +21,10 @@ namespace mediasoupclient
 		void validateNumSctpStreams(nlohmann::json& numStreams);
 		void validateSctpParameters(nlohmann::json& params);
 		void validateSctpStreamParameters(nlohmann::json& params);
+		void validateIceParameters(nlohmann::json& params);
+		void validateIceCandidates(nlohmann::json& params);
+		void validateDtlsParameters(nlohmann::json& params);
+		void validateProducerCodecOptions(nlohmann::json& params);
 		nlohmann::json getExtendedRtpCapabilities(nlohmann::json& localCaps, nlohmann::json& remoteCaps);
 		nlohmann::json getRecvRtpCapabilities(const nlohmann::json& extendedRtpCapabilities);
 		nlohmann::json getSendingRtpParameters(

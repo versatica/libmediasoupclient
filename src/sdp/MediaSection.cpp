@@ -181,7 +181,7 @@ namespace mediasoupclient
 						if (mimeType == "audio/opus")
 						{
 							auto opusStereoIt = codecOptions->find("opusStereo");
-							if (opusStereoIt != codecOptions->end() && opusStereoIt->is_boolean())
+							if (opusStereoIt != codecOptions->end())
 							{
 								auto opusStereo                          = opusStereoIt->get<bool>();
 								offerCodec["parameters"]["sprop-stereo"] = opusStereo ? 1 : 0;
@@ -189,7 +189,7 @@ namespace mediasoupclient
 							}
 
 							auto opusFecIt = codecOptions->find("opusFec");
-							if (opusFecIt != codecOptions->end() && opusFecIt->is_boolean())
+							if (opusFecIt != codecOptions->end())
 							{
 								auto opusFec                             = opusFecIt->get<bool>();
 								offerCodec["parameters"]["useinbandfec"] = opusFec ? 1 : 0;
@@ -197,7 +197,7 @@ namespace mediasoupclient
 							}
 
 							auto opusDtxIt = codecOptions->find("opusDtx");
-							if (opusDtxIt != codecOptions->end() && opusDtxIt->is_boolean())
+							if (opusDtxIt != codecOptions->end())
 							{
 								auto opusDtx                       = opusDtxIt->get<bool>();
 								offerCodec["parameters"]["usedtx"] = opusDtx ? 1 : 0;
@@ -205,7 +205,7 @@ namespace mediasoupclient
 							}
 
 							auto opusMaxPlaybackRateIt = codecOptions->find("opusMaxPlaybackRate");
-							if (opusMaxPlaybackRateIt != codecOptions->end() && opusMaxPlaybackRateIt->is_number_integer())
+							if (opusMaxPlaybackRateIt != codecOptions->end())
 							{
 								auto opusMaxPlaybackRate           = opusMaxPlaybackRateIt->get<uint32_t>();
 								codecParameters["maxplaybackrate"] = opusMaxPlaybackRate;
@@ -214,21 +214,21 @@ namespace mediasoupclient
 						else if (mimeType == "video/vp8" || mimeType == "video/vp9" || mimeType == "video/h264" || mimeType == "video/h265")
 						{
 							auto videoGoogleStartBitrateIt = codecOptions->find("videoGoogleStartBitrate");
-							if (videoGoogleStartBitrateIt != codecOptions->end() && videoGoogleStartBitrateIt->is_number_integer())
+							if (videoGoogleStartBitrateIt != codecOptions->end())
 							{
 								auto videoGoogleStartBitrate = videoGoogleStartBitrateIt->get<uint32_t>();
 								codecParameters["x-google-start-bitrate"] = videoGoogleStartBitrate;
 							}
 
 							auto videoGoogleMaxBitrateIt = codecOptions->find("videoGoogleMaxBitrate");
-							if (videoGoogleMaxBitrateIt != codecOptions->end() && videoGoogleMaxBitrateIt->is_number_integer())
+							if (videoGoogleMaxBitrateIt != codecOptions->end())
 							{
 								auto videoGoogleMaxBitrate              = videoGoogleMaxBitrateIt->get<uint32_t>();
 								codecParameters["x-google-max-bitrate"] = videoGoogleMaxBitrate;
 							}
 
 							auto videoGoogleMinBitrateIt = codecOptions->find("videoGoogleMinBitrate");
-							if (videoGoogleMinBitrateIt != codecOptions->end() && videoGoogleMinBitrateIt->is_number_integer())
+							if (videoGoogleMinBitrateIt != codecOptions->end())
 							{
 								auto videoGoogleMinBitrate              = videoGoogleMinBitrateIt->get<uint32_t>();
 								codecParameters["x-google-min-bitrate"] = videoGoogleMinBitrate;

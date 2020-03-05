@@ -118,6 +118,14 @@ namespace mediasoupclient
 		else if (!appData.is_object())
 			MSC_THROW_TYPE_ERROR("appData must be a JSON object");
 
+		/* Validate arguments. */
+		ortc::validateIceParameters(const_cast<json&>(iceParameters));
+		ortc::validateIceCandidates(const_cast<json&>(iceCandidates));
+		ortc::validateDtlsParameters(const_cast<json&>(dtlsParameters));
+
+		if (!sctpParameters.is_null())
+			ortc::validateSctpParameters(const_cast<json&>(sctpParameters));
+
 		// Create a new Transport.
 		auto* transport = new SendTransport(
 		  listener,
@@ -165,6 +173,14 @@ namespace mediasoupclient
 			MSC_THROW_INVALID_STATE_ERROR("not loaded");
 		else if (!appData.is_object())
 			MSC_THROW_TYPE_ERROR("appData must be a JSON object");
+
+		/* Validate arguments. */
+		ortc::validateIceParameters(const_cast<json&>(iceParameters));
+		ortc::validateIceCandidates(const_cast<json&>(iceCandidates));
+		ortc::validateDtlsParameters(const_cast<json&>(dtlsParameters));
+
+		if (!sctpParameters.is_null())
+			ortc::validateSctpParameters(const_cast<json&>(sctpParameters));
 
 		// Create a new Transport.
 		auto* transport = new RecvTransport(

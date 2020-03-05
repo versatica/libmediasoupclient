@@ -273,9 +273,13 @@ namespace mediasoupclient
 		else
 		{
 			const auto idx = this->midToIndex[newMediaSection->GetMid()];
+			const auto oldMediaSection = this->mediaSections[idx];
 
 			// Replace the index in the vector with the new media section.
 			this->mediaSections[idx] = newMediaSection;
+
+			// Delete old MediaSection.
+			delete oldMediaSection;
 
 			// Update the SDP object.
 			this->sdpObject["media"][this->mediaSections.size() - 1] = newMediaSection->GetObject();

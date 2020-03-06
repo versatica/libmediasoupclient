@@ -119,9 +119,17 @@ namespace mediasoupclient
 			if (clockRateIt == codec.end() || !clockRateIt->is_number_integer())
 				MSC_THROW_TYPE_ERROR("missing codec.clockRate");
 
-			// channels is optional. If unset, set it to 1.
-			if (channelsIt == codec.end() || !channelsIt->is_number_integer())
-				codec["channels"] = 1;
+			// channels is optional. If unset, set it to 1 (just if audio).
+			if (codec["kind"] == "audio")
+			{
+				if (channelsIt == codec.end() || !channelsIt->is_number_integer())
+					codec["channels"] = 1;
+			}
+			else
+			{
+				if (channelsIt != codec.end())
+					codec.erase("channels");
+			}
 
 			// parameters is optional. If unset, set it to an empty object.
 			if (parametersIt == codec.end() || !parametersIt->is_object())
@@ -349,9 +357,20 @@ namespace mediasoupclient
 			if (clockRateIt == codec.end() || !clockRateIt->is_number_integer())
 				MSC_THROW_TYPE_ERROR("missing codec.clockRate");
 
-			// channels is optional. If unset, set it to 1.
-			if (channelsIt == codec.end() || !channelsIt->is_number_integer())
-				codec["channels"] = 1;
+			// Retrieve media kind from mimeType.
+			auto kind = mimeTypeMatch[1].str();
+
+			// channels is optional. If unset, set it to 1 (just for audio).
+			if (kind == "audio")
+			{
+				if (channelsIt == codec.end() || !channelsIt->is_number_integer())
+					codec["channels"] = 1;
+			}
+			else
+			{
+				if (channelsIt != codec.end())
+					codec.erase("channels");
+			}
 
 			// parameters is optional. If unset, set it to an empty object.
 			if (parametersIt == codec.end() || !parametersIt->is_object())
@@ -937,7 +956,6 @@ namespace mediasoupclient
 					{ "mimeType",             matchingLocalCodec["mimeType"]                      },
 					{ "kind",                 matchingLocalCodec["kind"]                          },
 					{ "clockRate",            matchingLocalCodec["clockRate"]                     },
-					{ "channels",             matchingLocalCodec["channels"]                      },
 					{ "localPayloadType",     matchingLocalCodec["preferredPayloadType"]          },
 					{ "localRtxPayloadType",  nullptr                                             },
 					{ "remotePayloadType",    remoteCodec["preferredPayloadType"]                 },
@@ -947,6 +965,9 @@ namespace mediasoupclient
 					{ "rtcpFeedback",         reduceRtcpFeedback(matchingLocalCodec, remoteCodec) }
 				};
 				// clang-format on
+
+				if (matchingLocalCodec.contains("channels"))
+					extendedCodec["channels"] = matchingLocalCodec["channels"];
 
 				extendedRtpCapabilities["codecs"].push_back(extendedCodec);
 			}
@@ -1054,11 +1075,13 @@ namespace mediasoupclient
 					{ "kind",                 extendedCodec["kind"]              },
 					{ "preferredPayloadType", extendedCodec["remotePayloadType"] },
 					{ "clockRate",            extendedCodec["clockRate"]         },
-					{ "channels",             extendedCodec["channels"]          },
 					{ "parameters",           extendedCodec["localParameters"]   },
 					{ "rtcpFeedback",         extendedCodec["rtcpFeedback"]      },
 				};
 				// clang-format on
+
+				if (extendedCodec.contains("channels"))
+					codec["channels"] = extendedCodec["channels"];
 
 				rtpCapabilities["codecs"].push_back(codec);
 
@@ -1075,7 +1098,6 @@ namespace mediasoupclient
 					{ "kind",                 extendedCodec["kind"]                 },
 					{ "preferredPayloadType", extendedCodec["remoteRtxPayloadType"] },
 					{ "clockRate",            extendedCodec["clockRate"]            },
-					{ "channels",             1                                     },
 					{
 						"parameters",
 						{
@@ -1147,11 +1169,13 @@ namespace mediasoupclient
 					{ "mimeType",     extendedCodec["mimeType"]         },
 					{ "payloadType",  extendedCodec["localPayloadType"] },
 					{ "clockRate",    extendedCodec["clockRate"]        },
-					{ "channels",     extendedCodec["channels"]         },
 					{ "parameters",   extendedCodec["localParameters"]  },
 					{ "rtcpFeedback", extendedCodec["rtcpFeedback"]     }
 				};
 				// clang-format on
+
+				if (extendedCodec.contains("channels"))
+					codec["channels"] = extendedCodec["channels"];
 
 				rtpParameters["codecs"].push_back(codec);
 
@@ -1166,7 +1190,6 @@ namespace mediasoupclient
 						{ "mimeType",    mimeType                             },
 						{ "payloadType", extendedCodec["localRtxPayloadType"] },
 						{ "clockRate",   extendedCodec["clockRate"]           },
-						{ "channels",    1                                    },
 						{
 							"parameters",
 							{
@@ -1240,11 +1263,13 @@ namespace mediasoupclient
 					{ "mimeType",     extendedCodec["mimeType"]         },
 					{ "payloadType",  extendedCodec["localPayloadType"] },
 					{ "clockRate",    extendedCodec["clockRate"]        },
-					{ "channels",     extendedCodec["channels"]         },
 					{ "parameters",   extendedCodec["remoteParameters"] },
 					{ "rtcpFeedback", extendedCodec["rtcpFeedback"]     }
 				};
 				// clang-format on
+
+				if (extendedCodec.contains("channels"))
+					codec["channels"] = extendedCodec["channels"];
 
 				rtpParameters["codecs"].push_back(codec);
 
@@ -1259,7 +1284,6 @@ namespace mediasoupclient
 						{ "mimeType",    mimeType                             },
 						{ "payloadType", extendedCodec["localRtxPayloadType"] },
 						{ "clockRate",   extendedCodec["clockRate"]           },
-						{ "channels",    1                                    },
 						{
 							"parameters",
 							{
@@ -1504,7 +1528,10 @@ static bool matchCodecs(json& aCodec, const json& bCodec, bool strict, bool modi
 	if (aCodec["clockRate"] != bCodec["clockRate"])
 		return false;
 
-	if (aCodec["channels"] != bCodec["channels"])
+	if (aCodec.contains("channels") != bCodec.contains("channels"))
+		return false;
+
+	if (aCodec.contains("channels") && aCodec["channels"] != bCodec["channels"])
 		return false;
 
 	// Match H264 parameters.

@@ -157,10 +157,13 @@ namespace mediasoupclient
 					};
 					// clang-format on
 
-					auto channels = codec["channels"].get<uint8_t>();
+					if (codec.contains("channels"))
+					{
+						auto channels = codec["channels"].get<uint8_t>();
 
-					if (channels > 1)
-						rtp["encoding"] = channels;
+						if (channels > 1)
+							rtp["encoding"] = channels;
+					}
 
 					this->mediaObject["rtp"].push_back(rtp);
 
@@ -429,10 +432,13 @@ namespace mediasoupclient
 					};
 					// clang-format on
 
-					auto channels = codec["channels"].get<uint8_t>();
+					if (codec.contains("channels"))
+					{
+						auto channels = codec["channels"].get<uint8_t>();
 
-					if (channels > 1)
-						rtp["encoding"] = channels;
+						if (channels > 1)
+							rtp["encoding"] = channels;
+					}
 
 					this->mediaObject["rtp"].push_back(rtp);
 

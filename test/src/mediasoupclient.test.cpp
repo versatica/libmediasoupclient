@@ -386,7 +386,6 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 		{
 			"clockRate": 90000,
 			"mimeType": "video/VP8",
-			"channels" : 1,
 			"parameters":
 			{
 				"x-google-start-bitrate": "1500"
@@ -429,7 +428,6 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 		{
 			"clockRate": 90000,
 			"mimeType": "video/rtx",
-			"channels": 1,
 			"parameters":
 			{
 			  "apt": 101

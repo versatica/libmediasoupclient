@@ -283,7 +283,8 @@ namespace mediasoupclient
 	}
 
 	rtc::scoped_refptr<webrtc::RtpTransceiverInterface> PeerConnection::AddTransceiver(
-	  rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track)
+	  rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track,
+	  webrtc::RtpTransceiverInit rtpTransceiverInit)
 	{
 		MSC_TRACE();
 
@@ -294,7 +295,6 @@ namespace mediasoupclient
 		 *
 		 * The second is incorrect (https://tools.ietf.org/html/rfc5576#section-4.1)
 		 */
-		webrtc::RtpTransceiverInit rtpTransceiverInit;
 		rtpTransceiverInit.stream_ids.emplace_back("0");
 
 		auto result = this->pc->AddTransceiver(

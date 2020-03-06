@@ -380,7 +380,12 @@ namespace mediasoupclient
 			{
 				MSC_TRACE();
 
-				const json& mSsrcs = offerMediaObject["ssrcs"];
+				auto jsonMssrcsIt = offerMediaObject.find("ssrc");
+
+				if (jsonMssrcsIt == offerMediaObject.end())
+					return "";
+
+				const json& mSsrcs = *jsonMssrcsIt;
 
 				auto jsonSsrcIt = find_if(mSsrcs.begin(), mSsrcs.end(), [](const json& line) {
 					auto jsonAttributeIt = line.find("attribute");

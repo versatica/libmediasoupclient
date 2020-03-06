@@ -508,7 +508,7 @@ namespace mediasoupclient
 			auto reducedSizeIt = rtcp.find("reducedSize");
 
 			// cname is optional.
-			if (cnameIt != rtcp.end() && (!cnameIt->is_string() || cnameIt->get<std::string>().empty()))
+			if (cnameIt != rtcp.end() && !cnameIt->is_string())
 				MSC_THROW_TYPE_ERROR("invalid rtcp.cname");
 
 			// reducedSize is optional. If unset set it to true.
@@ -697,13 +697,9 @@ namespace mediasoupclient
 			if (passwordIt == params.end() || (!passwordIt->is_string() || passwordIt->get<std::string>().empty()))
 				MSC_THROW_TYPE_ERROR("missing params.password");
 
-			// iceLIte is optional.
-			bool iceLIteGiven = false;
-
-			if (iceLiteIt != params.end() && iceLiteIt->is_boolean())
-				iceLIteGiven = true;
-			else
-				params["iceLIte"] = true;
+			// iceLIte is optional. If unset set it to false.
+			if (iceLiteIt == params.end() || !iceLiteIt->is_boolean())
+				params["iceLite"] = false;
 		}
 
 		/**
@@ -1203,7 +1199,7 @@ namespace mediasoupclient
 				json ext =
 				{
 					{ "uri",        extendedExtension["uri"]     },
-					{ "id",         extendedExtension["recvId"]  },
+					{ "id",         extendedExtension["sendId"]  },
 					{ "encrypt",    extendedExtension["encrypt"] },
 					{ "parameters", json::object()               }
 				};
@@ -1296,7 +1292,7 @@ namespace mediasoupclient
 				json ext =
 				{
 					{ "uri",        extendedExtension["uri"]     },
-					{ "id",         extendedExtension["recvId"]  },
+					{ "id",         extendedExtension["sendId"]  },
 					{ "encrypt",    extendedExtension["encrypt"] },
 					{ "parameters", json::object()               }
 				};

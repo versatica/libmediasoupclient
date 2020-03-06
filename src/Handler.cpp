@@ -201,9 +201,12 @@ namespace mediasoupclient
 
 		const Sdp::RemoteSdp::MediaSectionIdx mediaSectionIdx = this->remoteSdp->GetNextMediaSectionIdx();
 
-		// https://bugs.chromium.org/p/webrtc/issues/detail?id=7600
-		// Once the issue is solved, no SDP will be required to enable simulcast.
-		webrtc::RtpTransceiverInterface* transceiver = this->pc->AddTransceiver(track);
+		webrtc::RtpTransceiverInit transceiverInit;
+
+		if (encodings && !encodings->empty())
+			transceiverInit.send_encodings = *encodings;
+
+		webrtc::RtpTransceiverInterface* transceiver = this->pc->AddTransceiver(track, transceiverInit);
 
 		if (!transceiver)
 			MSC_THROW_ERROR("error creating transceiver");
@@ -224,17 +227,6 @@ namespace mediasoupclient
 			// Transport is not ready.
 			if (!this->transportReady)
 				this->SetupTransport("server", localSdpObject);
-
-			if (encodings != nullptr && encodings->size() > 1)
-			{
-				MSC_DEBUG("enabling legacy simulcast");
-
-				json& offerMediaObject = localSdpObject["media"][mediaSectionIdx.idx];
-
-				Sdp::Utils::addLegacySimulcast(offerMediaObject, encodings->size());
-
-				offer = sdptransform::write(localSdpObject);
-			}
 
 			MSC_DEBUG("calling pc->SetLocalDescription():\n%s", offer.c_str());
 

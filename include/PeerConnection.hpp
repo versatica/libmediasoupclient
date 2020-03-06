@@ -123,7 +123,8 @@ namespace mediasoupclient
 		std::vector<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>> GetTransceivers() const;
 		rtc::scoped_refptr<webrtc::RtpTransceiverInterface> AddTransceiver(cricket::MediaType mediaType);
 		rtc::scoped_refptr<webrtc::RtpTransceiverInterface> AddTransceiver(
-		  rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track);
+		  rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track,
+		  webrtc::RtpTransceiverInit rtpTransceiverInit);
 		std::vector<rtc::scoped_refptr<webrtc::RtpSenderInterface>> GetSenders();
 		bool RemoveTrack(webrtc::RtpSenderInterface* sender);
 		nlohmann::json GetStats();

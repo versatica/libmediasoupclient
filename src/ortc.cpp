@@ -1385,10 +1385,10 @@ namespace mediasoupclient
 			MSC_TRACE();
 
 			// This may throw.
-			json vaidatedRtpParameters = videoRtpParameters;
+			json validatedRtpParameters = videoRtpParameters;
 
 			// This may throw.
-			ortc::validateRtpParameters(vaidatedRtpParameters);
+			ortc::validateRtpParameters(validatedRtpParameters);
 
 			// clang-format off
 			json rtpParameters =
@@ -1406,9 +1406,9 @@ namespace mediasoupclient
 			};
 			// clang-format on
 
-			rtpParameters["codecs"].push_back(vaidatedRtpParameters["codecs"][0]);
+			rtpParameters["codecs"].push_back(validatedRtpParameters["codecs"][0]);
 
-			for (auto& ext : vaidatedRtpParameters["headerExtensions"])
+			for (auto& ext : validatedRtpParameters["headerExtensions"])
 			{
 				// clang-format off
 				if (

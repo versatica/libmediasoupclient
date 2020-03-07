@@ -1,6 +1,6 @@
 # libmediasoupclient
 
-C++ client side library for building [mediasoup][mediasoup-website] based applications built on top of [libwebrtc][libwebrtc].
+C++ client side library for building [mediasoup][mediasoup-website] based applications built on top of Google's libwebrtc C++ library.
 
 
 
@@ -30,4 +30,3 @@ C++ client side library for building [mediasoup][mediasoup-website] based applic
 
 [mediasoup-website]: https://mediasoup.org
 [mediasoup-discourse]: https://mediasoup.discourse.group
-[libwebrtc]: https://webrtc.org/native-code

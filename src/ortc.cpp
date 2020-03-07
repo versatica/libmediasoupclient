@@ -941,7 +941,9 @@ namespace mediasoupclient
 			}
 
 			if (opusPtimeIt != params.end() && !opusPtimeIt->is_number_integer())
+			{
 				MSC_THROW_TYPE_ERROR("invalid params.opusPtime");
+			}
 
 			if (videoGoogleStartBitrateIt != params.end() && !videoGoogleStartBitrateIt->is_number_integer())
 			{
@@ -983,6 +985,7 @@ namespace mediasoupclient
 
 			// Match media codecs and keep the order preferred by remoteCaps.
 			auto remoteCapsCodecsIt = remoteCaps.find("codecs");
+
 			for (auto& remoteCodec : *remoteCapsCodecsIt)
 			{
 				if (isRtxCodec(remoteCodec))

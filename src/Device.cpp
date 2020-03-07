@@ -55,10 +55,16 @@ namespace mediasoupclient
 		if (this->loaded)
 			MSC_THROW_INVALID_STATE_ERROR("already loaded");
 
+		// This may throw.
+		ortc::validateRtpCapabilities(routerRtpCapabilities);
+
 		// Get Native RTP capabilities.
 		auto nativeRtpCapabilities = Handler::GetNativeRtpCapabilities(peerConnectionOptions);
 
 		MSC_DEBUG("got native RTP capabilities:\n%s", nativeRtpCapabilities.dump(4).c_str());
+
+		// This may throw.
+		ortc::validateRtpCapabilities(nativeRtpCapabilities);
 
 		// Get extended RTP capabilities.
 		this->extendedRtpCapabilities =
@@ -118,7 +124,7 @@ namespace mediasoupclient
 		else if (!appData.is_object())
 			MSC_THROW_TYPE_ERROR("appData must be a JSON object");
 
-		/* Validate arguments. */
+		// Validate arguments.
 		ortc::validateIceParameters(const_cast<json&>(iceParameters));
 		ortc::validateIceCandidates(const_cast<json&>(iceCandidates));
 		ortc::validateDtlsParameters(const_cast<json&>(dtlsParameters));
@@ -174,7 +180,7 @@ namespace mediasoupclient
 		else if (!appData.is_object())
 			MSC_THROW_TYPE_ERROR("appData must be a JSON object");
 
-		/* Validate arguments. */
+		// Validate arguments.
 		ortc::validateIceParameters(const_cast<json&>(iceParameters));
 		ortc::validateIceCandidates(const_cast<json&>(iceCandidates));
 		ortc::validateDtlsParameters(const_cast<json&>(dtlsParameters));

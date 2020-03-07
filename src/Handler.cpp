@@ -46,7 +46,9 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		json caps = { "numStreams", SctpNumStreams };
+		auto caps = json::object();
+
+		caps["numStreams"] = SctpNumStreams;
 
 		return caps;
 	}

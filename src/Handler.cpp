@@ -12,30 +12,9 @@ using json = nlohmann::json;
 
 static json SctpNumStreams = { { "OS", 1024u }, { "MIS", 1024u } };
 
-static void fillJsonRtpEncodingParameters(json& jsonEncoding, const webrtc::RtpEncodingParameters& encoding)
-{
-	jsonEncoding["active"] = encoding.active;
-
-	if (!encoding.rid.empty())
-		jsonEncoding["rid"] = encoding.rid;
-
-	if (encoding.max_bitrate_bps)
-		jsonEncoding["maxBitrate"] = *encoding.max_bitrate_bps;
-
-	if (encoding.max_framerate)
-		jsonEncoding["maxFramerate"] = *encoding.max_framerate;
-
-	if (encoding.scale_framerate_down_by)
-		jsonEncoding["scaleFramerateDownBy"] = *encoding.scale_framerate_down_by;
-
-	if (encoding.scale_resolution_down_by)
-		jsonEncoding["scaleResolutionDownBy"] = *encoding.scale_resolution_down_by;
-
-	if (encoding.dtx && encoding.dtx == webrtc::DtxStatus::ENABLED)
-		jsonEncoding["dtx"] = true;
-
-	jsonEncoding["networkPriority"] = encoding.network_priority;
-}
+// Static functions declaration.
+static void fillJsonRtpEncodingParameters(
+  json& jsonEncoding, const webrtc::RtpEncodingParameters& encoding);
 
 namespace mediasoupclient
 {
@@ -667,3 +646,32 @@ namespace mediasoupclient
 		this->pc->SetLocalDescription(PeerConnection::SdpType::ANSWER, answer);
 	}
 } // namespace mediasoupclient
+
+// Private helpers used in this file.
+
+static void fillJsonRtpEncodingParameters(json& jsonEncoding, const webrtc::RtpEncodingParameters& encoding)
+{
+	MSC_TRACE();
+
+	jsonEncoding["active"] = encoding.active;
+
+	if (!encoding.rid.empty())
+		jsonEncoding["rid"] = encoding.rid;
+
+	if (encoding.max_bitrate_bps)
+		jsonEncoding["maxBitrate"] = *encoding.max_bitrate_bps;
+
+	if (encoding.max_framerate)
+		jsonEncoding["maxFramerate"] = *encoding.max_framerate;
+
+	if (encoding.scale_framerate_down_by)
+		jsonEncoding["scaleFramerateDownBy"] = *encoding.scale_framerate_down_by;
+
+	if (encoding.scale_resolution_down_by)
+		jsonEncoding["scaleResolutionDownBy"] = *encoding.scale_resolution_down_by;
+
+	if (encoding.dtx && encoding.dtx == webrtc::DtxStatus::ENABLED)
+		jsonEncoding["dtx"] = true;
+
+	jsonEncoding["networkPriority"] = encoding.network_priority;
+}

@@ -260,7 +260,9 @@ namespace mediasoupclient
 
 			// mid is optional.
 			if (midIt != params.end() && (!midIt->is_string() || midIt->get<std::string>().empty()))
+			{
 				MSC_THROW_TYPE_ERROR("params.mid is not a string");
+			}
 
 			// codecs is mandatory.
 			if (codecsIt == params.end() || !codecsIt->is_array())
@@ -427,7 +429,9 @@ namespace mediasoupclient
 
 			// uri is mandatory.
 			if (uriIt == ext.end() || !uriIt->is_string() || uriIt->get<std::string>().empty())
+			{
 				MSC_THROW_TYPE_ERROR("missing ext.uri");
+			}
 
 			// id is mandatory.
 			if (idIt == ext.end() || !idIt->is_number_integer())
@@ -479,7 +483,9 @@ namespace mediasoupclient
 
 			// rid is optional.
 			if (ridIt != encoding.end() && (!ridIt->is_string() || ridIt->get<std::string>().empty()))
+			{
 				MSC_THROW_TYPE_ERROR("invalid encoding.rid");
+			}
 
 			// rtx is optional.
 			if (rtxIt != encoding.end() && !rtxIt->is_object())
@@ -611,7 +617,9 @@ namespace mediasoupclient
 
 			// maxMessageSize is mandatory.
 			if (maxMessageSizeIt == params.end() || !maxMessageSizeIt->is_number_integer())
+			{
 				MSC_THROW_TYPE_ERROR("missing params.maxMessageSize");
+			}
 		}
 
 		/**
@@ -648,14 +656,20 @@ namespace mediasoupclient
 
 			// maxPacketLifeTime is optional. If unset set it to 0.
 			if (maxPacketLifeTimeIt == params.end() || !maxPacketLifeTimeIt->is_number_integer())
+			{
 				params["maxPacketLifeTime"] = 0u;
+			}
 
 			// maxRetransmits is optional. If unset set it to 0.
 			if (maxRetransmitsIt == params.end() || !maxRetransmitsIt->is_number_integer())
+			{
 				params["maxRetransmits"] = 0u;
+			}
 
 			if (maxPacketLifeTimeIt != params.end() && maxRetransmitsIt != params.end())
+			{
 				MSC_THROW_TYPE_ERROR("cannot provide both maxPacketLifeTime and maxRetransmits");
+			}
 
 			// clang-format off
 			if (
@@ -710,11 +724,15 @@ namespace mediasoupclient
 			if (
 			  usernameFragmentIt == params.end() ||
 			  (!usernameFragmentIt->is_string() || usernameFragmentIt->get<std::string>().empty()))
+			{
 				MSC_THROW_TYPE_ERROR("missing params.usernameFragment");
+			}
 
 			// userFragment is mandatory.
 			if (passwordIt == params.end() || (!passwordIt->is_string() || passwordIt->get<std::string>().empty()))
+			{
 				MSC_THROW_TYPE_ERROR("missing params.password");
+			}
 
 			// iceLIte is optional. If unset set it to false.
 			if (iceLiteIt == params.end() || !iceLiteIt->is_boolean())
@@ -750,7 +768,9 @@ namespace mediasoupclient
 			if (
 			  foundationIt == params.end() ||
 			  (!foundationIt->is_string() || foundationIt->get<std::string>().empty()))
+			{
 				MSC_THROW_TYPE_ERROR("missing params.foundation");
+			}
 
 			// priority is mandatory.
 			if (priorityIt == params.end() || !priorityIt->is_number_unsigned())
@@ -758,11 +778,15 @@ namespace mediasoupclient
 
 			// ip is mandatory.
 			if (ipIt == params.end() || (!ipIt->is_string() || ipIt->get<std::string>().empty()))
+			{
 				MSC_THROW_TYPE_ERROR("missing params.ip");
+			}
 
 			// protocol is mandatory.
 			if (protocolIt == params.end() || (!protocolIt->is_string() || protocolIt->get<std::string>().empty()))
+			{
 				MSC_THROW_TYPE_ERROR("missing params.protocol");
+			}
 
 			std::smatch protocolMatch;
 			std::regex_match(protocolIt->get<std::string>(), protocolMatch, ProtocolRegex);
@@ -776,7 +800,9 @@ namespace mediasoupclient
 
 			// type is mandatory.
 			if (typeIt == params.end() || (!typeIt->is_string() || typeIt->get<std::string>().empty()))
+			{
 				MSC_THROW_TYPE_ERROR("missing params.type");
+			}
 
 			std::smatch typeMatch;
 			std::regex_match(typeIt->get<std::string>(), typeMatch, TypeRegex);
@@ -798,7 +824,9 @@ namespace mediasoupclient
 				MSC_THROW_TYPE_ERROR("params is not an array");
 
 			for (auto& iceCandidate : params)
+			{
 				validateIceCandidate(iceCandidate);
+			}
 		}
 
 		/**
@@ -820,11 +848,15 @@ namespace mediasoupclient
 			if (
 			  algorithmIt == params.end() ||
 			  (!algorithmIt->is_string() || algorithmIt->get<std::string>().empty()))
+			{
 				MSC_THROW_TYPE_ERROR("missing params.algorithm");
+			}
 
 			// foundation is mandatory.
 			if (valueIt == params.end() || (!valueIt->is_string() || valueIt->get<std::string>().empty()))
+			{
 				MSC_THROW_TYPE_ERROR("missing params.value");
+			}
 		}
 
 		/**
@@ -847,7 +879,9 @@ namespace mediasoupclient
 
 			// role is mandatory.
 			if (roleIt == params.end() || (!roleIt->is_string() || roleIt->get<std::string>().empty()))
+			{
 				MSC_THROW_TYPE_ERROR("missing params.role");
+			}
 
 			std::smatch roleMatch;
 			std::regex_match(roleIt->get<std::string>(), roleMatch, RoleRegex);
@@ -857,7 +891,9 @@ namespace mediasoupclient
 
 			// fingerprints is mandatory.
 			if (fingerprintsIt == params.end() || (!fingerprintsIt->is_array() || fingerprintsIt->empty()))
+			{
 				MSC_THROW_TYPE_ERROR("missing params.fingerprints");
+			}
 
 			for (auto& fingerprint : *fingerprintsIt)
 				validateDtlsFingerprint(fingerprint);
@@ -885,28 +921,42 @@ namespace mediasoupclient
 			auto videoGoogleMinBitrateIt   = params.find("videoGoogleMinBitrate");
 
 			if (opusStereoIt != params.end() && !opusStereoIt->is_boolean())
+			{
 				MSC_THROW_TYPE_ERROR("invalid params.opusStereo");
+			}
 
 			if (opusFecIt != params.end() && !opusFecIt->is_boolean())
+			{
 				MSC_THROW_TYPE_ERROR("invalid params.opusFec");
+			}
 
 			if (opusDtxIt != params.end() && !opusDtxIt->is_boolean())
+			{
 				MSC_THROW_TYPE_ERROR("invalid params.opusDtx");
+			}
 
 			if (opusMaxPlaybackRateIt != params.end() && !opusMaxPlaybackRateIt->is_number_unsigned())
+			{
 				MSC_THROW_TYPE_ERROR("invalid params.opusMaxPlaybackRate");
+			}
 
 			if (opusPtimeIt != params.end() && !opusPtimeIt->is_number_integer())
 				MSC_THROW_TYPE_ERROR("invalid params.opusPtime");
 
 			if (videoGoogleStartBitrateIt != params.end() && !videoGoogleStartBitrateIt->is_number_integer())
+			{
 				MSC_THROW_TYPE_ERROR("invalid params.videoGoogleStartBitrate");
+			}
 
 			if (videoGoogleMaxBitrateIt != params.end() && !videoGoogleMaxBitrateIt->is_number_integer())
+			{
 				MSC_THROW_TYPE_ERROR("invalid params.videoGoogleMaxBitrate");
+			}
 
 			if (videoGoogleMinBitrateIt != params.end() && !videoGoogleMinBitrateIt->is_number_integer())
+			{
 				MSC_THROW_TYPE_ERROR("invalid params.videoGoogleMinBitrate");
+			}
 		}
 
 		/**

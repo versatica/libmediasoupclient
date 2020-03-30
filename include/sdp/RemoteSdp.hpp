@@ -34,6 +34,10 @@ namespace mediasoupclient
 			  nlohmann::json& offerRtpParameters,
 			  nlohmann::json& answerRtpParameters,
 			  const nlohmann::json* codecOptions);
+
+			void SendSctpAssociation(nlohmann::json& offerMediaObject);
+			void RecvSctpAssociation();
+
 			void Receive(
 			  const std::string& mid,
 			  const std::string& kind,

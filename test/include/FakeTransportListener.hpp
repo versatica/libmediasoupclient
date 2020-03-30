@@ -44,6 +44,27 @@ public:
 		return promise.get_future();
 	};
 
+	virtual std::future<std::string> OnProduceData(
+			  	mediasoupclient::SendTransport* transport,
+			  	const nlohmann::json& sctpStreamParameters,
+              	const std::string& label,
+            	const std::string& protocol,
+                const nlohmann::json& appData)
+	{
+		this->onProduceDataTimesCalled++;
+		
+		std::promise<std::string> promise;
+
+		this->appData = appData;
+
+			// this->audioProducerLocalParameters = rtpParameters;
+		this->dataProducerId = generateProducerRemoteId();
+
+		promise.set_value(this->dataProducerId);
+
+		return promise.get_future();
+	}
+
 	std::future<void> OnConnect(mediasoupclient::Transport* transport, const json& dtlsParameters) override
 	{
 		this->onConnectTimesCalled++;
@@ -72,6 +93,8 @@ public:
 	json videoProducerLocalParameters;
 	std::string videoProducerId;
 	json appData;
+	std::string dataProducerId;
+	std::string dataConsumerId;
 
 	size_t onProduceTimesCalled{ 0 };
 	size_t onConnectTimesCalled{ 0 };
@@ -80,6 +103,9 @@ public:
 	size_t onProduceExpectedTimesCalled{ 0 };
 	size_t onConnectExpectedTimesCalled{ 0 };
 	size_t onConnectionStateChangeExpectedTimesCalled{ 0 };
+
+	size_t onProduceDataTimesCalled{ 0 };
+	size_t onProduceDataExpectedTimesCalled { 0 };
 };
 
 class FakeRecvTransportListener : public mediasoupclient::RecvTransport::Listener
@@ -115,7 +141,7 @@ public:
 	size_t onConnectionStateChangeExpectedTimesCalled{ 0 };
 };
 
-class FakeProducerListener : public mediasoupclient::Producer::Listener
+class FakeProducerListener : public mediasoupclient::Producer::Listener, public mediasoupclient::DataProducer::Listener
 {
 public:
 	void OnTransportClose(mediasoupclient::Producer* /*producer*/) override

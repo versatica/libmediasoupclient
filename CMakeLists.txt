@@ -60,6 +60,8 @@ set(HEADER_FILES
 set(
 	SOURCE_FILES
 	src/Consumer.cpp
+	src/DataConsumer.cpp
+	src/DataProducer.cpp
 	src/Device.cpp
 	src/Handler.cpp
 	src/Logger.cpp

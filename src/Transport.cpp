@@ -131,14 +131,15 @@ namespace mediasoupclient
 	  const json* extendedRtpCapabilities,
 	  const std::map<std::string, bool>* canProduceByKind,
 	  const json& appData)
-
-	  : Transport(listener, id, extendedRtpCapabilities, appData), listener(listener),
-	    canProduceByKind(canProduceByKind)
+	  
+	  : Transport(listener, id, extendedRtpCapabilities, appData), listener(listener), 
+	  canProduceByKind(canProduceByKind)
 	{
 		MSC_TRACE();
 
 		if (sctpParameters != nullptr && sctpParameters.is_object())
 		{
+			this->hasSctpParameters = true;
 			auto maxMessageSizeIt = sctpParameters.find("maxMessageSize");
 
 			if (maxMessageSizeIt->is_number_integer())
@@ -249,6 +250,37 @@ namespace mediasoupclient
 		return producer;
 	}
 
+	DataProducer* SendTransport::ProduceData(DataProducer::Listener* dataProducerListener, 
+		const DataProducerOptions& dataProducerOptions)
+	{
+		MSC_TRACE();
+
+		if (!this->hasSctpParameters)
+			MSC_THROW_ERROR("SctpParameters are mandatory when using data producer listener");
+
+		SendHandler::SendDataChannel res = this->sendHandler->CreateSendDataChannel(
+			dataProducerOptions.label, dataProducerOptions);
+
+		auto fid = this->listener->OnProduceData(this, res.sctpStreamParameters, dataProducerOptions.label,
+			dataProducerOptions.protocol, dataProducerOptions.appData);
+
+		auto dataProducer = new DataProducer(this, dataProducerListener, fid.get(), res.dataChannel, 
+			res.sctpStreamParameters, dataProducerOptions.appData);
+
+		this->dataProducers[dataProducer->GetId()] = dataProducer;
+		return dataProducer;
+    }
+
+	std::future<std::string> SendTransport::Listener::OnProduceData(
+			  	SendTransport* transport,
+			  	const nlohmann::json& sctpStreamParameters,
+              	const std::string& label,
+            	const std::string& protocol,
+                const nlohmann::json& appData)
+	{ 
+		MSC_THROW_ERROR("You need to override OnProduceData if you want to receive messages");
+	};
+
 	void SendTransport::Close()
 	{
 		MSC_TRACE();
@@ -265,6 +297,15 @@ namespace mediasoupclient
 
 			producer->TransportClosed();
 		}
+
+		// ... and all Data Producers.
+		for (auto& kv : this->dataProducers)
+		{
+			auto* dataProducer = kv.second;
+
+			dataProducer->TransportClosed();
+		}
+		
 	}
 
 	void SendTransport::OnClose(Producer* producer)
@@ -278,6 +319,19 @@ namespace mediasoupclient
 
 		// May throw.
 		this->sendHandler->StopSending(producer->GetLocalId());
+	}
+
+	void SendTransport::OnClose(DataProducer* dataProducer)
+	{
+		MSC_TRACE();
+
+		this->dataProducers.erase(dataProducer->GetId());
+
+		if (this->closed)
+			return;
+
+		// May throw.
+		this->sendHandler->StopSendingData(dataProducer->GetLocalId());
 	}
 
 	void SendTransport::OnReplaceTrack(const Producer* producer, webrtc::MediaStreamTrackInterface* track)
@@ -319,6 +373,8 @@ namespace mediasoupclient
 	  : Transport(listener, id, extendedRtpCapabilities, appData)
 	{
 		MSC_TRACE();
+
+		this->hasSctpParameters = sctpParameters != nullptr && sctpParameters.is_object();
 
 		this->recvHandler.reset(new RecvHandler(
 		  this, iceParameters, iceCandidates, dtlsParameters, sctpParameters, peerConnectionOptions));
@@ -396,6 +452,32 @@ namespace mediasoupclient
 		return consumer;
 	}
 
+	/**
+	 * Create a DataConsumer.
+	 */
+	DataConsumer* RecvTransport::ConsumeData(DataConsumer::Listener* listener, 
+		DataConsumerOptions dataConsumerOptions)
+	{
+		MSC_TRACE();
+		if (this->closed)
+			MSC_THROW_INVALID_STATE_ERROR("RecvTransport closed");
+		else if (dataConsumerOptions.dataConsumerId.empty())
+			MSC_THROW_TYPE_ERROR("missing dataConsumerId");
+		else if (dataConsumerOptions.dataProducerId.empty())
+			MSC_THROW_TYPE_ERROR("missing producerId");
+		else if (!this->hasSctpParameters) 
+			MSC_THROW_TYPE_ERROR("Cannot use DataChannels with this transport. SctpParameters were not set for this transport.");
+		
+		RecvHandler::RecvDataChannel res = this->recvHandler->CreateRecvDataChannel(dataConsumerOptions.label, dataConsumerOptions);
+
+		auto dataConsumer = new DataConsumer(listener, this, dataConsumerOptions.dataConsumerId, 
+			dataConsumerOptions.dataProducerId, res.webrtcDataChannel, res.sctpStreamParameters, 
+			dataConsumerOptions.appData);
+
+		this->dataConsumers[dataConsumer->GetId()] = dataConsumer;
+		return dataConsumer;
+	}
+
 	void RecvTransport::Close()
 	{
 		MSC_TRACE();
@@ -405,12 +487,19 @@ namespace mediasoupclient
 
 		Transport::Close();
 
-		// Close all Producers.
+		// Close all Consumers.
 		for (auto& kv : this->consumers)
 		{
 			auto* consumer = kv.second;
 
 			consumer->TransportClosed();
+		}
+		// ... and all DataConsumers.
+		for (auto& kv : this->dataConsumers)
+		{
+			auto* dataConsumer = kv.second;
+
+			dataConsumer->TransportClosed();
 		}
 	}
 
@@ -425,6 +514,20 @@ namespace mediasoupclient
 
 		// May throw.
 		this->recvHandler->StopReceiving(consumer->GetLocalId());
+	}
+
+	void RecvTransport::OnClose(DataConsumer* dataConsumer)
+	{
+		// TODO -implement this properly
+		MSC_TRACE();
+
+		this->dataConsumers.erase(dataConsumer->GetId());
+
+		if (this->closed)
+			return;
+
+		// May throw.
+		this->recvHandler->StopReceivingData(dataConsumer->GetLocalId());
 	}
 
 	json RecvTransport::OnGetStats(const Consumer* consumer)

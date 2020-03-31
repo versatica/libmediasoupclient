@@ -102,25 +102,6 @@ namespace mediasoupclient
 		{
 		public:
 
-			/* we have multiple possibilities here:
-			1. Be a bit more consistent with the mediasoup-client:
-				- add OnProduceData
-				- make both non-abstract methods. In this way the client behaves more like the mediasoup-client
-
-			2. More c++ implementation:
-				a. add OnProduceData, keep abstract
-				OR
-				b. add virtual non-abstract OnProduceData(), keep OnProduce() abstract
-			
-			3. Modify OnProduce to include kind "data" plus DataChannel related params
-				- no other member functions, but a more complicated signature
-				- more inconsistentwith mediasoup-client
-			
-			4. Add a DataListener with abstract OnProduceData() 
-				- cannot have ONLY datachannels 
-
-			*/
-
 			virtual std::future<std::string> OnProduce(
 			  SendTransport* transport,
 			  const std::string& kind,

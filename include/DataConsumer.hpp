@@ -54,12 +54,12 @@ namespace mediasoupclient
 		private:
 			Listener* listener;
 			PrivateListener* privateListener;
-			const std::string& id;
-			const std::string& dataProducerId;
+			std::string id;
+			std::string dataProducerId;
 			rtc::scoped_refptr<webrtc::DataChannelInterface> webrtcDataChannel;
 			bool closed;
-			const nlohmann::json& sctpParameters;
-			const nlohmann::json& appData;
+			nlohmann::json sctpParameters;
+			nlohmann::json appData;
 			
 			
 		public:

@@ -40,8 +40,8 @@ namespace mediasoupclient
 			// std::string _localId;
     		rtc::scoped_refptr<webrtc::DataChannelInterface> webrtcDataChannel;
     		bool closed;
-    		const nlohmann::json& sctpStreamParameters;
-    		const nlohmann::json& appData;
+    		nlohmann::json sctpStreamParameters;
+    		nlohmann::json appData;
 			void TransportClosed();
 
 			friend SendTransport;

@@ -66,7 +66,7 @@ namespace mediasoupclient
 			static std::mt19937_64 rng(seed);
 
 			// Uniform distribution for integers in the [min, max) range.
-			std::uniform_int_distribution<std::string::size_type> dis(0, chars.size());
+			std::uniform_int_distribution<std::string::size_type> dis(0, chars.size() - 1);
 
 			std::string s;
 

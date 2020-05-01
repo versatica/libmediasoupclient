@@ -460,6 +460,7 @@ namespace mediasoupclient
 		DataConsumerOptions dataConsumerOptions)
 	{
 		MSC_TRACE();
+		
 		if (this->closed)
 			MSC_THROW_INVALID_STATE_ERROR("RecvTransport closed");
 		else if (dataConsumerOptions.dataConsumerId.empty())

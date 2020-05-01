@@ -668,21 +668,22 @@ namespace mediasoupclient
 		// m=application section.
 		if (!this->hasDataChannelMediaSection)
 		{
-            this->remoteSdp->RecvSctpAssociation();
-            auto sdpOffer = this->remoteSdp->GetSdp();
+			 this->remoteSdp->RecvSctpAssociation();
+			auto sdpOffer = this->remoteSdp->GetSdp();
 
-			MSC_DEBUG("RecvHandler::CreateRecvDataChannel() | calling pc->setRemoteDescription() [offer:%s]", sdpOffer.c_str());
+			MSC_DEBUG("calling pc->setRemoteDescription() [offer:%s]", sdpOffer.c_str());
 			this->pc->SetRemoteDescription(PeerConnection::SdpType::OFFER, sdpOffer);
 			
 			webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
-            auto sdpAnswer = this->pc->CreateAnswer(options);
-            if (!this->transportReady) {
-                auto localSdpObject = sdptransform::parse(sdpAnswer);
-                this->SetupTransport("client", localSdpObject);
-            }
+			auto sdpAnswer = this->pc->CreateAnswer(options);
+			
+			if (!this->transportReady) {
+			            auto localSdpObject = sdptransform::parse(sdpAnswer);
+			            this->SetupTransport("client", localSdpObject);
+			 }
 
-			MSC_DEBUG("RecvHandler::CreateRecvDataChannel() | calling pc->setLocalDescription() [answer: %s]", sdpAnswer.c_str());
-            this->pc->SetLocalDescription(PeerConnection::SdpType::ANSWER, sdpAnswer);
+			MSC_DEBUG("calling pc->setLocalDescription() [answer: %s]", sdpAnswer.c_str());
+			this->pc->SetLocalDescription(PeerConnection::SdpType::ANSWER, sdpAnswer);
             
 			this->hasDataChannelMediaSection = true;
 		}

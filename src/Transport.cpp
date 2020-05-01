@@ -475,6 +475,7 @@ namespace mediasoupclient
 			dataConsumerOptions.appData);
 
 		this->dataConsumers[dataConsumer->GetId()] = dataConsumer;
+		
 		return dataConsumer;
 	}
 

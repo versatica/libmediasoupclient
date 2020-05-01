@@ -370,6 +370,7 @@ namespace mediasoupclient
 		const webrtc::DataChannelInit* config)
 	{
 		MSC_TRACE();
+		
 		rtc::scoped_refptr<webrtc::DataChannelInterface> webrtcDataChannel = this->pc->CreateDataChannel(label, config);
 		if (webrtcDataChannel.get()) {
 			MSC_DEBUG("Success creating data channel");

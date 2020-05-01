@@ -53,6 +53,7 @@ namespace mediasoupclient
 
     std::string DataConsumer::GetLocalId() const {
         MSC_TRACE();
+
         return std::to_string(this->webrtcDataChannel->id());
     }
     /**

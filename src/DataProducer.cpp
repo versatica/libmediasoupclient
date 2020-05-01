@@ -72,6 +72,7 @@ namespace mediasoupclient
     uint64_t DataProducer::GetBufferedAmount() const 
     {
         MSC_TRACE();
+        
         return this->webrtcDataChannel->buffered_amount();
     }
 

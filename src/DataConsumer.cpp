@@ -92,6 +92,8 @@ namespace mediasoupclient
      * DataChannel label.
      */
     std::string DataConsumer::GetLabel() {
+        MSC_TRACE();
+
         return this->webrtcDataChannel->label();
     }
     /**

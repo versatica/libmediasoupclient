@@ -298,7 +298,7 @@ namespace mediasoupclient
 			producer->TransportClosed();
 		}
 
-		// ... and all Data Producers.
+		// Close all Data Producers.
 		for (auto& kv : this->dataProducers)
 		{
 			auto* dataProducer = kv.second;

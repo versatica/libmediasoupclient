@@ -47,6 +47,7 @@ namespace mediasoupclient
      */
     const std::string& DataConsumer::GetId() {
         MSC_TRACE();
+        
         return this->id;
     }
 

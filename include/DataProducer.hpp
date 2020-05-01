@@ -36,12 +36,12 @@ namespace mediasoupclient
 		private:
 			PrivateListener* privateListener;
 			Listener* listener;
-    		std::string id;
+    		         std::string id;
 			// std::string _localId;
-    		rtc::scoped_refptr<webrtc::DataChannelInterface> webrtcDataChannel;
-    		bool closed;
-    		nlohmann::json sctpStreamParameters;
-    		nlohmann::json appData;
+    		        rtc::scoped_refptr<webrtc::DataChannelInterface> webrtcDataChannel;
+    		        bool closed;
+    		        nlohmann::json sctpStreamParameters;
+    		        nlohmann::json appData;
 			void TransportClosed();
 
 			friend SendTransport;

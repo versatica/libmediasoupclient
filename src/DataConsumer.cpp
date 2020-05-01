@@ -110,6 +110,7 @@ namespace mediasoupclient
      */
     const json& DataConsumer::GetAppData() {
         MSC_TRACE();
+        
         return this->appData;
     }
 

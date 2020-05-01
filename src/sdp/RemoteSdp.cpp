@@ -190,7 +190,7 @@ namespace mediasoupclient
             "application", // kind
             empty, // offerRtpParameters
             "", // streamId
-			"" // trackId
+           "" // trackId
 			);
         this->AddMediaSection(mediaSection);
     }

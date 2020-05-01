@@ -130,9 +130,10 @@ namespace mediasoupclient
      * Transport was closed.
      */
     void DataConsumer::TransportClosed() {
+        MSC_TRACE();
+
         if (this->closed)
             return;
-        MSC_TRACE();
         this->closed = true;
         this->webrtcDataChannel->Close();
         this->listener->OnTransportClosed(this);

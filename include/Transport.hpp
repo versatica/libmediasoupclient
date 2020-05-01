@@ -190,9 +190,9 @@ namespace mediasoupclient
 			const std::string dataConsumerId;
 			const std::string dataProducerId;
 			const nlohmann::json sctpStreamParameters;
-    		const std::string label;
+			const std::string label;
 			const std::string protocol;
-    		const nlohmann::json appData;
+			const nlohmann::json appData;
 			DataConsumerOptions(std::string dataConsumerId, 
 				std::string dataProducerId, 
 				nlohmann::json sctpStreamParameters,

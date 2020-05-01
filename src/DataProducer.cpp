@@ -8,10 +8,10 @@ namespace mediasoupclient
     DataProducer::DataProducer(
 		DataProducer::PrivateListener* privateListener,
 		DataProducer::Listener* listener,
-        const std::string& id,
-        rtc::scoped_refptr<webrtc::DataChannelInterface> webrtcDataChannel, 
-        const json& sctpStreamParameters, 
-        const json& appData): 
+		const std::string& id,
+		rtc::scoped_refptr<webrtc::DataChannelInterface> webrtcDataChannel, 
+		const json& sctpStreamParameters, 
+		const json& appData): 
                 privateListener(privateListener), listener(listener), id(id),
 				webrtcDataChannel(webrtcDataChannel), sctpStreamParameters(sctpStreamParameters), appData(appData)
         {

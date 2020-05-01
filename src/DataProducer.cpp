@@ -65,6 +65,7 @@ namespace mediasoupclient
     std::string DataProducer::GetProtocol()
     {
         MSC_TRACE();
+        
         return this->webrtcDataChannel->protocol();
     }
 

@@ -25,6 +25,7 @@ namespace mediasoupclient
     // The data channel state have changed.
     void DataConsumer::OnStateChange() {
         MSC_TRACE();
+        
         this->listener->OnStateChange(this);
     }
 

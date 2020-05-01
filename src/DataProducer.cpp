@@ -86,7 +86,10 @@ namespace mediasoupclient
     void DataProducer::Close() 
 	{
         MSC_TRACE();
-        if (this->closed) return;
+        
+        if (this->closed)
+                return;
+
         this->closed = true;
         this->webrtcDataChannel->Close();
         this->privateListener->OnClose(this);

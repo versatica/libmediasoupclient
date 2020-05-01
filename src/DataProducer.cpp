@@ -58,6 +58,7 @@ namespace mediasoupclient
 	std::string DataProducer::GetLabel()
     {
         MSC_TRACE();
+        
         return this->webrtcDataChannel->label();
     }
 

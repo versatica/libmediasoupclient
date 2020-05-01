@@ -69,6 +69,7 @@ namespace mediasoupclient
      */
     const bool DataConsumer::IsClosed() {
         MSC_TRACE();
+        
         return this->closed;
     }
     /**

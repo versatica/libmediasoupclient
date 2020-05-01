@@ -97,6 +97,7 @@ namespace mediasoupclient
 
     void DataProducer::Send(const webrtc::DataBuffer& buffer) {
         MSC_TRACE();
+        
         this->webrtcDataChannel->Send(buffer);
     }
 

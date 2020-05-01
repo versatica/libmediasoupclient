@@ -495,7 +495,8 @@ namespace mediasoupclient
 
 			consumer->TransportClosed();
 		}
-		// ... and all DataConsumers.
+
+		// Close all DataConsumers.
 		for (auto& kv : this->dataConsumers)
 		{
 			auto* dataConsumer = kv.second;

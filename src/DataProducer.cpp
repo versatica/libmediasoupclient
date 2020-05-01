@@ -79,6 +79,7 @@ namespace mediasoupclient
     const json& DataProducer::GetAppData() const 
 	{
         MSC_TRACE();
+        
         return this->appData;
     }
 

@@ -94,7 +94,7 @@ namespace mediasoupclient
 		struct DataProducerOptions : webrtc::DataChannelInit {
     		const std::string label;
     		const nlohmann::json appData;
-			DataProducerOptions(std::string label = "", nlohmann::json appData = nlohmann::json::object()): label(label), appData(appData){}
+    		DataProducerOptions(std::string label = "", nlohmann::json appData = nlohmann::json::object()): label(label), appData(appData){}
 		};
 
 		/* Public Listener API */

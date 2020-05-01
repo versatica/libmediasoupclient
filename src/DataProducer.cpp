@@ -16,6 +16,7 @@ namespace mediasoupclient
 				webrtcDataChannel(webrtcDataChannel), sctpStreamParameters(sctpStreamParameters), appData(appData)
         {
             MSC_TRACE();
+            
 			this->webrtcDataChannel->RegisterObserver(this);
         };
     

@@ -268,6 +268,7 @@ namespace mediasoupclient
 			res.sctpStreamParameters, dataProducerOptions.appData);
 
 		this->dataProducers[dataProducer->GetId()] = dataProducer;
+		
 		return dataProducer;
     }
 

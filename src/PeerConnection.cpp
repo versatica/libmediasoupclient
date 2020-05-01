@@ -377,6 +377,7 @@ namespace mediasoupclient
 		} else {
 			MSC_THROW_ERROR("Failed creating data channel");
 		}
+
 		return webrtcDataChannel;
 	}
 

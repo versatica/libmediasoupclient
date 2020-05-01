@@ -37,6 +37,7 @@ namespace mediasoupclient
     bool DataProducer::IsClosed() const
 	{
 		MSC_TRACE();
+		
 		return this->closed;
 	}
 

@@ -22,7 +22,7 @@ namespace mediasoupclient
     }
 
     // From webrtc::DataChannelObsever
-    // The data channel state have changed.
+    // The data channel state has changed.
     void DataConsumer::OnStateChange() {
         MSC_TRACE();
         

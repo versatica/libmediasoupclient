@@ -214,7 +214,7 @@ namespace mediasoupclient
 		  nlohmann::json* rtpParameters,
 		  const nlohmann::json& appData = nlohmann::json::object());
 		
-		DataConsumer* ConsumeData(DataConsumer::Listener* listener,	DataConsumerOptions dataConsumerOptions);
+		DataConsumer* ConsumeData(DataConsumer::Listener* listener, DataConsumerOptions dataConsumerOptions);
 
 		/* Virtual methods inherited from Transport. */
 	public:

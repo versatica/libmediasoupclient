@@ -32,6 +32,7 @@ namespace mediasoupclient
     //  A data buffer was successfully received.
     void DataConsumer::OnMessage(const webrtc::DataBuffer& buffer) {
         MSC_TRACE();
+        
         this->listener->OnMessage(this, buffer);
     }
   

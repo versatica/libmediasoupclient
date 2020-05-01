@@ -85,6 +85,7 @@ namespace mediasoupclient
      */
     webrtc::DataChannelInterface::DataState DataConsumer::GetReadyState() {
         MSC_TRACE();
+        
         return this->webrtcDataChannel->state();
     }
     /**

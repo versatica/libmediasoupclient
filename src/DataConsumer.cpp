@@ -77,6 +77,7 @@ namespace mediasoupclient
      */
     const json& DataConsumer::GetSctpStreamParameters() {
         MSC_TRACE();
+        
         return this->sctpParameters;
     }
     /**

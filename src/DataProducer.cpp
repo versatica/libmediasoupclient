@@ -119,12 +119,30 @@ namespace mediasoupclient
 	// The data channel state have changed.
 	void DataProducer::OnStateChange(){
 		MSC_TRACE();
-		// TODO
+		
+		webrtc::DataChannelInterface::DataState state = this->webrtcDataChannel->state();
+
+		switch (state) {
+			case webrtc::DataChannelInterface::DataState::kConnecting: 
+				break;
+        	case webrtc::DataChannelInterface::DataState::kOpen:
+            	this->listener->OnOpen(this);
+				break;
+        	case webrtc::DataChannelInterface::DataState::kClosing:
+				break;
+        	case webrtc::DataChannelInterface::DataState::kClosed:
+            	this->listener->OnClose(this);
+				break;
+			default: 
+				// should we throw an exception?
+                // MSC_THROW_ERROR("Unknown state", state); - cannot compile: Logger.hpp:103:23: error: ‘MSC_CLASS’ was not declared in this scope
+				break;
+        }
 	}
   	
 	//  A data buffer was successfully received.
   	void DataProducer::OnMessage(const webrtc::DataBuffer& buffer) {
-		//MSC_WARN("DataProducer::OnMessage() | dataChannel 'message' event in a DataProducer, message discarded");
+		// since this is a DataProducer, this method will never be called
 	}
   
   	// The data channel's buffered_amount has changed.

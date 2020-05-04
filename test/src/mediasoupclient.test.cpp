@@ -284,10 +284,8 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 		};
 		/* clang-format on */
 
-		mediasoupclient::SendTransport::DataProducerOptions dpo("", appData);
-
 		REQUIRE_NOTHROW(dataProducer.reset(
-		  sendTransport->ProduceData(&producerListener, dpo)));
+		  sendTransport->ProduceData(&producerListener, "", appData)));
 
 		REQUIRE(
 		  sendTransportListener.onConnectTimesCalled ==
@@ -328,9 +326,7 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 		  nullptr,
 		  appData)));
 
-		mediasoupclient::SendTransport::DataProducerOptions dpo("", appData);
-
-		REQUIRE_THROWS_AS(sendTransportNoSctp->ProduceData(&producerListener, dpo), 
+		REQUIRE_THROWS_AS(sendTransportNoSctp->ProduceData(&producerListener, "", appData), 
 			MediaSoupClientError);
 	}
 

@@ -12,10 +12,10 @@ namespace mediasoupclient
         const std::string& dataProducerId,
         rtc::scoped_refptr<webrtc::DataChannelInterface> webrtcDataChannel,
         const json& sctpStreamParameters,
-        const json& appData):
-            listener(listener), privateListener(privateListener), id(id), dataProducerId(dataProducerId),
-            webrtcDataChannel(webrtcDataChannel), sctpParameters(sctpStreamParameters), 
-            appData(appData)
+        const json& appData)
+        :  listener(listener), privateListener(privateListener), id(id), dataProducerId(dataProducerId),
+           webrtcDataChannel(webrtcDataChannel), sctpParameters(sctpStreamParameters), 
+           appData(appData)
     {
         MSC_TRACE();
         this->webrtcDataChannel->RegisterObserver(this);

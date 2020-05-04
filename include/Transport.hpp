@@ -91,12 +91,6 @@ namespace mediasoupclient
 	{
 	public:
 
-		struct DataProducerOptions : webrtc::DataChannelInit {
-    		const std::string label;
-    		const nlohmann::json appData;
-    		DataProducerOptions(std::string label = "", nlohmann::json appData = nlohmann::json::object()): label(label), appData(appData){}
-		};
-
 		/* Public Listener API */
 		class Listener : public Transport::Listener
 		{
@@ -141,7 +135,9 @@ namespace mediasoupclient
 		  const nlohmann::json& appData = nlohmann::json::object());
 
 		DataProducer* ProduceData(DataProducer::Listener* listener,
-			const DataProducerOptions& dataProducerOptions);
+			const std::string& label = "", const std::string& protocol = "", bool ordered = true, 
+			int maxRetransmits = -1, int maxPacketLifeTime = -1,
+			const nlohmann::json& appData = nlohmann::json::object());
 
 		/* Virtual methods inherited from Transport. */
 	public:
@@ -186,24 +182,6 @@ namespace mediasoupclient
 		friend Device;
 
 	public:
-		struct DataConsumerOptions : webrtc::DataChannelInit {
-			const std::string dataConsumerId;
-			const std::string dataProducerId;
-			const nlohmann::json sctpStreamParameters;
-			const std::string label;
-			const std::string protocol;
-			const nlohmann::json appData;
-			DataConsumerOptions(std::string dataConsumerId, 
-				std::string dataProducerId, 
-				nlohmann::json sctpStreamParameters,
-				std::string label = "", 
-				std::string protocol = "",
-				nlohmann::json appData = nlohmann::json::object()):
-					dataConsumerId(dataConsumerId), dataProducerId(dataProducerId), sctpStreamParameters(sctpStreamParameters), 
-					label(label), protocol(protocol), appData(appData) {}
-		};
-
-	public:
 		using Listener = Transport::Listener;
 
 		Consumer* Consume(
@@ -214,7 +192,13 @@ namespace mediasoupclient
 		  nlohmann::json* rtpParameters,
 		  const nlohmann::json& appData = nlohmann::json::object());
 		
-		DataConsumer* ConsumeData(DataConsumer::Listener* listener, DataConsumerOptions dataConsumerOptions);
+		DataConsumer* ConsumeData(DataConsumer::Listener* listener, 
+			const std::string& dataConsumerId,
+			const std::string& dataProducerId,
+			const nlohmann::json& sctpStreamParameters,
+			const std::string& label,
+			const std::string& protocol,
+			const nlohmann::json& appData);
 
 		/* Virtual methods inherited from Transport. */
 	public:

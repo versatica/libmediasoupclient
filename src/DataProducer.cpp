@@ -142,7 +142,7 @@ namespace mediasoupclient
   	
 	//  A data buffer was successfully received.
   	void DataProducer::OnMessage(const webrtc::DataBuffer& buffer) {
-		//MSC_WARN("DataProducer::OnMessage() | dataChannel 'message' event in a DataProducer, message discarded");
+		// since this is a DataProducer, this method will never be called
 	}
   
   	// The data channel's buffered_amount has changed.

@@ -130,6 +130,7 @@ namespace mediasoupclient
   	// The data channel's buffered_amount has changed.
   	void DataProducer::OnBufferedAmountChange(uint64_t sent_data_size) {
 		MSC_TRACE();
+		
 		this->listener->OnBufferedAmountChange(this, sent_data_size);
 	}
 }

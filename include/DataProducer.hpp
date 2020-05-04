@@ -5,7 +5,6 @@
 #include <string>
 #include <api/data_channel_interface.h>
 #include <api/stats/rtcstats_objects.h>
-#include <third_party/abseil-cpp/absl/types/optional.h>
 #include "Handler.hpp"
 
 namespace mediasoupclient

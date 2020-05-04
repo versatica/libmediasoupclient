@@ -144,6 +144,13 @@ public:
 class FakeProducerListener : public mediasoupclient::Producer::Listener, public mediasoupclient::DataProducer::Listener
 {
 public:
+
+	void OnOpen(mediasoupclient::DataProducer* dataProducer) override {}
+	void OnClose(mediasoupclient::DataProducer* dataProducer) override {};
+	void OnBufferedAmountChange(mediasoupclient::DataProducer* dataProducer, uint64_t sent_data_size) override {};
+
+	void OnTransportClose(mediasoupclient::DataProducer* /*dataProducer*/) override {};
+
 	void OnTransportClose(mediasoupclient::Producer* /*producer*/) override
 	{
 		this->onTransportCloseTimesCalled++;

@@ -1,5 +1,6 @@
 #include "DataConsumer.hpp"
 #include "Logger.hpp"
+#include "MediaSoupClientErrors.hpp"
 
 using json = nlohmann::json;
 
@@ -18,6 +19,7 @@ namespace mediasoupclient
             appData(appData)
     {
         MSC_TRACE();
+
         this->webrtcDataChannel->RegisterObserver(this);
     }
 
@@ -25,8 +27,26 @@ namespace mediasoupclient
     // The data channel state has changed.
     void DataConsumer::OnStateChange() {
         MSC_TRACE();
-        
-        this->listener->OnStateChange(this);
+
+        webrtc::DataChannelInterface::DataState state = this->webrtcDataChannel->state();
+
+  		switch (state) {
+			case webrtc::DataChannelInterface::DataState::kConnecting: 
+        	    this->listener->OnConnecting(this);
+				break;
+        	case webrtc::DataChannelInterface::DataState::kOpen:
+            	this->listener->OnOpen(this);
+				break;
+        	case webrtc::DataChannelInterface::DataState::kClosing:
+				this->listener->OnClosing(this);
+				break;
+        	case webrtc::DataChannelInterface::DataState::kClosed:
+            	this->listener->OnClose(this);
+				break;
+			default: 
+				// should we throw an exception?
+                break;
+        }
     }
 
     //  A data buffer was successfully received.
@@ -136,6 +156,6 @@ namespace mediasoupclient
             return;
         this->closed = true;
         this->webrtcDataChannel->Close();
-        this->listener->OnTransportClosed(this);
+        this->listener->OnTransportClose(this);
     }
 }

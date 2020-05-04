@@ -9,6 +9,8 @@
 
 namespace mediasoupclient
 {
+	class RecvTransport;
+
 	class DataConsumer : public webrtc::DataChannelObserver {
 		public: 
 		class PrivateListener
@@ -19,14 +21,16 @@ namespace mediasoupclient
 
 		class Listener {
 			public:
-				// The data channel state have changed.
-				virtual void OnStateChange(DataConsumer* dataConsumer) { };
+				// DataChannel state has changed
+				virtual void OnConnecting(DataConsumer* dataConsumer) = 0;
+				virtual void OnClosing(DataConsumer* dataConsumer) = 0;
+				virtual void OnClose(DataConsumer* dataConsumer) = 0;
+				virtual void OnOpen(DataConsumer* dataConsumer) = 0;
+
 				//  A data buffer was successfully received.
 				virtual void OnMessage(DataConsumer* dataConsumer, const webrtc::DataBuffer& buffer) = 0;
-				// The data channel's buffered_amount has changed.
-				// virtual void OnBufferedAmountChange(uint64_t sent_data_size) {}
-				//
-				virtual void OnTransportClosed(DataConsumer* dataConsumer) { };
+				
+				virtual void OnTransportClose(DataConsumer* dataConsumer) = 0;
 		};
 
 		public:
@@ -49,7 +53,12 @@ namespace mediasoupclient
 			std::string GetProtocol();
 			const nlohmann::json& GetAppData();
 			void Close();
+
+		private:
 			void TransportClosed();
+			
+			// RecvTransport will create instances and call private member TransporClosed.
+			friend RecvTransport;
 		
 		private:
 			Listener* listener;
@@ -61,10 +70,9 @@ namespace mediasoupclient
 			nlohmann::json sctpParameters;
 			nlohmann::json appData;
 			
-			
 		public:
-			// From webrtc::DataChannelObsever
-			// The data channel state have changed.
+			// From webrtc::DataChannelObserver
+			// The data channel state has changed.
 			void OnStateChange() override;
 			//  A data buffer was successfully received.
 			void OnMessage(const webrtc::DataBuffer& buffer) override;

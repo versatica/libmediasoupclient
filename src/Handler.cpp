@@ -4,10 +4,10 @@
 #include "Logger.hpp"
 #include "MediaSoupClientErrors.hpp"
 #include "PeerConnection.hpp"
+#include "ortc.hpp"
 #include "sdptransform.hpp"
 #include "sdp/Utils.hpp"
 #include <cinttypes> // PRIu64, etc
-#include "ortc.hpp"
 
 using json = nlohmann::json;
 
@@ -18,7 +18,7 @@ static json SctpNumStreams = { { "OS", 1024u }, { "MIS", 1024u } };
 
 // Static functions declaration.
 static void fillJsonRtpEncodingParameters(
-	json& jsonEncoding, const webrtc::RtpEncodingParameters& encoding);
+  json& jsonEncoding, const webrtc::RtpEncodingParameters& encoding);
 
 namespace mediasoupclient
 {
@@ -50,10 +50,7 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		json caps = 
-		{
-			{ "numStreams", SctpNumStreams }
-		};
+		json caps = { { "numStreams", SctpNumStreams } };
 
 		return caps;
 	}
@@ -313,8 +310,8 @@ namespace mediasoupclient
 		return sendData;
 	}
 
-	SendHandler::SendDataChannel SendHandler::CreateSendDataChannel(const std::string& label, 
-		webrtc::DataChannelInit dataChannelInit)
+	SendHandler::SendDataChannel SendHandler::CreateSendDataChannel(
+	  const std::string& label, webrtc::DataChannelInit dataChannelInit)
 	{
 		MSC_TRACE();
 
@@ -323,43 +320,48 @@ namespace mediasoupclient
 		// MSC_DEBUG('sendDataChannel() [options:%o]', options);
 		MSC_DEBUG("SendHandler::CreateSendDataChannel()");
 		dataChannelInit.negotiated = true;
-		dataChannelInit.id = streamId;
+		dataChannelInit.id         = streamId;
 
-		rtc::scoped_refptr<webrtc::DataChannelInterface> webrtcDataChannel = this->pc->CreateDataChannel(label, 
-			&dataChannelInit);
+		rtc::scoped_refptr<webrtc::DataChannelInterface> webrtcDataChannel =
+		  this->pc->CreateDataChannel(label, &dataChannelInit);
 
 		// Increase next id.
-		this->nextSendSctpStreamId =
-			(this->nextSendSctpStreamId + 1) % SCTP_NUM_STREAMS_MIS;
-			
+		this->nextSendSctpStreamId = (this->nextSendSctpStreamId + 1) % SCTP_NUM_STREAMS_MIS;
+
 		// If this is the first DataChannel we need to create the SDP answer with
 		// m=application section.
 		if (!this->hasDataChannelMediaSection)
 		{
 			webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
-			std::string offer = this->pc->CreateOffer(options);
+			std::string offer   = this->pc->CreateOffer(options);
 			auto localSdpObject = sdptransform::parse(offer);
-			const Sdp::RemoteSdp::MediaSectionIdx mediaSectionIdx = this->remoteSdp->GetNextMediaSectionIdx();
+			const Sdp::RemoteSdp::MediaSectionIdx mediaSectionIdx =
+			  this->remoteSdp->GetNextMediaSectionIdx();
 
-			auto offerMediaObject = find_if(
-    			localSdpObject["media"].begin(), localSdpObject["media"].end(), [](const json& m) {
-        		return m.at("type").get<std::string>() == "application";
-      		});
+			auto offerMediaObject =
+			  find_if(localSdpObject["media"].begin(), localSdpObject["media"].end(), [](const json& m) {
+				  return m.at("type").get<std::string>() == "application";
+			  });
 
-			if (*offerMediaObject == nullptr) {
+			if (*offerMediaObject == nullptr)
+			{
 				MSC_THROW_ERROR("No m=application section needed to create the SDP answer");
 			}
 
 			if (!this->transportReady)
 				this->SetupTransport("server", localSdpObject);
 
-			MSC_DEBUG("SendHandler::CreateSendDataChannel() | calling pc.setLocalDescription() [offer:%s]", offer.c_str());
+			MSC_DEBUG(
+			  "SendHandler::CreateSendDataChannel() | calling pc.setLocalDescription() [offer:%s]",
+			  offer.c_str());
 			this->pc->SetLocalDescription(PeerConnection::SdpType::OFFER, offer);
-			
+
 			this->remoteSdp->SendSctpAssociation(*offerMediaObject);
 			auto sdpAnswer = this->remoteSdp->GetSdp();
 
-			MSC_DEBUG("SendHandler::CreateSendDataChannel() | calling pc.setRemoteDescription() [answer:%s]", sdpAnswer.c_str());
+			MSC_DEBUG(
+			  "SendHandler::CreateSendDataChannel() | calling pc.setRemoteDescription() [answer:%s]",
+			  sdpAnswer.c_str());
 			this->pc->SetRemoteDescription(PeerConnection::SdpType::ANSWER, sdpAnswer);
 
 			this->hasDataChannelMediaSection = true;
@@ -379,7 +381,8 @@ namespace mediasoupclient
 		// This will fill sctpStreamParameters's missing fields with default values.
 		ortc::validateSctpStreamParameters(sctpStreamParameters);
 
-		SendHandler::SendDataChannel sendDataChannel(std::to_string(streamId), webrtcDataChannel, sctpStreamParameters);
+		SendHandler::SendDataChannel sendDataChannel(
+		  std::to_string(streamId), webrtcDataChannel, sctpStreamParameters);
 
 		return sendDataChannel;
 	}
@@ -648,7 +651,8 @@ namespace mediasoupclient
 		return recvData;
 	}
 
-	RecvHandler::RecvDataChannel RecvHandler::CreateRecvDataChannel(const std::string& label, webrtc::DataChannelInit dataChannelInit)
+	RecvHandler::RecvDataChannel RecvHandler::CreateRecvDataChannel(
+	  const std::string& label, webrtc::DataChannelInit dataChannelInit)
 	{
 		MSC_TRACE();
 
@@ -656,35 +660,36 @@ namespace mediasoupclient
 
 		MSC_DEBUG("RecvHandler::CreateRecvDataChannel()");
 		dataChannelInit.negotiated = true;
-		dataChannelInit.id = streamId;
+		dataChannelInit.id         = streamId;
 
-		rtc::scoped_refptr<webrtc::DataChannelInterface> webrtcDataChannel = this->pc->CreateDataChannel(label, 
-			&dataChannelInit);
+		rtc::scoped_refptr<webrtc::DataChannelInterface> webrtcDataChannel =
+		  this->pc->CreateDataChannel(label, &dataChannelInit);
 
 		// Increase next id.
 		this->nextSendSctpStreamId = (this->nextSendSctpStreamId + 1) % SCTP_NUM_STREAMS_MIS;
-			
+
 		// If this is the first DataChannel we need to create the SDP answer with
 		// m=application section.
 		if (!this->hasDataChannelMediaSection)
 		{
-			 this->remoteSdp->RecvSctpAssociation();
+			this->remoteSdp->RecvSctpAssociation();
 			auto sdpOffer = this->remoteSdp->GetSdp();
 
 			MSC_DEBUG("calling pc->setRemoteDescription() [offer:%s]", sdpOffer.c_str());
 			this->pc->SetRemoteDescription(PeerConnection::SdpType::OFFER, sdpOffer);
-			
+
 			webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
 			auto sdpAnswer = this->pc->CreateAnswer(options);
-			
-			if (!this->transportReady) {
-			            auto localSdpObject = sdptransform::parse(sdpAnswer);
-			            this->SetupTransport("client", localSdpObject);
-			 }
+
+			if (!this->transportReady)
+			{
+				auto localSdpObject = sdptransform::parse(sdpAnswer);
+				this->SetupTransport("client", localSdpObject);
+			}
 
 			MSC_DEBUG("calling pc->setLocalDescription() [answer: %s]", sdpAnswer.c_str());
 			this->pc->SetLocalDescription(PeerConnection::SdpType::ANSWER, sdpAnswer);
-            
+
 			this->hasDataChannelMediaSection = true;
 		}
 
@@ -702,7 +707,8 @@ namespace mediasoupclient
 		// This will fill sctpStreamParameters's missing fields with default values.
 		ortc::validateSctpStreamParameters(sctpStreamParameters);
 
-		RecvHandler::RecvDataChannel recvDataChannel(std::to_string(streamId), webrtcDataChannel, sctpStreamParameters);
+		RecvHandler::RecvDataChannel recvDataChannel(
+		  std::to_string(streamId), webrtcDataChannel, sctpStreamParameters);
 
 		return recvDataChannel;
 	}

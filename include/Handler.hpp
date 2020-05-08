@@ -67,7 +67,7 @@ namespace mediasoupclient
 		// PeerConnection instance.
 		std::unique_ptr<PeerConnection> pc;
 		bool hasDataChannelMediaSection = false;
-		uint32_t nextSendSctpStreamId = 0;
+		uint32_t nextSendSctpStreamId   = 0;
 	};
 
 	class SendHandler : public Handler
@@ -85,8 +85,13 @@ namespace mediasoupclient
 			const std::string localId;
 			const rtc::scoped_refptr<webrtc::DataChannelInterface> dataChannel;
 			const nlohmann::json sctpStreamParameters;
-			SendDataChannel(std::string localId, rtc::scoped_refptr<webrtc::DataChannelInterface> dataChannel, nlohmann::json sctpStreamParameters):
-				localId(localId), dataChannel(dataChannel), sctpStreamParameters(sctpStreamParameters){}
+			SendDataChannel(
+			  std::string localId,
+			  rtc::scoped_refptr<webrtc::DataChannelInterface> dataChannel,
+			  nlohmann::json sctpStreamParameters)
+			  : localId(localId), dataChannel(dataChannel), sctpStreamParameters(sctpStreamParameters)
+			{
+			}
 		};
 
 	public:
@@ -111,7 +116,8 @@ namespace mediasoupclient
 		void SetMaxSpatialLayer(const std::string& localId, uint8_t spatialLayer);
 		nlohmann::json GetSenderStats(const std::string& localId);
 		void RestartIce(const nlohmann::json& iceParameters) override;
-		SendDataChannel CreateSendDataChannel(const std::string& label, webrtc::DataChannelInit dataChannelInit);
+		SendDataChannel CreateSendDataChannel(
+		  const std::string& label, webrtc::DataChannelInit dataChannelInit);
 
 	private:
 		// Generic sending RTP parameters for audio and video.
@@ -136,9 +142,14 @@ namespace mediasoupclient
 			const std::string localId;
 			const rtc::scoped_refptr<webrtc::DataChannelInterface> webrtcDataChannel;
 			const nlohmann::json sctpStreamParameters;
-			RecvDataChannel(std::string localId,
-				rtc::scoped_refptr<webrtc::DataChannelInterface> webrtcDataChannel,
-				nlohmann::json sctpStreamParameters): localId(localId), webrtcDataChannel(webrtcDataChannel), sctpStreamParameters(sctpStreamParameters){}
+			RecvDataChannel(
+			  std::string localId,
+			  rtc::scoped_refptr<webrtc::DataChannelInterface> webrtcDataChannel,
+			  nlohmann::json sctpStreamParameters)
+			  : localId(localId), webrtcDataChannel(webrtcDataChannel),
+			    sctpStreamParameters(sctpStreamParameters)
+			{
+			}
 		};
 
 	public:
@@ -155,7 +166,8 @@ namespace mediasoupclient
 		void StopReceivingData(const std::string& localId);
 		nlohmann::json GetReceiverStats(const std::string& localId);
 		void RestartIce(const nlohmann::json& iceParameters) override;
-		RecvDataChannel CreateRecvDataChannel(const std::string& label, webrtc::DataChannelInit dataChannelInit);
+		RecvDataChannel CreateRecvDataChannel(
+		  const std::string& label, webrtc::DataChannelInit dataChannelInit);
 	};
 } // namespace mediasoupclient
 

@@ -167,33 +167,34 @@ namespace mediasoupclient
 	{
 		nlohmann::json empty;
 		auto* mediaSection = new AnswerMediaSection(
-				this->iceParameters,
-				this->iceCandidates,
-				this->dtlsParameters,
-				this->sctpParameters,
-				offerMediaObject,
-				empty,
-				empty,
-				nullptr);
+		  this->iceParameters,
+		  this->iceCandidates,
+		  this->dtlsParameters,
+		  this->sctpParameters,
+		  offerMediaObject,
+		  empty,
+		  empty,
+		  nullptr);
 
 		this->AddMediaSection(mediaSection);
 	}
 
-	void Sdp::RemoteSdp::RecvSctpAssociation() {
+	void Sdp::RemoteSdp::RecvSctpAssociation()
+	{
 		nlohmann::json empty;
-        auto* mediaSection = new OfferMediaSection(
-            this->iceParameters,
-            this->iceCandidates,
-            this->dtlsParameters,
-            this->sctpParameters,
-            "datachannel", // mid
-            "application", // kind
-            empty, // offerRtpParameters
-            "", // streamId
-           "" // trackId
-			);
-        this->AddMediaSection(mediaSection);
-    }
+		auto* mediaSection = new OfferMediaSection(
+		  this->iceParameters,
+		  this->iceCandidates,
+		  this->dtlsParameters,
+		  this->sctpParameters,
+		  "datachannel", // mid
+		  "application", // kind
+		  empty,         // offerRtpParameters
+		  "",            // streamId
+		  ""             // trackId
+		);
+		this->AddMediaSection(mediaSection);
+	}
 
 	void Sdp::RemoteSdp::Receive(
 	  const std::string& mid,

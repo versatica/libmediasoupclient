@@ -1,11 +1,11 @@
 #ifndef MSC_TRANSPORT_HPP
 #define MSC_TRANSPORT_HPP
 
-#include "Handler.hpp"
 #include "Consumer.hpp"
-#include "Producer.hpp"
-#include "DataProducer.hpp"
 #include "DataConsumer.hpp"
+#include "DataProducer.hpp"
+#include "Handler.hpp"
+#include "Producer.hpp"
 
 #include <json.hpp>
 #include <api/media_stream_interface.h>    // webrtc::MediaStreamTrackInterface
@@ -70,7 +70,7 @@ namespace mediasoupclient
 		// Whether the Consumer for RTP probation has been created.
 		bool probatorConsumerCreated{ false };
 		// Whether this transport supports DataChannel
-		bool hasSctpParameters { false };
+		bool hasSctpParameters{ false };
 
 	private:
 		// Listener.
@@ -87,27 +87,26 @@ namespace mediasoupclient
 		nlohmann::json appData = nlohmann::json::object();
 	};
 
-	class SendTransport : public Transport, public Producer::PrivateListener, public DataProducer::PrivateListener
+	class SendTransport : public Transport,
+	                      public Producer::PrivateListener,
+	                      public DataProducer::PrivateListener
 	{
 	public:
-
 		/* Public Listener API */
 		class Listener : public Transport::Listener
 		{
 		public:
-
 			virtual std::future<std::string> OnProduce(
 			  SendTransport* transport,
 			  const std::string& kind,
 			  nlohmann::json rtpParameters,
 			  const nlohmann::json& appData) = 0;
 			virtual std::future<std::string> OnProduceData(
-			  	SendTransport* transport,
-			  	const nlohmann::json& sctpStreamParameters,
-			  	const std::string& label,
-			  	const std::string& protocol,
-			  	const nlohmann::json& appData); // not virtual so we can use only the Producer if we want to 
-
+			  SendTransport* transport,
+			  const nlohmann::json& sctpStreamParameters,
+			  const std::string& label,
+			  const std::string& protocol,
+			  const nlohmann::json& appData); // not virtual so we can use only the Producer if we want to
 		};
 
 	private:
@@ -134,10 +133,14 @@ namespace mediasoupclient
 		  const nlohmann::json* codecOptions,
 		  const nlohmann::json& appData = nlohmann::json::object());
 
-		DataProducer* ProduceData(DataProducer::Listener* listener,
-			const std::string& label = "", const std::string& protocol = "", bool ordered = true, 
-			int maxRetransmits = -1, int maxPacketLifeTime = -1,
-			const nlohmann::json& appData = nlohmann::json::object());
+		DataProducer* ProduceData(
+		  DataProducer::Listener* listener,
+		  const std::string& label      = "",
+		  const std::string& protocol   = "",
+		  bool ordered                  = true,
+		  int maxRetransmits            = -1,
+		  int maxPacketLifeTime         = -1,
+		  const nlohmann::json& appData = nlohmann::json::object());
 
 		/* Virtual methods inherited from Transport. */
 	public:
@@ -164,7 +167,9 @@ namespace mediasoupclient
 		std::unique_ptr<SendHandler> sendHandler;
 	};
 
-	class RecvTransport : public Transport, public Consumer::PrivateListener, public DataConsumer::PrivateListener
+	class RecvTransport : public Transport,
+	                      public Consumer::PrivateListener,
+	                      public DataConsumer::PrivateListener
 	{
 	private:
 		RecvTransport(
@@ -191,14 +196,15 @@ namespace mediasoupclient
 		  const std::string& kind,
 		  nlohmann::json* rtpParameters,
 		  const nlohmann::json& appData = nlohmann::json::object());
-		
-		DataConsumer* ConsumeData(DataConsumer::Listener* listener, 
-			const std::string& dataConsumerId,
-			const std::string& dataProducerId,
-			const nlohmann::json& sctpStreamParameters,
-			const std::string& label,
-			const std::string& protocol,
-			const nlohmann::json& appData);
+
+		DataConsumer* ConsumeData(
+		  DataConsumer::Listener* listener,
+		  const std::string& dataConsumerId,
+		  const std::string& dataProducerId,
+		  const nlohmann::json& sctpStreamParameters,
+		  const std::string& label,
+		  const std::string& protocol,
+		  const nlohmann::json& appData);
 
 		/* Virtual methods inherited from Transport. */
 	public:

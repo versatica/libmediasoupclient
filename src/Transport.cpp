@@ -131,16 +131,16 @@ namespace mediasoupclient
 	  const json* extendedRtpCapabilities,
 	  const std::map<std::string, bool>* canProduceByKind,
 	  const json& appData)
-	  
-	  : Transport(listener, id, extendedRtpCapabilities, appData), listener(listener), 
-	  canProduceByKind(canProduceByKind)
+
+	  : Transport(listener, id, extendedRtpCapabilities, appData), listener(listener),
+	    canProduceByKind(canProduceByKind)
 	{
 		MSC_TRACE();
 
 		if (sctpParameters != nullptr && sctpParameters.is_object())
 		{
 			this->hasSctpParameters = true;
-			auto maxMessageSizeIt = sctpParameters.find("maxMessageSize");
+			auto maxMessageSizeIt   = sctpParameters.find("maxMessageSize");
 
 			if (maxMessageSizeIt->is_number_integer())
 				this->maxSctpMessageSize = maxMessageSizeIt->get<size_t>();
@@ -250,9 +250,14 @@ namespace mediasoupclient
 		return producer;
 	}
 
-	DataProducer* SendTransport::ProduceData(DataProducer::Listener* dataProducerListener, 
-		const std::string& label, const std::string& protocol, bool ordered, int maxRetransmits, 
-		int maxPacketLifeTime, const nlohmann::json& appData)
+	DataProducer* SendTransport::ProduceData(
+	  DataProducer::Listener* dataProducerListener,
+	  const std::string& label,
+	  const std::string& protocol,
+	  bool ordered,
+	  int maxRetransmits,
+	  int maxPacketLifeTime,
+	  const nlohmann::json& appData)
 	{
 		MSC_TRACE();
 
@@ -261,39 +266,47 @@ namespace mediasoupclient
 
 		webrtc::DataChannelInit dataChannelInit;
 		dataChannelInit.protocol = protocol;
-		dataChannelInit.ordered = ordered;
-		if (maxRetransmits != -1 && maxPacketLifeTime != -1) {
+		dataChannelInit.ordered  = ordered;
+		if (maxRetransmits != -1 && maxPacketLifeTime != -1)
+		{
 			MSC_THROW_ERROR("Cannot set both maxRetransmits and maxPacketLifeTime");
 		}
-		if (maxRetransmits != -1) {
+		if (maxRetransmits != -1)
+		{
 			dataChannelInit.maxRetransmits = maxRetransmits;
 		}
-		if (maxPacketLifeTime != -1) {
+		if (maxPacketLifeTime != -1)
+		{
 			dataChannelInit.maxRetransmitTime = maxPacketLifeTime;
 		}
 
 		// This may throw.
-		SendHandler::SendDataChannel sendDataChannel = this->sendHandler->CreateSendDataChannel(
-			label, dataChannelInit);
+		SendHandler::SendDataChannel sendDataChannel =
+		  this->sendHandler->CreateSendDataChannel(label, dataChannelInit);
 
-		auto dataChannelId = this->listener->OnProduceData(this, sendDataChannel.sctpStreamParameters, label,
-			protocol, appData);
+		auto dataChannelId = this->listener->OnProduceData(
+		  this, sendDataChannel.sctpStreamParameters, label, protocol, appData);
 
-		auto dataProducer = new DataProducer(this, dataProducerListener, dataChannelId.get(), sendDataChannel.dataChannel, 
-			sendDataChannel.sctpStreamParameters, appData);
+		auto dataProducer = new DataProducer(
+		  this,
+		  dataProducerListener,
+		  dataChannelId.get(),
+		  sendDataChannel.dataChannel,
+		  sendDataChannel.sctpStreamParameters,
+		  appData);
 
 		this->dataProducers[dataProducer->GetId()] = dataProducer;
-		
+
 		return dataProducer;
-    }
+	}
 
 	std::future<std::string> SendTransport::Listener::OnProduceData(
-			  	SendTransport* transport,
-			  	const nlohmann::json& sctpStreamParameters,
-              	const std::string& label,
-            	const std::string& protocol,
-                const nlohmann::json& appData)
-	{ 
+	  SendTransport* transport,
+	  const nlohmann::json& sctpStreamParameters,
+	  const std::string& label,
+	  const std::string& protocol,
+	  const nlohmann::json& appData)
+	{
 		MSC_THROW_ERROR("You need to override OnProduceData if you want to receive messages");
 	};
 
@@ -321,7 +334,6 @@ namespace mediasoupclient
 
 			dataProducer->TransportClosed();
 		}
-		
 	}
 
 	void SendTransport::OnClose(Producer* producer)
@@ -471,16 +483,17 @@ namespace mediasoupclient
 	/**
 	 * Create a DataConsumer.
 	 */
-	DataConsumer* RecvTransport::ConsumeData(DataConsumer::Listener* listener, 
-		const std::string& dataConsumerId,
-		const std::string& dataProducerId,
-		const nlohmann::json& sctpStreamParameters,
-		const std::string& label,
-		const std::string& protocol,
-		const nlohmann::json& appData)
+	DataConsumer* RecvTransport::ConsumeData(
+	  DataConsumer::Listener* listener,
+	  const std::string& dataConsumerId,
+	  const std::string& dataProducerId,
+	  const nlohmann::json& sctpStreamParameters,
+	  const std::string& label,
+	  const std::string& protocol,
+	  const nlohmann::json& appData)
 	{
 		MSC_TRACE();
-		
+
 		webrtc::DataChannelInit dataChannelInit;
 		dataChannelInit.protocol = protocol;
 
@@ -490,18 +503,25 @@ namespace mediasoupclient
 			MSC_THROW_TYPE_ERROR("missing dataConsumerId");
 		else if (dataProducerId.empty())
 			MSC_THROW_TYPE_ERROR("missing producerId");
-		else if (!this->hasSctpParameters) 
-			MSC_THROW_TYPE_ERROR("Cannot use DataChannels with this transport. SctpParameters were not set for this transport.");
-		
-		// This may throw.
-		RecvHandler::RecvDataChannel recvDataChannel = this->recvHandler->CreateRecvDataChannel(label, dataChannelInit);
+		else if (!this->hasSctpParameters)
+			MSC_THROW_TYPE_ERROR(
+			  "Cannot use DataChannels with this transport. SctpParameters were not set for this transport.");
 
-		auto dataConsumer = new DataConsumer(listener, this, dataConsumerId, 
-			dataProducerId, recvDataChannel.webrtcDataChannel, recvDataChannel.sctpStreamParameters, 
-			appData);
+		// This may throw.
+		RecvHandler::RecvDataChannel recvDataChannel =
+		  this->recvHandler->CreateRecvDataChannel(label, dataChannelInit);
+
+		auto dataConsumer = new DataConsumer(
+		  listener,
+		  this,
+		  dataConsumerId,
+		  dataProducerId,
+		  recvDataChannel.webrtcDataChannel,
+		  recvDataChannel.sctpStreamParameters,
+		  appData);
 
 		this->dataConsumers[dataConsumer->GetId()] = dataConsumer;
-		
+
 		return dataConsumer;
 	}
 

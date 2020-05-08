@@ -45,19 +45,19 @@ public:
 	};
 
 	virtual std::future<std::string> OnProduceData(
-            	mediasoupclient::SendTransport* transport,
-            	const nlohmann::json& sctpStreamParameters,
-            	const std::string& label,
-            	const std::string& protocol,
-            	const nlohmann::json& appData)
+	  mediasoupclient::SendTransport* transport,
+	  const nlohmann::json& sctpStreamParameters,
+	  const std::string& label,
+	  const std::string& protocol,
+	  const nlohmann::json& appData)
 	{
 		this->onProduceDataTimesCalled++;
-		
+
 		std::promise<std::string> promise;
 
 		this->appData = appData;
 
-			// this->audioProducerLocalParameters = rtpParameters;
+		// this->audioProducerLocalParameters = rtpParameters;
 		this->dataProducerId = generateProducerRemoteId();
 
 		promise.set_value(this->dataProducerId);
@@ -105,7 +105,7 @@ public:
 	size_t onConnectionStateChangeExpectedTimesCalled{ 0 };
 
 	size_t onProduceDataTimesCalled{ 0 };
-	size_t onProduceDataExpectedTimesCalled { 0 };
+	size_t onProduceDataExpectedTimesCalled{ 0 };
 };
 
 class FakeRecvTransportListener : public mediasoupclient::RecvTransport::Listener
@@ -141,15 +141,18 @@ public:
 	size_t onConnectionStateChangeExpectedTimesCalled{ 0 };
 };
 
-class FakeProducerListener : public mediasoupclient::Producer::Listener, public mediasoupclient::DataProducer::Listener
+class FakeProducerListener : public mediasoupclient::Producer::Listener,
+                             public mediasoupclient::DataProducer::Listener
 {
 public:
+	void OnOpen(mediasoupclient::DataProducer* dataProducer) override
+	{
+	}
+	void OnClose(mediasoupclient::DataProducer* dataProducer) override{};
+	void OnBufferedAmountChange(
+	  mediasoupclient::DataProducer* dataProducer, uint64_t sent_data_size) override{};
 
-	void OnOpen(mediasoupclient::DataProducer* dataProducer) override {}
-	void OnClose(mediasoupclient::DataProducer* dataProducer) override {};
-	void OnBufferedAmountChange(mediasoupclient::DataProducer* dataProducer, uint64_t sent_data_size) override {};
-
-	void OnTransportClose(mediasoupclient::DataProducer* /*dataProducer*/) override {};
+	void OnTransportClose(mediasoupclient::DataProducer* /*dataProducer*/) override{};
 
 	void OnTransportClose(mediasoupclient::Producer* /*producer*/) override
 	{

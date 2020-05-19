@@ -13,6 +13,7 @@ using json = nlohmann::json;
 using namespace mediasoupclient;
 
 static constexpr uint32_t ProbatorSsrc{ 1234u };
+static const std::string ProbatorMid("probator");
 
 // Static functions declaration.
 static bool isRtxCodec(const json& codec);
@@ -1470,7 +1471,7 @@ namespace mediasoupclient
 			// clang-format off
 			json rtpParameters =
 			{
-				{ "mid",              nullptr        },
+				{ "mid",              ProbatorMid    },
 				{ "codecs",           json::array()  },
 				{ "headerExtensions", json::array()  },
 				{ "encodings",        json::array()  },

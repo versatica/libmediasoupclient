@@ -81,7 +81,7 @@ namespace mediasoupclient
 			this->signalingThread = rtc::Thread::Create();
 			this->workerThread    = rtc::Thread::Create();
 
-			this->signalingThread->SetName("network_thread", nullptr);
+			this->networkThread->SetName("network_thread", nullptr);
 			this->signalingThread->SetName("signaling_thread", nullptr);
 			this->workerThread->SetName("worker_thread", nullptr);
 

@@ -206,9 +206,7 @@ namespace mediasoupclient
 				  encoding.active                   = entry.active;
 				  encoding.max_bitrate_bps          = entry.max_bitrate_bps;
 				  encoding.max_framerate            = entry.max_framerate;
-				  encoding.scale_framerate_down_by  = entry.scale_framerate_down_by;
 				  encoding.scale_resolution_down_by = entry.scale_resolution_down_by;
-				  encoding.dtx                      = entry.dtx;
 				  encoding.network_priority         = entry.network_priority;
 
 				  normalizedEncodings.push_back(encoding);

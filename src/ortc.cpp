@@ -13,6 +13,7 @@ using json = nlohmann::json;
 using namespace mediasoupclient;
 
 static constexpr uint32_t ProbatorSsrc{ 1234u };
+static const std::string ProbatorMid("probator");
 
 // Static functions declaration.
 static bool isRtxCodec(const json& codec);
@@ -103,7 +104,8 @@ namespace mediasoupclient
 				MSC_THROW_TYPE_ERROR("missing codec.mimeType");
 
 			std::smatch mimeTypeMatch;
-			std::regex_match(mimeTypeIt->get<std::string>(), mimeTypeMatch, MimeTypeRegex);
+			std::string regexTarget = mimeTypeIt->get<std::string>();
+			std::regex_match(regexTarget, mimeTypeMatch, MimeTypeRegex);
 
 			if (mimeTypeMatch.empty())
 				MSC_THROW_TYPE_ERROR("invalid codec.mimeType");
@@ -346,7 +348,8 @@ namespace mediasoupclient
 				MSC_THROW_TYPE_ERROR("missing codec.mimeType");
 
 			std::smatch mimeTypeMatch;
-			std::regex_match(mimeTypeIt->get<std::string>(), mimeTypeMatch, MimeTypeRegex);
+			std::string regexTarget = mimeTypeIt->get<std::string>();
+			std::regex_match(regexTarget, mimeTypeMatch, MimeTypeRegex);
 
 			if (mimeTypeMatch.empty())
 				MSC_THROW_TYPE_ERROR("invalid codec.mimeType");
@@ -789,7 +792,8 @@ namespace mediasoupclient
 			}
 
 			std::smatch protocolMatch;
-			std::regex_match(protocolIt->get<std::string>(), protocolMatch, ProtocolRegex);
+			std::string regexTarget = protocolIt->get<std::string>();
+			std::regex_match(regexTarget, protocolMatch, ProtocolRegex);
 
 			if (protocolMatch.empty())
 				MSC_THROW_TYPE_ERROR("invalid params.protocol");
@@ -805,7 +809,8 @@ namespace mediasoupclient
 			}
 
 			std::smatch typeMatch;
-			std::regex_match(typeIt->get<std::string>(), typeMatch, TypeRegex);
+			regexTarget = typeIt->get<std::string>();
+			std::regex_match(regexTarget, typeMatch, TypeRegex);
 
 			if (typeMatch.empty())
 				MSC_THROW_TYPE_ERROR("invalid params.type");
@@ -884,7 +889,8 @@ namespace mediasoupclient
 			}
 
 			std::smatch roleMatch;
-			std::regex_match(roleIt->get<std::string>(), roleMatch, RoleRegex);
+			std::string regexTarget = roleIt->get<std::string>();
+			std::regex_match(regexTarget, roleMatch, RoleRegex);
 
 			if (roleMatch.empty())
 				MSC_THROW_TYPE_ERROR("invalid params.role");
@@ -1470,7 +1476,7 @@ namespace mediasoupclient
 			// clang-format off
 			json rtpParameters =
 			{
-				{ "mid",              nullptr        },
+				{ "mid",              ProbatorMid    },
 				{ "codecs",           json::array()  },
 				{ "headerExtensions", json::array()  },
 				{ "encodings",        json::array()  },

@@ -220,7 +220,7 @@ namespace mediasoupclient
 				auto jsonSsrcIt = std::find_if(mSsrcs.begin(), mSsrcs.end(), [](const json& line) {
 					auto jsonAttributeIt = line.find("attribute");
 
-					if (jsonAttributeIt == line.end() && !jsonAttributeIt->is_string())
+					if (jsonAttributeIt == line.end() || !jsonAttributeIt->is_string())
 						return false;
 
 					return jsonAttributeIt->get<std::string>() == "msid";

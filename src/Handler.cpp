@@ -310,7 +310,7 @@ namespace mediasoupclient
 		return sendData;
 	}
 
-	SendHandler::SendDataChannel SendHandler::CreateSendDataChannel(
+	SendHandler::SendDataChannel SendHandler::SendDataChannel(
 	  const std::string& label, webrtc::DataChannelInit dataChannelInit)
 	{
 		MSC_TRACE();
@@ -318,7 +318,7 @@ namespace mediasoupclient
 		uint16_t streamId = this->nextSendSctpStreamId;
 
 		// MSC_DEBUG('sendDataChannel() [options:%o]', options);
-		MSC_DEBUG("SendHandler::CreateSendDataChannel()");
+		MSC_DEBUG("SendHandler::SendDataChannel()");
 		dataChannelInit.negotiated = true;
 		dataChannelInit.id         = streamId;
 
@@ -352,7 +352,7 @@ namespace mediasoupclient
 				this->SetupTransport("server", localSdpObject);
 
 			MSC_DEBUG(
-			  "SendHandler::CreateSendDataChannel() | calling pc.setLocalDescription() [offer:%s]",
+			  "SendHandler::SendDataChannel() | calling pc.setLocalDescription() [offer:%s]",
 			  offer.c_str());
 			this->pc->SetLocalDescription(PeerConnection::SdpType::OFFER, offer);
 
@@ -360,7 +360,7 @@ namespace mediasoupclient
 			auto sdpAnswer = this->remoteSdp->GetSdp();
 
 			MSC_DEBUG(
-			  "SendHandler::CreateSendDataChannel() | calling pc.setRemoteDescription() [answer:%s]",
+			  "SendHandler::SendDataChannel() | calling pc.setRemoteDescription() [answer:%s]",
 			  sdpAnswer.c_str());
 			this->pc->SetRemoteDescription(PeerConnection::SdpType::ANSWER, sdpAnswer);
 
@@ -371,10 +371,11 @@ namespace mediasoupclient
 		nlohmann::json sctpStreamParameters =
 		{
 			{ "streamId"	  , streamId },
-			{ "ordered"       , dataChannelInit.ordered }
-			// ,
-			// { "maxPacketLifeTime" , dataProducerOptions.maxPacketLifeTime.value_or("")},
-			// { "maxRetransmits"    , dataProducerOptions.maxRetransmits.value_or("")}
+			{ "ordered"       , dataChannelInit.ordered },
+			{ "maxPacketLifeTime" , dataChannelInit.maxRetransmitTime },
+			{ "maxRetransmits"    , dataChannelInit.maxRetransmits },
+			{ "label", dataChannelInit.label },
+			{ "protocol", dataChannelInit.protocol }
 		};
 		/* clang-format on */
 
@@ -651,14 +652,14 @@ namespace mediasoupclient
 		return recvData;
 	}
 
-	RecvHandler::RecvDataChannel RecvHandler::CreateRecvDataChannel(
+	RecvHandler::RecvDataChannel RecvHandler::RecvDataChannel(
 	  const std::string& label, webrtc::DataChannelInit dataChannelInit)
 	{
 		MSC_TRACE();
 
 		uint16_t streamId = this->nextSendSctpStreamId;
 
-		MSC_DEBUG("RecvHandler::CreateRecvDataChannel()");
+		MSC_DEBUG("RecvHandler::RecvDataChannel()");
 		dataChannelInit.negotiated = true;
 		dataChannelInit.id         = streamId;
 

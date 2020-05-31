@@ -130,6 +130,8 @@ namespace mediasoupclient
 		nlohmann::json GetStats();
 		nlohmann::json GetStats(rtc::scoped_refptr<webrtc::RtpSenderInterface> selector);
 		nlohmann::json GetStats(rtc::scoped_refptr<webrtc::RtpReceiverInterface> selector);
+		rtc::scoped_refptr<webrtc::DataChannelInterface> CreateDataChannel(
+		  const std::string& label, const webrtc::DataChannelInit* config);
 
 	private:
 		// Signaling and worker threads.

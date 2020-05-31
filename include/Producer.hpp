@@ -64,7 +64,7 @@ namespace mediasoupclient
 	private:
 		void TransportClosed();
 
-		/* SendTransport will create instances and call private member TransporClosed */
+		/* SendTransport will create instances and call private member TransportClosed */
 		friend SendTransport;
 
 	private:

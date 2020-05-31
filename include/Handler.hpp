@@ -116,7 +116,7 @@ namespace mediasoupclient
 		void SetMaxSpatialLayer(const std::string& localId, uint8_t spatialLayer);
 		nlohmann::json GetSenderStats(const std::string& localId);
 		void RestartIce(const nlohmann::json& iceParameters) override;
-		SendDataChannel SendDataChannel(
+		SendDataChannel CreateSendDataChannel(
 		  const std::string& label, webrtc::DataChannelInit dataChannelInit);
 
 	private:
@@ -166,7 +166,7 @@ namespace mediasoupclient
 		void StopReceivingData(const std::string& localId);
 		nlohmann::json GetReceiverStats(const std::string& localId);
 		void RestartIce(const nlohmann::json& iceParameters) override;
-		RecvDataChannel RecvDataChannel(
+		RecvDataChannel CreateRecvDataChannel(
 		  const std::string& label, webrtc::DataChannelInit dataChannelInit);
 	};
 } // namespace mediasoupclient

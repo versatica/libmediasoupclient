@@ -280,7 +280,7 @@ namespace mediasoupclient
 
 		// This may throw.
 		SendHandler::SendDataChannel sendDataChannel =
-		  this->sendHandler->SendDataChannel(label, dataChannelInit);
+		  this->sendHandler->CreateSendDataChannel(label, dataChannelInit);
 
 		auto dataChannelId = this->listener->OnProduceData(
 		  this, sendDataChannel.sctpStreamParameters, label, protocol, appData);
@@ -507,7 +507,7 @@ namespace mediasoupclient
 
 		// This may throw.
 		RecvHandler::RecvDataChannel recvDataChannel =
-		  this->recvHandler->RecvDataChannel(label, dataChannelInit);
+		  this->recvHandler->CreateRecvDataChannel(label, dataChannelInit);
 
 		auto dataConsumer = new DataConsumer(
 		  listener,

@@ -318,7 +318,7 @@ namespace mediasoupclient
 		uint16_t streamId = this->nextSendSctpStreamId;
 
 		// MSC_DEBUG('sendDataChannel() [options:%o]', options);
-		MSC_DEBUG("SendHandler::SendDataChannel()");
+		MSC_DEBUG("SendHandler::CreateSendDataChannel()");
 		dataChannelInit.negotiated = true;
 		dataChannelInit.id         = streamId;
 
@@ -352,7 +352,7 @@ namespace mediasoupclient
 				this->SetupTransport("server", localSdpObject);
 
 			MSC_DEBUG(
-			  "SendHandler::SendDataChannel() | calling pc.setLocalDescription() [offer:%s]",
+			  "SendHandler::CreateSendDataChannel() | calling pc.setLocalDescription() [offer:%s]",
 			  offer.c_str());
 			this->pc->SetLocalDescription(PeerConnection::SdpType::OFFER, offer);
 
@@ -360,7 +360,7 @@ namespace mediasoupclient
 			auto sdpAnswer = this->remoteSdp->GetSdp();
 
 			MSC_DEBUG(
-			  "SendHandler::SendDataChannel() | calling pc.setRemoteDescription() [answer:%s]",
+			  "SendHandler::CreateSendDataChannel() | calling pc.setRemoteDescription() [answer:%s]",
 			  sdpAnswer.c_str());
 			this->pc->SetRemoteDescription(PeerConnection::SdpType::ANSWER, sdpAnswer);
 

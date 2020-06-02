@@ -322,6 +322,42 @@ namespace mediasoupclient
 		dataChannelInit.negotiated = true;
 		dataChannelInit.id         = streamId;
 
+		/* clang-format off */
+		json sctpStreamParameters =
+		{
+			{ "streamId"	  , streamId },
+			{ "ordered"       , dataChannelInit.ordered },
+			// { "maxPacketLifeTime" , dataChannelInit.maxRetransmitTime.value_or(0u) },
+			// { "maxRetransmits"    , dataChannelInit.maxRetransmits.value_or(0u) },
+			{ "protocol", dataChannelInit.protocol }
+		};
+		/* clang-format on */
+
+		if (dataChannelInit.maxRetransmitTime.has_value()) {
+			/* clang-format off */
+			json maxPacketLifeTime =
+			{
+				{ "maxPacketLifeTime" , dataChannelInit.maxRetransmitTime.value_or(0u) },
+			};
+			/* clang-format on */
+
+			sctpStreamParameters.insert(maxPacketLifeTime.begin(), maxPacketLifeTime.end());
+		}
+
+		if (dataChannelInit.maxRetransmits.has_value()) {
+			/* clang-format off */
+			json maxRetransmits =
+			{
+				{ "maxRetransmits" , dataChannelInit.maxRetransmits.value_or(0u) },
+			};
+			/* clang-format on */
+			
+			sctpStreamParameters.insert(maxRetransmits.begin(), maxRetransmits.end());
+		}
+
+		// This will fill sctpStreamParameters's missing fields with default values.
+		ortc::validateSctpStreamParameters(sctpStreamParameters);
+
 		rtc::scoped_refptr<webrtc::DataChannelInterface> webrtcDataChannel =
 		  this->pc->CreateDataChannel(label, &dataChannelInit);
 
@@ -366,20 +402,6 @@ namespace mediasoupclient
 
 			this->hasDataChannelMediaSection = true;
 		}
-
-		/* clang-format off */
-		nlohmann::json sctpStreamParameters =
-		{
-			{ "streamId"	  , streamId },
-			{ "ordered"       , dataChannelInit.ordered }
-			// ,
-			// { "maxPacketLifeTime" , dataProducerOptions.maxPacketLifeTime.value_or("")},
-			// { "maxRetransmits"    , dataProducerOptions.maxRetransmits.value_or("")}
-		};
-		/* clang-format on */
-
-		// This will fill sctpStreamParameters's missing fields with default values.
-		ortc::validateSctpStreamParameters(sctpStreamParameters);
 
 		SendHandler::SendDataChannel sendDataChannel(
 		  std::to_string(streamId), webrtcDataChannel, sctpStreamParameters);
@@ -662,6 +684,17 @@ namespace mediasoupclient
 		dataChannelInit.negotiated = true;
 		dataChannelInit.id         = streamId;
 
+		/* clang-format off */
+		nlohmann::json sctpStreamParameters =
+		{
+			{ "streamId"	  , streamId },
+			{ "ordered"       , dataChannelInit.ordered }
+		};
+		/* clang-format on */
+
+		// This will fill sctpStreamParameters's missing fields with default values.
+		ortc::validateSctpStreamParameters(sctpStreamParameters);
+
 		rtc::scoped_refptr<webrtc::DataChannelInterface> webrtcDataChannel =
 		  this->pc->CreateDataChannel(label, &dataChannelInit);
 
@@ -692,20 +725,6 @@ namespace mediasoupclient
 
 			this->hasDataChannelMediaSection = true;
 		}
-
-		/* clang-format off */
-		nlohmann::json sctpStreamParameters =
-		{
-			{ "streamId"	  , streamId },
-			{ "ordered"       , dataChannelInit.ordered }
-			// ,
-			// { "maxPacketLifeTime" , dataProducerOptions.maxPacketLifeTime.value_or(true)},
-			// { "maxRetransmits"    , dataProducerOptions.maxRetransmits.value_or()}
-		};
-		/* clang-format on */
-
-		// This will fill sctpStreamParameters's missing fields with default values.
-		ortc::validateSctpStreamParameters(sctpStreamParameters);
 
 		RecvHandler::RecvDataChannel recvDataChannel(
 		  std::to_string(streamId), webrtcDataChannel, sctpStreamParameters);
@@ -819,14 +838,8 @@ static void fillJsonRtpEncodingParameters(json& jsonEncoding, const webrtc::RtpE
 	if (encoding.max_framerate)
 		jsonEncoding["maxFramerate"] = *encoding.max_framerate;
 
-	if (encoding.scale_framerate_down_by)
-		jsonEncoding["scaleFramerateDownBy"] = *encoding.scale_framerate_down_by;
-
 	if (encoding.scale_resolution_down_by)
 		jsonEncoding["scaleResolutionDownBy"] = *encoding.scale_resolution_down_by;
-
-	if (encoding.dtx && encoding.dtx == webrtc::DtxStatus::ENABLED)
-		jsonEncoding["dtx"] = true;
 
 	jsonEncoding["networkPriority"] = encoding.network_priority;
 }

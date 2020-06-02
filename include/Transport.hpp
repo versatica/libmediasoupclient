@@ -138,8 +138,8 @@ namespace mediasoupclient
 		  const std::string& label      = "",
 		  const std::string& protocol   = "",
 		  bool ordered                  = true,
-		  int maxRetransmits            = -1,
-		  int maxPacketLifeTime         = -1,
+		  int maxRetransmits            = 0,
+		  int maxPacketLifeTime         = 0,
 		  const nlohmann::json& appData = nlohmann::json::object());
 
 		/* Virtual methods inherited from Transport. */
@@ -201,7 +201,6 @@ namespace mediasoupclient
 		  DataConsumer::Listener* listener,
 		  const std::string& dataConsumerId,
 		  const std::string& dataProducerId,
-		  const nlohmann::json& sctpStreamParameters,
 		  const std::string& label,
 		  const std::string& protocol,
 		  const nlohmann::json& appData);

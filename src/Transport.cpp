@@ -207,9 +207,7 @@ namespace mediasoupclient
 				  encoding.active                   = entry.active;
 				  encoding.max_bitrate_bps          = entry.max_bitrate_bps;
 				  encoding.max_framerate            = entry.max_framerate;
-				  encoding.scale_framerate_down_by  = entry.scale_framerate_down_by;
 				  encoding.scale_resolution_down_by = entry.scale_resolution_down_by;
-				  encoding.dtx                      = entry.dtx;
 				  encoding.network_priority         = entry.network_priority;
 
 				  normalizedEncodings.push_back(encoding);
@@ -267,15 +265,15 @@ namespace mediasoupclient
 		webrtc::DataChannelInit dataChannelInit;
 		dataChannelInit.protocol = protocol;
 		dataChannelInit.ordered  = ordered;
-		if (maxRetransmits != -1 && maxPacketLifeTime != -1)
+		if (maxRetransmits != -1 && maxPacketLifeTime != 0)
 		{
 			MSC_THROW_ERROR("Cannot set both maxRetransmits and maxPacketLifeTime");
 		}
-		if (maxRetransmits != -1)
+		if (maxRetransmits != 0)
 		{
 			dataChannelInit.maxRetransmits = maxRetransmits;
 		}
-		if (maxPacketLifeTime != -1)
+		if (maxPacketLifeTime != 0)
 		{
 			dataChannelInit.maxRetransmitTime = maxPacketLifeTime;
 		}
@@ -487,7 +485,6 @@ namespace mediasoupclient
 	  DataConsumer::Listener* listener,
 	  const std::string& dataConsumerId,
 	  const std::string& dataProducerId,
-	  const nlohmann::json& sctpStreamParameters,
 	  const std::string& label,
 	  const std::string& protocol,
 	  const nlohmann::json& appData)

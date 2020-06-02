@@ -327,11 +327,33 @@ namespace mediasoupclient
 		{
 			{ "streamId"	  , streamId },
 			{ "ordered"       , dataChannelInit.ordered },
-			{ "maxPacketLifeTime" , dataChannelInit.maxRetransmitTime.value_or(0u) },
-			{ "maxRetransmits"    , dataChannelInit.maxRetransmits.value_or(0u) },
+			// { "maxPacketLifeTime" , dataChannelInit.maxRetransmitTime.value_or(0u) },
+			// { "maxRetransmits"    , dataChannelInit.maxRetransmits.value_or(0u) },
 			{ "protocol", dataChannelInit.protocol }
 		};
 		/* clang-format on */
+
+		if (dataChannelInit.maxRetransmitTime.has_value()) {
+			/* clang-format off */
+			json maxPacketLifeTime =
+			{
+				{ "maxPacketLifeTime" , dataChannelInit.maxRetransmitTime.value_or(0u) },
+			};
+			/* clang-format on */
+
+			sctpStreamParameters.insert(maxPacketLifeTime.begin(), maxPacketLifeTime.end());
+		}
+
+		if (dataChannelInit.maxRetransmits.has_value()) {
+			/* clang-format off */
+			json maxRetransmits =
+			{
+				{ "maxRetransmits" , dataChannelInit.maxRetransmits.value_or(0u) },
+			};
+			/* clang-format on */
+			
+			sctpStreamParameters.insert(maxRetransmits.begin(), maxRetransmits.end());
+		}
 
 		// This will fill sctpStreamParameters's missing fields with default values.
 		ortc::validateSctpStreamParameters(sctpStreamParameters);

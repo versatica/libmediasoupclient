@@ -265,15 +265,15 @@ namespace mediasoupclient
 		webrtc::DataChannelInit dataChannelInit;
 		dataChannelInit.protocol = protocol;
 		dataChannelInit.ordered  = ordered;
-		if (maxRetransmits != -1 && maxPacketLifeTime != -1)
+		if (maxRetransmits != -1 && maxPacketLifeTime != 0)
 		{
 			MSC_THROW_ERROR("Cannot set both maxRetransmits and maxPacketLifeTime");
 		}
-		if (maxRetransmits != -1)
+		if (maxRetransmits != 0)
 		{
 			dataChannelInit.maxRetransmits = maxRetransmits;
 		}
-		if (maxPacketLifeTime != -1)
+		if (maxPacketLifeTime != 0)
 		{
 			dataChannelInit.maxRetransmitTime = maxPacketLifeTime;
 		}
@@ -485,7 +485,6 @@ namespace mediasoupclient
 	  DataConsumer::Listener* listener,
 	  const std::string& dataConsumerId,
 	  const std::string& dataProducerId,
-	  const nlohmann::json& sctpStreamParameters,
 	  const std::string& label,
 	  const std::string& protocol,
 	  const nlohmann::json& appData)

@@ -322,6 +322,20 @@ namespace mediasoupclient
 		dataChannelInit.negotiated = true;
 		dataChannelInit.id         = streamId;
 
+		/* clang-format off */
+		json sctpStreamParameters =
+		{
+			{ "streamId"	  , streamId },
+			{ "ordered"       , dataChannelInit.ordered },
+			{ "maxPacketLifeTime" , dataChannelInit.maxRetransmitTime.value_or(0u) },
+			{ "maxRetransmits"    , dataChannelInit.maxRetransmits.value_or(0u) },
+			{ "protocol", dataChannelInit.protocol }
+		};
+		/* clang-format on */
+
+		// This will fill sctpStreamParameters's missing fields with default values.
+		ortc::validateSctpStreamParameters(sctpStreamParameters);
+
 		rtc::scoped_refptr<webrtc::DataChannelInterface> webrtcDataChannel =
 		  this->pc->CreateDataChannel(label, &dataChannelInit);
 
@@ -366,20 +380,6 @@ namespace mediasoupclient
 
 			this->hasDataChannelMediaSection = true;
 		}
-
-		/* clang-format off */
-		json sctpStreamParameters =
-		{
-			{ "streamId"	  , streamId },
-			{ "ordered"       , dataChannelInit.ordered },
-			{ "maxPacketLifeTime" , dataChannelInit.maxRetransmitTime.value_or(-1) },
-			{ "maxRetransmits"    , dataChannelInit.maxRetransmits.value_or(-1) },
-			{ "protocol", dataChannelInit.protocol }
-		};
-		/* clang-format on */
-
-		// This will fill sctpStreamParameters's missing fields with default values.
-		ortc::validateSctpStreamParameters(sctpStreamParameters);
 
 		SendHandler::SendDataChannel sendDataChannel(
 		  std::to_string(streamId), webrtcDataChannel, sctpStreamParameters);
@@ -662,6 +662,17 @@ namespace mediasoupclient
 		dataChannelInit.negotiated = true;
 		dataChannelInit.id         = streamId;
 
+		/* clang-format off */
+		nlohmann::json sctpStreamParameters =
+		{
+			{ "streamId"	  , streamId },
+			{ "ordered"       , dataChannelInit.ordered }
+		};
+		/* clang-format on */
+
+		// This will fill sctpStreamParameters's missing fields with default values.
+		ortc::validateSctpStreamParameters(sctpStreamParameters);
+
 		rtc::scoped_refptr<webrtc::DataChannelInterface> webrtcDataChannel =
 		  this->pc->CreateDataChannel(label, &dataChannelInit);
 
@@ -692,20 +703,6 @@ namespace mediasoupclient
 
 			this->hasDataChannelMediaSection = true;
 		}
-
-		/* clang-format off */
-		nlohmann::json sctpStreamParameters =
-		{
-			{ "streamId"	  , streamId },
-			{ "ordered"       , dataChannelInit.ordered }
-			// ,
-			// { "maxPacketLifeTime" , dataProducerOptions.maxPacketLifeTime.value_or(true)},
-			// { "maxRetransmits"    , dataProducerOptions.maxRetransmits.value_or()}
-		};
-		/* clang-format on */
-
-		// This will fill sctpStreamParameters's missing fields with default values.
-		ortc::validateSctpStreamParameters(sctpStreamParameters);
 
 		RecvHandler::RecvDataChannel recvDataChannel(
 		  std::to_string(streamId), webrtcDataChannel, sctpStreamParameters);

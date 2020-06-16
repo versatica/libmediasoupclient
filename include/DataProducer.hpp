@@ -4,7 +4,6 @@
 #include "Handler.hpp"
 #include <json.hpp>
 #include <api/data_channel_interface.h>
-#include <api/stats/rtcstats_objects.h>
 #include <string>
 
 namespace mediasoupclient

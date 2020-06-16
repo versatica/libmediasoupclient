@@ -35,7 +35,7 @@ namespace mediasoupclient
 			virtual void OnTransportClose(DataConsumer* dataConsumer) = 0;
 		};
 
-	public:
+	private:
 		DataConsumer(
 		  Listener* listener,
 		  PrivateListener* privateListener,
@@ -45,6 +45,7 @@ namespace mediasoupclient
 		  const nlohmann::json& sctpStreamParameters,
 		  const nlohmann::json& appData);
 
+	public:
 		const std::string& GetId() const;
 		std::string GetLocalId() const;
 		const std::string& GetDataProducerId() const;

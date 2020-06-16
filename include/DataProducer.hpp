@@ -42,7 +42,7 @@ namespace mediasoupclient
 
 		friend SendTransport;
 
-	public:
+	private:
 		DataProducer(
 		  DataProducer::PrivateListener* privateListener,
 		  DataProducer::Listener* listener,
@@ -50,6 +50,8 @@ namespace mediasoupclient
 		  rtc::scoped_refptr<webrtc::DataChannelInterface> webrtcDataChannel,
 		  const nlohmann::json& sctpStreamParameters,
 		  const nlohmann::json& appData);
+
+	public:
 		const std::string& GetId() const;
 		std::string GetLocalId() const;
 		bool IsClosed() const;

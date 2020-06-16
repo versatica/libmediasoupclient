@@ -21,7 +21,7 @@ namespace mediasoupclient
 		class Listener
 		{
 		public:
-			// DataChannel state has changed.
+			// DataChannel state changes.
 			virtual void OnConnecting(DataConsumer* dataConsumer) = 0;
 			virtual void OnOpen(DataConsumer* dataConsumer)       = 0;
 			virtual void OnClosing(DataConsumer* dataConsumer)    = 0;

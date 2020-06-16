@@ -165,15 +165,15 @@ namespace mediasoupclient
 
 	void Sdp::RemoteSdp::SendSctpAssociation(json& offerMediaObject)
 	{
-		nlohmann::json empty;
+		nlohmann::json emptyJson;
 		auto* mediaSection = new AnswerMediaSection(
 		  this->iceParameters,
 		  this->iceCandidates,
 		  this->dtlsParameters,
 		  this->sctpParameters,
 		  offerMediaObject,
-		  empty,
-		  empty,
+		  emptyJson,
+		  emptyJson,
 		  nullptr);
 
 		this->AddMediaSection(mediaSection);

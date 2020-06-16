@@ -310,7 +310,7 @@ namespace mediasoupclient
 		return sendData;
 	}
 
-	Handler::DataChannel SendHandler::CreateDataChannel(
+	Handler::DataChannel SendHandler::SendDataChannel(
 	  const std::string& label, webrtc::DataChannelInit dataChannelInit)
 	{
 		MSC_TRACE();
@@ -323,9 +323,9 @@ namespace mediasoupclient
 		/* clang-format off */
 		json sctpStreamParameters =
 		{
-			{ "streamId"	  , streamId },
-			{ "ordered"       , dataChannelInit.ordered },
-			{ "protocol", dataChannelInit.protocol }
+			{ "streamId", streamId                  },
+			{ "ordered",  dataChannelInit.ordered   },
+			{ "protocol", dataChannelInit.protocol  }
 		};
 		/* clang-format on */
 
@@ -334,7 +334,7 @@ namespace mediasoupclient
 			/* clang-format off */
 			json maxPacketLifeTime =
 			{
-				{ "maxPacketLifeTime" , dataChannelInit.maxRetransmitTime.value_or(0u) },
+				{ "maxPacketLifeTime", dataChannelInit.maxRetransmitTime.value_or(0u) },
 			};
 			/* clang-format on */
 
@@ -346,7 +346,7 @@ namespace mediasoupclient
 			/* clang-format off */
 			json maxRetransmits =
 			{
-				{ "maxRetransmits" , dataChannelInit.maxRetransmits.value_or(0u) },
+				{ "maxRetransmits", dataChannelInit.maxRetransmits.value_or(0u) },
 			};
 			/* clang-format on */
 
@@ -671,7 +671,7 @@ namespace mediasoupclient
 		return recvData;
 	}
 
-	Handler::DataChannel RecvHandler::CreateDataChannel(
+	Handler::DataChannel RecvHandler::ReceiveDataChannel(
 	  const std::string& label, webrtc::DataChannelInit dataChannelInit)
 	{
 		MSC_TRACE();
@@ -684,8 +684,8 @@ namespace mediasoupclient
 		/* clang-format off */
 		nlohmann::json sctpStreamParameters =
 		{
-			{ "streamId"	  , streamId },
-			{ "ordered"       , dataChannelInit.ordered }
+			{ "streamId", streamId               },
+			{ "ordered", dataChannelInit.ordered }
 		};
 		/* clang-format on */
 

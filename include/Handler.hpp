@@ -116,7 +116,7 @@ namespace mediasoupclient
 		void SetMaxSpatialLayer(const std::string& localId, uint8_t spatialLayer);
 		nlohmann::json GetSenderStats(const std::string& localId);
 		void RestartIce(const nlohmann::json& iceParameters) override;
-		DataChannel CreateDataChannel(const std::string& label, webrtc::DataChannelInit dataChannelInit);
+		DataChannel SendDataChannel(const std::string& label, webrtc::DataChannelInit dataChannelInit);
 
 	private:
 		// Generic sending RTP parameters for audio and video.
@@ -150,7 +150,7 @@ namespace mediasoupclient
 		void StopReceivingData(const std::string& localId);
 		nlohmann::json GetReceiverStats(const std::string& localId);
 		void RestartIce(const nlohmann::json& iceParameters) override;
-		DataChannel CreateDataChannel(const std::string& label, webrtc::DataChannelInit dataChannelInit);
+		DataChannel ReceiveDataChannel(const std::string& label, webrtc::DataChannelInit dataChannelInit);
 	};
 } // namespace mediasoupclient
 

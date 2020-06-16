@@ -279,7 +279,7 @@ namespace mediasoupclient
 		}
 
 		// This may throw.
-		Handler::DataChannel dataChannel = this->sendHandler->CreateDataChannel(label, dataChannelInit);
+		Handler::DataChannel dataChannel = this->sendHandler->SendDataChannel(label, dataChannelInit);
 
 		auto dataChannelId = this->listener->OnProduceData(
 		  this, dataChannel.sctpStreamParameters, label, protocol, appData);
@@ -296,16 +296,6 @@ namespace mediasoupclient
 
 		return dataProducer;
 	}
-
-	std::future<std::string> SendTransport::Listener::OnProduceData(
-	  SendTransport* transport,
-	  const nlohmann::json& sctpStreamParameters,
-	  const std::string& label,
-	  const std::string& protocol,
-	  const nlohmann::json& appData)
-	{
-		MSC_THROW_ERROR("You need to override OnProduceData if you want to receive messages");
-	};
 
 	void SendTransport::Close()
 	{
@@ -508,7 +498,7 @@ namespace mediasoupclient
 			MSC_THROW_TYPE_ERROR("Cannot use DataChannels with this transport. SctpParameters are not set.");
 
 		// This may throw.
-		Handler::DataChannel dataChannel = this->recvHandler->CreateDataChannel(label, dataChannelInit);
+		Handler::DataChannel dataChannel = this->recvHandler->ReceiveDataChannel(label, dataChannelInit);
 
 		auto dataConsumer = new DataConsumer(
 		  listener, this, id, producerId, dataChannel.dataChannel, dataChannel.sctpStreamParameters, appData);

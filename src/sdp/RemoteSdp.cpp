@@ -181,7 +181,7 @@ namespace mediasoupclient
 
 	void Sdp::RemoteSdp::RecvSctpAssociation()
 	{
-		nlohmann::json empty;
+		nlohmann::json emptyJson;
 		auto* mediaSection = new OfferMediaSection(
 		  this->iceParameters,
 		  this->iceCandidates,
@@ -189,7 +189,7 @@ namespace mediasoupclient
 		  this->sctpParameters,
 		  "datachannel", // mid
 		  "application", // kind
-		  empty,         // offerRtpParameters
+		  emptyJson,     // offerRtpParameters
 		  "",            // streamId
 		  ""             // trackId
 		);

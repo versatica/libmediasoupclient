@@ -388,8 +388,8 @@ namespace mediasoupclient
 
 		SendHandler::DataChannel dataChannel;
 
-		dataChannel.localId = std::to_string(streamId);
-		dataChannel.dataChannel = webrtcDataChannel;
+		dataChannel.localId              = std::to_string(streamId);
+		dataChannel.dataChannel          = webrtcDataChannel;
 		dataChannel.sctpStreamParameters = sctpStreamParameters;
 
 		return dataChannel;
@@ -711,8 +711,8 @@ namespace mediasoupclient
 
 		RecvHandler::DataChannel dataChannel;
 
-		dataChannel.localId = std::to_string(streamId);
-		dataChannel.dataChannel = webrtcDataChannel;
+		dataChannel.localId              = std::to_string(streamId);
+		dataChannel.dataChannel          = webrtcDataChannel;
 		dataChannel.sctpStreamParameters = sctpStreamParameters;
 
 		return dataChannel;

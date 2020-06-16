@@ -386,8 +386,11 @@ namespace mediasoupclient
 			this->hasDataChannelMediaSection = true;
 		}
 
-		SendHandler::DataChannel dataChannel(
-		  std::to_string(streamId), webrtcDataChannel, sctpStreamParameters);
+		SendHandler::DataChannel dataChannel;
+
+		dataChannel.localId = std::to_string(streamId);
+		dataChannel.dataChannel = webrtcDataChannel;
+		dataChannel.sctpStreamParameters = sctpStreamParameters;
 
 		return dataChannel;
 	}
@@ -706,8 +709,11 @@ namespace mediasoupclient
 			this->hasDataChannelMediaSection = true;
 		}
 
-		RecvHandler::DataChannel dataChannel(
-		  std::to_string(streamId), webrtcDataChannel, sctpStreamParameters);
+		RecvHandler::DataChannel dataChannel;
+
+		dataChannel.localId = std::to_string(streamId);
+		dataChannel.dataChannel = webrtcDataChannel;
+		dataChannel.sctpStreamParameters = sctpStreamParameters;
 
 		return dataChannel;
 	}

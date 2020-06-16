@@ -215,20 +215,20 @@ namespace mediasoupclient
 		}
 
 		// May throw.
-		auto sendData = this->sendHandler->Send(track, &normalizedEncodings, codecOptions);
+		auto sendResult = this->sendHandler->Send(track, &normalizedEncodings, codecOptions);
 
 		try
 		{
 			// This will fill rtpParameters's missing fields with default values.
-			ortc::validateRtpParameters(sendData.rtpParameters);
+			ortc::validateRtpParameters(sendResult.rtpParameters);
 
 			// May throw.
 			producerId =
-			  this->listener->OnProduce(this, track->kind(), sendData.rtpParameters, appData).get();
+			  this->listener->OnProduce(this, track->kind(), sendResult.rtpParameters, appData).get();
 		}
 		catch (MediaSoupClientError& error)
 		{
-			this->sendHandler->StopSending(sendData.localId);
+			this->sendHandler->StopSending(sendResult.localId);
 
 			throw;
 		}
@@ -237,10 +237,10 @@ namespace mediasoupclient
 		  this,
 		  producerListener,
 		  producerId,
-		  sendData.localId,
-		  sendData.rtpSender,
+		  sendResult.localId,
+		  sendResult.rtpSender,
 		  track,
-		  sendData.rtpParameters,
+		  sendResult.rtpParameters,
 		  appData);
 
 		this->producers[producer->GetId()] = producer;
@@ -279,17 +279,17 @@ namespace mediasoupclient
 		}
 
 		// This may throw.
-		Handler::DataChannel dataChannel = this->sendHandler->SendDataChannel(label, dataChannelInit);
+		auto sendResult = this->sendHandler->SendDataChannel(label, dataChannelInit);
 
 		auto dataChannelId = this->listener->OnProduceData(
-		  this, dataChannel.sctpStreamParameters, label, protocol, appData);
+		  this, sendResult.sctpStreamParameters, label, protocol, appData);
 
 		auto dataProducer = new DataProducer(
 		  this,
 		  dataProducerListener,
 		  dataChannelId.get(),
-		  dataChannel.dataChannel,
-		  dataChannel.sctpStreamParameters,
+		  sendResult.dataChannel,
+		  sendResult.sctpStreamParameters,
 		  appData);
 
 		this->dataProducers[dataProducer->GetId()] = dataProducer;
@@ -431,16 +431,16 @@ namespace mediasoupclient
 			MSC_THROW_UNSUPPORTED_ERROR("cannot consume this Producer");
 
 		// May throw.
-		auto recvData = this->recvHandler->Receive(id, kind, rtpParameters);
+		auto recvResult = this->recvHandler->Receive(id, kind, rtpParameters);
 
 		auto* consumer = new Consumer(
 		  this,
 		  consumerListener,
 		  id,
-		  recvData.localId,
+		  recvResult.localId,
 		  producerId,
-		  recvData.rtpReceiver,
-		  recvData.track,
+		  recvResult.rtpReceiver,
+		  recvResult.track,
 		  *rtpParameters,
 		  appData);
 
@@ -498,10 +498,10 @@ namespace mediasoupclient
 			MSC_THROW_TYPE_ERROR("Cannot use DataChannels with this transport. SctpParameters are not set.");
 
 		// This may throw.
-		Handler::DataChannel dataChannel = this->recvHandler->ReceiveDataChannel(label, dataChannelInit);
+		auto recvResult = this->recvHandler->ReceiveDataChannel(label, dataChannelInit);
 
 		auto dataConsumer = new DataConsumer(
-		  listener, this, id, producerId, dataChannel.dataChannel, dataChannel.sctpStreamParameters, appData);
+		  listener, this, id, producerId, recvResult.dataChannel, recvResult.sctpStreamParameters, appData);
 
 		this->dataConsumers[dataConsumer->GetId()] = dataConsumer;
 

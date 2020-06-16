@@ -64,14 +64,14 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 	{
 		track = createAudioTrack("test-track-id");
 
-		mediasoupclient::SendHandler::SendData sendData;
+		mediasoupclient::SendHandler::SendResult sendResult;
 
-		REQUIRE_NOTHROW(sendData = sendHandler.Send(track, nullptr, nullptr));
+		REQUIRE_NOTHROW(sendResult = sendHandler.Send(track, nullptr, nullptr));
 
-		localId = sendData.localId;
+		localId = sendResult.localId;
 
-		REQUIRE(sendData.rtpParameters["codecs"].size() == 1);
-		REQUIRE(sendData.rtpParameters["headerExtensions"].size() == 3);
+		REQUIRE(sendResult.rtpParameters["codecs"].size() == 1);
+		REQUIRE(sendResult.rtpParameters["headerExtensions"].size() == 3);
 	}
 
 	SECTION("sendHandler.Send() succeeds if track is already handled")
@@ -120,11 +120,11 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 
 	SECTION("sendHandler.Sends() succeeds after stopping if track if provided")
 	{
-		mediasoupclient::SendHandler::SendData sendData;
+		mediasoupclient::SendHandler::SendResult sendResult;
 
-		REQUIRE_NOTHROW(sendData = sendHandler.Send(track, nullptr, nullptr));
+		REQUIRE_NOTHROW(sendResult = sendHandler.Send(track, nullptr, nullptr));
 
-		localId = sendData.localId;
+		localId = sendResult.localId;
 	}
 
 	SECTION("sendHandler.StopSending() succeeds if track is being sent")
@@ -167,11 +167,11 @@ TEST_CASE("RecvHandler", "[Handler][RecvHandler]")
 
 	SECTION("recvHander.Receive() succeeds if correct rtpParameters are provided")
 	{
-		mediasoupclient::RecvHandler::RecvData recvData;
+		mediasoupclient::RecvHandler::RecvResult recvResult;
 
-		REQUIRE_NOTHROW(recvData = recvHandler.Receive("test", "audio", &rtpParameters));
+		REQUIRE_NOTHROW(recvResult = recvHandler.Receive("test", "audio", &rtpParameters));
 
-		localId = recvData.localId;
+		localId = recvResult.localId;
 	}
 
 	SECTION("recvHandler.GetReceiverStats() fails if unknown receiver id is provided")

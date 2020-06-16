@@ -87,7 +87,7 @@ namespace mediasoupclient
 	class SendHandler : public Handler
 	{
 	public:
-		struct SendData
+		struct SendResult
 		{
 			std::string localId;
 			webrtc::RtpSenderInterface* rtpSender{ nullptr };
@@ -106,7 +106,7 @@ namespace mediasoupclient
 		  const nlohmann::json& sendingRemoteRtpParametersByKind = nlohmann::json());
 
 	public:
-		SendData Send(
+		SendResult Send(
 		  webrtc::MediaStreamTrackInterface* track,
 		  std::vector<webrtc::RtpEncodingParameters>* encodings,
 		  const nlohmann::json* codecOptions);
@@ -129,7 +129,7 @@ namespace mediasoupclient
 	class RecvHandler : public Handler
 	{
 	public:
-		struct RecvData
+		struct RecvResult
 		{
 			std::string localId;
 			webrtc::RtpReceiverInterface* rtpReceiver{ nullptr };
@@ -145,7 +145,7 @@ namespace mediasoupclient
 		  const nlohmann::json& sctpParameters,
 		  const PeerConnection::Options* peerConnectionOptions);
 
-		RecvData Receive(const std::string& id, const std::string& kind, const nlohmann::json* rtpParameters);
+		RecvResult Receive(const std::string& id, const std::string& kind, const nlohmann::json* rtpParameters);
 		void StopReceiving(const std::string& localId);
 		void StopReceivingData(const std::string& localId);
 		nlohmann::json GetReceiverStats(const std::string& localId);

@@ -310,15 +310,13 @@ namespace mediasoupclient
 		return sendData;
 	}
 
-	SendHandler::SendDataChannel SendHandler::CreateSendDataChannel(
+	Handler::DataChannel SendHandler::CreateDataChannel(
 	  const std::string& label, webrtc::DataChannelInit dataChannelInit)
 	{
 		MSC_TRACE();
 
 		uint16_t streamId = this->nextSendSctpStreamId;
 
-		// MSC_DEBUG('sendDataChannel() [options:%o]', options);
-		MSC_DEBUG("SendHandler::CreateSendDataChannel()");
 		dataChannelInit.negotiated = true;
 		dataChannelInit.id         = streamId;
 
@@ -403,10 +401,10 @@ namespace mediasoupclient
 			this->hasDataChannelMediaSection = true;
 		}
 
-		SendHandler::SendDataChannel sendDataChannel(
+		SendHandler::DataChannel dataChannel(
 		  std::to_string(streamId), webrtcDataChannel, sctpStreamParameters);
 
-		return sendDataChannel;
+		return dataChannel;
 	}
 
 	void SendHandler::StopSending(const std::string& localId)
@@ -673,14 +671,13 @@ namespace mediasoupclient
 		return recvData;
 	}
 
-	RecvHandler::RecvDataChannel RecvHandler::CreateRecvDataChannel(
+	Handler::DataChannel RecvHandler::CreateDataChannel(
 	  const std::string& label, webrtc::DataChannelInit dataChannelInit)
 	{
 		MSC_TRACE();
 
 		uint16_t streamId = this->nextSendSctpStreamId;
 
-		MSC_DEBUG("RecvHandler::CreateRecvDataChannel()");
 		dataChannelInit.negotiated = true;
 		dataChannelInit.id         = streamId;
 
@@ -726,10 +723,10 @@ namespace mediasoupclient
 			this->hasDataChannelMediaSection = true;
 		}
 
-		RecvHandler::RecvDataChannel recvDataChannel(
+		RecvHandler::DataChannel dataChannel(
 		  std::to_string(streamId), webrtcDataChannel, sctpStreamParameters);
 
-		return recvDataChannel;
+		return dataChannel;
 	}
 
 	void RecvHandler::StopReceiving(const std::string& localId)

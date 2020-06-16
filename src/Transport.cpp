@@ -279,18 +279,17 @@ namespace mediasoupclient
 		}
 
 		// This may throw.
-		SendHandler::SendDataChannel sendDataChannel =
-		  this->sendHandler->CreateSendDataChannel(label, dataChannelInit);
+		Handler::DataChannel dataChannel = this->sendHandler->CreateDataChannel(label, dataChannelInit);
 
 		auto dataChannelId = this->listener->OnProduceData(
-		  this, sendDataChannel.sctpStreamParameters, label, protocol, appData);
+		  this, dataChannel.sctpStreamParameters, label, protocol, appData);
 
 		auto dataProducer = new DataProducer(
 		  this,
 		  dataProducerListener,
 		  dataChannelId.get(),
-		  sendDataChannel.dataChannel,
-		  sendDataChannel.sctpStreamParameters,
+		  dataChannel.dataChannel,
+		  dataChannel.sctpStreamParameters,
 		  appData);
 
 		this->dataProducers[dataProducer->GetId()] = dataProducer;
@@ -509,17 +508,10 @@ namespace mediasoupclient
 			MSC_THROW_TYPE_ERROR("Cannot use DataChannels with this transport. SctpParameters are not set.");
 
 		// This may throw.
-		RecvHandler::RecvDataChannel recvDataChannel =
-		  this->recvHandler->CreateRecvDataChannel(label, dataChannelInit);
+		Handler::DataChannel dataChannel = this->recvHandler->CreateDataChannel(label, dataChannelInit);
 
 		auto dataConsumer = new DataConsumer(
-		  listener,
-		  this,
-		  id,
-		  producerId,
-		  recvDataChannel.webrtcDataChannel,
-		  recvDataChannel.sctpStreamParameters,
-		  appData);
+		  listener, this, id, producerId, dataChannel.dataChannel, dataChannel.sctpStreamParameters, appData);
 
 		this->dataConsumers[dataConsumer->GetId()] = dataConsumer;
 

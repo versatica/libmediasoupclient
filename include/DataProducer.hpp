@@ -34,7 +34,7 @@ namespace mediasoupclient
 		PrivateListener* privateListener;
 		Listener* listener;
 		std::string id;
-		rtc::scoped_refptr<webrtc::DataChannelInterface> webrtcDataChannel;
+		rtc::scoped_refptr<webrtc::DataChannelInterface> dataChannel;
 		bool closed;
 		nlohmann::json sctpStreamParameters;
 		nlohmann::json appData;
@@ -47,7 +47,7 @@ namespace mediasoupclient
 		  DataProducer::PrivateListener* privateListener,
 		  DataProducer::Listener* listener,
 		  const std::string& id,
-		  rtc::scoped_refptr<webrtc::DataChannelInterface> webrtcDataChannel,
+		  rtc::scoped_refptr<webrtc::DataChannelInterface> dataChannel,
 		  const nlohmann::json& sctpStreamParameters,
 		  const nlohmann::json& appData);
 

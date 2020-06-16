@@ -11,16 +11,15 @@ namespace mediasoupclient
 	  DataProducer::PrivateListener* privateListener,
 	  DataProducer::Listener* listener,
 	  const std::string& id,
-	  rtc::scoped_refptr<webrtc::DataChannelInterface> webrtcDataChannel,
+	  rtc::scoped_refptr<webrtc::DataChannelInterface> dataChannel,
 	  const json& sctpStreamParameters,
 	  const json& appData)
-	  : privateListener(privateListener), listener(listener), id(id),
-	    webrtcDataChannel(webrtcDataChannel), sctpStreamParameters(sctpStreamParameters),
-	    appData(appData)
+	  : privateListener(privateListener), listener(listener), id(id), dataChannel(dataChannel),
+	    sctpStreamParameters(sctpStreamParameters), appData(appData)
 	{
 		MSC_TRACE();
 
-		this->webrtcDataChannel->RegisterObserver(this);
+		this->dataChannel->RegisterObserver(this);
 	};
 
 	const std::string& DataProducer::GetId() const
@@ -34,7 +33,7 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		return std::to_string(this->webrtcDataChannel->id());
+		return std::to_string(this->dataChannel->id());
 	}
 
 	bool DataProducer::IsClosed() const
@@ -55,28 +54,28 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		return this->webrtcDataChannel->state();
+		return this->dataChannel->state();
 	}
 
 	std::string DataProducer::GetLabel()
 	{
 		MSC_TRACE();
 
-		return this->webrtcDataChannel->label();
+		return this->dataChannel->label();
 	}
 
 	std::string DataProducer::GetProtocol()
 	{
 		MSC_TRACE();
 
-		return this->webrtcDataChannel->protocol();
+		return this->dataChannel->protocol();
 	}
 
 	uint64_t DataProducer::GetBufferedAmount() const
 	{
 		MSC_TRACE();
 
-		return this->webrtcDataChannel->buffered_amount();
+		return this->dataChannel->buffered_amount();
 	}
 
 	const json& DataProducer::GetAppData() const
@@ -94,7 +93,7 @@ namespace mediasoupclient
 			return;
 
 		this->closed = true;
-		this->webrtcDataChannel->Close();
+		this->dataChannel->Close();
 		this->privateListener->OnClose(this);
 	}
 
@@ -102,7 +101,7 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		this->webrtcDataChannel->Send(buffer);
+		this->dataChannel->Send(buffer);
 	}
 
 	/**
@@ -116,7 +115,7 @@ namespace mediasoupclient
 			return;
 
 		this->closed = true;
-		this->webrtcDataChannel->Close();
+		this->dataChannel->Close();
 		this->listener->OnTransportClose(this);
 	}
 
@@ -125,7 +124,7 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		webrtc::DataChannelInterface::DataState state = this->webrtcDataChannel->state();
+		webrtc::DataChannelInterface::DataState state = this->dataChannel->state();
 
 		switch (state)
 		{

@@ -13,15 +13,15 @@ namespace mediasoupclient
 	  DataConsumer::PrivateListener* privateListener,
 	  const std::string& id,
 	  const std::string& dataProducerId,
-	  rtc::scoped_refptr<webrtc::DataChannelInterface> webrtcDataChannel,
+	  rtc::scoped_refptr<webrtc::DataChannelInterface> dataChannel,
 	  const json& sctpStreamParameters,
 	  const json& appData)
 	  : listener(listener), privateListener(privateListener), id(id), dataProducerId(dataProducerId),
-	    webrtcDataChannel(webrtcDataChannel), sctpParameters(sctpStreamParameters), appData(appData)
+	    dataChannel(dataChannel), sctpParameters(sctpStreamParameters), appData(appData)
 	{
 		MSC_TRACE();
 
-		this->webrtcDataChannel->RegisterObserver(this);
+		this->dataChannel->RegisterObserver(this);
 	}
 
 	// The data channel state has changed.
@@ -29,7 +29,7 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		webrtc::DataChannelInterface::DataState state = this->webrtcDataChannel->state();
+		webrtc::DataChannelInterface::DataState state = this->dataChannel->state();
 
 		switch (state)
 		{
@@ -80,7 +80,7 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		return std::to_string(this->webrtcDataChannel->id());
+		return std::to_string(this->dataChannel->id());
 	}
 
 	/**
@@ -120,7 +120,7 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		return this->webrtcDataChannel->state();
+		return this->dataChannel->state();
 	}
 
 	/**
@@ -130,7 +130,7 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		return this->webrtcDataChannel->label();
+		return this->dataChannel->label();
 	}
 
 	/**
@@ -140,7 +140,7 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		return this->webrtcDataChannel->protocol();
+		return this->dataChannel->protocol();
 	}
 
 	/**
@@ -164,7 +164,7 @@ namespace mediasoupclient
 			return;
 
 		this->closed = true;
-		this->webrtcDataChannel->Close();
+		this->dataChannel->Close();
 		this->privateListener->OnClose(this);
 	}
 
@@ -179,7 +179,7 @@ namespace mediasoupclient
 			return;
 
 		this->closed = true;
-		this->webrtcDataChannel->Close();
+		this->dataChannel->Close();
 		this->listener->OnTransportClose(this);
 	}
 } // namespace mediasoupclient

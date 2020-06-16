@@ -3,8 +3,6 @@
 
 #include <json.hpp>
 #include <api/data_channel_interface.h>
-#include <api/media_stream_interface.h> // webrtc::MediaStreamTrackInterface
-#include <api/rtp_receiver_interface.h> // webrtc::RtpReceiverInterface
 #include <string>
 
 namespace mediasoupclient

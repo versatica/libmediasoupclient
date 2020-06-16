@@ -28,15 +28,14 @@ namespace mediasoupclient
 			virtual void OnOpen(DataProducer* dataProducer)  = 0;
 			virtual void OnClose(DataProducer* dataProducer) = 0;
 
-			virtual void OnBufferedAmountChange(DataProducer* dataProducer, uint64_t sent_data_size) = 0;
-			virtual void OnTransportClose(DataProducer* dataProducer)                                = 0;
+			virtual void OnBufferedAmountChange(DataProducer* dataProducer, uint64_t sentDataSize) = 0;
+			virtual void OnTransportClose(DataProducer* dataProducer)                              = 0;
 		};
 
 	private:
 		PrivateListener* privateListener;
 		Listener* listener;
 		std::string id;
-		// std::string _localId;
 		rtc::scoped_refptr<webrtc::DataChannelInterface> webrtcDataChannel;
 		bool closed;
 		nlohmann::json sctpStreamParameters;
@@ -50,31 +49,28 @@ namespace mediasoupclient
 		  DataProducer::PrivateListener* privateListener,
 		  DataProducer::Listener* listener,
 		  const std::string& id,
-		  // const std::string& localId,
 		  rtc::scoped_refptr<webrtc::DataChannelInterface> webrtcDataChannel,
 		  const nlohmann::json& sctpStreamParameters,
 		  const nlohmann::json& appData);
 		const std::string& GetId() const;
 		std::string GetLocalId() const;
-		// const std::string& GetLocalId() const;
 		bool IsClosed() const;
 		const nlohmann::json& GetSctpStreamParameters() const;
-		webrtc::DataChannelInterface::DataState GetReadyState(); // I would call this GetDataState()
+		webrtc::DataChannelInterface::DataState GetReadyState() const;
 		std::string GetLabel();
 		std::string GetProtocol();
 		uint64_t GetBufferedAmount() const;
-		uint64_t BufferedAmountLowThreshold;
 		const nlohmann::json& GetAppData() const;
 		void Close();
 		void Send(const webrtc::DataBuffer& buffer);
 
-		// from DataChannelObserver
+		/* Virtual methods inherited from webrtc::DataChannelObserver. */
 	public:
 		void OnStateChange() override;
 		//  A data buffer was successfully received.
 		void OnMessage(const webrtc::DataBuffer& buffer) override;
 		// The data channel's buffered_amount has changed.
-		void OnBufferedAmountChange(uint64_t sent_data_size) override;
+		void OnBufferedAmountChange(uint64_t sentDataSize) override;
 	};
 } // namespace mediasoupclient
 

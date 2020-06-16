@@ -157,7 +157,7 @@ namespace mediasoupclient
 		};
 
 		this->sendHandler.reset(new SendHandler(
-		  this,
+		  dynamic_cast<SendHandler::PrivateListener*>(this),
 		  iceParameters,
 		  iceCandidates,
 		  dtlsParameters,
@@ -403,7 +403,12 @@ namespace mediasoupclient
 		this->hasSctpParameters = sctpParameters != nullptr && sctpParameters.is_object();
 
 		this->recvHandler.reset(new RecvHandler(
-		  this, iceParameters, iceCandidates, dtlsParameters, sctpParameters, peerConnectionOptions));
+		  dynamic_cast<RecvHandler::PrivateListener*>(this),
+		  iceParameters,
+		  iceCandidates,
+		  dtlsParameters,
+		  sctpParameters,
+		  peerConnectionOptions));
 
 		Transport::SetHandler(this->recvHandler.get());
 	}
@@ -483,8 +488,8 @@ namespace mediasoupclient
 	 */
 	DataConsumer* RecvTransport::ConsumeData(
 	  DataConsumer::Listener* listener,
-	  const std::string& dataConsumerId,
-	  const std::string& dataProducerId,
+	  const std::string& id,
+	  const std::string& producerId,
 	  const std::string& label,
 	  const std::string& protocol,
 	  const nlohmann::json& appData)
@@ -496,13 +501,12 @@ namespace mediasoupclient
 
 		if (this->closed)
 			MSC_THROW_INVALID_STATE_ERROR("RecvTransport closed");
-		else if (dataConsumerId.empty())
-			MSC_THROW_TYPE_ERROR("missing dataConsumerId");
-		else if (dataProducerId.empty())
+		else if (id.empty())
+			MSC_THROW_TYPE_ERROR("missing id");
+		else if (producerId.empty())
 			MSC_THROW_TYPE_ERROR("missing producerId");
 		else if (!this->hasSctpParameters)
-			MSC_THROW_TYPE_ERROR(
-			  "Cannot use DataChannels with this transport. SctpParameters were not set for this transport.");
+			MSC_THROW_TYPE_ERROR("Cannot use DataChannels with this transport. SctpParameters are not set.");
 
 		// This may throw.
 		RecvHandler::RecvDataChannel recvDataChannel =
@@ -511,8 +515,8 @@ namespace mediasoupclient
 		auto dataConsumer = new DataConsumer(
 		  listener,
 		  this,
-		  dataConsumerId,
-		  dataProducerId,
+		  id,
+		  producerId,
 		  recvDataChannel.webrtcDataChannel,
 		  recvDataChannel.sctpStreamParameters,
 		  appData);

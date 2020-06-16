@@ -11,10 +11,10 @@
 
 using json = nlohmann::json;
 
-#define SCTP_NUM_STREAMS_OS 1024u
-#define SCTP_NUM_STREAMS_MIS 1024u
+constexpr uint16_t SctpNumStreamsOs{ 1024u };
+constexpr uint16_t SctpNumStreamsMis{ 1024u };
 
-static json SctpNumStreams = { { "OS", 1024u }, { "MIS", 1024u } };
+json SctpNumStreams = { { "OS", SctpNumStreamsOs }, { "MIS", SctpNumStreamsMis } };
 
 // Static functions declaration.
 static void fillJsonRtpEncodingParameters(
@@ -96,7 +96,7 @@ namespace mediasoupclient
 
 		configuration.servers.clear();
 
-		for (auto& iceServerUri : iceServerUris)
+		for (const auto & iceServerUri : iceServerUris)
 		{
 			webrtc::PeerConnectionInterface::IceServer iceServer;
 
@@ -117,7 +117,7 @@ namespace mediasoupclient
 		return this->privateListener->OnConnectionStateChange(newState);
 	}
 
-	void Handler::SetupTransport(const std::string& localDtlsRole, json localSdpObject)
+	void Handler::SetupTransport(const std::string& localDtlsRole, json& localSdpObject)
 	{
 		MSC_TRACE();
 
@@ -333,7 +333,8 @@ namespace mediasoupclient
 		};
 		/* clang-format on */
 
-		if (dataChannelInit.maxRetransmitTime.has_value()) {
+		if (dataChannelInit.maxRetransmitTime.has_value())
+		{
 			/* clang-format off */
 			json maxPacketLifeTime =
 			{
@@ -344,14 +345,15 @@ namespace mediasoupclient
 			sctpStreamParameters.insert(maxPacketLifeTime.begin(), maxPacketLifeTime.end());
 		}
 
-		if (dataChannelInit.maxRetransmits.has_value()) {
+		if (dataChannelInit.maxRetransmits.has_value())
+		{
 			/* clang-format off */
 			json maxRetransmits =
 			{
 				{ "maxRetransmits" , dataChannelInit.maxRetransmits.value_or(0u) },
 			};
 			/* clang-format on */
-			
+
 			sctpStreamParameters.insert(maxRetransmits.begin(), maxRetransmits.end());
 		}
 
@@ -362,7 +364,7 @@ namespace mediasoupclient
 		  this->pc->CreateDataChannel(label, &dataChannelInit);
 
 		// Increase next id.
-		this->nextSendSctpStreamId = (this->nextSendSctpStreamId + 1) % SCTP_NUM_STREAMS_MIS;
+		this->nextSendSctpStreamId = (this->nextSendSctpStreamId + 1) % SctpNumStreamsMis;
 
 		// If this is the first DataChannel we need to create the SDP answer with
 		// m=application section.
@@ -613,7 +615,7 @@ namespace mediasoupclient
 		else
 			localId = std::to_string(this->mapMidTransceiver.size());
 
-		auto& cname = (*rtpParameters)["rtcp"]["cname"];
+		const auto & cname = (*rtpParameters)["rtcp"]["cname"];
 
 		this->remoteSdp->Receive(localId, kind, *rtpParameters, cname, id);
 
@@ -699,7 +701,7 @@ namespace mediasoupclient
 		  this->pc->CreateDataChannel(label, &dataChannelInit);
 
 		// Increase next id.
-		this->nextSendSctpStreamId = (this->nextSendSctpStreamId + 1) % SCTP_NUM_STREAMS_MIS;
+		this->nextSendSctpStreamId = (this->nextSendSctpStreamId + 1) % SctpNumStreamsMis;
 
 		// If this is the first DataChannel we need to create the SDP answer with
 		// m=application section.

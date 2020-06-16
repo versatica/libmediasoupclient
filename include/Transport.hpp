@@ -69,7 +69,7 @@ namespace mediasoupclient
 		size_t maxSctpMessageSize{ 0u };
 		// Whether the Consumer for RTP probation has been created.
 		bool probatorConsumerCreated{ false };
-		// Whether this transport supports DataChannel
+		// Whether this transport supports DataChannel.
 		bool hasSctpParameters{ false };
 
 	private:
@@ -101,12 +101,13 @@ namespace mediasoupclient
 			  const std::string& kind,
 			  nlohmann::json rtpParameters,
 			  const nlohmann::json& appData) = 0;
+
 			virtual std::future<std::string> OnProduceData(
 			  SendTransport* transport,
 			  const nlohmann::json& sctpStreamParameters,
 			  const std::string& label,
 			  const std::string& protocol,
-			  const nlohmann::json& appData); // not virtual so we can use only the Producer if we want to
+			  const nlohmann::json& appData) = 0;
 		};
 
 	private:
@@ -199,8 +200,8 @@ namespace mediasoupclient
 
 		DataConsumer* ConsumeData(
 		  DataConsumer::Listener* listener,
-		  const std::string& dataConsumerId,
-		  const std::string& dataProducerId,
+		  const std::string& id,
+		  const std::string& producerId,
 		  const std::string& label,
 		  const std::string& protocol,
 		  const nlohmann::json& appData);

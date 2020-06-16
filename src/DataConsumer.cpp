@@ -24,7 +24,6 @@ namespace mediasoupclient
 		this->webrtcDataChannel->RegisterObserver(this);
 	}
 
-	// From webrtc::DataChannelObsever
 	// The data channel state has changed.
 	void DataConsumer::OnStateChange()
 	{
@@ -61,7 +60,7 @@ namespace mediasoupclient
 	}
 
 	// The data channel's buffered_amount has changed.
-	void DataConsumer::OnBufferedAmountChange(uint64_t sent_data_size)
+	void DataConsumer::OnBufferedAmountChange(uint64_t /*sentDataSize*/)
 	{
 		MSC_TRACE();
 		// Should not happen on consumer.
@@ -70,7 +69,7 @@ namespace mediasoupclient
 	/**
 	 * DataConsumer id.
 	 */
-	const std::string& DataConsumer::GetId()
+	const std::string& DataConsumer::GetId() const
 	{
 		MSC_TRACE();
 
@@ -83,64 +82,71 @@ namespace mediasoupclient
 
 		return std::to_string(this->webrtcDataChannel->id());
 	}
+
 	/**
 	 * Associated DataProducer id.
 	 */
-	const std::string& DataConsumer::GetDataProducerId()
+	const std::string& DataConsumer::GetDataProducerId() const
 	{
 		MSC_TRACE();
 
 		return this->dataProducerId;
 	}
+
 	/**
 	 * Whether the DataConsumer is closed.
 	 */
-	const bool DataConsumer::IsClosed()
+	bool DataConsumer::IsClosed() const
 	{
 		MSC_TRACE();
 
 		return this->closed;
 	}
+
 	/**
 	 * SCTP stream parameters.
 	 */
-	const json& DataConsumer::GetSctpStreamParameters()
+	const json& DataConsumer::GetSctpStreamParameters() const
 	{
 		MSC_TRACE();
 
 		return this->sctpParameters;
 	}
+
 	/**
 	 * DataChannel readyState.
 	 */
-	webrtc::DataChannelInterface::DataState DataConsumer::GetReadyState()
+	webrtc::DataChannelInterface::DataState DataConsumer::GetReadyState() const
 	{
 		MSC_TRACE();
 
 		return this->webrtcDataChannel->state();
 	}
+
 	/**
 	 * DataChannel label.
 	 */
-	std::string DataConsumer::GetLabel()
+	std::string DataConsumer::GetLabel() const
 	{
 		MSC_TRACE();
 
 		return this->webrtcDataChannel->label();
 	}
+
 	/**
 	 * DataChannel protocol.
 	 */
-	std::string DataConsumer::GetProtocol()
+	std::string DataConsumer::GetProtocol() const
 	{
 		MSC_TRACE();
 
 		return this->webrtcDataChannel->protocol();
 	}
+
 	/**
 	 * App custom data.
 	 */
-	const json& DataConsumer::GetAppData()
+	const json& DataConsumer::GetAppData() const
 	{
 		MSC_TRACE();
 
@@ -156,10 +162,12 @@ namespace mediasoupclient
 
 		if (this->closed)
 			return;
+
 		this->closed = true;
 		this->webrtcDataChannel->Close();
 		this->privateListener->OnClose(this);
 	}
+
 	/**
 	 * Transport was closed.
 	 */
@@ -169,6 +177,7 @@ namespace mediasoupclient
 
 		if (this->closed)
 			return;
+
 		this->closed = true;
 		this->webrtcDataChannel->Close();
 		this->listener->OnTransportClose(this);

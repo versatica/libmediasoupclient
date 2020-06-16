@@ -49,7 +49,7 @@ namespace mediasoupclient
 
 	protected:
 		void SetupTransport(
-		  const std::string& localDtlsRole, nlohmann::json localSdpObject = nlohmann::json::object());
+		  const std::string& localDtlsRole, nlohmann::json& localSdpObject);
 
 		/* Methods inherited from PeerConnectionListener. */
 	public:
@@ -59,13 +59,13 @@ namespace mediasoupclient
 		// PrivateListener instance.
 		PrivateListener* privateListener{ nullptr };
 		// Remote SDP instance.
-		std::unique_ptr<Sdp::RemoteSdp> remoteSdp;
+		std::unique_ptr<Sdp::RemoteSdp> remoteSdp{ nullptr };
 		// Got transport local and remote parameters.
 		bool transportReady{ false };
 		// Map of RTCTransceivers indexed by MID.
-		std::unordered_map<std::string, webrtc::RtpTransceiverInterface*> mapMidTransceiver;
+		std::unordered_map<std::string, webrtc::RtpTransceiverInterface*> mapMidTransceiver{};
 		// PeerConnection instance.
-		std::unique_ptr<PeerConnection> pc;
+		std::unique_ptr<PeerConnection> pc{ nullptr };
 		bool hasDataChannelMediaSection = false;
 		uint32_t nextSendSctpStreamId   = 0;
 	};

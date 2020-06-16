@@ -51,7 +51,7 @@ namespace mediasoupclient
 		return this->sctpStreamParameters;
 	}
 
-	webrtc::DataChannelInterface::DataState DataProducer::GetReadyState()
+	webrtc::DataChannelInterface::DataState DataProducer::GetReadyState() const
 	{
 		MSC_TRACE();
 
@@ -120,7 +120,7 @@ namespace mediasoupclient
 		this->listener->OnTransportClose(this);
 	}
 
-	// The data channel state have changed.
+	// The data channel state has changed.
 	void DataProducer::OnStateChange()
 	{
 		MSC_TRACE();
@@ -140,24 +140,22 @@ namespace mediasoupclient
 				this->listener->OnClose(this);
 				break;
 			default:
-				// should we throw an exception?
-				// MSC_THROW_ERROR("Unknown state", state); - cannot compile: Logger.hpp:103:23: error:
-				// ‘MSC_CLASS’ was not declared in this scope
+				MSC_ERROR("unknown state %s", webrtc::DataChannelInterface::DataStateString(state));
 				break;
 		}
 	}
 
 	//  A data buffer was successfully received.
-	void DataProducer::OnMessage(const webrtc::DataBuffer& buffer)
+	void DataProducer::OnMessage(const webrtc::DataBuffer& /*buffer*/)
 	{
-		// since this is a DataProducer, this method will never be called
+		MSC_ERROR("message received on DataProducer [dataProducer.id:%s]", this->GetId().c_str());
 	}
 
 	// The data channel's buffered_amount has changed.
-	void DataProducer::OnBufferedAmountChange(uint64_t sent_data_size)
+	void DataProducer::OnBufferedAmountChange(uint64_t sentDataSize)
 	{
 		MSC_TRACE();
 
-		this->listener->OnBufferedAmountChange(this, sent_data_size);
+		this->listener->OnBufferedAmountChange(this, sentDataSize);
 	}
 } // namespace mediasoupclient

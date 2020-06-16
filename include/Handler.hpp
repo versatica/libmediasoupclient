@@ -10,7 +10,6 @@
 #include <api/rtp_receiver_interface.h>    // webrtc::RtpReceiverInterface
 #include <api/rtp_sender_interface.h>      // webrtc::RtpSenderInterface
 #include <api/rtp_transceiver_interface.h> // webrtc::RtpTransceiverInterface
-
 #include <string>
 #include <unordered_map>
 

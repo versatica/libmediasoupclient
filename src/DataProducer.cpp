@@ -1,3 +1,5 @@
+#define MSC_CLASS "DataProducer"
+
 #include "DataProducer.hpp"
 #include "Logger.hpp"
 

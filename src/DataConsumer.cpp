@@ -1,3 +1,5 @@
+#define MSC_CLASS "DataConsumer"
+
 #include "DataConsumer.hpp"
 #include "Logger.hpp"
 #include "MediaSoupClientErrors.hpp"

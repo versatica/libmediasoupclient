@@ -559,7 +559,6 @@ namespace mediasoupclient
 
 	void RecvTransport::OnClose(DataConsumer* dataConsumer)
 	{
-		// TODO -implement this properly
 		MSC_TRACE();
 
 		this->dataConsumers.erase(dataConsumer->GetId());

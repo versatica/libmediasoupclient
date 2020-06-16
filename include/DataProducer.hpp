@@ -9,7 +9,6 @@
 
 namespace mediasoupclient
 {
-	// class Transport;
 	class SendTransport;
 
 	class DataProducer : public webrtc::DataChannelObserver

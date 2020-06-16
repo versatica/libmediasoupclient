@@ -331,26 +331,12 @@ namespace mediasoupclient
 
 		if (dataChannelInit.maxRetransmitTime.has_value())
 		{
-			/* clang-format off */
-			json maxPacketLifeTime =
-			{
-				{ "maxPacketLifeTime", dataChannelInit.maxRetransmitTime.value_or(0u) },
-			};
-			/* clang-format on */
-
-			sctpStreamParameters.insert(maxPacketLifeTime.begin(), maxPacketLifeTime.end());
+			sctpStreamParameters["maxPacketLifeTime"] = dataChannelInit.maxRetransmitTime.value();
 		}
 
 		if (dataChannelInit.maxRetransmits.has_value())
 		{
-			/* clang-format off */
-			json maxRetransmits =
-			{
-				{ "maxRetransmits", dataChannelInit.maxRetransmits.value_or(0u) },
-			};
-			/* clang-format on */
-
-			sctpStreamParameters.insert(maxRetransmits.begin(), maxRetransmits.end());
+			sctpStreamParameters["maxRetransmits"] = dataChannelInit.maxRetransmits.value();
 		}
 
 		// This will fill sctpStreamParameters's missing fields with default values.
@@ -377,23 +363,26 @@ namespace mediasoupclient
 				  return m.at("type").get<std::string>() == "application";
 			  });
 
-			if (*offerMediaObject == nullptr)
+			if (offerMediaObject == localSdpObject["media"].end())
 			{
-				MSC_THROW_ERROR("No m=application section needed to create the SDP answer");
+				MSC_THROW_ERROR("Missing 'application' media section in SDP offer");
 			}
 
 			if (!this->transportReady)
+			{
 				this->SetupTransport("server", localSdpObject);
+			}
 
 			MSC_DEBUG("calling pc.setLocalDescription() [offer:%s]", offer.c_str());
-			this->pc->SetLocalDescription(PeerConnection::SdpType::OFFER, offer);
 
+			this->pc->SetLocalDescription(PeerConnection::SdpType::OFFER, offer);
 			this->remoteSdp->SendSctpAssociation(*offerMediaObject);
+
 			auto sdpAnswer = this->remoteSdp->GetSdp();
 
 			MSC_DEBUG("calling pc.setRemoteDescription() [answer:%s]", sdpAnswer.c_str());
-			this->pc->SetRemoteDescription(PeerConnection::SdpType::ANSWER, sdpAnswer);
 
+			this->pc->SetRemoteDescription(PeerConnection::SdpType::ANSWER, sdpAnswer);
 			this->hasDataChannelMediaSection = true;
 		}
 
@@ -437,12 +426,6 @@ namespace mediasoupclient
 
 		// May throw.
 		this->pc->SetRemoteDescription(PeerConnection::SdpType::ANSWER, answer);
-	}
-
-	void SendHandler::StopSendingData(const std::string& localId)
-	{
-		// TODO
-		// We could remove the m=application from the SDP and renegotiate - but is that helpfull?
 	}
 
 	void SendHandler::ReplaceTrack(const std::string& localId, webrtc::MediaStreamTrackInterface* track)
@@ -680,8 +663,8 @@ namespace mediasoupclient
 		/* clang-format off */
 		nlohmann::json sctpStreamParameters =
 		{
-			{ "streamId", streamId               },
-			{ "ordered", dataChannelInit.ordered }
+			{ "streamId", streamId                },
+			{ "ordered",  dataChannelInit.ordered }
 		};
 		/* clang-format on */
 
@@ -702,6 +685,8 @@ namespace mediasoupclient
 			auto sdpOffer = this->remoteSdp->GetSdp();
 
 			MSC_DEBUG("calling pc->setRemoteDescription() [offer:%s]", sdpOffer.c_str());
+
+			// May throw.
 			this->pc->SetRemoteDescription(PeerConnection::SdpType::OFFER, sdpOffer);
 
 			webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
@@ -714,6 +699,8 @@ namespace mediasoupclient
 			}
 
 			MSC_DEBUG("calling pc->setLocalDescription() [answer: %s]", sdpAnswer.c_str());
+
+			// May throw.
 			this->pc->SetLocalDescription(PeerConnection::SdpType::ANSWER, sdpAnswer);
 
 			this->hasDataChannelMediaSection = true;
@@ -758,12 +745,6 @@ namespace mediasoupclient
 
 		// May throw.
 		this->pc->SetLocalDescription(PeerConnection::SdpType::ANSWER, answer);
-	}
-
-	void RecvHandler::StopReceivingData(const std::string& localId)
-	{
-		// TODO
-		// we could remove the m=application from the SPD negotiation, but is that helpful?
 	}
 
 	json RecvHandler::GetReceiverStats(const std::string& localId)

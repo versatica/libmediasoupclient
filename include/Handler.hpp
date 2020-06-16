@@ -111,7 +111,6 @@ namespace mediasoupclient
 		  std::vector<webrtc::RtpEncodingParameters>* encodings,
 		  const nlohmann::json* codecOptions);
 		void StopSending(const std::string& localId);
-		void StopSendingData(const std::string& localId);
 		void ReplaceTrack(const std::string& localId, webrtc::MediaStreamTrackInterface* track);
 		void SetMaxSpatialLayer(const std::string& localId, uint8_t spatialLayer);
 		nlohmann::json GetSenderStats(const std::string& localId);
@@ -148,7 +147,6 @@ namespace mediasoupclient
 		RecvResult Receive(
 		  const std::string& id, const std::string& kind, const nlohmann::json* rtpParameters);
 		void StopReceiving(const std::string& localId);
-		void StopReceivingData(const std::string& localId);
 		nlohmann::json GetReceiverStats(const std::string& localId);
 		void RestartIce(const nlohmann::json& iceParameters) override;
 		DataChannel ReceiveDataChannel(const std::string& label, webrtc::DataChannelInit dataChannelInit);

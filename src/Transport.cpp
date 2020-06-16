@@ -341,12 +341,6 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		this->dataProducers.erase(dataProducer->GetId());
-
-		if (this->closed)
-			return;
-
-		// May throw.
-		this->sendHandler->StopSendingData(dataProducer->GetLocalId());
 	}
 
 	void SendTransport::OnReplaceTrack(const Producer* producer, webrtc::MediaStreamTrackInterface* track)
@@ -552,12 +546,6 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		this->dataConsumers.erase(dataConsumer->GetId());
-
-		if (this->closed)
-			return;
-
-		// May throw.
-		this->recvHandler->StopReceivingData(dataConsumer->GetLocalId());
 	}
 
 	json RecvTransport::OnGetStats(const Consumer* consumer)

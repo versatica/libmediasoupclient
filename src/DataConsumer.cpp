@@ -46,7 +46,7 @@ namespace mediasoupclient
 				this->listener->OnClose(this);
 				break;
 			default:
-				// should we throw an exception?
+				MSC_ERROR("unknown state %s", webrtc::DataChannelInterface::DataStateString(state));
 				break;
 		}
 	}

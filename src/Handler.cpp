@@ -385,17 +385,13 @@ namespace mediasoupclient
 			if (!this->transportReady)
 				this->SetupTransport("server", localSdpObject);
 
-			MSC_DEBUG(
-			  "SendHandler::CreateSendDataChannel() | calling pc.setLocalDescription() [offer:%s]",
-			  offer.c_str());
+			MSC_DEBUG("calling pc.setLocalDescription() [offer:%s]", offer.c_str());
 			this->pc->SetLocalDescription(PeerConnection::SdpType::OFFER, offer);
 
 			this->remoteSdp->SendSctpAssociation(*offerMediaObject);
 			auto sdpAnswer = this->remoteSdp->GetSdp();
 
-			MSC_DEBUG(
-			  "SendHandler::CreateSendDataChannel() | calling pc.setRemoteDescription() [answer:%s]",
-			  sdpAnswer.c_str());
+			MSC_DEBUG("calling pc.setRemoteDescription() [answer:%s]", sdpAnswer.c_str());
 			this->pc->SetRemoteDescription(PeerConnection::SdpType::ANSWER, sdpAnswer);
 
 			this->hasDataChannelMediaSection = true;

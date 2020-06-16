@@ -145,7 +145,8 @@ namespace mediasoupclient
 		  const nlohmann::json& sctpParameters,
 		  const PeerConnection::Options* peerConnectionOptions);
 
-		RecvResult Receive(const std::string& id, const std::string& kind, const nlohmann::json* rtpParameters);
+		RecvResult Receive(
+		  const std::string& id, const std::string& kind, const nlohmann::json* rtpParameters);
 		void StopReceiving(const std::string& localId);
 		void StopReceivingData(const std::string& localId);
 		nlohmann::json GetReceiverStats(const std::string& localId);

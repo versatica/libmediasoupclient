@@ -664,7 +664,7 @@ namespace mediasoupclient
 
 		RecvResult recvResult;
 
-		recvResult.localId   = localId;
+		recvResult.localId     = localId;
 		recvResult.rtpReceiver = transceiver->receiver();
 		recvResult.track       = transceiver->receiver()->track();
 

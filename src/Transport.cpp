@@ -281,8 +281,8 @@ namespace mediasoupclient
 		// This may throw.
 		auto sendResult = this->sendHandler->SendDataChannel(label, dataChannelInit);
 
-		auto dataChannelId = this->listener->OnProduceData(
-		  this, sendResult.sctpStreamParameters, label, protocol, appData);
+		auto dataChannelId =
+		  this->listener->OnProduceData(this, sendResult.sctpStreamParameters, label, protocol, appData);
 
 		auto dataProducer = new DataProducer(
 		  this,

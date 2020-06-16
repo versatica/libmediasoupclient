@@ -327,8 +327,6 @@ namespace mediasoupclient
 		{
 			{ "streamId"	  , streamId },
 			{ "ordered"       , dataChannelInit.ordered },
-			// { "maxPacketLifeTime" , dataChannelInit.maxRetransmitTime.value_or(0u) },
-			// { "maxRetransmits"    , dataChannelInit.maxRetransmits.value_or(0u) },
 			{ "protocol", dataChannelInit.protocol }
 		};
 		/* clang-format on */

@@ -48,8 +48,7 @@ namespace mediasoupclient
 		virtual void RestartIce(const nlohmann::json& iceParameters) = 0;
 
 	protected:
-		void SetupTransport(
-		  const std::string& localDtlsRole, nlohmann::json& localSdpObject);
+		void SetupTransport(const std::string& localDtlsRole, nlohmann::json& localSdpObject);
 
 		/* Methods inherited from PeerConnectionListener. */
 	public:

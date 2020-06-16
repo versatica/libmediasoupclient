@@ -24,9 +24,8 @@ namespace mediasoupclient
 		class Listener
 		{
 		public:
-			virtual void OnOpen(DataProducer* dataProducer)  = 0;
-			virtual void OnClose(DataProducer* dataProducer) = 0;
-
+			virtual void OnOpen(DataProducer* dataProducer)                                        = 0;
+			virtual void OnClose(DataProducer* dataProducer)                                       = 0;
 			virtual void OnBufferedAmountChange(DataProducer* dataProducer, uint64_t sentDataSize) = 0;
 			virtual void OnTransportClose(DataProducer* dataProducer)                              = 0;
 		};

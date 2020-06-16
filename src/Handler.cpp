@@ -96,7 +96,7 @@ namespace mediasoupclient
 
 		configuration.servers.clear();
 
-		for (const auto & iceServerUri : iceServerUris)
+		for (const auto& iceServerUri : iceServerUris)
 		{
 			webrtc::PeerConnectionInterface::IceServer iceServer;
 
@@ -615,7 +615,7 @@ namespace mediasoupclient
 		else
 			localId = std::to_string(this->mapMidTransceiver.size());
 
-		const auto & cname = (*rtpParameters)["rtcp"]["cname"];
+		const auto& cname = (*rtpParameters)["rtcp"]["cname"];
 
 		this->remoteSdp->Receive(localId, kind, *rtpParameters, cname, id);
 

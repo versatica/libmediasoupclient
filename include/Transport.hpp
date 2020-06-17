@@ -203,8 +203,8 @@ namespace mediasoupclient
 		  const std::string& id,
 		  const std::string& producerId,
 		  const std::string& label,
-		  const std::string& protocol,
-		  const nlohmann::json& appData);
+		  const std::string& protocol   = std::string(),
+		  const nlohmann::json& appData = nlohmann::json::object());
 
 		/* Virtual methods inherited from Transport. */
 	public:

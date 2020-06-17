@@ -36,13 +36,6 @@ namespace mediasoupclient
 		return std::to_string(this->dataChannel->id());
 	}
 
-	bool DataProducer::IsClosed() const
-	{
-		MSC_TRACE();
-
-		return this->closed;
-	}
-
 	const json& DataProducer::GetSctpStreamParameters() const
 	{
 		MSC_TRACE();
@@ -83,6 +76,13 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		return this->appData;
+	}
+
+	bool DataProducer::IsClosed() const
+	{
+		MSC_TRACE();
+
+		return this->closed;
 	}
 
 	void DataProducer::Close()

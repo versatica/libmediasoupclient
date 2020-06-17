@@ -55,13 +55,13 @@ namespace mediasoupclient
 	public:
 		const std::string& GetId() const;
 		std::string GetLocalId() const;
-		bool IsClosed() const;
 		const nlohmann::json& GetSctpStreamParameters() const;
 		webrtc::DataChannelInterface::DataState GetReadyState() const;
 		std::string GetLabel();
 		std::string GetProtocol();
 		uint64_t GetBufferedAmount() const;
 		const nlohmann::json& GetAppData() const;
+		bool IsClosed() const;
 		void Close();
 		void Send(const webrtc::DataBuffer& buffer);
 

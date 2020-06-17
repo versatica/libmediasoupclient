@@ -47,12 +47,12 @@ namespace mediasoupclient
 		const std::string& GetId() const;
 		std::string GetLocalId() const;
 		const std::string& GetDataProducerId() const;
-		bool IsClosed() const;
 		const nlohmann::json& GetSctpStreamParameters() const;
 		webrtc::DataChannelInterface::DataState GetReadyState() const;
 		std::string GetLabel() const;
 		std::string GetProtocol() const;
 		const nlohmann::json& GetAppData() const;
+		bool IsClosed() const;
 		void Close();
 
 	private:

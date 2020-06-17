@@ -94,16 +94,6 @@ namespace mediasoupclient
 	}
 
 	/**
-	 * Whether the DataConsumer is closed.
-	 */
-	bool DataConsumer::IsClosed() const
-	{
-		MSC_TRACE();
-
-		return this->closed;
-	}
-
-	/**
 	 * SCTP stream parameters.
 	 */
 	const json& DataConsumer::GetSctpStreamParameters() const
@@ -151,6 +141,16 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		return this->appData;
+	}
+
+	/**
+	 * Whether the DataConsumer is closed.
+	 */
+	bool DataConsumer::IsClosed() const
+	{
+		MSC_TRACE();
+
+		return this->closed;
 	}
 
 	/**

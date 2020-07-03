@@ -56,13 +56,10 @@ endif(UNIX)
 target_link_libraries(test_mediasoupclient PRIVATE mediasoupclient)
 target_link_libraries(test_mediasoupclient PRIVATE ${CMAKE_DL_LIBS})
 
-# Create a library with required webrtc extra code and link against it.
-file(GLOB_RECURSE FAKE_AUDIO_CAPTURE
-	${LIBWEBRTC_BINARY_PATH}/pc/pc_test_utils/fake_audio_capture_module.o
+# Source Dependencies.
+add_subdirectory(deps/libwebrtc "${CMAKE_CURRENT_BINARY_DIR}/libwebrtc")
+
+# Public (interface) dependencies.
+target_link_libraries(test_mediasoupclient PUBLIC
+	webrtc
 )
-
-set(WEBRTC_EXTRA_OBJS ${FAKE_AUDIO_CAPTURE})
-
-add_library (webrtc_extra STATIC ${WEBRTC_EXTRA_OBJS})
-set_target_properties(webrtc_extra PROPERTIES LINKER_LANGUAGE CXX)
-target_link_libraries (test_mediasoupclient PUBLIC webrtc_extra)

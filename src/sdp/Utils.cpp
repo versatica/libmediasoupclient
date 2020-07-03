@@ -7,9 +7,10 @@
 #include <algorithm> // ::transform
 #include <cctype>    // ::tolower
 #include <map>
-#include <unordered_map>
-#include <unordered_set>
+#include <set>
+#include <string>
 #include <vector>
+#include <list>
 
 namespace mediasoupclient
 {
@@ -404,20 +405,22 @@ namespace mediasoupclient
 
 			json getRtpEncodings(const json& offerMediaObject)
 			{
-				std::unordered_set<uint32_t> ssrcs;
+				std::list<uint32_t> ssrcs;
 
 				for (auto& line : offerMediaObject["ssrcs"])
 				{
 					auto ssrc = line["id"].get<uint32_t>();
-					ssrcs.insert(ssrc);
+					ssrcs.push_back(ssrc);
 				}
 
 				if (ssrcs.empty())
 					MSC_THROW_ERROR("no a=ssrc lines found");
 
+				ssrcs.unique();
+				
 				// Get media and RTX SSRCs.
 
-				std::unordered_map<uint32_t, uint32_t> ssrcToRtxSsrc;
+				std::map<uint32_t, uint32_t> ssrcToRtxSsrc;
 
 				auto jsonSsrcGroupsIt = offerMediaObject.find("ssrcGroups");
 				if (jsonSsrcGroupsIt != offerMediaObject.end())
@@ -435,37 +438,31 @@ namespace mediasoupclient
 						auto ssrc    = std::stoull(v[0]);
 						auto rtxSsrc = std::stoull(v[1]);
 
-						if (ssrcs.find(ssrc) != ssrcs.end())
-						{
-							// Remove both the SSRC and RTX SSRC from the Set so later we know that they
-							// are already handled.
-							ssrcs.erase(ssrc);
-							ssrcs.erase(rtxSsrc);
-						}
+						// Remove the RTX SSRC from the List so later we know that they
+						// are already handled.
+						ssrcs.remove(rtxSsrc);
+
 
 						// Add to the map.
 						ssrcToRtxSsrc[ssrc] = rtxSsrc;
 					}
 				}
 
-				// If the Set of SSRCs is not empty it means that RTX is not being used, so take
-				// media SSRCs from there.
-				for (auto& ssrc : ssrcs)
-				{
-					// Add to the map.
-					ssrcToRtxSsrc[ssrc] = 0u;
-				}
 
 				// Fill RTP parameters.
 
 				auto encodings = json::array();
 
-				for (auto& kv : ssrcToRtxSsrc)
+				for (auto& ssrc : ssrcs)
 				{
-					json encoding = { { "ssrc", kv.first } };
+					json encoding = { { "ssrc", ssrc } };
 
-					if (kv.second != 0u)
-						encoding["rtx"] = { { "ssrc", kv.second } };
+					auto it = ssrcToRtxSsrc.find(ssrc);
+					
+					if (it != ssrcToRtxSsrc.end())
+					{
+						encoding["rtx"] = { { "ssrc", it->second } };
+					}
 
 					encodings.push_back(encoding);
 				}

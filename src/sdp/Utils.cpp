@@ -7,7 +7,8 @@
 #include <algorithm> // ::transform
 #include <cctype>    // ::tolower
 #include <map>
-#include <set>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 namespace mediasoupclient
@@ -403,7 +404,7 @@ namespace mediasoupclient
 
 			json getRtpEncodings(const json& offerMediaObject)
 			{
-				std::set<uint32_t> ssrcs;
+				std::unordered_set<uint32_t> ssrcs;
 
 				for (auto& line : offerMediaObject["ssrcs"])
 				{
@@ -416,7 +417,7 @@ namespace mediasoupclient
 
 				// Get media and RTX SSRCs.
 
-				std::map<uint32_t, uint32_t> ssrcToRtxSsrc;
+				std::unordered_map<uint32_t, uint32_t> ssrcToRtxSsrc;
 
 				auto jsonSsrcGroupsIt = offerMediaObject.find("ssrcGroups");
 				if (jsonSsrcGroupsIt != offerMediaObject.end())

@@ -31,7 +31,7 @@ namespace mediasoupclient
 				bool gotAudio = false;
 				bool gotVideo = false;
 
-				for (auto& m : sdpObject["media"])
+				for (const auto& m : sdpObject["media"])
 				{
 					auto kind = m["type"].get<std::string>();
 
@@ -55,7 +55,7 @@ namespace mediasoupclient
 					}
 
 					// Get codecs.
-					for (auto& rtp : m["rtp"])
+					for (const auto& rtp : m["rtp"])
 					{
 						std::string mimeType(kind);
 						mimeType.append("/").append(rtp["codec"].get<std::string>());
@@ -86,7 +86,7 @@ namespace mediasoupclient
 					}
 
 					// Get codec parameters.
-					for (auto& fmtp : m["fmtp"])
+					for (const auto& fmtp : m["fmtp"])
 					{
 						auto parameters    = sdptransform::parseParams(fmtp["config"]);
 						auto jsonPayloadIt = codecsMap.find(fmtp["payload"]);
@@ -100,7 +100,7 @@ namespace mediasoupclient
 					}
 
 					// Get RTCP feedback for each codec.
-					for (auto& fb : m["rtcpFb"])
+					for (const auto& fb : m["rtcpFb"])
 					{
 						auto jsonCodecIt = codecsMap.find(std::stoi(fb["payload"].get<std::string>()));
 
@@ -125,7 +125,7 @@ namespace mediasoupclient
 					}
 
 					// Get RTP header extensions.
-					for (auto& ext : m["ext"])
+					for (const auto& ext : m["ext"])
 					{
 						// clang-format off
 						json headerExtension =
@@ -161,10 +161,11 @@ namespace mediasoupclient
 			{
 				MSC_TRACE();
 
-				json m, fingerprint;
+				json m;
+				json fingerprint;
 				std::string role;
 
-				for (auto& media : sdpObject["media"])
+				for (const auto& media : sdpObject["media"])
 				{
 					if (media.find("iceUfrag") != media.end() && media["port"] != 0)
 					{
@@ -340,7 +341,7 @@ namespace mediasoupclient
 					// clang-format on
 				}
 
-				for (uint8_t i = 0; i < rtxSsrcs.size(); ++i)
+				for (size_t i = 0; i < rtxSsrcs.size(); ++i)
 				{
 					auto ssrc    = ssrcs[i].get<uint32_t>();
 					auto rtxSsrc = rtxSsrcs[i].get<uint32_t>();
@@ -471,7 +472,7 @@ namespace mediasoupclient
 			{
 				MSC_TRACE();
 
-				for (auto& codec : offerRtpParameters["codecs"])
+				for (const auto& codec : offerRtpParameters["codecs"])
 				{
 					auto mimeType = codec["mimeType"].get<std::string>();
 

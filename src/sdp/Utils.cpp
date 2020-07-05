@@ -6,10 +6,10 @@
 #include "Utils.hpp"
 #include <algorithm> // ::transform
 #include <cctype>    // ::tolower
+#include <list>
 #include <map>
 #include <set>
 #include <vector>
-#include <list>
 
 namespace mediasoupclient
 {
@@ -397,7 +397,7 @@ namespace mediasoupclient
 				if (jsonSsrcIt == mSsrcs.end())
 					return "";
 
-				auto& ssrcCnameLine = *jsonSsrcIt;
+				const auto& ssrcCnameLine = *jsonSsrcIt;
 
 				return ssrcCnameLine["value"].get<std::string>();
 			}
@@ -406,7 +406,7 @@ namespace mediasoupclient
 			{
 				std::list<uint32_t> ssrcs;
 
-				for (auto& line : offerMediaObject["ssrcs"])
+				for (const auto& line : offerMediaObject["ssrcs"])
 				{
 					auto ssrc = line["id"].get<uint32_t>();
 					ssrcs.push_back(ssrc);
@@ -416,7 +416,7 @@ namespace mediasoupclient
 					MSC_THROW_ERROR("no a=ssrc lines found");
 
 				ssrcs.unique();
-				
+
 				// Get media and RTX SSRCs.
 
 				std::map<uint32_t, uint32_t> ssrcToRtxSsrc;
@@ -424,10 +424,10 @@ namespace mediasoupclient
 				auto jsonSsrcGroupsIt = offerMediaObject.find("ssrcGroups");
 				if (jsonSsrcGroupsIt != offerMediaObject.end())
 				{
-					auto& ssrcGroups = *jsonSsrcGroupsIt;
+					const auto& ssrcGroups = *jsonSsrcGroupsIt;
 
 					// First assume RTX is used.
-					for (auto& line : ssrcGroups)
+					for (const auto& line : ssrcGroups)
 					{
 						if (line["semantics"].get<std::string>() != "FID")
 							continue;
@@ -441,12 +441,10 @@ namespace mediasoupclient
 						// are already handled.
 						ssrcs.remove(rtxSsrc);
 
-
 						// Add to the map.
 						ssrcToRtxSsrc[ssrc] = rtxSsrc;
 					}
 				}
-
 
 				// Fill RTP parameters.
 
@@ -457,7 +455,7 @@ namespace mediasoupclient
 					json encoding = { { "ssrc", ssrc } };
 
 					auto it = ssrcToRtxSsrc.find(ssrc);
-					
+
 					if (it != ssrcToRtxSsrc.end())
 					{
 						encoding["rtx"] = { { "ssrc", it->second } };

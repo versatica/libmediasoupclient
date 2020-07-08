@@ -6,6 +6,7 @@
 #include "Utils.hpp"
 #include <algorithm> // ::transform
 #include <cctype>    // ::tolower
+#include <list>
 #include <map>
 #include <set>
 #include <vector>
@@ -30,7 +31,7 @@ namespace mediasoupclient
 				bool gotAudio = false;
 				bool gotVideo = false;
 
-				for (auto& m : sdpObject["media"])
+				for (const auto& m : sdpObject["media"])
 				{
 					auto kind = m["type"].get<std::string>();
 
@@ -54,7 +55,7 @@ namespace mediasoupclient
 					}
 
 					// Get codecs.
-					for (auto& rtp : m["rtp"])
+					for (const auto& rtp : m["rtp"])
 					{
 						std::string mimeType(kind);
 						mimeType.append("/").append(rtp["codec"].get<std::string>());
@@ -85,7 +86,7 @@ namespace mediasoupclient
 					}
 
 					// Get codec parameters.
-					for (auto& fmtp : m["fmtp"])
+					for (const auto& fmtp : m["fmtp"])
 					{
 						auto parameters    = sdptransform::parseParams(fmtp["config"]);
 						auto jsonPayloadIt = codecsMap.find(fmtp["payload"]);
@@ -99,7 +100,7 @@ namespace mediasoupclient
 					}
 
 					// Get RTCP feedback for each codec.
-					for (auto& fb : m["rtcpFb"])
+					for (const auto& fb : m["rtcpFb"])
 					{
 						auto jsonCodecIt = codecsMap.find(std::stoi(fb["payload"].get<std::string>()));
 
@@ -124,7 +125,7 @@ namespace mediasoupclient
 					}
 
 					// Get RTP header extensions.
-					for (auto& ext : m["ext"])
+					for (const auto& ext : m["ext"])
 					{
 						// clang-format off
 						json headerExtension =
@@ -160,10 +161,11 @@ namespace mediasoupclient
 			{
 				MSC_TRACE();
 
-				json m, fingerprint;
+				json m;
+				json fingerprint;
 				std::string role;
 
-				for (auto& media : sdpObject["media"])
+				for (const auto& media : sdpObject["media"])
 				{
 					if (media.find("iceUfrag") != media.end() && media["port"] != 0)
 					{
@@ -339,7 +341,7 @@ namespace mediasoupclient
 					// clang-format on
 				}
 
-				for (uint8_t i = 0; i < rtxSsrcs.size(); ++i)
+				for (size_t i = 0; i < rtxSsrcs.size(); ++i)
 				{
 					auto ssrc    = ssrcs[i].get<uint32_t>();
 					auto rtxSsrc = rtxSsrcs[i].get<uint32_t>();
@@ -396,23 +398,25 @@ namespace mediasoupclient
 				if (jsonSsrcIt == mSsrcs.end())
 					return "";
 
-				auto& ssrcCnameLine = *jsonSsrcIt;
+				const auto& ssrcCnameLine = *jsonSsrcIt;
 
 				return ssrcCnameLine["value"].get<std::string>();
 			}
 
 			json getRtpEncodings(const json& offerMediaObject)
 			{
-				std::set<uint32_t> ssrcs;
+				std::list<uint32_t> ssrcs;
 
-				for (auto& line : offerMediaObject["ssrcs"])
+				for (const auto& line : offerMediaObject["ssrcs"])
 				{
 					auto ssrc = line["id"].get<uint32_t>();
-					ssrcs.insert(ssrc);
+					ssrcs.push_back(ssrc);
 				}
 
 				if (ssrcs.empty())
 					MSC_THROW_ERROR("no a=ssrc lines found");
+
+				ssrcs.unique();
 
 				// Get media and RTX SSRCs.
 
@@ -421,10 +425,10 @@ namespace mediasoupclient
 				auto jsonSsrcGroupsIt = offerMediaObject.find("ssrcGroups");
 				if (jsonSsrcGroupsIt != offerMediaObject.end())
 				{
-					auto& ssrcGroups = *jsonSsrcGroupsIt;
+					const auto& ssrcGroups = *jsonSsrcGroupsIt;
 
 					// First assume RTX is used.
-					for (auto& line : ssrcGroups)
+					for (const auto& line : ssrcGroups)
 					{
 						if (line["semantics"].get<std::string>() != "FID")
 							continue;
@@ -434,37 +438,29 @@ namespace mediasoupclient
 						auto ssrc    = std::stoull(v[0]);
 						auto rtxSsrc = std::stoull(v[1]);
 
-						if (ssrcs.find(ssrc) != ssrcs.end())
-						{
-							// Remove both the SSRC and RTX SSRC from the Set so later we know that they
-							// are already handled.
-							ssrcs.erase(ssrc);
-							ssrcs.erase(rtxSsrc);
-						}
+						// Remove the RTX SSRC from the List so later we know that they
+						// are already handled.
+						ssrcs.remove(rtxSsrc);
 
 						// Add to the map.
 						ssrcToRtxSsrc[ssrc] = rtxSsrc;
 					}
 				}
 
-				// If the Set of SSRCs is not empty it means that RTX is not being used, so take
-				// media SSRCs from there.
-				for (auto& ssrc : ssrcs)
-				{
-					// Add to the map.
-					ssrcToRtxSsrc[ssrc] = 0u;
-				}
-
 				// Fill RTP parameters.
 
 				auto encodings = json::array();
 
-				for (auto& kv : ssrcToRtxSsrc)
+				for (auto& ssrc : ssrcs)
 				{
-					json encoding = { { "ssrc", kv.first } };
+					json encoding = { { "ssrc", ssrc } };
 
-					if (kv.second != 0u)
-						encoding["rtx"] = { { "ssrc", kv.second } };
+					auto it = ssrcToRtxSsrc.find(ssrc);
+
+					if (it != ssrcToRtxSsrc.end())
+					{
+						encoding["rtx"] = { { "ssrc", it->second } };
+					}
 
 					encodings.push_back(encoding);
 				}
@@ -476,7 +472,7 @@ namespace mediasoupclient
 			{
 				MSC_TRACE();
 
-				for (auto& codec : offerRtpParameters["codecs"])
+				for (const auto& codec : offerRtpParameters["codecs"])
 				{
 					auto mimeType = codec["mimeType"].get<std::string>();
 

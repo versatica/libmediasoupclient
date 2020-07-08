@@ -464,7 +464,9 @@ namespace mediasoupclient
 		auto* transceiver = localIdIt->second;
 		auto parameters   = transceiver->sender()->GetParameters();
 
-		bool hasLowEncoding{ false }, hasMediumEncoding{ false }, hasHighEncoding{ false };
+		bool hasLowEncoding{ false };
+		bool hasMediumEncoding{ false };
+		bool hasHighEncoding{ false };
 		webrtc::RtpEncodingParameters* lowEncoding{ nullptr };
 		webrtc::RtpEncodingParameters* mediumEncoding{ nullptr };
 		webrtc::RtpEncodingParameters* highEncoding{ nullptr };

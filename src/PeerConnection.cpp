@@ -183,8 +183,8 @@ namespace mediasoupclient
 		rtc::scoped_refptr<SetSessionDescriptionObserver> observer(
 		  new rtc::RefCountedObject<SetSessionDescriptionObserver>());
 
-		auto& typeStr = sdpType2String[type];
-		auto future   = observer->GetFuture();
+		const auto& typeStr = sdpType2String[type];
+		auto future         = observer->GetFuture();
 
 		sessionDescription = webrtc::CreateSessionDescription(typeStr, sdp, &error);
 		if (sessionDescription == nullptr)
@@ -213,8 +213,8 @@ namespace mediasoupclient
 		rtc::scoped_refptr<SetSessionDescriptionObserver> observer(
 		  new rtc::RefCountedObject<SetSessionDescriptionObserver>());
 
-		auto& typeStr = sdpType2String[type];
-		auto future   = observer->GetFuture();
+		const auto& typeStr = sdpType2String[type];
+		auto future         = observer->GetFuture();
 
 		sessionDescription = webrtc::CreateSessionDescription(typeStr, sdp, &error);
 		if (sessionDescription == nullptr)

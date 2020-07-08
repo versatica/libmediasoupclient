@@ -641,7 +641,6 @@ namespace mediasoupclient
 			auto orderedIt           = params.find("ordered");
 			auto maxPacketLifeTimeIt = params.find("maxPacketLifeTime");
 			auto maxRetransmitsIt    = params.find("maxRetransmits");
-			auto priorityIt          = params.find("priority");
 			auto labelIt             = params.find("label");
 			auto protocolIt          = params.find("protocol");
 
@@ -693,10 +692,6 @@ namespace mediasoupclient
 			{
 				params["ordered"] = false;
 			}
-
-			// priority is optional. If unset set it to empty string.
-			if (priorityIt == params.end() || !priorityIt->is_string())
-				params["priority"] = "";
 
 			// label is optional. If unset set it to empty string.
 			if (labelIt == params.end() || !labelIt->is_string())

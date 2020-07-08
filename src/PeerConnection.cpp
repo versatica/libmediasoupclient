@@ -366,6 +366,26 @@ namespace mediasoupclient
 		return future.get();
 	}
 
+	rtc::scoped_refptr<webrtc::DataChannelInterface> PeerConnection::CreateDataChannel(
+	  const std::string& label, const webrtc::DataChannelInit* config)
+	{
+		MSC_TRACE();
+
+		rtc::scoped_refptr<webrtc::DataChannelInterface> webrtcDataChannel =
+		  this->pc->CreateDataChannel(label, config);
+
+		if (webrtcDataChannel.get())
+		{
+			MSC_DEBUG("Success creating data channel");
+		}
+		else
+		{
+			MSC_THROW_ERROR("Failed creating data channel");
+		}
+
+		return webrtcDataChannel;
+	}
+
 	/* SetSessionDescriptionObserver */
 
 	std::future<void> PeerConnection::SetSessionDescriptionObserver::GetFuture()

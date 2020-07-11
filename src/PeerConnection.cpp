@@ -183,8 +183,8 @@ namespace mediasoupclient
 		rtc::scoped_refptr<SetSessionDescriptionObserver> observer(
 		  new rtc::RefCountedObject<SetSessionDescriptionObserver>());
 
-		auto& typeStr = sdpType2String[type];
-		auto future   = observer->GetFuture();
+		const auto& typeStr = sdpType2String[type];
+		auto future         = observer->GetFuture();
 
 		sessionDescription = webrtc::CreateSessionDescription(typeStr, sdp, &error);
 		if (sessionDescription == nullptr)
@@ -213,8 +213,8 @@ namespace mediasoupclient
 		rtc::scoped_refptr<SetSessionDescriptionObserver> observer(
 		  new rtc::RefCountedObject<SetSessionDescriptionObserver>());
 
-		auto& typeStr = sdpType2String[type];
-		auto future   = observer->GetFuture();
+		const auto& typeStr = sdpType2String[type];
+		auto future         = observer->GetFuture();
 
 		sessionDescription = webrtc::CreateSessionDescription(typeStr, sdp, &error);
 		if (sessionDescription == nullptr)
@@ -364,6 +364,26 @@ namespace mediasoupclient
 		this->pc->GetStats(std::move(selector), callback);
 
 		return future.get();
+	}
+
+	rtc::scoped_refptr<webrtc::DataChannelInterface> PeerConnection::CreateDataChannel(
+	  const std::string& label, const webrtc::DataChannelInit* config)
+	{
+		MSC_TRACE();
+
+		rtc::scoped_refptr<webrtc::DataChannelInterface> webrtcDataChannel =
+		  this->pc->CreateDataChannel(label, config);
+
+		if (webrtcDataChannel.get())
+		{
+			MSC_DEBUG("Success creating data channel");
+		}
+		else
+		{
+			MSC_THROW_ERROR("Failed creating data channel");
+		}
+
+		return webrtcDataChannel;
 	}
 
 	/* SetSessionDescriptionObserver */

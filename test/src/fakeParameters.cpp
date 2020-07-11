@@ -270,9 +270,11 @@ json generateTransportRemoteParameters()
 		},
 		"sctpParameters" :
 		{
-			"port"           : 5000,
-			"numStreams"     : 2048,
-			"maxMessageSize" : 2000000
+			"port"              : 5000,
+			"OS"                : 1024,
+			"MIS"               : 1024,
+			"numStreams"        : 2048,
+			"maxMessageSize"    : 2000000
 		}
 	})"_json;
 

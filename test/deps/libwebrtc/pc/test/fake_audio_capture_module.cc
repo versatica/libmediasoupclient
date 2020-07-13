@@ -433,7 +433,7 @@ bool FakeAudioCaptureModule::CheckRecBuffer(int value) {
   return false;
 }
 
-bool FakeAudioCaptureModule::ShouldStartProcessing() {
+bool FakeAudioCaptureModule::ShouldStartProcessing() const {
   return recording_ || playing_;
 }
 

@@ -213,6 +213,13 @@ namespace mediasoupclient
 								auto opusMaxPlaybackRate           = opusMaxPlaybackRateIt->get<uint32_t>();
 								codecParameters["maxplaybackrate"] = opusMaxPlaybackRate;
 							}
+
+							auto opusPtimeIt = codecOptions->find("opusPtime");
+							if (opusPtimeIt != codecOptions->end())
+							{
+								auto opusPtime           = opusPtimeIt->get<uint32_t>();
+								codecParameters["ptime"] = opusPtime;
+							}
 						}
 						else if (mimeType == "video/vp8" || mimeType == "video/vp9" || mimeType == "video/h264" || mimeType == "video/h265")
 						{

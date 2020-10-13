@@ -419,7 +419,7 @@ SCENARIO("jsepSdp", "[parse]")
 	auto sdp = helpers::readFile("test/data/jsep.sdp");
 	auto session = sdptransform::parse(sdp);
 
-	REQUIRE(!session.empty());
+	REQUIRE(session.size() > 0);
 	REQUIRE(session.find("media") != session.end());
 
 	auto& media = session.at("media");
@@ -451,7 +451,7 @@ SCENARIO("alacSdp", "[parse]")
 	auto sdp = helpers::readFile("test/data/alac.sdp");
 	auto session = sdptransform::parse(sdp);
 
-	REQUIRE(!session.empty());
+	REQUIRE(session.size() > 0);
 	REQUIRE(session.find("media") != session.end());
 
 	auto& media = session.at("media");
@@ -479,7 +479,7 @@ SCENARIO("onvifSdp", "[parse]")
 	auto sdp = helpers::readFile("test/data/onvif.sdp");
 	auto session = sdptransform::parse(sdp);
 
-	REQUIRE(!session.empty());
+	REQUIRE(session.size() > 0);
 	REQUIRE(session.find("media") != session.end());
 
 	auto& media = session.at("media");
@@ -522,7 +522,7 @@ SCENARIO("ssrcSdp", "[parse]")
 	auto sdp = helpers::readFile("test/data/ssrc.sdp");
 	auto session = sdptransform::parse(sdp);
 
-	REQUIRE(!session.empty());
+	REQUIRE(session.size() > 0);
 	REQUIRE(session.find("media") != session.end());
 
 	auto& media = session.at("media");
@@ -549,7 +549,7 @@ SCENARIO("simulcastSdp", "[parse]")
 	auto sdp = helpers::readFile("test/data/simulcast.sdp");
 	auto session = sdptransform::parse(sdp);
 
-	REQUIRE(!session.empty());
+	REQUIRE(session.size() > 0);
 	REQUIRE(session.find("media") != session.end());
 
 	auto& media = session.at("media");
@@ -839,7 +839,7 @@ SCENARIO("st2022-6Sdp", "[parse]")
 	auto session = sdptransform::parse(sdp);
 
 	// Session sanity check.
-	REQUIRE(!session.empty());
+	REQUIRE(session.size() > 0);
 	REQUIRE(session.find("media") != session.end());
 	auto& media = session.at("media");
 
@@ -865,7 +865,7 @@ SCENARIO("st2110-20Sdp", "[parse]")
 	auto session = sdptransform::parse(sdp);
 
 	// Session sanity check.
-	REQUIRE(!session.empty());
+	REQUIRE(session.size() > 0);
 	REQUIRE(session.find("media") != session.end());
 	auto& media = session.at("media");
 
@@ -908,7 +908,7 @@ SCENARIO("aes67", "[parse]")
 	auto sdp = helpers::readFile("test/data/aes67.sdp");
 	auto session = sdptransform::parse(sdp);
 
-	REQUIRE(!session.empty());
+	REQUIRE(session.size() > 0);
 	REQUIRE(session.find("media") != session.end());
 
 	auto& media = session.at("media");
@@ -938,7 +938,7 @@ SCENARIO("multicastttlSdp", "[parse]")
 	auto sdp = helpers::readFile("test/data/multicastttl.sdp");
 	auto session = sdptransform::parse(sdp);
 
-	REQUIRE(!session.empty());
+	REQUIRE(session.size() > 0);
 	REQUIRE(session.find("media") != session.end());
 
 	auto& media = session.at("media");
@@ -974,7 +974,7 @@ SCENARIO("extmapEncryptSdp", "[parse]")
 	auto sdp = helpers::readFile("test/data/extmap-encrypt.sdp");
 	auto session = sdptransform::parse(sdp);
 
-	REQUIRE(!session.empty());
+	REQUIRE(session.size() > 0);
 	REQUIRE(session.find("media") != session.end());
 
 	auto& media = session.at("media");

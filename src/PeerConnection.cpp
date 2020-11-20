@@ -445,11 +445,11 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		// This callback should take the ownership of |desc|.
-		std::unique_ptr<webrtc::SessionDescriptionInterface> owned_desc(desc);
+		std::unique_ptr<webrtc::SessionDescriptionInterface> ownedDesc(desc);
 
 		std::string sdp;
 
-		owned_desc->ToString(&sdp);
+		ownedDesc->ToString(&sdp);
 		this->promise.set_value(sdp);
 	};
 

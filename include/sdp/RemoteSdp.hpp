@@ -25,6 +25,7 @@ namespace mediasoupclient
 			  const nlohmann::json& iceCandidates,
 			  const nlohmann::json& dtlsParameters,
 			  const nlohmann::json& sctpParameters);
+			~RemoteSdp();
 
 		public:
 			Sdp::RemoteSdp::MediaSectionIdx GetNextMediaSectionIdx();

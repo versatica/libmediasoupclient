@@ -284,7 +284,7 @@ namespace mediasoupclient
 		auto dataChannelId =
 		  this->listener->OnProduceData(this, sendResult.sctpStreamParameters, label, protocol, appData);
 
-		auto dataProducer = new DataProducer(
+		auto* dataProducer = new DataProducer(
 		  this,
 		  dataProducerListener,
 		  dataChannelId.get(),

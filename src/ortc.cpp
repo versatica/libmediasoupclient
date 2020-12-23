@@ -17,7 +17,7 @@ static const std::string ProbatorMid("probator");
 
 // Static functions declaration.
 static bool isRtxCodec(const json& codec);
-static bool matchCodecs(json& aCodec, const json& bCodec, bool strict = false, bool modify = false);
+static bool matchCodecs(json& aCodec, json& bCodec, bool strict = false, bool modify = false);
 static bool matchHeaderExtensions(const json& aExt, const json& bExt);
 static json reduceRtcpFeedback(const json& codecA, const json& codecB);
 static uint8_t getH264PacketizationMode(const json& codec);
@@ -1564,7 +1564,7 @@ static bool isRtxCodec(const json& codec)
 	return std::regex_match(mimeType, match, RtxMimeTypeRegex);
 }
 
-static bool matchCodecs(json& aCodec, const json& bCodec, bool strict, bool modify)
+static bool matchCodecs(json& aCodec, json& bCodec, bool strict, bool modify)
 {
 	MSC_TRACE();
 
@@ -1629,9 +1629,15 @@ static bool matchCodecs(json& aCodec, const json& bCodec, bool strict, bool modi
 				auto profileLevelIdIt = newParameters.find("profile-level-id");
 
 				if (profileLevelIdIt != newParameters.end())
+				{
 					aCodec["parameters"]["profile-level-id"] = profileLevelIdIt->second;
+					bCodec["parameters"]["profile-level-id"] = profileLevelIdIt->second;
+				}
 				else
+				{
 					aCodec["parameters"].erase("profile-level-id");
+					bCodec["parameters"].erase("profile-level-id");
+				}
 			}
 		}
 	}

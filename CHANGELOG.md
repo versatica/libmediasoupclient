@@ -1,6 +1,12 @@
 # Changelog
 
 
+### 3.1.3 (WIP)
+
+* Fix H264 `profile-level-id` value in SDP answer.
+  - Same as in https://github.com/versatica/mediasoup-client/issues/148
+
+
 ### 3.1.2
 
 * Fix memory leak (#105). Thanks @ploverlake.

@@ -170,7 +170,7 @@ namespace mediasoupclient
 	}
 
 	RecvTransport* Device::CreateRecvTransport(
-	  Transport::Listener* listener,
+	  RecvTransport::Listener* listener,
 	  const std::string& id,
 	  const json& iceParameters,
 	  const json& iceCandidates,
@@ -210,7 +210,7 @@ namespace mediasoupclient
 	}
 
 	RecvTransport* Device::CreateRecvTransport(
-	  Transport::Listener* listener,
+	  RecvTransport::Listener* listener,
 	  const std::string& id,
 	  const json& iceParameters,
 	  const json& iceCandidates,

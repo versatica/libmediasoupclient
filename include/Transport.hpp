@@ -172,6 +172,12 @@ namespace mediasoupclient
 	                      public Consumer::PrivateListener,
 	                      public DataConsumer::PrivateListener
 	{
+	public:
+		/* Public Listener API */
+		class Listener : public Transport::Listener {
+
+		};
+
 	private:
 		RecvTransport(
 		  Listener* listener,
@@ -188,8 +194,6 @@ namespace mediasoupclient
 		friend Device;
 
 	public:
-		using Listener = Transport::Listener;
-
 		Consumer* Consume(
 		  Consumer::Listener* consumerListener,
 		  const std::string& id,

@@ -100,7 +100,7 @@ namespace mediasoupclient
 		{
 			webrtc::PeerConnectionInterface::IceServer iceServer;
 
-			iceServer.uri = iceServerUri;
+			iceServer.uri = iceServerUri.get<std::string>();
 			configuration.servers.push_back(iceServer);
 		}
 

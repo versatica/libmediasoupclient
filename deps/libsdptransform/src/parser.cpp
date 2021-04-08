@@ -6,6 +6,7 @@
 #include <ios>       // std::noskipws
 #include <algorithm> // std::find_if()
 #include <cctype>    // std::isspace()
+#include <cstdint>   // std::uint64_t
 
 namespace sdptransform
 {
@@ -293,15 +294,28 @@ namespace sdptransform
 				return str;
 			}
 
-			case 'd':
+			case 'u':
 			{
 				std::istringstream iss(str);
-				long long ll;
+				std::uint64_t ll;
 
 				iss >> std::noskipws >> ll;
 
 				if (iss.eof() && !iss.fail())
-					return std::stoll(str);
+					return ll;
+				else
+					return 0u;
+			}
+
+			case 'd':
+			{
+				std::istringstream iss(str);
+				std::int64_t ll;
+
+				iss >> std::noskipws >> ll;
+
+				if (iss.eof() && !iss.fail())
+					return ll;
 				else
 					return 0;
 			}

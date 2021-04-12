@@ -1,5 +1,8 @@
 # Changelog
 
+### 3.1.4 (WIP)
+
+* Convert RecvTransport::Listener to a subclass. Thanks @maxweisel.
 
 ### 3.1.3
 

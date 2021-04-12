@@ -3,6 +3,7 @@
 ### 3.1.4 (WIP)
 
 * Convert RecvTransport::Listener to a subclass. Thanks @maxweisel.
+* Fix ambiguous cast error when compiling with MSVC. Thanks @maxweisel.
 
 ### 3.1.3
 

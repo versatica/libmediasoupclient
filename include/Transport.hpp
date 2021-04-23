@@ -174,8 +174,8 @@ namespace mediasoupclient
 	{
 	public:
 		/* Public Listener API */
-		class Listener : public Transport::Listener {
-
+		class Listener : public Transport::Listener
+		{
 		};
 
 	private:

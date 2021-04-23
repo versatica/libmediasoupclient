@@ -4,6 +4,24 @@
 
 TEST_CASE("Sdp::Utils", "[Sdp][Utils]")
 {
+	SECTION("extractRtpCapabilities")
+	{
+		auto sdp             = helpers::readFile("test/data/audio_video.sdp");
+		auto session         = sdptransform::parse(sdp);
+		auto rtpCapabilities = mediasoupclient::Sdp::Utils::extractRtpCapabilities(session);
+
+		auto codecs = rtpCapabilities.at("codecs");
+
+		for (const auto& codec : rtpCapabilities["codecs"])
+		{
+			// Verify that 'profile-id' is a number.
+			if (codec["parameters"].contains("profile-id"))
+			{
+				REQUIRE_NOTHROW(codec["parameters"]["profile-id"].get<int>());
+			}
+		}
+	}
+
 	SECTION("extractDtlsParameters")
 	{
 		auto sdp            = helpers::readFile("test/data/jssip.sdp");
@@ -73,6 +91,7 @@ TEST_CASE("Sdp::Utils", "[Sdp][Utils]")
 })"_json;
 
 		auto rtpEncodings = mediasoupclient::Sdp::Utils::getRtpEncodings(offerMediaObject);
+
 		REQUIRE(rtpEncodings[0]["ssrc"] == 3142507807);
 		REQUIRE(rtpEncodings[1]["ssrc"] == 3142507806);
 	}

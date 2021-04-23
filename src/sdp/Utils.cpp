@@ -63,12 +63,12 @@ namespace mediasoupclient
 						// clang-format off
 						json codec =
 						{
-							{ "mimeType",             mimeType       },
 							{ "kind",                 kind           },
-							{ "clockRate",            rtp["rate"]    },
+							{ "mimeType",             mimeType       },
 							{ "preferredPayloadType", rtp["payload"] },
-							{ "rtcpFeedback",         json::array()  },
-							{ "parameters",           json::object() }
+							{ "clockRate",            rtp["rate"]    },
+							{ "parameters",           json::object() },
+							{ "rtcpFeedback",         json::array()  }
 						};
 						// clang-format on
 
@@ -93,6 +93,14 @@ namespace mediasoupclient
 
 						if (jsonPayloadIt == codecsMap.end())
 							continue;
+
+						// If preset, convert 'profile-id' parameter (VP8 and VP9) into
+						// integer since we define it that way in mediasoup RtpCodecParameters
+						// and RtpCodecCapability.
+						auto profileIdIt = parameters.find("profile-id");
+
+						if (profileIdIt != parameters.end() && profileIdIt->is_string())
+							parameters["profile-id"] = std::stoi(profileIdIt->get<std::string>());
 
 						auto& codec = jsonPayloadIt->second;
 

@@ -73,6 +73,7 @@ TEST_CASE("Sdp::Utils", "[Sdp][Utils]")
 })"_json;
 
 		auto rtpEncodings = mediasoupclient::Sdp::Utils::getRtpEncodings(offerMediaObject);
+
 		REQUIRE(rtpEncodings[0]["ssrc"] == 3142507807);
 		REQUIRE(rtpEncodings[1]["ssrc"] == 3142507806);
 	}

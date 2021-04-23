@@ -14,7 +14,7 @@ TEST_CASE("Sdp::Utils", "[Sdp][Utils]")
 
 		for (const auto& codec : rtpCapabilities["codecs"])
 		{
-			// Verify that 'prifile-id' is a number.
+			// Verify that 'profile-id' is a number.
 			if (codec["parameters"].contains("profile-id"))
 			{
 				REQUIRE_NOTHROW(codec["parameters"]["profile-id"].get<int>());

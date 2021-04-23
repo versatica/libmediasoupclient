@@ -1,6 +1,11 @@
 # Changelog
 
 
+### 3.1.5
+
+* Fix profile-id codec parameter by converting parsed value into integer. Fixes #115
+
+
 ### 3.1.4
 
 * Convert `RecvTransport::Listener` to a subclass. Thanks @maxweisel.

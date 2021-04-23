@@ -79,7 +79,7 @@ namespace mediasoupclient
 	Sdp::RemoteSdp::~RemoteSdp()
 	{
 		MSC_TRACE();
-		
+
 		for (const auto* mediaSection : this->mediaSections)
 		{
 			delete mediaSection;

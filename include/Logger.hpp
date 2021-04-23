@@ -43,8 +43,8 @@
 #ifndef MSC_LOGGER_HPP
 #define MSC_LOGGER_HPP
 
-#include <cstdio>  // std::snprintf(), std::fprintf(), stdout, stderr
 #include <cstdint> // uint8_t
+#include <cstdio>  // std::snprintf(), std::fprintf(), stdout, stderr
 #include <cstdlib> // std::abort()
 #include <cstring>
 

@@ -110,6 +110,14 @@ namespace mediasoupclient
 		MSC_THROW_ERROR("failed to update ICE servers");
 	};
 
+	void Handler::OnSignalingChange(webrtc::PeerConnectionInterface::SignalingState newState)
+	{
+		MSC_TRACE();
+
+		if (newState == webrtc::PeerConnectionInterface::SignalingState::kClosed)
+			this->pc->CloseThreads();
+	}
+
 	void Handler::OnIceConnectionChange(webrtc::PeerConnectionInterface::IceConnectionState newState)
 	{
 		MSC_TRACE();

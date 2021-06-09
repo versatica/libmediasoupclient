@@ -59,6 +59,7 @@ namespace mediasoupclient
 
 		/* Methods inherited from PeerConnectionListener. */
 	public:
+		void OnSignalingChange(webrtc::PeerConnectionInterface::SignalingState newState) override;
 		void OnIceConnectionChange(webrtc::PeerConnectionInterface::IceConnectionState newState) override;
 
 	protected:

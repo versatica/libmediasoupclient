@@ -118,6 +118,20 @@ namespace mediasoupclient
 		this->pc->Close();
 	}
 
+	void PeerConnection::CloseThreads()
+	{
+		MSC_TRACE();
+
+		if (this->networkThread != nullptr)
+			this->networkThread->Quit();
+
+		if (this->signalingThread != nullptr)
+			this->signalingThread->Quit();
+
+		if (this->workerThread != nullptr)
+			this->workerThread->Quit();
+	}
+
 	webrtc::PeerConnectionInterface::RTCConfiguration PeerConnection::GetConfiguration() const
 	{
 		MSC_TRACE();

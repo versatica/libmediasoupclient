@@ -72,6 +72,10 @@ namespace mediasoupclient
 		// PeerConnection factory provided.
 		if ((options != nullptr) && (options->factory != nullptr))
 		{
+			this->networkThread = nullptr;
+			this->workerThread = nullptr;
+			this->signalingThread = nullptr;
+			
 			this->peerConnectionFactory =
 			  rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>(options->factory);
 		}

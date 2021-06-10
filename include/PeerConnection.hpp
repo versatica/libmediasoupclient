@@ -112,7 +112,6 @@ namespace mediasoupclient
 		~PeerConnection() = default;
 
 		void Close();
-		void CloseThreads();
 		webrtc::PeerConnectionInterface::RTCConfiguration GetConfiguration() const;
 		bool SetConfiguration(const webrtc::PeerConnectionInterface::RTCConfiguration& config);
 		std::string CreateOffer(const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions& options);
@@ -136,9 +135,9 @@ namespace mediasoupclient
 
 	private:
 		// Signaling and worker threads.
-		std::unique_ptr<rtc::Thread> networkThread{ nullptr };
-		std::unique_ptr<rtc::Thread> signalingThread{ nullptr };
-		std::unique_ptr<rtc::Thread> workerThread{ nullptr };
+		std::unique_ptr<rtc::Thread> networkThread;
+		std::unique_ptr<rtc::Thread> signalingThread;
+		std::unique_ptr<rtc::Thread> workerThread;
 
 		// PeerConnection factory.
 		rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peerConnectionFactory;

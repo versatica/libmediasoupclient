@@ -211,14 +211,14 @@ namespace mediasoupclient
 			auto preferredEncryptIt = ext.find("preferredEncrypt");
 			auto directionIt        = ext.find("direction");
 
-			// kind is optional. If unset set it to an empty string.
+			// kind is mandatory.
 			if (kindIt == ext.end() || !kindIt->is_string())
-				ext["kind"] = "";
+				MSC_THROW_TYPE_ERROR("missing ext.kind");
 
 			kindIt           = ext.find("kind");
 			std::string kind = kindIt->get<std::string>();
 
-			if (!kind.empty() && kind != "audio" && kind != "video")
+			if (kind != "audio" && kind != "video")
 				MSC_THROW_TYPE_ERROR("invalid ext.kind");
 
 			// uri is mandatory.

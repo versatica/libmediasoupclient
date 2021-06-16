@@ -36,7 +36,7 @@ namespace mediasoupclient
 		Listener* listener;
 		std::string id;
 		rtc::scoped_refptr<webrtc::DataChannelInterface> dataChannel;
-		bool closed;
+		bool closed{ false };
 		nlohmann::json sctpStreamParameters;
 		nlohmann::json appData;
 		void TransportClosed();

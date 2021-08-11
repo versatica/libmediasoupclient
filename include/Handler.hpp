@@ -82,7 +82,7 @@ namespace mediasoupclient
 		struct SendResult
 		{
 			std::string localId;
-			webrtc::RtpSenderInterface* rtpSender{ nullptr };
+			rtc::scoped_refptr<webrtc::RtpSenderInterface> rtpSender{ nullptr };
 			nlohmann::json rtpParameters;
 		};
 
@@ -123,7 +123,7 @@ namespace mediasoupclient
 		struct RecvResult
 		{
 			std::string localId;
-			webrtc::RtpReceiverInterface* rtpReceiver{ nullptr };
+			rtc::scoped_refptr<webrtc::RtpReceiverInterface> rtpReceiver{ nullptr };
 			webrtc::MediaStreamTrackInterface* track{ nullptr };
 		};
 

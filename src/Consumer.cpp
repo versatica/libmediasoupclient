@@ -14,7 +14,7 @@ namespace mediasoupclient
 	  const std::string& id,
 	  const std::string& localId,
 	  const std::string& producerId,
-	  webrtc::RtpReceiverInterface* rtpReceiver,
+	  rtc::scoped_refptr<webrtc::RtpReceiverInterface> rtpReceiver,
 	  webrtc::MediaStreamTrackInterface* track,
 	  const json& rtpParameters,
 	  const json& appData)
@@ -60,7 +60,7 @@ namespace mediasoupclient
 		return this->track->kind();
 	}
 
-	webrtc::RtpReceiverInterface* Consumer::GetRtpReceiver() const
+	rtc::scoped_refptr<webrtc::RtpReceiverInterface> Consumer::GetRtpReceiver() const
 	{
 		MSC_TRACE();
 

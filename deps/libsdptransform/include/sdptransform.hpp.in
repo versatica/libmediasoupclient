@@ -1,7 +1,7 @@
 #ifndef SDPTRANSFORM_HPP
 #define SDPTRANSFORM_HPP
 
-#include "json.hpp"
+#include @JSON_HPP_LOCATION@
 #include <string>
 #include <vector>
 #include <map>

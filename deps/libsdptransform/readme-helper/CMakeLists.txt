@@ -1,5 +1,3 @@
-include_directories(${sdptransform_SOURCE_DIR}/include)
-
 set(
 	SOURCE_FILES
 	readme.cpp

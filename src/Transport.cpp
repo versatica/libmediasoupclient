@@ -250,6 +250,7 @@ namespace mediasoupclient
 
 	DataProducer* SendTransport::ProduceData(
 	  DataProducer::Listener* dataProducerListener,
+	  const uint16_t streamId,
 	  const std::string& label,
 	  const std::string& protocol,
 	  bool ordered,
@@ -263,6 +264,7 @@ namespace mediasoupclient
 			MSC_THROW_ERROR("SctpParameters are mandatory when using data producer listener");
 
 		webrtc::DataChannelInit dataChannelInit;
+		dataChannelInit.id       = streamId;
 		dataChannelInit.protocol = protocol;
 		dataChannelInit.ordered  = ordered;
 		if (maxRetransmits != -1 && maxPacketLifeTime != 0)
@@ -473,6 +475,7 @@ namespace mediasoupclient
 	  DataConsumer::Listener* listener,
 	  const std::string& id,
 	  const std::string& producerId,
+	  const uint16_t streamId,
 	  const std::string& label,
 	  const std::string& protocol,
 	  const nlohmann::json& appData)
@@ -481,6 +484,7 @@ namespace mediasoupclient
 
 		webrtc::DataChannelInit dataChannelInit;
 		dataChannelInit.protocol = protocol;
+		dataChannelInit.id       = streamId;
 
 		if (this->closed)
 			MSC_THROW_INVALID_STATE_ERROR("RecvTransport closed");

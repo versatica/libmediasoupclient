@@ -73,7 +73,6 @@ namespace mediasoupclient
 		// PeerConnection instance.
 		std::unique_ptr<PeerConnection> pc{ nullptr };
 		bool hasDataChannelMediaSection = false;
-		uint32_t nextSendSctpStreamId   = 0;
 	};
 
 	class SendHandler : public Handler

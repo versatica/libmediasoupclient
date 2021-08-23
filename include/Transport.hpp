@@ -136,6 +136,7 @@ namespace mediasoupclient
 
 		DataProducer* ProduceData(
 		  DataProducer::Listener* listener,
+		  const uint16_t streamId       = 0,
 		  const std::string& label      = "",
 		  const std::string& protocol   = "",
 		  bool ordered                  = true,
@@ -206,6 +207,7 @@ namespace mediasoupclient
 		  DataConsumer::Listener* listener,
 		  const std::string& id,
 		  const std::string& producerId,
+		  const uint16_t streamId,
 		  const std::string& label,
 		  const std::string& protocol   = std::string(),
 		  const nlohmann::json& appData = nlohmann::json::object());

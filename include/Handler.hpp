@@ -29,7 +29,6 @@ namespace mediasoupclient
 	public:
 		struct DataChannel
 		{
-			std::string localId;
 			rtc::scoped_refptr<webrtc::DataChannelInterface> dataChannel;
 			nlohmann::json sctpStreamParameters;
 		};

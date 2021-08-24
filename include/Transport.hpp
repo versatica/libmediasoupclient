@@ -136,7 +136,6 @@ namespace mediasoupclient
 
 		DataProducer* ProduceData(
 		  DataProducer::Listener* listener,
-		  const uint16_t streamId       = 0,
 		  const std::string& label      = "",
 		  const std::string& protocol   = "",
 		  bool ordered                  = true,

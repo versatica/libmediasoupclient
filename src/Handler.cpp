@@ -388,7 +388,6 @@ namespace mediasoupclient
 
 		SendHandler::DataChannel dataChannel;
 
-		dataChannel.localId              = std::to_string(streamId);
 		dataChannel.dataChannel          = webrtcDataChannel;
 		dataChannel.sctpStreamParameters = sctpStreamParameters;
 
@@ -660,15 +659,12 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		uint16_t streamId = this->nextSendSctpStreamId;
-
 		dataChannelInit.negotiated = true;
-		dataChannelInit.id         = streamId;
 
 		/* clang-format off */
 		nlohmann::json sctpStreamParameters =
 		{
-			{ "streamId", streamId                },
+			{ "streamId", dataChannelInit.id },
 			{ "ordered",  dataChannelInit.ordered }
 		};
 		/* clang-format on */
@@ -678,9 +674,6 @@ namespace mediasoupclient
 
 		rtc::scoped_refptr<webrtc::DataChannelInterface> webrtcDataChannel =
 		  this->pc->CreateDataChannel(label, &dataChannelInit);
-
-		// Increase next id.
-		this->nextSendSctpStreamId = (this->nextSendSctpStreamId + 1) % SctpNumStreamsMis;
 
 		// If this is the first DataChannel we need to create the SDP answer with
 		// m=application section.
@@ -713,7 +706,6 @@ namespace mediasoupclient
 
 		RecvHandler::DataChannel dataChannel;
 
-		dataChannel.localId              = std::to_string(streamId);
 		dataChannel.dataChannel          = webrtcDataChannel;
 		dataChannel.sctpStreamParameters = sctpStreamParameters;
 

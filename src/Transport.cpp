@@ -473,6 +473,7 @@ namespace mediasoupclient
 	  DataConsumer::Listener* listener,
 	  const std::string& id,
 	  const std::string& producerId,
+	  const uint16_t streamId,
 	  const std::string& label,
 	  const std::string& protocol,
 	  const nlohmann::json& appData)
@@ -481,6 +482,7 @@ namespace mediasoupclient
 
 		webrtc::DataChannelInit dataChannelInit;
 		dataChannelInit.protocol = protocol;
+		dataChannelInit.id       = streamId;
 
 		if (this->closed)
 			MSC_THROW_INVALID_STATE_ERROR("RecvTransport closed");

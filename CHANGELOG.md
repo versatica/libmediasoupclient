@@ -1,6 +1,12 @@
 # Changelog
 
 
+### 3.2.0
+
+* Do not auto generate the stream ID for the receiving dataChannel,
+  but provide it via API. Fixes #126.
+
+
 ### 3.1.5
 
 * Fix profile-id codec parameter by converting parsed value into integer. Fixes #115

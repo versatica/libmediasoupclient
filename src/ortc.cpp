@@ -918,6 +918,7 @@ namespace mediasoupclient
 			auto opusFecIt                 = params.find("opusFec");
 			auto opusDtxIt                 = params.find("opusDtx");
 			auto opusMaxPlaybackRateIt     = params.find("opusMaxPlaybackRate");
+			auto opusMaxAverageBitrateIt   = params.find("opusMaxAverageBitrate");
 			auto opusPtimeIt               = params.find("opusPtime");
 			auto videoGoogleStartBitrateIt = params.find("videoGoogleStartBitrate");
 			auto videoGoogleMaxBitrateIt   = params.find("videoGoogleMaxBitrate");
@@ -941,6 +942,11 @@ namespace mediasoupclient
 			if (opusMaxPlaybackRateIt != params.end() && !opusMaxPlaybackRateIt->is_number_unsigned())
 			{
 				MSC_THROW_TYPE_ERROR("invalid params.opusMaxPlaybackRate");
+			}
+
+			if (opusMaxAverageBitrateIt != params.end() && !opusMaxAverageBitrateIt->is_number_unsigned())
+			{
+				MSC_THROW_TYPE_ERROR("invalid params.opusMaxAverageBitrate");
 			}
 
 			if (opusPtimeIt != params.end() && !opusPtimeIt->is_number_integer())

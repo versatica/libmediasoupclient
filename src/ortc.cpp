@@ -1546,6 +1546,44 @@ namespace mediasoupclient
 
 			return codecIt != codecs.end();
 		}
+
+		nlohmann::json reduceCodecs(nlohmann::json& codecs, const nlohmann::json* capCodec)
+		{
+			MSC_TRACE();
+
+			nlohmann::json filteredCodecs = nlohmann::json::array();
+
+			// If no capability codec is given, take the first one (and RTX).
+			if (!capCodec || !capCodec->is_object())
+			{
+				filteredCodecs.push_back(codecs[0]);
+
+				if (codecs.size() > 1 && isRtxCodec(codecs[1]))
+					filteredCodecs.push_back(codecs[1]);
+			}
+			// Otherwise look for a compatible set of codecs.
+			else
+			{
+				for (int idx = 0; idx < codecs.size(); ++idx)
+				{
+					if (matchCodecs(codecs[idx], const_cast<json&>(*capCodec)))
+					{
+						filteredCodecs.push_back(codecs[idx]);
+
+						if (isRtxCodec(codecs[idx + 1]))
+							filteredCodecs.push_back(codecs[idx + 1]);
+
+						break;
+					}
+				}
+
+				if (filteredCodecs.size() == 0)
+					MSC_THROW_TYPE_ERROR("no matching codec found");
+			}
+
+			return filteredCodecs;
+		}
+
 	} // namespace ortc
 } // namespace mediasoupclient
 

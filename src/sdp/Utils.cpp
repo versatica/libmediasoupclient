@@ -291,7 +291,7 @@ namespace mediasoupclient
 						return false;
 
 					return (
-					  jsonAttributeIt->get<std::string>() == "cname" && jsonIdIt->get<uint32_t>() == firstSsrc);
+					  jsonAttributeIt->get<std::string>() == "cname" /*&& jsonIdIt->get<uint32_t>() == firstSsrc*/);
 				});
 
 				if (jsonSsrcIt == mSsrcs.end())
@@ -390,7 +390,7 @@ namespace mediasoupclient
 			{
 				MSC_TRACE();
 
-				auto jsonMssrcsIt = offerMediaObject.find("ssrc");
+				auto jsonMssrcsIt = offerMediaObject.find("ssrcs");
 
 				if (jsonMssrcsIt == offerMediaObject.end())
 					return "";

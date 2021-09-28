@@ -177,6 +177,7 @@ namespace mediasoupclient
 	  webrtc::MediaStreamTrackInterface* track,
 	  const std::vector<webrtc::RtpEncodingParameters>* encodings,
 	  const json* codecOptions,
+	  const json* codec,
 	  const json& appData)
 	{
 		MSC_TRACE();
@@ -209,13 +210,14 @@ namespace mediasoupclient
 				  encoding.max_framerate            = entry.max_framerate;
 				  encoding.scale_resolution_down_by = entry.scale_resolution_down_by;
 				  encoding.network_priority         = entry.network_priority;
+				  encoding.scalability_mode         = entry.scalability_mode;
 
 				  normalizedEncodings.push_back(encoding);
 			  });
 		}
 
 		// May throw.
-		auto sendResult = this->sendHandler->Send(track, &normalizedEncodings, codecOptions);
+		auto sendResult = this->sendHandler->Send(track, &normalizedEncodings, codecOptions, codec);
 
 		try
 		{

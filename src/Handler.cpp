@@ -6,6 +6,7 @@
 #include "PeerConnection.hpp"
 #include "ortc.hpp"
 #include "sdptransform.hpp"
+#include "scalabilityMode.hpp"
 #include "sdp/Utils.hpp"
 #include <cinttypes> // PRIu64, etc
 
@@ -163,7 +164,8 @@ namespace mediasoupclient
 	SendHandler::SendResult SendHandler::Send(
 	  webrtc::MediaStreamTrackInterface* track,
 	  std::vector<webrtc::RtpEncodingParameters>* encodings,
-	  const json* codecOptions)
+	  const json* codecOptions,
+	  const json* codec)
 	{
 		MSC_TRACE();
 
@@ -182,9 +184,21 @@ namespace mediasoupclient
 			}
 		}
 
+		json sendingRtpParameters = this->sendingRtpParametersByKind[track->kind()];
+
+		// This may throw.
+		sendingRtpParameters["codecs"] = ortc::reduceCodecs(sendingRtpParameters["codecs"], codec);
+
+		json sendingRemoteRtpParameters = this->sendingRemoteRtpParametersByKind[track->kind()];
+
+		// This may throw.
+		sendingRemoteRtpParameters["codecs"] =
+		  ortc::reduceCodecs(sendingRemoteRtpParameters["codecs"], codec);
+
 		const Sdp::RemoteSdp::MediaSectionIdx mediaSectionIdx = this->remoteSdp->GetNextMediaSectionIdx();
 
 		webrtc::RtpTransceiverInit transceiverInit;
+		transceiverInit.direction = webrtc::RtpTransceiverDirection::kSendOnly;
 
 		if (encodings && !encodings->empty())
 			transceiverInit.send_encodings = *encodings;
@@ -194,22 +208,44 @@ namespace mediasoupclient
 		if (!transceiver)
 			MSC_THROW_ERROR("error creating transceiver");
 
-		transceiver->SetDirection(webrtc::RtpTransceiverDirection::kSendOnly);
-
 		std::string offer;
 		std::string localId;
-		json& sendingRtpParameters = this->sendingRtpParametersByKind[track->kind()];
+
+		// Special case for VP9 with SVC.
+		bool hackVp9Svc = false;
 
 		try
 		{
 			webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
 
 			offer               = this->pc->CreateOffer(options);
-			auto localSdpObject = sdptransform::parse(offer);
+			json localSdpObject = sdptransform::parse(offer);
 
 			// Transport is not ready.
 			if (!this->transportReady)
 				this->SetupTransport("server", localSdpObject);
+
+			const json& layers = parseScalabilityMode(
+			  encodings && encodings->size() ? (*encodings)[0].scalability_mode.value() : "");
+
+			auto spatialLayers = layers["spatialLayers"].get<int>();
+
+			auto mimeType = sendingRtpParameters["codecs"][0]["mimeType"].get<std::string>();
+
+			std::transform(mimeType.begin(), mimeType.end(), mimeType.begin(), ::tolower);
+
+			if (encodings && encodings->size() == 1 && spatialLayers > 1 && mimeType == "video/vp9")
+			{
+				MSC_DEBUG("send() | enabling legacy simulcast for VP9 SVC");
+
+				hackVp9Svc       = true;
+				localSdpObject   = sdptransform::parse(offer);
+				json& offerMediaObject = localSdpObject["media"][mediaSectionIdx.idx];
+
+				Sdp::Utils::addLegacySimulcast(offerMediaObject, spatialLayers);
+
+				offer = sdptransform::write(localSdpObject);
+			}
 
 			MSC_DEBUG("calling pc->SetLocalDescription():\n%s", offer.c_str());
 
@@ -224,7 +260,7 @@ namespace mediasoupclient
 		catch (std::exception& error)
 		{
 			// Panic here. Try to undo things.
-			transceiver->SetDirection(webrtc::RtpTransceiverDirection::kInactive);
+			//transceiver->SetDirection(webrtc::RtpTransceiverDirection::kInactive);
 			transceiver->sender()->SetTrack(nullptr);
 
 			throw;
@@ -250,9 +286,13 @@ namespace mediasoupclient
 			auto newEncodings = Sdp::Utils::getRtpEncodings(offerMediaObject);
 
 			fillJsonRtpEncodingParameters(newEncodings.front(), encodings->front());
+
+			// Hack for VP9 SVC.
+			if (hackVp9Svc)
+				newEncodings = json::array({ newEncodings[0] });
+
 			sendingRtpParameters["encodings"] = newEncodings;
 		}
-
 		// Otherwise if more than 1 encoding are given use them verbatim.
 		else
 		{
@@ -289,7 +329,7 @@ namespace mediasoupclient
 		  offerMediaObject,
 		  mediaSectionIdx.reuseMid,
 		  sendingRtpParameters,
-		  this->sendingRemoteRtpParametersByKind[track->kind()],
+		  sendingRemoteRtpParameters,
 		  codecOptions);
 
 		auto answer = this->remoteSdp->GetSdp();
@@ -814,6 +854,9 @@ static void fillJsonRtpEncodingParameters(json& jsonEncoding, const webrtc::RtpE
 
 	if (encoding.scale_resolution_down_by)
 		jsonEncoding["scaleResolutionDownBy"] = *encoding.scale_resolution_down_by;
+
+	if (encoding.scalability_mode.has_value())
+		jsonEncoding["scalabilityMode"] = *encoding.scalability_mode;
 
 	jsonEncoding["networkPriority"] = encoding.network_priority;
 }

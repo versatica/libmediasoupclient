@@ -291,7 +291,7 @@ namespace mediasoupclient
 						return false;
 
 					return (
-					  jsonAttributeIt->get<std::string>() == "cname" /*&& jsonIdIt->get<uint32_t>() == firstSsrc*/);
+					  jsonAttributeIt->get<std::string>() == "cname");
 				});
 
 				if (jsonSsrcIt == mSsrcs.end())

@@ -219,7 +219,7 @@ namespace mediasoupclient
 			webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
 
 			offer               = this->pc->CreateOffer(options);
-			json localSdpObject = sdptransform::parse(offer);
+			auto localSdpObject = sdptransform::parse(offer);
 
 			// Transport is not ready.
 			if (!this->transportReady)
@@ -260,7 +260,7 @@ namespace mediasoupclient
 		catch (std::exception& error)
 		{
 			// Panic here. Try to undo things.
-			//transceiver->SetDirection(webrtc::RtpTransceiverDirection::kInactive);
+			transceiver->SetDirectionWithError(webrtc::RtpTransceiverDirection::kInactive);
 			transceiver->sender()->SetTrack(nullptr);
 
 			throw;

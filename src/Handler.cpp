@@ -225,8 +225,13 @@ namespace mediasoupclient
 			if (!this->transportReady)
 				this->SetupTransport("server", localSdpObject);
 
-			const json& layers = parseScalabilityMode(
-			  encodings && encodings->size() ? (*encodings)[0].scalability_mode.value() : "");
+			std::string scalability_mode =
+			  encodings && encodings->size()
+			    ? ((*encodings)[0].scalability_mode.has_value() ? (*encodings)[0].scalability_mode.value()
+			                                                    : "")
+			    : "";
+
+			const json& layers = parseScalabilityMode(scalability_mode);
 
 			auto spatialLayers = layers["spatialLayers"].get<int>();
 

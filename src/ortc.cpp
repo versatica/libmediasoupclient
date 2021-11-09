@@ -3,7 +3,9 @@
 #include "ortc.hpp"
 #include "Logger.hpp"
 #include "MediaSoupClientErrors.hpp"
-#include <media/base/h264_profile_level_id.h>
+#include <api/video_codecs/h264_profile_level_id.h>
+#include "media/base/codec.h"
+#include "media/base/sdp_video_format_utils.h"
 #include <algorithm> // std::find_if
 #include <regex>
 #include <stdexcept>
@@ -1600,8 +1602,8 @@ static bool matchCodecs(json& aCodec, json& bCodec, bool strict, bool modify)
 		// If strict matching check profile-level-id.
 		if (strict)
 		{
-			webrtc::H264::CodecParameterMap aParameters;
-			webrtc::H264::CodecParameterMap bParameters;
+			cricket::CodecParameterMap aParameters;
+			cricket::CodecParameterMap bParameters;
 
 			aParameters["level-asymmetry-allowed"] = std::to_string(getH264LevelAssimetryAllowed(aCodec));
 			aParameters["packetization-mode"]      = std::to_string(aPacketizationMode);
@@ -1610,14 +1612,14 @@ static bool matchCodecs(json& aCodec, json& bCodec, bool strict, bool modify)
 			bParameters["packetization-mode"]      = std::to_string(bPacketizationMode);
 			bParameters["profile-level-id"]        = getH264ProfileLevelId(bCodec);
 
-			if (!webrtc::H264::IsSameH264Profile(aParameters, bParameters))
+			if (!webrtc::H264IsSameProfile(aParameters, bParameters))
 				return false;
 
-			webrtc::H264::CodecParameterMap newParameters;
+			cricket::CodecParameterMap newParameters;
 
 			try
 			{
-				webrtc::H264::GenerateProfileLevelIdForAnswer(aParameters, bParameters, &newParameters);
+				webrtc::H264GenerateProfileLevelIdForAnswer(aParameters, bParameters, &newParameters);
 			}
 			catch (std::runtime_error)
 			{

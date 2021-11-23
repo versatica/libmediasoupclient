@@ -1,6 +1,10 @@
 # Changelog
 
 
+### NOT RELEASED
+
+* 'maxaveragebitrate' support for Opus. Thanks @PeterCang.
+
 ### 3.3.0
 
 * Update to libwebrtc M94/4606.

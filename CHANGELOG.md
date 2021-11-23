@@ -1,6 +1,10 @@
 # Changelog
 
 
+### 3.3.0
+
+* Update to libwebrtc M94/4606.
+
 ### 3.2.0
 
 * Do not auto generate the stream ID for the receiving dataChannel,

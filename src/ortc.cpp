@@ -1597,15 +1597,14 @@ static bool matchCodecs(json& aCodec, json& bCodec, bool strict, bool modify)
 	// Match H264 parameters.
 	if (aMimeType == "video/h264")
 	{
-		auto aPacketizationMode = getH264PacketizationMode(aCodec);
-		auto bPacketizationMode = getH264PacketizationMode(bCodec);
-
-		if (aPacketizationMode != bPacketizationMode)
-			return false;
-
-		// If strict matching check profile-level-id.
 		if (strict)
 		{
+			auto aPacketizationMode = getH264PacketizationMode(aCodec);
+			auto bPacketizationMode = getH264PacketizationMode(bCodec);
+
+			if (aPacketizationMode != bPacketizationMode)
+				return false;
+
 			cricket::CodecParameterMap aParameters;
 			cricket::CodecParameterMap bParameters;
 
@@ -1650,7 +1649,6 @@ static bool matchCodecs(json& aCodec, json& bCodec, bool strict, bool modify)
 	// Match VP9 parameters.
 	else if (aMimeType == "video/vp9")
 	{
-		// If strict matching check profile-id.
 		if (strict)
 		{
 			auto aProfileId = getVP9ProfileId(aCodec);

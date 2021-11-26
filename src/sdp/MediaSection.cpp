@@ -214,6 +214,13 @@ namespace mediasoupclient
 								codecParameters["maxplaybackrate"] = opusMaxPlaybackRate;
 							}
 
+							auto opusMaxAverageBitrateIt = codecOptions->find("opusMaxAverageBitrate");
+							if (opusMaxAverageBitrateIt != codecOptions->end())
+							{
+								auto opusMaxAverageBitrate           = opusMaxAverageBitrateIt->get<uint32_t>();
+								codecParameters["maxaveragebitrate"] = opusMaxAverageBitrate;
+							}
+
 							auto opusPtimeIt = codecOptions->find("opusPtime");
 							if (opusPtimeIt != codecOptions->end())
 							{

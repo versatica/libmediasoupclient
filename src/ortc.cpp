@@ -3,7 +3,9 @@
 #include "ortc.hpp"
 #include "Logger.hpp"
 #include "MediaSoupClientErrors.hpp"
-#include <media/base/h264_profile_level_id.h>
+#include "media/base/codec.h"
+#include "media/base/sdp_video_format_utils.h"
+#include <api/video_codecs/h264_profile_level_id.h>
 #include <algorithm> // std::find_if
 #include <regex>
 #include <stdexcept>
@@ -916,6 +918,7 @@ namespace mediasoupclient
 			auto opusFecIt                 = params.find("opusFec");
 			auto opusDtxIt                 = params.find("opusDtx");
 			auto opusMaxPlaybackRateIt     = params.find("opusMaxPlaybackRate");
+			auto opusMaxAverageBitrateIt   = params.find("opusMaxAverageBitrate");
 			auto opusPtimeIt               = params.find("opusPtime");
 			auto videoGoogleStartBitrateIt = params.find("videoGoogleStartBitrate");
 			auto videoGoogleMaxBitrateIt   = params.find("videoGoogleMaxBitrate");
@@ -940,7 +943,10 @@ namespace mediasoupclient
 			{
 				MSC_THROW_TYPE_ERROR("invalid params.opusMaxPlaybackRate");
 			}
-
+			if (opusMaxAverageBitrateIt != params.end() && !opusMaxAverageBitrateIt->is_number_unsigned())
+			{
+				MSC_THROW_TYPE_ERROR("invalid params.opusMaxAverageBitrate");
+			}
 			if (opusPtimeIt != params.end() && !opusPtimeIt->is_number_integer())
 			{
 				MSC_THROW_TYPE_ERROR("invalid params.opusPtime");
@@ -1629,17 +1635,16 @@ static bool matchCodecs(json& aCodec, json& bCodec, bool strict, bool modify)
 	// Match H264 parameters.
 	if (aMimeType == "video/h264")
 	{
-		auto aPacketizationMode = getH264PacketizationMode(aCodec);
-		auto bPacketizationMode = getH264PacketizationMode(bCodec);
-
-		if (aPacketizationMode != bPacketizationMode)
-			return false;
-
-		// If strict matching check profile-level-id.
 		if (strict)
 		{
-			webrtc::H264::CodecParameterMap aParameters;
-			webrtc::H264::CodecParameterMap bParameters;
+			auto aPacketizationMode = getH264PacketizationMode(aCodec);
+			auto bPacketizationMode = getH264PacketizationMode(bCodec);
+
+			if (aPacketizationMode != bPacketizationMode)
+				return false;
+
+			cricket::CodecParameterMap aParameters;
+			cricket::CodecParameterMap bParameters;
 
 			aParameters["level-asymmetry-allowed"] = std::to_string(getH264LevelAssimetryAllowed(aCodec));
 			aParameters["packetization-mode"]      = std::to_string(aPacketizationMode);
@@ -1648,14 +1653,14 @@ static bool matchCodecs(json& aCodec, json& bCodec, bool strict, bool modify)
 			bParameters["packetization-mode"]      = std::to_string(bPacketizationMode);
 			bParameters["profile-level-id"]        = getH264ProfileLevelId(bCodec);
 
-			if (!webrtc::H264::IsSameH264Profile(aParameters, bParameters))
+			if (!webrtc::H264IsSameProfile(aParameters, bParameters))
 				return false;
 
-			webrtc::H264::CodecParameterMap newParameters;
+			cricket::CodecParameterMap newParameters;
 
 			try
 			{
-				webrtc::H264::GenerateProfileLevelIdForAnswer(aParameters, bParameters, &newParameters);
+				webrtc::H264GenerateProfileLevelIdForAnswer(aParameters, bParameters, &newParameters);
 			}
 			catch (std::runtime_error)
 			{
@@ -1682,7 +1687,6 @@ static bool matchCodecs(json& aCodec, json& bCodec, bool strict, bool modify)
 	// Match VP9 parameters.
 	else if (aMimeType == "video/vp9")
 	{
-		// If strict matching check profile-id.
 		if (strict)
 		{
 			auto aProfileId = getVP9ProfileId(aCodec);

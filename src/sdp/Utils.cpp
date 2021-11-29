@@ -281,7 +281,7 @@ namespace mediasoupclient
 					  });
 				}
 
-				jsonSsrcIt = std::find_if(mSsrcs.begin(), mSsrcs.end(), [&firstSsrc](const json& line) {
+				jsonSsrcIt = std::find_if(mSsrcs.begin(), mSsrcs.end(), [](const json& line) {
 					auto jsonAttributeIt = line.find("attribute");
 					if (jsonAttributeIt == line.end() || !jsonAttributeIt->is_string())
 						return false;

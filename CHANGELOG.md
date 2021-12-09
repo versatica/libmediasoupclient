@@ -4,6 +4,7 @@
 ### NOT RELEASED
 
 * 'maxaveragebitrate' support for Opus. Thanks @PeterCang.
+*  Enable VP9 SVC (#131). Thanks @harvestsure.
 
 ### 3.3.0
 

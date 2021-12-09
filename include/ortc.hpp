@@ -34,6 +34,7 @@ namespace mediasoupclient
 		const nlohmann::json generateProbatorRtpParameters(const nlohmann::json& videoRtpParameters);
 		bool canSend(const std::string& kind, const nlohmann::json& extendedRtpCapabilities);
 		bool canReceive(nlohmann::json& rtpParameters, const nlohmann::json& extendedRtpCapabilities);
+		nlohmann::json reduceCodecs(nlohmann::json& codecs, const nlohmann::json* capCodec = nullptr);
 	} // namespace ortc
 } // namespace mediasoupclient
 

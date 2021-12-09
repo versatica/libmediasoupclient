@@ -190,8 +190,8 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 		};
 		/* clang-format on */
 
-		REQUIRE_NOTHROW(audioProducer.reset(
-		  sendTransport->Produce(&producerListener, audioTrack, nullptr, &codecOptions, appData)));
+		REQUIRE_NOTHROW(audioProducer.reset(sendTransport->Produce(
+		  &producerListener, audioTrack, nullptr, &codecOptions, nullptr, appData)));
 
 		REQUIRE(
 		  sendTransportListener.onConnectTimesCalled ==
@@ -235,7 +235,7 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 		audioProducer->Resume();
 
 		REQUIRE_NOTHROW(videoProducer.reset(
-		  sendTransport->Produce(&producerListener, videoTrack, &encodings, nullptr)));
+		  sendTransport->Produce(&producerListener, videoTrack, &encodings, nullptr, nullptr)));
 
 		REQUIRE(
 		  sendTransportListener.onConnectTimesCalled ==
@@ -305,7 +305,8 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 	SECTION("transport.produce() without track throws")
 	{
 		REQUIRE_THROWS_AS(
-		  sendTransport->Produce(&producerListener, nullptr, nullptr, nullptr), MediaSoupClientTypeError);
+		  sendTransport->Produce(&producerListener, nullptr, nullptr, nullptr, nullptr),
+		  MediaSoupClientTypeError);
 	}
 
 	SECTION("transport.produceData() on transport without sctpParameters throws")
@@ -766,7 +767,7 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 		REQUIRE_THROWS_AS(
 			sendTransport->Produce(
 				&producerListener,
-				audioTrack, nullptr, nullptr),
+				audioTrack, nullptr,  nullptr, nullptr),
 			MediaSoupClientError);
 	}
 

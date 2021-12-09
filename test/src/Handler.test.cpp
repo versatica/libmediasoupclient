@@ -57,7 +57,7 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 
 	SECTION("sendHandler.Send() fails if a null track is provided")
 	{
-		REQUIRE_THROWS_AS(sendHandler.Send(nullptr, nullptr, nullptr), MediaSoupClientError);
+		REQUIRE_THROWS_AS(sendHandler.Send(nullptr, nullptr, nullptr, nullptr), MediaSoupClientError);
 	}
 
 	SECTION("sendHandler.Send() succeeds if a track is provided")
@@ -66,7 +66,7 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 
 		mediasoupclient::SendHandler::SendResult sendResult;
 
-		REQUIRE_NOTHROW(sendResult = sendHandler.Send(track, nullptr, nullptr));
+		REQUIRE_NOTHROW(sendResult = sendHandler.Send(track, nullptr, nullptr, nullptr));
 
 		localId = sendResult.localId;
 
@@ -76,7 +76,7 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 
 	SECTION("sendHandler.Send() succeeds if track is already handled")
 	{
-		REQUIRE_NOTHROW(sendHandler.Send(track, nullptr, nullptr));
+		REQUIRE_NOTHROW(sendHandler.Send(track, nullptr, nullptr, nullptr));
 	}
 
 	SECTION("sendHandler.ReplaceTrack() fails if an invalid localId is provided")
@@ -122,7 +122,7 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 	{
 		mediasoupclient::SendHandler::SendResult sendResult;
 
-		REQUIRE_NOTHROW(sendResult = sendHandler.Send(track, nullptr, nullptr));
+		REQUIRE_NOTHROW(sendResult = sendHandler.Send(track, nullptr, nullptr, nullptr));
 
 		localId = sendResult.localId;
 	}

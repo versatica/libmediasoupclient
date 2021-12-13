@@ -164,7 +164,6 @@ namespace mediasoupclient
 			return;
 
 		this->closed = true;
-		this->dataChannel->UnregisterObserver();
 		this->dataChannel->Close();
 		this->privateListener->OnClose(this);
 	}

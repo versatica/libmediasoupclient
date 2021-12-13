@@ -69,6 +69,12 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
+		if (dtlsParameters.find("role") != dtlsParameters.end() && dtlsParameters["role"].get<std::string>() != "auto")
+		{
+			this->forcedLocalDtlsRole =
+			  dtlsParameters["role"].get<std::string>() == "server" ? "client" : "server";
+		}
+
 		this->pc.reset(new PeerConnection(this, peerConnectionOptions));
 
 		this->remoteSdp.reset(
@@ -223,7 +229,8 @@ namespace mediasoupclient
 
 			// Transport is not ready.
 			if (!this->transportReady)
-				this->SetupTransport("server", localSdpObject);
+				this->SetupTransport(
+				  !this->forcedLocalDtlsRole.empty() ? this->forcedLocalDtlsRole : "server", localSdpObject);
 
 			std::string scalability_mode =
 			  encodings && encodings->size()
@@ -415,7 +422,8 @@ namespace mediasoupclient
 
 			if (!this->transportReady)
 			{
-				this->SetupTransport("server", localSdpObject);
+				this->SetupTransport(
+				  !this->forcedLocalDtlsRole.empty() ? this->forcedLocalDtlsRole : "server", localSdpObject);
 			}
 
 			MSC_DEBUG("calling pc.setLocalDescription() [offer:%s]", offer.c_str());
@@ -669,7 +677,8 @@ namespace mediasoupclient
 		answer = sdptransform::write(localSdpObject);
 
 		if (!this->transportReady)
-			this->SetupTransport("client", localSdpObject);
+			this->SetupTransport(
+			  !this->forcedLocalDtlsRole.empty() ? this->forcedLocalDtlsRole : "client", localSdpObject);
 
 		MSC_DEBUG("calling pc->SetLocalDescription():\n%s", answer.c_str());
 
@@ -738,7 +747,8 @@ namespace mediasoupclient
 			if (!this->transportReady)
 			{
 				auto localSdpObject = sdptransform::parse(sdpAnswer);
-				this->SetupTransport("client", localSdpObject);
+				this->SetupTransport(
+				  !this->forcedLocalDtlsRole.empty() ? this->forcedLocalDtlsRole : "client", localSdpObject);
 			}
 
 			MSC_DEBUG("calling pc->setLocalDescription() [answer: %s]", sdpAnswer.c_str());

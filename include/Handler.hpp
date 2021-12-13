@@ -73,6 +73,9 @@ namespace mediasoupclient
 		std::unique_ptr<PeerConnection> pc{ nullptr };
 		bool hasDataChannelMediaSection = false;
 		uint32_t nextSendSctpStreamId   = 0;
+		// Initial server side DTLS role. If not 'auto', it will force the opposite
+		// value in client side.
+		std::string forcedLocalDtlsRole;
 	};
 
 	class SendHandler : public Handler

@@ -112,14 +112,6 @@ add_subdirectory(deps/libsdptransform "${CMAKE_CURRENT_BINARY_DIR}/libsdptransfo
 if(MSVC)
 	set_source_files_properties(${SOURCE_FILES}
 		PROPERTIES COMPILE_FLAGS "/W3")
-	target_link_libraries(${PROJECT_NAME} PRIVATE
-		winmm
-		Secur32
-		wmcodecdspuuid
-		msdmo
-		dmoguids
-		Strmiids
-	)
 else()
 	set_source_files_properties(${SOURCE_FILES}
 		PROPERTIES COMPILE_FLAGS -Wall -Wextra -Wpedantic)

@@ -5,8 +5,8 @@
 #include "MediaSoupClientErrors.hpp"
 #include "PeerConnection.hpp"
 #include "ortc.hpp"
-#include "sdptransform.hpp"
 #include "scalabilityMode.hpp"
+#include "sdptransform.hpp"
 #include "sdp/Utils.hpp"
 #include <cinttypes> // PRIu64, etc
 
@@ -243,8 +243,8 @@ namespace mediasoupclient
 			{
 				MSC_DEBUG("send() | enabling legacy simulcast for VP9 SVC");
 
-				hackVp9Svc       = true;
-				localSdpObject   = sdptransform::parse(offer);
+				hackVp9Svc             = true;
+				localSdpObject         = sdptransform::parse(offer);
 				json& offerMediaObject = localSdpObject["media"][mediaSectionIdx.idx];
 
 				Sdp::Utils::addLegacySimulcast(offerMediaObject, spatialLayers);

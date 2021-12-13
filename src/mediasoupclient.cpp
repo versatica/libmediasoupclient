@@ -6,8 +6,8 @@
 #include <rtc_base/helpers.h>
 #include <rtc_base/ssl_adapter.h>
 #include <rtc_base/time_utils.h>
-#include <system_wrappers/include/field_trial.h>
 #include <sstream>
+#include <system_wrappers/include/field_trial.h>
 
 namespace mediasoupclient
 {

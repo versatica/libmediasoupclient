@@ -2,6 +2,7 @@
 
 #include "sdp/RemoteSdp.hpp"
 #include "Logger.hpp"
+#include "algorithm" // find_if.
 #include "sdptransform.hpp"
 
 using json = nlohmann::json;
@@ -226,7 +227,21 @@ namespace mediasoupclient
 		  streamId,
 		  trackId);
 
-		this->AddMediaSection(mediaSection);
+		// Let's try to recycle a closed media section (if any).
+		// NOTE: We can recycle a closed m=audio section with a new m=video.
+		auto mediaSectionIt = find_if(
+		  this->mediaSections.begin(), this->mediaSections.end(), [](const MediaSection* mediaSection) {
+			  return mediaSection->IsClosed();
+		  });
+
+		if (mediaSectionIt != this->mediaSections.end())
+		{
+			this->ReplaceMediaSection(mediaSection, (*mediaSectionIt)->GetMid());
+		}
+		else
+		{
+			this->AddMediaSection(mediaSection);
+		}
 	}
 
 	void Sdp::RemoteSdp::DisableMediaSection(const std::string& mid)

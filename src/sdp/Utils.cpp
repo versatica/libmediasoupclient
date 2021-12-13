@@ -290,8 +290,7 @@ namespace mediasoupclient
 					if (jsonIdIt == line.end() || !jsonIdIt->is_number())
 						return false;
 
-					return (
-					  jsonAttributeIt->get<std::string>() == "cname");
+					return (jsonAttributeIt->get<std::string>() == "cname");
 				});
 
 				if (jsonSsrcIt == mSsrcs.end())

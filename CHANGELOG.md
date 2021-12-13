@@ -5,6 +5,7 @@
 
 * 'maxaveragebitrate' support for Opus. Thanks @PeterCang.
 *  Enable VP9 SVC (#131). Thanks @harvestsure.
+*  Reuse closed m= sections in remote SDP offer (#99).
 
 ### 3.3.0
 

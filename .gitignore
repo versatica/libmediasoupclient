@@ -1,7 +1,5 @@
-**/build/
-**/node_modules/
-test/libwebrtc/
-**/.vs/
+/build/
+/node_modules/
 
 compile_commands.json
 

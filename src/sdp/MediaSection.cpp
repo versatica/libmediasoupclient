@@ -207,6 +207,14 @@ namespace mediasoupclient
 								codecParameters["usedtx"]          = opusDtx ? 1 : 0;
 							}
 
+							auto opusCbrIt = codecOptions->find("opusCbr");
+							if (opusCbrIt != codecOptions->end())
+							{
+								auto opusCbr                    = opusCbrIt->get<bool>();
+								offerCodec["parameters"]["cbr"] = opusCbr ? 1 : 0;
+								codecParameters["cbr"]          = opusCbr ? 1 : 0;
+							}
+
 							auto opusMaxPlaybackRateIt = codecOptions->find("opusMaxPlaybackRate");
 							if (opusMaxPlaybackRateIt != codecOptions->end())
 							{
@@ -226,14 +234,6 @@ namespace mediasoupclient
 							{
 								auto opusPtime           = opusPtimeIt->get<uint32_t>();
 								codecParameters["ptime"] = opusPtime;
-							}
-
-							auto opusCbrIt = codecOptions->find("opusCbr");
-							if (opusCbrIt != codecOptions->end())
-							{
-								auto opusCbr                    = opusCbrIt->get<bool>();
-								offerCodec["parameters"]["cbr"] = opusCbr ? 1 : 0;
-								codecParameters["cbr"]          = opusCbr ? 1 : 0;
 							}
 						}
 						else if (mimeType == "video/vp8" || mimeType == "video/vp9" || mimeType == "video/h264" || mimeType == "video/h265")

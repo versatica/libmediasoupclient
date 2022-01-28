@@ -211,17 +211,14 @@ namespace mediasoupclient
 		webrtc::SdpParseError error;
 		std::unique_ptr<webrtc::SessionDescriptionInterface> sessionDescription;
 		rtc::scoped_refptr<SetRemoteDescriptionObserver> observer = new rtc::RefCountedObject<SetRemoteDescriptionObserver>();
-		  // rtc::scoped_refptr<SetSessionDescriptionObserver>
-		  //   observer(new rtc::RefCountedObject<SetSessionDescriptionObserver>());
 
 		const auto& typeStr = sdpType2String[type];
 		auto future         = observer->GetFuture();
 
-		//sessionDescription = std::unique_ptr<webrtc::SessionDescriptionInterface>(webrtc::CreateSessionDescription(typeStr, sdp, &error));
 
 		std::unique_ptr<webrtc::SessionDescriptionInterface> ownedDesc(webrtc::CreateSessionDescription(typeStr, sdp, &error));
 
-		if (sessionDescription == nullptr)
+		if (ownedDesc == nullptr)
 		{
 			MSC_WARN(
 			  "webrtc::CreateSessionDescription failed [%s]: %s",

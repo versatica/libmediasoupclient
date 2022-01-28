@@ -87,16 +87,16 @@ namespace mediasoupclient
     class SetRemoteDescriptionObserver : public webrtc::SetRemoteDescriptionObserverInterface {
     public:
       // Default constructor.
-      SetRemoteDescriptionObserver() = default
-      ~SetRemoteDescriptionObserver() override = default
+      SetRemoteDescriptionObserver() = default;
+      ~SetRemoteDescriptionObserver() override = default;
 
-      std::future<std::string> GetFuture();
+      std::future<void> GetFuture();
       void Reject(const std::string& error);
 
-      void OnSetRemoteDescriptionComplete(RTCError error);
+      void OnSetRemoteDescriptionComplete(webrtc::RTCError error);
 
 		private:
-			std::promise<std::string> promise;
+			std::promise<void> promise;
     };
 
 		class RTCStatsCollectorCallback : public webrtc::RTCStatsCollectorCallback

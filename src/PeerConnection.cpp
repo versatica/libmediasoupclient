@@ -210,8 +210,10 @@ namespace mediasoupclient
 
 		webrtc::SdpParseError error;
 		webrtc::SessionDescriptionInterface* sessionDescription;
-		rtc::scoped_refptr<SetSessionDescriptionObserver> observer(
-		  new rtc::RefCountedObject<SetSessionDescriptionObserver>());
+		rtc::scoped_refptr<SetRemoteDescriptionObserverInterface> observer(
+		  new rtc::RefCountedObject<SetSessionDescriptionObserver>())
+		  // rtc::scoped_refptr<SetSessionDescriptionObserver>
+		  //   observer(new rtc::RefCountedObject<SetSessionDescriptionObserver>());
 
 		const auto& typeStr = sdpType2String[type];
 		auto future         = observer->GetFuture();
@@ -229,7 +231,7 @@ namespace mediasoupclient
 			return future.get();
 		}
 
-		this->pc->SetRemoteDescription(observer, sessionDescription);
+		this->pc->SetRemoteDescription(sessionDescription, observer);
 
 		return future.get();
 	}
@@ -466,6 +468,41 @@ namespace mediasoupclient
 
 		this->Reject(message);
 	}
+
+	/* SetRemoteDescriptionObserver */
+
+	std::future<std::string> PeerConnection::SetRemoteDescriptionObserver::GetFuture()
+	{
+		MSC_TRACE();
+
+		return this->promise.get_future();
+	}
+
+	void PeerConnection::SetRemoteDescriptionObserver::Reject(const std::string& error)
+	{
+		MSC_TRACE();
+
+		this->promise.set_exception(std::make_exception_ptr(MediaSoupClientError(error.c_str())));
+	}
+
+	void PeerConnection::SetRemoteDescriptionObserver::OnSetRemoteDescriptionComplete(webrtc::RTCError error)
+	{
+		MSC_TRACE();
+    if(!error.ok()) {
+			MSC_WARN(
+			  "webtc::SetRemoteDescriptionObserver failure [%s:%s]",
+			  webrtc::ToString(error.type()),
+			  error.message());
+
+			auto message = std::string(error.message());
+
+			this->Reject(message);
+		} else {
+      this->promise.set_value();
+		}
+
+	};
+
 
 	/* RTCStatsCollectorCallback */
 

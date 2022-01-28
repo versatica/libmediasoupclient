@@ -84,6 +84,21 @@ namespace mediasoupclient
 			std::promise<std::string> promise;
 		};
 
+    class SetRemoteDescriptionObserver : public webrtc::SetRemoteDescriptionObserverInterface {
+    public:
+      // Default constructor.
+      SetRemoteDescriptionObserver() = default
+      ~SetRemoteDescriptionObserver() override = default
+
+      std::future<std::string> GetFuture();
+      void Reject(const std::string& error);
+
+      void OnSetRemoteDescriptionComplete(RTCError error);
+
+		private:
+			std::promise<std::string> promise;
+    };
+
 		class RTCStatsCollectorCallback : public webrtc::RTCStatsCollectorCallback
 		{
 		public:
@@ -145,6 +160,8 @@ namespace mediasoupclient
 		// PeerConnection instance.
 		rtc::scoped_refptr<webrtc::PeerConnectionInterface> pc;
 	};
+
+
 } // namespace mediasoupclient
 
 #endif

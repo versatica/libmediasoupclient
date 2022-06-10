@@ -209,7 +209,6 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		webrtc::SdpParseError error;
-		std::unique_ptr<webrtc::SessionDescriptionInterface> sessionDescription;
 		rtc::scoped_refptr<SetRemoteDescriptionObserver> observer = new rtc::RefCountedObject<SetRemoteDescriptionObserver>();
 
 		const auto& typeStr = sdpType2String[type];

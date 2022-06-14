@@ -207,6 +207,14 @@ namespace mediasoupclient
 								codecParameters["usedtx"]          = opusDtx ? 1 : 0;
 							}
 
+							auto opusCbrIt = codecOptions->find("opusCbr");
+							if (opusCbrIt != codecOptions->end())
+							{
+								auto opusCbr                    = opusCbrIt->get<bool>();
+								offerCodec["parameters"]["cbr"] = opusCbr ? 1 : 0;
+								codecParameters["cbr"]          = opusCbr ? 1 : 0;
+							}
+
 							auto opusMaxPlaybackRateIt = codecOptions->find("opusMaxPlaybackRate");
 							if (opusMaxPlaybackRateIt != codecOptions->end())
 							{

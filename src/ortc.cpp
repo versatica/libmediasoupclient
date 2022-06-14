@@ -917,6 +917,7 @@ namespace mediasoupclient
 			auto opusStereoIt              = params.find("opusStereo");
 			auto opusFecIt                 = params.find("opusFec");
 			auto opusDtxIt                 = params.find("opusDtx");
+			auto opusCbrIt                 = params.find("opusCbr");
 			auto opusMaxPlaybackRateIt     = params.find("opusMaxPlaybackRate");
 			auto opusMaxAverageBitrateIt   = params.find("opusMaxAverageBitrate");
 			auto opusPtimeIt               = params.find("opusPtime");
@@ -939,14 +940,21 @@ namespace mediasoupclient
 				MSC_THROW_TYPE_ERROR("invalid params.opusDtx");
 			}
 
+			if (opusCbrIt != params.end() && !opusCbrIt->is_boolean())
+			{
+				MSC_THROW_TYPE_ERROR("invalid params.opusCbr");
+			}
+
 			if (opusMaxPlaybackRateIt != params.end() && !opusMaxPlaybackRateIt->is_number_unsigned())
 			{
 				MSC_THROW_TYPE_ERROR("invalid params.opusMaxPlaybackRate");
 			}
+
 			if (opusMaxAverageBitrateIt != params.end() && !opusMaxAverageBitrateIt->is_number_unsigned())
 			{
 				MSC_THROW_TYPE_ERROR("invalid params.opusMaxAverageBitrate");
 			}
+
 			if (opusPtimeIt != params.end() && !opusPtimeIt->is_number_integer())
 			{
 				MSC_THROW_TYPE_ERROR("invalid params.opusPtime");

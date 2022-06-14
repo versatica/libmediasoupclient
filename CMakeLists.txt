@@ -4,7 +4,7 @@ project(mediasoupclient LANGUAGES CXX)
 
 # Set version number.
 set(mediasoupclient_VERSION_MAJOR 3)
-set(mediasoupclient_VERSION_MINOR 3)
+set(mediasoupclient_VERSION_MINOR 4)
 set(mediasoupclient_VERSION_PATCH 0)
 
 # Configure a header file to pass the version.

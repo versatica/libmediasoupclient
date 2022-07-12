@@ -107,8 +107,10 @@ namespace mediasoupclient
 		config.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
 
 		// Create the webrtc::Peerconnection.
-		this->pc =
-		  this->peerConnectionFactory->CreatePeerConnection(config, nullptr, nullptr, privateListener);
+		webrtc::PeerConnectionDependencies dependencies(privateListener);
+		auto result = this->peerConnectionFactory->CreatePeerConnectionOrError(config, std::move(dependencies));
+
+		this->pc = result.MoveValue();
 	}
 
 	void PeerConnection::Close()
@@ -321,7 +323,9 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		return this->pc->RemoveTrack(sender);
+		auto wrapped_sender = rtc::scoped_refptr<webrtc::RtpSenderInterface>(sender);
+		auto result = this->pc->RemoveTrackOrError(wrapped_sender);
+		return result.ok();
 	}
 
 	json PeerConnection::GetStats()
@@ -371,10 +375,9 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		rtc::scoped_refptr<webrtc::DataChannelInterface> webrtcDataChannel =
-		  this->pc->CreateDataChannel(label, config);
+		auto result = this->pc->CreateDataChannelOrError(label, config);
 
-		if (webrtcDataChannel.get())
+		if (result.ok())
 		{
 			MSC_DEBUG("Success creating data channel");
 		}
@@ -383,7 +386,7 @@ namespace mediasoupclient
 			MSC_THROW_ERROR("Failed creating data channel");
 		}
 
-		return webrtcDataChannel;
+		return result.MoveValue();
 	}
 
 	/* SetSessionDescriptionObserver */

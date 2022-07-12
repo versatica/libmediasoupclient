@@ -209,7 +209,8 @@ namespace mediasoupclient
 		if (encodings && !encodings->empty())
 			transceiverInit.send_encodings = *encodings;
 
-		webrtc::RtpTransceiverInterface* transceiver = this->pc->AddTransceiver(track, transceiverInit);
+		rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> wrappedTrack(track);
+		rtc::scoped_refptr<webrtc::RtpTransceiverInterface> transceiver = this->pc->AddTransceiver(wrappedTrack, transceiverInit);
 
 		if (!transceiver)
 			MSC_THROW_ERROR("error creating transceiver");

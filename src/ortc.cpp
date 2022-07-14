@@ -773,7 +773,7 @@ namespace mediasoupclient
 			}
 
 			// priority is mandatory.
-			if (priorityIt == params.end() || !priorityIt->is_number_unsigned())
+			if (priorityIt == params.end())// || !priorityIt->is_number_unsigned())
 				MSC_THROW_TYPE_ERROR("missing params.priority");
 
 			// ip is mandatory.
@@ -796,7 +796,7 @@ namespace mediasoupclient
 				MSC_THROW_TYPE_ERROR("invalid params.protocol");
 
 			// port is mandatory.
-			if (portIt == params.end() || !portIt->is_number_unsigned())
+			if (portIt == params.end())// || !portIt->is_number_unsigned())
 				MSC_THROW_TYPE_ERROR("missing params.port");
 
 			// type is mandatory.

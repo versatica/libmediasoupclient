@@ -9,7 +9,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # For CMake < 3.1.
 add_compile_options(-std=c++11)
 
-subdirs(test readme-helper)
+# subdirs(test readme-helper)
 
 include_directories(${sdptransform_SOURCE_DIR}/include)
 

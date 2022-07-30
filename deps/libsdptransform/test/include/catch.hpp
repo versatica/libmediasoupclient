@@ -10705,6 +10705,10 @@ PVOID FatalConditionHandler::exceptionHandlerHandle = nullptr;
 
 #elif defined( CATCH_CONFIG_POSIX_SIGNALS )
 
+#if defined( _SC_MINSIGSTKSZ )
+#define MINSIGSTKSZ _SC_MINSIGSTKSZ
+#endif
+
 namespace Catch {
 
     struct SignalDefs {

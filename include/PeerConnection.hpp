@@ -29,6 +29,8 @@ namespace mediasoupclient
 		  iceGatheringState2String;
 		static std::map<webrtc::PeerConnectionInterface::SignalingState, const std::string> signalingState2String;
 
+		static rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> DefaultFactory();
+
 	public:
 		class PrivateListener : public webrtc::PeerConnectionObserver
 		{
@@ -138,14 +140,6 @@ namespace mediasoupclient
 		  const std::string& label, const webrtc::DataChannelInit* config);
 
 	private:
-		// Signaling and worker threads.
-		std::unique_ptr<rtc::Thread> networkThread;
-		std::unique_ptr<rtc::Thread> signalingThread;
-		std::unique_ptr<rtc::Thread> workerThread;
-
-		// PeerConnection factory.
-		rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peerConnectionFactory;
-
 		// PeerConnection instance.
 		rtc::scoped_refptr<webrtc::PeerConnectionInterface> pc;
 	};

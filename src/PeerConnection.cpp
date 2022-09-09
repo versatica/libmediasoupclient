@@ -57,6 +57,41 @@ namespace mediasoupclient
 	};
 	// clang-format on
 
+	rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> PeerConnection::DefaultFactory() {
+		static std::once_flag f;
+		static rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> sharedFactory;
+
+		std::call_once(f, [] {
+			rtc::Thread* networkThread   = rtc::Thread::CreateWithSocketServer().release();
+			rtc::Thread* signalingThread = rtc::Thread::Create().release();
+			rtc::Thread* workerThread    = rtc::Thread::Create().release();
+
+			networkThread->SetName("network_thread", nullptr);
+			signalingThread->SetName("signaling_thread", nullptr);
+			workerThread->SetName("worker_thread", nullptr);
+
+			if (!networkThread->Start() || !signalingThread->Start() || !workerThread->Start())
+			{
+				MSC_THROW_INVALID_STATE_ERROR("thread start errored");
+			}
+
+			sharedFactory = webrtc::CreatePeerConnectionFactory(
+				networkThread,
+				workerThread,
+				signalingThread,
+				nullptr /*default_adm*/,
+				webrtc::CreateBuiltinAudioEncoderFactory(),
+				webrtc::CreateBuiltinAudioDecoderFactory(),
+				webrtc::CreateBuiltinVideoEncoderFactory(),
+				webrtc::CreateBuiltinVideoDecoderFactory(),
+				nullptr /*audio_mixer*/,
+				nullptr /*audio_processing*/
+			);
+		});
+
+		return sharedFactory;
+	}
+
 	/* Instance methods. */
 
 	PeerConnection::PeerConnection(
@@ -69,38 +104,16 @@ namespace mediasoupclient
 		if (options != nullptr)
 			config = options->config;
 
-		// PeerConnection factory provided.
+		rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peerConnectionFactory;
+
 		if ((options != nullptr) && (options->factory != nullptr))
 		{
-			this->peerConnectionFactory =
+			peerConnectionFactory =
 			  rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>(options->factory);
 		}
 		else
 		{
-			this->networkThread   = rtc::Thread::CreateWithSocketServer();
-			this->signalingThread = rtc::Thread::Create();
-			this->workerThread    = rtc::Thread::Create();
-
-			this->networkThread->SetName("network_thread", nullptr);
-			this->signalingThread->SetName("signaling_thread", nullptr);
-			this->workerThread->SetName("worker_thread", nullptr);
-
-			if (!this->networkThread->Start() || !this->signalingThread->Start() || !this->workerThread->Start())
-			{
-				MSC_THROW_INVALID_STATE_ERROR("thread start errored");
-			}
-
-			this->peerConnectionFactory = webrtc::CreatePeerConnectionFactory(
-			  this->networkThread.get(),
-			  this->workerThread.get(),
-			  this->signalingThread.get(),
-			  nullptr /*default_adm*/,
-			  webrtc::CreateBuiltinAudioEncoderFactory(),
-			  webrtc::CreateBuiltinAudioDecoderFactory(),
-			  webrtc::CreateBuiltinVideoEncoderFactory(),
-			  webrtc::CreateBuiltinVideoDecoderFactory(),
-			  nullptr /*audio_mixer*/,
-			  nullptr /*audio_processing*/);
+			peerConnectionFactory = PeerConnection::DefaultFactory();
 		}
 
 		// Set SDP semantics to Unified Plan.
@@ -108,7 +121,7 @@ namespace mediasoupclient
 
 		// Create the webrtc::Peerconnection.
 		webrtc::PeerConnectionDependencies dependencies(privateListener);
-		auto result = this->peerConnectionFactory->CreatePeerConnectionOrError(config, std::move(dependencies));
+		auto result = peerConnectionFactory->CreatePeerConnectionOrError(config, std::move(dependencies));
 
 		this->pc = result.MoveValue();
 	}

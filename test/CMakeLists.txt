@@ -39,12 +39,6 @@ if(APPLE)
 		${CORE_AUDIO}
 		${CORE_FOUNDATION}
 	)
-
-	# Bundle it.
-	set_target_properties(test_mediasoupclient PROPERTIES
-		MACOSX_BUNDLE TRUE
-		MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist
-	)
 endif(APPLE)
 
 if(UNIX)
@@ -60,11 +54,3 @@ target_compile_definitions(test_mediasoupclient PUBLIC
 # Private dependencies.
 target_link_libraries(test_mediasoupclient PRIVATE mediasoupclient)
 target_link_libraries(test_mediasoupclient PRIVATE ${CMAKE_DL_LIBS})
-
-# Source Dependencies.
-add_subdirectory(deps/libwebrtc "${CMAKE_CURRENT_BINARY_DIR}/libwebrtc")
-
-# Public (interface) dependencies.
-target_link_libraries(test_mediasoupclient PUBLIC
-	webrtc
-)

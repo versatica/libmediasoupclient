@@ -47,7 +47,7 @@ namespace mediasoupclient
 		const std::string& GetConnectionState() const;
 		nlohmann::json& GetAppData();
 		virtual void Close();
-		nlohmann::json GetStats() const;
+		void GetStats(PeerConnection::StatsHandler) const;
 		void RestartIce(const nlohmann::json& iceParameters);
 		void UpdateIceServers(const nlohmann::json& iceServers);
 
@@ -118,7 +118,7 @@ namespace mediasoupclient
 		  const nlohmann::json& iceCandidates,
 		  const nlohmann::json& dtlsParameters,
 		  const nlohmann::json& sctpParameters,
-		  const PeerConnection::Options* peerConnectionOptions,
+		  const PeerConnection::Options& peerConnectionOptions,
 		  const nlohmann::json* extendedRtpCapabilities,
 		  const std::map<std::string, bool>* canProduceByKind,
 		  const nlohmann::json& appData);
@@ -154,7 +154,7 @@ namespace mediasoupclient
 		void OnClose(DataProducer* dataProducer) override;
 		void OnReplaceTrack(const Producer* producer, webrtc::MediaStreamTrackInterface* track) override;
 		void OnSetMaxSpatialLayer(const Producer* producer, uint8_t maxSpatialLayer) override;
-		nlohmann::json OnGetStats(const Producer* producer) override;
+		void OnGetStats(const Producer* producer, PeerConnection::StatsHandler callback) override;
 
 	private:
 		// Listener instance.
@@ -187,7 +187,7 @@ namespace mediasoupclient
 		  const nlohmann::json& iceCandidates,
 		  const nlohmann::json& dtlsParameters,
 		  const nlohmann::json& sctpParameters,
-		  const PeerConnection::Options* peerConnectionOptions,
+		  const PeerConnection::Options& peerConnectionOptions,
 		  const nlohmann::json* extendedRtpCapabilities,
 		  const nlohmann::json& appData);
 
@@ -220,7 +220,7 @@ namespace mediasoupclient
 	public:
 		void OnClose(Consumer* consumer) override;
 		void OnClose(DataConsumer* consumer) override;
-		nlohmann::json OnGetStats(const Consumer* consumer) override;
+		void OnGetStats(const Consumer* producer, PeerConnection::StatsHandler callback) override;
 
 	private:
 		// Map of Consumers indexed by id.

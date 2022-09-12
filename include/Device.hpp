@@ -3,6 +3,9 @@
 
 #include "Handler.hpp"
 #include "Transport.hpp"
+#include "MediaSoupClientErrors.hpp"
+
+#include <atomic>
 #include <json.hpp>
 #include <map>
 #include <string>
@@ -18,9 +21,15 @@ namespace mediasoupclient
 		bool IsLoaded() const;
 		const nlohmann::json& GetRtpCapabilities() const;
 		const nlohmann::json& GetSctpCapabilities() const;
-		void Load(
-		  nlohmann::json routerRtpCapabilities,
-		  const PeerConnection::Options* peerConnectionOptions = nullptr);
+
+		using LoadCallback = std::function<void(std::exception_ptr)>;
+
+		void Load(nlohmann::json routerRtpCapabilities, LoadCallback callback) { 
+			Load(routerRtpCapabilities, {}, callback);
+		}
+
+		void Load(nlohmann::json routerRtpCapabilities, const PeerConnection::Options& opts, LoadCallback);
+
 		bool CanProduce(const std::string& kind);
 		SendTransport* CreateSendTransport(
 		  SendTransport::Listener* listener,
@@ -29,7 +38,6 @@ namespace mediasoupclient
 		  const nlohmann::json& iceCandidates,
 		  const nlohmann::json& dtlsParameters,
 		  const nlohmann::json& sctpParameters,
-		  const PeerConnection::Options* peerConnectionOptions = nullptr,
 		  const nlohmann::json& appData                        = nlohmann::json::object()) const;
 		SendTransport* CreateSendTransport(
 		  SendTransport::Listener* listener,
@@ -37,7 +45,6 @@ namespace mediasoupclient
 		  const nlohmann::json& iceParameters,
 		  const nlohmann::json& iceCandidates,
 		  const nlohmann::json& dtlsParameters,
-		  const PeerConnection::Options* peerConnectionOptions = nullptr,
 		  const nlohmann::json& appData                        = nlohmann::json::object()) const;
 		RecvTransport* CreateRecvTransport(
 		  RecvTransport::Listener* listener,
@@ -46,7 +53,6 @@ namespace mediasoupclient
 		  const nlohmann::json& iceCandidates,
 		  const nlohmann::json& dtlsParameters,
 		  const nlohmann::json& sctpParameters,
-		  const PeerConnection::Options* peerConnectionOptions = nullptr,
 		  const nlohmann::json& appData                        = nlohmann::json::object()) const;
 		RecvTransport* CreateRecvTransport(
 		  RecvTransport::Listener* listener,
@@ -54,12 +60,13 @@ namespace mediasoupclient
 		  const nlohmann::json& iceParameters,
 		  const nlohmann::json& iceCandidates,
 		  const nlohmann::json& dtlsParameters,
-		  const PeerConnection::Options* peerConnectionOptions = nullptr,
 		  const nlohmann::json& appData                        = nlohmann::json::object()) const;
 
 	private:
 		// Loaded flag.
-		bool loaded{ false };
+		std::atomic<bool> loaded{ false };
+		// Options
+		PeerConnection::Options peerConnectionOptions;
 		// Extended RTP capabilities.
 		nlohmann::json extendedRtpCapabilities;
 		// Local RTP capabilities for receiving media.

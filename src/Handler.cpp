@@ -23,28 +23,102 @@ static void fillJsonRtpEncodingParameters(
 
 namespace mediasoupclient
 {
+	// Shims (to be removed)
+	namespace {
+		std::string CreateAnswer(PeerConnection& pc, const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions& opts = {})
+		{
+			MSC_TRACE();
+
+			std::promise<std::string> promise;
+
+			pc.CreateAnswer(opts, [&promise](auto sdp, auto err) {
+				if (err.ok()) {
+					promise.set_value(sdp);
+				} else {
+					promise.set_exception(std::make_exception_ptr(MediaSoupClientError(err.message())));
+				}
+			});
+
+			return promise.get_future().get();
+		}
+
+		std::string CreateOffer(PeerConnection& pc, const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions& opts = {})
+		{
+			MSC_TRACE();
+
+			std::promise<std::string> promise;
+
+			pc.CreateOffer(opts, [&promise](auto sdp, auto err) {
+				if (err.ok()) {
+					promise.set_value(sdp);
+				} else {
+					promise.set_exception(std::make_exception_ptr(MediaSoupClientError(err.message())));
+				}
+			});
+
+			return promise.get_future().get();
+		}
+
+		void SetLocalDescription(PeerConnection& pc, const PeerConnection::SdpType& type, const std::string& sdp)
+		{
+			MSC_TRACE();
+
+			std::promise<void> promise;
+
+			pc.SetLocalDescription(type, sdp, [&promise](auto sdp, auto err) {
+				if (err.ok()) {
+					promise.set_value();
+				} else {
+					promise.set_exception(std::make_exception_ptr(MediaSoupClientError(err.message())));
+				}
+			});
+
+			return promise.get_future().get();
+		}
+
+		void SetRemoteDescription(PeerConnection& pc, const PeerConnection::SdpType& type, const std::string& sdp)
+		{
+			MSC_TRACE();
+
+			std::promise<void> promise;
+
+			pc.SetRemoteDescription(type, sdp, [&promise](auto sdp, auto err) {
+				if (err.ok()) {
+					promise.set_value();
+				} else {
+					promise.set_exception(std::make_exception_ptr(MediaSoupClientError(err.message())));
+				}
+			});
+
+			return promise.get_future().get();
+		}
+	}
+
 	/* Handler static methods. */
 
-	json Handler::GetNativeRtpCapabilities(const PeerConnection::Options* peerConnectionOptions)
+	void Handler::GetNativeRtpCapabilities(const PeerConnection::Options& peerConnectionOptions, CapabilityCallback callback)
 	{
 		MSC_TRACE();
 
-		std::unique_ptr<PeerConnection::PrivateListener> privateListener(
-		  new PeerConnection::PrivateListener());
-		std::unique_ptr<PeerConnection> pc(
-		  new PeerConnection(privateListener.get(), peerConnectionOptions));
+		auto listener = new PeerConnection::PrivateListener();
+		auto pc = new PeerConnection(listener, peerConnectionOptions);
 
 		(void)pc->AddTransceiver(cricket::MediaType::MEDIA_TYPE_AUDIO);
 		(void)pc->AddTransceiver(cricket::MediaType::MEDIA_TYPE_VIDEO);
 
-		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
+		pc->CreateOffer([=](auto offer, auto error) {
+			json capabilities;
 
-		// May throw.
-		auto offer                 = pc->CreateOffer(options);
-		auto sdpObject             = sdptransform::parse(offer);
-		auto nativeRtpCapabilities = Sdp::Utils::extractRtpCapabilities(sdpObject);
+			if (error.ok()) {
+				auto sdpObject = sdptransform::parse(offer);
+				capabilities = Sdp::Utils::extractRtpCapabilities(sdpObject);
+			}
 
-		return nativeRtpCapabilities;
+			delete pc;
+			delete listener;
+
+			callback(capabilities, error);
+		});
 	}
 
 	json Handler::GetNativeSctpCapabilities()
@@ -64,7 +138,7 @@ namespace mediasoupclient
 	  const json& iceCandidates,
 	  const json& dtlsParameters,
 	  const json& sctpParameters,
-	  const PeerConnection::Options* peerConnectionOptions)
+	  const PeerConnection::Options& peerConnectionOptions)
 	  : privateListener(privateListener)
 	{
 		MSC_TRACE();
@@ -88,11 +162,11 @@ namespace mediasoupclient
 		this->pc->Close();
 	};
 
-	json Handler::GetTransportStats()
+	void Handler::GetTransportStats(PeerConnection::StatsHandler callback)
 	{
 		MSC_TRACE();
 
-		return this->pc->GetStats();
+		pc->GetStats(callback);
 	}
 
 	void Handler::UpdateIceServers(const json& iceServerUris)
@@ -128,8 +202,7 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		if (localSdpObject.empty())
-			localSdpObject = sdptransform::parse(this->pc->GetLocalDescription());
+		assert(!localSdpObject.empty());
 
 		// Get our local DTLS parameters.
 		auto dtlsParameters = Sdp::Utils::extractDtlsParameters(localSdpObject);
@@ -154,7 +227,7 @@ namespace mediasoupclient
 	  const json& iceCandidates,
 	  const json& dtlsParameters,
 	  const json& sctpParameters,
-	  const PeerConnection::Options* peerConnectionOptions,
+	  const PeerConnection::Options& peerConnectionOptions,
 	  const json& sendingRtpParametersByKind,
 	  const json& sendingRemoteRtpParametersByKind)
 	  : Handler(
@@ -223,9 +296,7 @@ namespace mediasoupclient
 
 		try
 		{
-			webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
-
-			offer               = this->pc->CreateOffer(options);
+			offer               = CreateOffer(*pc);
 			auto localSdpObject = sdptransform::parse(offer);
 
 			// Transport is not ready.
@@ -262,7 +333,7 @@ namespace mediasoupclient
 
 			MSC_DEBUG("calling pc->SetLocalDescription():\n%s", offer.c_str());
 
-			this->pc->SetLocalDescription(PeerConnection::SdpType::OFFER, offer);
+			SetLocalDescription(*pc, PeerConnection::SdpType::OFFER, offer);
 
 			// We can now get the transceiver.mid.
 			localId = transceiver->mid().value();
@@ -349,7 +420,7 @@ namespace mediasoupclient
 
 		MSC_DEBUG("calling pc->SetRemoteDescription():\n%s", answer.c_str());
 
-		this->pc->SetRemoteDescription(PeerConnection::SdpType::ANSWER, answer);
+		SetRemoteDescription(*pc, PeerConnection::SdpType::ANSWER, answer);
 
 		// Store in the map.
 		this->mapMidTransceiver[localId] = transceiver;
@@ -405,8 +476,7 @@ namespace mediasoupclient
 		// m=application section.
 		if (!this->hasDataChannelMediaSection)
 		{
-			webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
-			std::string offer   = this->pc->CreateOffer(options);
+			std::string offer   = CreateOffer(*pc);
 			auto localSdpObject = sdptransform::parse(offer);
 			const Sdp::RemoteSdp::MediaSectionIdx mediaSectionIdx =
 			  this->remoteSdp->GetNextMediaSectionIdx();
@@ -429,14 +499,14 @@ namespace mediasoupclient
 
 			MSC_DEBUG("calling pc.setLocalDescription() [offer:%s]", offer.c_str());
 
-			this->pc->SetLocalDescription(PeerConnection::SdpType::OFFER, offer);
+			SetLocalDescription(*pc, PeerConnection::SdpType::OFFER, offer);
 			this->remoteSdp->SendSctpAssociation(*offerMediaObject);
 
 			auto sdpAnswer = this->remoteSdp->GetSdp();
 
 			MSC_DEBUG("calling pc.setRemoteDescription() [answer:%s]", sdpAnswer.c_str());
 
-			this->pc->SetRemoteDescription(PeerConnection::SdpType::ANSWER, sdpAnswer);
+			SetRemoteDescription(*pc, PeerConnection::SdpType::ANSWER, sdpAnswer);
 			this->hasDataChannelMediaSection = true;
 		}
 
@@ -466,14 +536,12 @@ namespace mediasoupclient
 		this->remoteSdp->CloseMediaSection(transceiver->mid().value());
 
 		// May throw.
-		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
-
-		auto offer = this->pc->CreateOffer(options);
+		auto offer = CreateOffer(*pc);
 
 		MSC_DEBUG("calling pc->SetLocalDescription():\n%s", offer.c_str());
 
 		// May throw.
-		this->pc->SetLocalDescription(PeerConnection::SdpType::OFFER, offer);
+		SetLocalDescription(*pc, PeerConnection::SdpType::OFFER, offer);
 
 		auto localSdpObj = sdptransform::parse(this->pc->GetLocalDescription());
 		auto answer      = this->remoteSdp->GetSdp();
@@ -481,7 +549,7 @@ namespace mediasoupclient
 		MSC_DEBUG("calling pc->SetRemoteDescription():\n%s", answer.c_str());
 
 		// May throw.
-		this->pc->SetRemoteDescription(PeerConnection::SdpType::ANSWER, answer);
+		SetRemoteDescription(*pc, PeerConnection::SdpType::ANSWER, answer);
 	}
 
 	void SendHandler::ReplaceTrack(const std::string& localId, webrtc::MediaStreamTrackInterface* track)
@@ -570,21 +638,19 @@ namespace mediasoupclient
 			MSC_THROW_ERROR("%s", result.message());
 	}
 
-	json SendHandler::GetSenderStats(const std::string& localId)
+	void SendHandler::GetSenderStats(const std::string& localId, PeerConnection::StatsHandler callback)
 	{
 		MSC_TRACE();
 
 		MSC_DEBUG("[localId:%s]", localId.c_str());
 
-		auto localIdIt = this->mapMidTransceiver.find(localId);
+		rtc::scoped_refptr<webrtc::RtpSenderInterface> sender;
 
-		if (localIdIt == this->mapMidTransceiver.end())
-			MSC_THROW_ERROR("associated RtpTransceiver not found");
+		if (auto itr = this->mapMidTransceiver.find(localId); itr != this->mapMidTransceiver.end()) {
+			sender = itr->second->sender();
+		}
 
-		auto* transceiver = localIdIt->second;
-		auto stats        = this->pc->GetStats(transceiver->sender());
-
-		return stats;
+		pc->GetStats(sender, callback);
 	}
 
 	void SendHandler::RestartIce(const json& iceParameters)
@@ -601,12 +667,12 @@ namespace mediasoupclient
 		options.ice_restart = true;
 
 		// May throw.
-		auto offer = this->pc->CreateOffer(options);
+		auto offer = CreateOffer(*pc, options);
 
 		MSC_DEBUG("calling pc->SetLocalDescription():\n%s", offer.c_str());
 
 		// May throw.
-		this->pc->SetLocalDescription(PeerConnection::SdpType::OFFER, offer);
+		SetLocalDescription(*pc, PeerConnection::SdpType::OFFER, offer);
 
 		auto localSdpObj = sdptransform::parse(this->pc->GetLocalDescription());
 		auto answer      = this->remoteSdp->GetSdp();
@@ -614,7 +680,7 @@ namespace mediasoupclient
 		MSC_DEBUG("calling pc->SetRemoteDescription():\n%s", answer.c_str());
 
 		// May throw.
-		this->pc->SetRemoteDescription(PeerConnection::SdpType::ANSWER, answer);
+		SetRemoteDescription(*pc, PeerConnection::SdpType::ANSWER, answer);
 	}
 
 	/* RecvHandler methods */
@@ -625,7 +691,7 @@ namespace mediasoupclient
 	  const json& iceCandidates,
 	  const json& dtlsParameters,
 	  const json& sctpParameters,
-	  const PeerConnection::Options* peerConnectionOptions)
+	  const PeerConnection::Options& peerConnectionOptions)
 	  : Handler(
 	      privateListener, iceParameters, iceCandidates, dtlsParameters, sctpParameters, peerConnectionOptions)
 	{
@@ -657,12 +723,10 @@ namespace mediasoupclient
 		MSC_DEBUG("calling pc->setRemoteDescription():\n%s", offer.c_str());
 
 		// May throw.
-		this->pc->SetRemoteDescription(PeerConnection::SdpType::OFFER, offer);
-
-		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
+		SetRemoteDescription(*pc, PeerConnection::SdpType::OFFER, offer);
 
 		// May throw.
-		auto answer         = this->pc->CreateAnswer(options);
+		auto answer         = CreateAnswer(*pc);
 		auto localSdpObject = sdptransform::parse(answer);
 		auto mediaIt        = find_if(
       localSdpObject["media"].begin(), localSdpObject["media"].end(), [&localId](const json& m) {
@@ -684,7 +748,7 @@ namespace mediasoupclient
 		MSC_DEBUG("calling pc->SetLocalDescription():\n%s", answer.c_str());
 
 		// May throw.
-		this->pc->SetLocalDescription(PeerConnection::SdpType::ANSWER, answer);
+		SetLocalDescription(*pc, PeerConnection::SdpType::ANSWER, answer);
 
 		auto transceivers  = this->pc->GetTransceivers();
 		auto transceiverIt = std::find_if(
@@ -740,10 +804,9 @@ namespace mediasoupclient
 			MSC_DEBUG("calling pc->setRemoteDescription() [offer:%s]", sdpOffer.c_str());
 
 			// May throw.
-			this->pc->SetRemoteDescription(PeerConnection::SdpType::OFFER, sdpOffer);
+			SetRemoteDescription(*pc, PeerConnection::SdpType::OFFER, sdpOffer);
 
-			webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
-			auto sdpAnswer = this->pc->CreateAnswer(options);
+			auto sdpAnswer = CreateAnswer(*pc);
 
 			if (!this->transportReady)
 			{
@@ -755,7 +818,7 @@ namespace mediasoupclient
 			MSC_DEBUG("calling pc->setLocalDescription() [answer: %s]", sdpAnswer.c_str());
 
 			// May throw.
-			this->pc->SetLocalDescription(PeerConnection::SdpType::ANSWER, sdpAnswer);
+			SetLocalDescription(*pc, PeerConnection::SdpType::ANSWER, sdpAnswer);
 
 			this->hasDataChannelMediaSection = true;
 		}
@@ -785,41 +848,37 @@ namespace mediasoupclient
 
 		this->remoteSdp->CloseMediaSection(transceiver->mid().value());
 
+		// FIXME: Track isn't removed from the PeerConnection?
+
 		auto offer = this->remoteSdp->GetSdp();
 
 		MSC_DEBUG("calling pc->setRemoteDescription():\n%s", offer.c_str());
 
 		// May throw.
-		this->pc->SetRemoteDescription(PeerConnection::SdpType::OFFER, offer);
-
-		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
+		SetRemoteDescription(*pc, PeerConnection::SdpType::OFFER, offer);
 
 		// May throw.
-		auto answer = this->pc->CreateAnswer(options);
+		auto answer = CreateAnswer(*pc);
 
 		MSC_DEBUG("calling pc->SetLocalDescription():\n%s", answer.c_str());
 
 		// May throw.
-		this->pc->SetLocalDescription(PeerConnection::SdpType::ANSWER, answer);
+		SetLocalDescription(*pc, PeerConnection::SdpType::ANSWER, answer);
 	}
 
-	json RecvHandler::GetReceiverStats(const std::string& localId)
+ 	void RecvHandler::GetReceiverStats(const std::string& localId, PeerConnection::StatsHandler callback)
 	{
 		MSC_TRACE();
 
 		MSC_DEBUG("[localId:%s]", localId.c_str());
 
-		auto localIdIt = this->mapMidTransceiver.find(localId);
+		rtc::scoped_refptr<webrtc::RtpReceiverInterface> receiver;
 
-		if (localIdIt == this->mapMidTransceiver.end())
-			MSC_THROW_ERROR("associated RtpTransceiver not found");
+		if (auto itr = this->mapMidTransceiver.find(localId); itr != this->mapMidTransceiver.end()) {
+			receiver = itr->second->receiver();
+		}
 
-		auto& transceiver = localIdIt->second;
-
-		// May throw.
-		auto stats = this->pc->GetStats(transceiver->receiver());
-
-		return stats;
+		pc->GetStats(receiver, callback);
 	}
 
 	void RecvHandler::RestartIce(const json& iceParameters)
@@ -837,17 +896,15 @@ namespace mediasoupclient
 		MSC_DEBUG("calling pc->setRemoteDescription():\n%s", offer.c_str());
 
 		// May throw.
-		this->pc->SetRemoteDescription(PeerConnection::SdpType::OFFER, offer);
-
-		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
+		SetRemoteDescription(*pc, PeerConnection::SdpType::OFFER, offer);
 
 		// May throw.
-		auto answer = this->pc->CreateAnswer(options);
+		auto answer = CreateAnswer(*pc);
 
 		MSC_DEBUG("calling pc->SetLocalDescription():\n%s", answer.c_str());
 
 		// May throw.
-		this->pc->SetLocalDescription(PeerConnection::SdpType::ANSWER, answer);
+		SetLocalDescription(*pc, PeerConnection::SdpType::ANSWER, answer);
 	}
 } // namespace mediasoupclient
 

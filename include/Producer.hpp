@@ -6,6 +6,8 @@
 #include <api/rtp_sender_interface.h>   // webrtc::RtpSenderInterface
 #include <string>
 
+#include "PeerConnection.hpp"
+
 namespace mediasoupclient
 {
 	// Fast forward declarations.
@@ -22,7 +24,7 @@ namespace mediasoupclient
 			virtual void OnReplaceTrack(
 			  const Producer* producer, webrtc::MediaStreamTrackInterface* newTrack)             = 0;
 			virtual void OnSetMaxSpatialLayer(const Producer* producer, uint8_t maxSpatialLayer) = 0;
-			virtual nlohmann::json OnGetStats(const Producer* producer)                          = 0;
+			virtual void OnGetStats(const Producer* producer, PeerConnection::StatsHandler)      = 0;
 		};
 
 		/* Public Listener API */
@@ -55,7 +57,7 @@ namespace mediasoupclient
 		uint8_t GetMaxSpatialLayer() const;
 		nlohmann::json& GetAppData();
 		void Close();
-		nlohmann::json GetStats() const;
+		void GetStats(PeerConnection::StatsHandler) const;
 		void Pause();
 		void Resume();
 		void ReplaceTrack(webrtc::MediaStreamTrackInterface* track);

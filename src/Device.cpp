@@ -48,53 +48,63 @@ namespace mediasoupclient
 	/**
 	 * Initialize the Device.
 	 */
-	void Device::Load(json routerRtpCapabilities, const PeerConnection::Options* peerConnectionOptions)
+	void Device::Load(nlohmann::json routerRtpCapabilities, const PeerConnection::Options& opts, LoadCallback callback)
 	{
 		MSC_TRACE();
 
-		if (this->loaded)
-			MSC_THROW_INVALID_STATE_ERROR("already loaded");
+		Handler::GetNativeRtpCapabilities(opts, [=](auto nativeRtpCapabilities, auto error) mutable {
+			std::exception_ptr exception;
 
-		// This may throw.
-		ortc::validateRtpCapabilities(routerRtpCapabilities);
+			try {
+				if (this->loaded)
+					MSC_THROW_INVALID_STATE_ERROR("already loaded");
 
-		// Get Native RTP capabilities.
-		auto nativeRtpCapabilities = Handler::GetNativeRtpCapabilities(peerConnectionOptions);
+				if (!error.ok()) {
+					throw MediaSoupClientError(error.message());
+				}
 
-		MSC_DEBUG("got native RTP capabilities:\n%s", nativeRtpCapabilities.dump(4).c_str());
+				MSC_DEBUG("got native RTP capabilities:\n%s", nativeRtpCapabilities.dump(4).c_str());
 
-		// This may throw.
-		ortc::validateRtpCapabilities(nativeRtpCapabilities);
+				// This may throw.
+				ortc::validateRtpCapabilities(routerRtpCapabilities);
+				ortc::validateRtpCapabilities(nativeRtpCapabilities);
 
-		// Get extended RTP capabilities.
-		this->extendedRtpCapabilities =
-		  ortc::getExtendedRtpCapabilities(nativeRtpCapabilities, routerRtpCapabilities);
+				// Get extended RTP capabilities.
+				this->extendedRtpCapabilities =
+				ortc::getExtendedRtpCapabilities(nativeRtpCapabilities, routerRtpCapabilities);
 
-		MSC_DEBUG("got extended RTP capabilities:\n%s", this->extendedRtpCapabilities.dump(4).c_str());
+				MSC_DEBUG("got extended RTP capabilities:\n%s", this->extendedRtpCapabilities.dump(4).c_str());
 
-		// Check whether we can produce audio/video.
-		this->canProduceByKind["audio"] = ortc::canSend("audio", this->extendedRtpCapabilities);
-		this->canProduceByKind["video"] = ortc::canSend("video", this->extendedRtpCapabilities);
+				// Check whether we can produce audio/video.
+				this->canProduceByKind["audio"] = ortc::canSend("audio", this->extendedRtpCapabilities);
+				this->canProduceByKind["video"] = ortc::canSend("video", this->extendedRtpCapabilities);
 
-		// Generate our receiving RTP capabilities for receiving media.
-		this->recvRtpCapabilities = ortc::getRecvRtpCapabilities(this->extendedRtpCapabilities);
+				// Generate our receiving RTP capabilities for receiving media.
+				this->recvRtpCapabilities = ortc::getRecvRtpCapabilities(this->extendedRtpCapabilities);
 
-		MSC_DEBUG("got receiving RTP capabilities:\n%s", this->recvRtpCapabilities.dump(4).c_str());
+				MSC_DEBUG("got receiving RTP capabilities:\n%s", this->recvRtpCapabilities.dump(4).c_str());
 
-		// This may throw.
-		ortc::validateRtpCapabilities(this->recvRtpCapabilities);
+				// This may throw.
+				ortc::validateRtpCapabilities(this->recvRtpCapabilities);
 
-		// Generate our SCTP capabilities.
-		this->sctpCapabilities = Handler::GetNativeSctpCapabilities();
+				// Generate our SCTP capabilities.
+				this->sctpCapabilities = Handler::GetNativeSctpCapabilities();
 
-		MSC_DEBUG("got receiving SCTP capabilities:\n%s", this->sctpCapabilities.dump(4).c_str());
+				MSC_DEBUG("got receiving SCTP capabilities:\n%s", this->sctpCapabilities.dump(4).c_str());
 
-		// This may throw.
-		ortc::validateSctpCapabilities(this->sctpCapabilities);
+				// This may throw.
+				ortc::validateSctpCapabilities(this->sctpCapabilities);
+			} catch(...) {
+				exception = std::current_exception();
+			}
 
-		MSC_DEBUG("succeeded");
+			if (!exception) {
+				this->peerConnectionOptions = opts;
+				this->loaded = true;
+			}
 
-		this->loaded = true;
+			callback(exception);
+		});
 	}
 
 	/**
@@ -120,7 +130,6 @@ namespace mediasoupclient
 	  const json& iceCandidates,
 	  const json& dtlsParameters,
 	  const json& sctpParameters,
-	  const PeerConnection::Options* peerConnectionOptions,
 	  const json& appData) const
 	{
 		MSC_TRACE();
@@ -146,7 +155,7 @@ namespace mediasoupclient
 		  iceCandidates,
 		  dtlsParameters,
 		  sctpParameters,
-		  peerConnectionOptions,
+		  this->peerConnectionOptions,
 		  &this->extendedRtpCapabilities,
 		  &this->canProduceByKind,
 		  appData);
@@ -160,13 +169,12 @@ namespace mediasoupclient
 	  const json& iceParameters,
 	  const json& iceCandidates,
 	  const json& dtlsParameters,
-	  const PeerConnection::Options* peerConnectionOptions,
 	  const json& appData) const
 	{
 		MSC_TRACE();
 
 		return Device::CreateSendTransport(
-		  listener, id, iceParameters, iceCandidates, dtlsParameters, nullptr, peerConnectionOptions, appData);
+		  listener, id, iceParameters, iceCandidates, dtlsParameters, nullptr, appData);
 	}
 
 	RecvTransport* Device::CreateRecvTransport(
@@ -176,7 +184,6 @@ namespace mediasoupclient
 	  const json& iceCandidates,
 	  const json& dtlsParameters,
 	  const json& sctpParameters,
-	  const PeerConnection::Options* peerConnectionOptions,
 	  const json& appData) const
 	{
 		MSC_TRACE();
@@ -202,7 +209,7 @@ namespace mediasoupclient
 		  iceCandidates,
 		  dtlsParameters,
 		  sctpParameters,
-		  peerConnectionOptions,
+		  this->peerConnectionOptions,
 		  &this->extendedRtpCapabilities,
 		  appData);
 
@@ -215,12 +222,11 @@ namespace mediasoupclient
 	  const json& iceParameters,
 	  const json& iceCandidates,
 	  const json& dtlsParameters,
-	  const PeerConnection::Options* peerConnectionOptions,
 	  const json& appData) const
 	{
 		MSC_TRACE();
 
 		return Device::CreateRecvTransport(
-		  listener, id, iceParameters, iceCandidates, dtlsParameters, nullptr, peerConnectionOptions, appData);
+		  listener, id, iceParameters, iceCandidates, dtlsParameters, nullptr, appData);
 	}
 } // namespace mediasoupclient

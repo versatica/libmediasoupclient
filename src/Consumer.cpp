@@ -110,12 +110,9 @@ namespace mediasoupclient
 		this->privateListener->OnClose(this);
 	}
 
-	json Consumer::GetStats() const
+	void Consumer::GetStats(PeerConnection::StatsHandler callback) const
 	{
-		if (this->closed)
-			MSC_THROW_INVALID_STATE_ERROR("Consumer closed");
-
-		return this->privateListener->OnGetStats(this);
+		return this->privateListener->OnGetStats(this, callback);
 	}
 
 	/**

@@ -24,9 +24,12 @@ TEST_CASE("Handler", "[Handler]")
 {
 	SECTION("Handler::GetNativeRtpCapabilities() succeeds")
 	{
-		json rtpCapabilities;
+		std::promise<json> promise;
+		mediasoupclient::Handler::GetNativeRtpCapabilities([&promise](auto v, auto) {
+			promise.set_value(v);
+		});
 
-		REQUIRE_NOTHROW(rtpCapabilities = mediasoupclient::Handler::GetNativeRtpCapabilities());
+		auto rtpCapabilities = promise.get_future().get();
 
 		REQUIRE(rtpCapabilities["codecs"].is_array());
 		REQUIRE(rtpCapabilities["fecMechanisms"].is_array());
@@ -44,12 +47,12 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 	  TransportRemoteParameters["iceCandidates"],
 	  TransportRemoteParameters["dtlsParameters"],
 	  TransportRemoteParameters["sctpParameters"],
-	  &PeerConnectionOptions,
+	  PeerConnectionOptions,
 	  RtpParametersByKind,
 	  RtpParametersByKind);
 
 	static std::unique_ptr<mediasoupclient::PeerConnection> pc(
-	  new mediasoupclient::PeerConnection(nullptr, &PeerConnectionOptions));
+	  new mediasoupclient::PeerConnection(nullptr, PeerConnectionOptions));
 
 	static rtc::scoped_refptr<webrtc::AudioTrackInterface> track;
 
@@ -105,12 +108,20 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 
 	SECTION("sendHandler.GetSenderStats() fails if invalid localId is provided")
 	{
-		REQUIRE_THROWS_AS(sendHandler.GetSenderStats(""), MediaSoupClientError);
+		std::promise<webrtc::RTCError> promise;
+		sendHandler.GetSenderStats("oops", [&promise](auto, auto err) { promise.set_value(err); });
+
+		auto error = promise.get_future().get();
+		REQUIRE(!error.ok());
 	}
 
 	SECTION("sendHandler.GetSenderStats() succeeds if track is being sent")
 	{
-		REQUIRE_NOTHROW(sendHandler.GetSenderStats(localId));
+		std::promise<webrtc::RTCError> promise;
+		sendHandler.GetSenderStats(localId, [&promise](auto, auto err) { promise.set_value(err); });
+
+		auto error = promise.get_future().get();
+		REQUIRE(error.ok());
 	}
 
 	SECTION("sendHandler.StopSending() fails if an invalid localId is provided")
@@ -163,7 +174,7 @@ TEST_CASE("RecvHandler", "[Handler][RecvHandler]")
 	  TransportRemoteParameters["iceCandidates"],
 	  TransportRemoteParameters["dtlsParameters"],
 	  TransportRemoteParameters["sctpParameters"],
-	  &PeerConnectionOptions);
+	  PeerConnectionOptions);
 
 	SECTION("recvHander.Receive() succeeds if correct rtpParameters are provided")
 	{
@@ -176,12 +187,20 @@ TEST_CASE("RecvHandler", "[Handler][RecvHandler]")
 
 	SECTION("recvHandler.GetReceiverStats() fails if unknown receiver id is provided")
 	{
-		REQUIRE_THROWS_AS(recvHandler.GetReceiverStats("unknown"), MediaSoupClientError);
+		std::promise<webrtc::RTCError> promise;
+		recvHandler.GetReceiverStats("oops", [&promise](auto, auto err) { promise.set_value(err); });
+
+		auto error = promise.get_future().get();
+		REQUIRE(!error.ok());
 	}
 
 	SECTION("recvHandler.GetReceiverStats() succeeds if known receiver id is provided")
 	{
-		REQUIRE_NOTHROW(recvHandler.GetReceiverStats(localId));
+		std::promise<webrtc::RTCError> promise;
+		recvHandler.GetReceiverStats(localId, [&promise](auto, auto err) { promise.set_value(err); });
+
+		auto error = promise.get_future().get();
+		REQUIRE(error.ok());
 	}
 
 	SECTION("recvHandler.StopReceiving() fails if unknown receiver id is provided")

@@ -59,14 +59,11 @@ namespace mediasoupclient
 		this->handler->Close();
 	}
 
-	json Transport::GetStats() const
+	void Transport::GetStats(PeerConnection::StatsHandler callback) const
 	{
 		MSC_TRACE();
 
-		if (this->closed)
-			MSC_THROW_INVALID_STATE_ERROR("Transport closed");
-		else
-			return this->handler->GetTransportStats();
+		this->handler->GetTransportStats(callback);
 	}
 
 	void Transport::RestartIce(const json& iceParameters)
@@ -127,7 +124,7 @@ namespace mediasoupclient
 	  const json& iceCandidates,
 	  const json& dtlsParameters,
 	  const json& sctpParameters,
-	  const PeerConnection::Options* peerConnectionOptions,
+	  const PeerConnection::Options& peerConnectionOptions,
 	  const json* extendedRtpCapabilities,
 	  const std::map<std::string, bool>* canProduceByKind,
 	  const json& appData)
@@ -359,14 +356,11 @@ namespace mediasoupclient
 		return this->sendHandler->SetMaxSpatialLayer(producer->GetLocalId(), maxSpatialLayer);
 	}
 
-	json SendTransport::OnGetStats(const Producer* producer)
+	void SendTransport::OnGetStats(const Producer* producer, PeerConnection::StatsHandler callback)
 	{
 		MSC_TRACE();
 
-		if (this->closed)
-			MSC_THROW_INVALID_STATE_ERROR("SendTransport closed");
-
-		return this->sendHandler->GetSenderStats(producer->GetLocalId());
+		return this->sendHandler->GetSenderStats(producer->GetLocalId(), callback);
 	}
 
 	/* RecvTransport */
@@ -378,7 +372,7 @@ namespace mediasoupclient
 	  const json& iceCandidates,
 	  const json& dtlsParameters,
 	  const json& sctpParameters,
-	  const PeerConnection::Options* peerConnectionOptions,
+	  const PeerConnection::Options& peerConnectionOptions,
 	  const json* extendedRtpCapabilities,
 	  const json& appData)
 	  : Transport(listener, id, extendedRtpCapabilities, appData)
@@ -552,13 +546,10 @@ namespace mediasoupclient
 		this->dataConsumers.erase(dataConsumer->GetId());
 	}
 
-	json RecvTransport::OnGetStats(const Consumer* consumer)
+	void RecvTransport::OnGetStats(const Consumer* consumer, PeerConnection::StatsHandler callback)
 	{
 		MSC_TRACE();
 
-		if (this->closed)
-			MSC_THROW_INVALID_STATE_ERROR("RecvTransport closed");
-
-		return this->recvHandler->GetReceiverStats(consumer->GetLocalId());
+		this->recvHandler->GetReceiverStats(consumer->GetLocalId(), callback);
 	}
 } // namespace mediasoupclient

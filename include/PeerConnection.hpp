@@ -54,78 +54,38 @@ namespace mediasoupclient
 			void OnInterestingUsage(int usagePattern) override;
 		};
 
-		class SetSessionDescriptionObserver : public webrtc::SetSessionDescriptionObserver
-		{
-		public:
-			SetSessionDescriptionObserver()           = default;
-			~SetSessionDescriptionObserver() override = default;
-
-			std::future<void> GetFuture();
-			void Reject(const std::string& error);
-
-			/* Virtual methods inherited from webrtc::SetSessionDescriptionObserver. */
-		public:
-			void OnSuccess() override;
-			void OnFailure(webrtc::RTCError error) override;
-
-		private:
-			std::promise<void> promise;
-		};
-
-		class CreateSessionDescriptionObserver : public webrtc::CreateSessionDescriptionObserver
-		{
-		public:
-			CreateSessionDescriptionObserver()           = default;
-			~CreateSessionDescriptionObserver() override = default;
-
-			std::future<std::string> GetFuture();
-			void Reject(const std::string& error);
-
-			/* Virtual methods inherited from webrtc::CreateSessionDescriptionObserver. */
-		public:
-			void OnSuccess(webrtc::SessionDescriptionInterface* desc) override;
-			void OnFailure(webrtc::RTCError error) override;
-
-		private:
-			std::promise<std::string> promise;
-		};
-
-		class RTCStatsCollectorCallback : public webrtc::RTCStatsCollectorCallback
-		{
-		public:
-			RTCStatsCollectorCallback()           = default;
-			~RTCStatsCollectorCallback() override = default;
-
-			std::future<nlohmann::json> GetFuture();
-
-			/* Virtual methods inherited from webrtc::RTCStatsCollectorCallback. */
-		public:
-			void OnStatsDelivered(const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) override;
-
-		private:
-			std::promise<nlohmann::json> promise;
-		};
-
 	public:
 		struct Options
 		{
 			webrtc::PeerConnectionInterface::RTCConfiguration config;
-			webrtc::PeerConnectionFactoryInterface* factory{ nullptr };
+			rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> factory{ nullptr };
 		};
 
 	public:
-		PeerConnection(PrivateListener* privateListener, const Options* options);
+		PeerConnection(PrivateListener* privateListener): PeerConnection(privateListener, Options()) {};
+		PeerConnection(PrivateListener* privateListener, const Options& options);
+
 		~PeerConnection() = default;
 
 		void Close();
+
 		webrtc::PeerConnectionInterface::RTCConfiguration GetConfiguration() const;
 		bool SetConfiguration(const webrtc::PeerConnectionInterface::RTCConfiguration& config);
-		std::string CreateOffer(const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions& options);
-		std::string CreateAnswer(const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions& options);
-		void SetLocalDescription(PeerConnection::SdpType type, const std::string& sdp);
-		void SetRemoteDescription(PeerConnection::SdpType type, const std::string& sdp);
+
+		using SDPHandler = std::function<void(std::string, webrtc::RTCError)>;
+
+		void CreateOffer(SDPHandler fn) { { CreateOffer({}, fn); }}
+		void CreateOffer(const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions&, SDPHandler);
+
+		void CreateAnswer(SDPHandler fn) { CreateAnswer({}, fn); }
+		void CreateAnswer(const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions&, SDPHandler);
+
+		void SetLocalDescription(PeerConnection::SdpType, const std::string&, SDPHandler);
+		void SetRemoteDescription(PeerConnection::SdpType, const std::string&, SDPHandler);
+
 		const std::string GetLocalDescription();
 		const std::string GetRemoteDescription();
+
 		std::vector<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>> GetTransceivers() const;
 		rtc::scoped_refptr<webrtc::RtpTransceiverInterface> AddTransceiver(cricket::MediaType mediaType);
 		rtc::scoped_refptr<webrtc::RtpTransceiverInterface> AddTransceiver(
@@ -133,9 +93,14 @@ namespace mediasoupclient
 		  webrtc::RtpTransceiverInit rtpTransceiverInit);
 		std::vector<rtc::scoped_refptr<webrtc::RtpSenderInterface>> GetSenders();
 		bool RemoveTrack(webrtc::RtpSenderInterface* sender);
-		nlohmann::json GetStats();
-		nlohmann::json GetStats(rtc::scoped_refptr<webrtc::RtpSenderInterface> selector);
-		nlohmann::json GetStats(rtc::scoped_refptr<webrtc::RtpReceiverInterface> selector);
+
+		using RTCStatsReport = rtc::scoped_refptr<const webrtc::RTCStatsReport>;
+		using StatsHandler = std::function<void(const RTCStatsReport &, webrtc::RTCError)>;
+
+		void GetStats(StatsHandler);
+		void GetStats(rtc::scoped_refptr<webrtc::RtpSenderInterface>, StatsHandler);
+		void GetStats(rtc::scoped_refptr<webrtc::RtpReceiverInterface>, StatsHandler);
+
 		rtc::scoped_refptr<webrtc::DataChannelInterface> CreateDataChannel(
 		  const std::string& label, const webrtc::DataChannelInit* config);
 

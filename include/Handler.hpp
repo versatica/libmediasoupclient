@@ -1,6 +1,7 @@
 #ifndef MSC_HANDLER_HPP
 #define MSC_HANDLER_HPP
 
+#include "MediaSoupClientErrors.hpp"
 #include "PeerConnection.hpp"
 #include "sdp/RemoteSdp.hpp"
 #include <json.hpp>
@@ -12,6 +13,7 @@
 #include <api/rtp_transceiver_interface.h> // webrtc::RtpTransceiverInterface
 #include <string>
 #include <unordered_map>
+#include <optional>
 
 namespace mediasoupclient
 {
@@ -34,8 +36,14 @@ namespace mediasoupclient
 		};
 
 	public:
-		static nlohmann::json GetNativeRtpCapabilities(
-		  const PeerConnection::Options* peerConnectionOptions = nullptr);
+		using CapabilityCallback = std::function<void(nlohmann::json, webrtc::RTCError)>;
+
+		static void GetNativeRtpCapabilities(CapabilityCallback callback) {
+			return GetNativeRtpCapabilities({}, callback);
+		}
+
+		static void GetNativeRtpCapabilities(const PeerConnection::Options& opts, CapabilityCallback callback);
+
 		static nlohmann::json GetNativeSctpCapabilities();
 
 	public:
@@ -45,11 +53,11 @@ namespace mediasoupclient
 		  const nlohmann::json& iceCandidates,
 		  const nlohmann::json& dtlsParameters,
 		  const nlohmann::json& sctpParameters,
-		  const PeerConnection::Options* peerConnectionOptions);
+		  const PeerConnection::Options& peerConnectionOptions);
 
 	public:
 		void Close();
-		nlohmann::json GetTransportStats();
+		void GetTransportStats(PeerConnection::StatsHandler);
 		void UpdateIceServers(const nlohmann::json& iceServerUris);
 		virtual void RestartIce(const nlohmann::json& iceParameters) = 0;
 
@@ -95,7 +103,7 @@ namespace mediasoupclient
 		  const nlohmann::json& iceCandidates,
 		  const nlohmann::json& dtlsParameters,
 		  const nlohmann::json& sctpParameters,
-		  const PeerConnection::Options* peerConnectionOptions,
+		  const PeerConnection::Options& peerConnectionOptions,
 		  const nlohmann::json& sendingRtpParametersByKind,
 		  const nlohmann::json& sendingRemoteRtpParametersByKind = nlohmann::json());
 
@@ -108,7 +116,7 @@ namespace mediasoupclient
 		void StopSending(const std::string& localId);
 		void ReplaceTrack(const std::string& localId, webrtc::MediaStreamTrackInterface* track);
 		void SetMaxSpatialLayer(const std::string& localId, uint8_t spatialLayer);
-		nlohmann::json GetSenderStats(const std::string& localId);
+		void GetSenderStats(const std::string& localId, PeerConnection::StatsHandler);
 		void RestartIce(const nlohmann::json& iceParameters) override;
 		DataChannel SendDataChannel(const std::string& label, webrtc::DataChannelInit dataChannelInit);
 
@@ -137,12 +145,12 @@ namespace mediasoupclient
 		  const nlohmann::json& iceCandidates,
 		  const nlohmann::json& dtlsParameters,
 		  const nlohmann::json& sctpParameters,
-		  const PeerConnection::Options* peerConnectionOptions);
+		  const PeerConnection::Options& peerConnectionOptions);
 
 		RecvResult Receive(
 		  const std::string& id, const std::string& kind, const nlohmann::json* rtpParameters);
 		void StopReceiving(const std::string& localId);
-		nlohmann::json GetReceiverStats(const std::string& localId);
+		void GetReceiverStats(const std::string& localId, PeerConnection::StatsHandler);
 		void RestartIce(const nlohmann::json& iceParameters) override;
 		DataChannel ReceiveDataChannel(const std::string& label, webrtc::DataChannelInit dataChannelInit);
 	};

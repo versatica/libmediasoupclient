@@ -6,6 +6,8 @@
 #include <api/rtp_receiver_interface.h> // webrtc::RtpReceiverInterface
 #include <string>
 
+#include "PeerConnection.hpp"
+
 namespace mediasoupclient
 {
 	// Fast forward declarations.
@@ -19,7 +21,7 @@ namespace mediasoupclient
 		{
 		public:
 			virtual void OnClose(Consumer* consumer)                    = 0;
-			virtual nlohmann::json OnGetStats(const Consumer* consumer) = 0;
+			virtual void OnGetStats(const Consumer* consumer, PeerConnection::StatsHandler) = 0;
 		};
 
 		/* Public Listener API */
@@ -53,7 +55,7 @@ namespace mediasoupclient
 		bool IsPaused() const;
 		nlohmann::json& GetAppData();
 		void Close();
-		nlohmann::json GetStats() const;
+		void GetStats(PeerConnection::StatsHandler) const;
 		void Pause();
 		void Resume();
 

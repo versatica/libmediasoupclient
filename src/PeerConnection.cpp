@@ -95,26 +95,12 @@ namespace mediasoupclient
 	/* Instance methods. */
 
 	PeerConnection::PeerConnection(
-	  PeerConnection::PrivateListener* privateListener, const PeerConnection::Options* options)
+	  PeerConnection::PrivateListener* privateListener, const PeerConnection::Options& options)
 	{
 		MSC_TRACE();
 
-		webrtc::PeerConnectionInterface::RTCConfiguration config;
-
-		if (options != nullptr)
-			config = options->config;
-
-		rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peerConnectionFactory;
-
-		if ((options != nullptr) && (options->factory != nullptr))
-		{
-			peerConnectionFactory =
-			  rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>(options->factory);
-		}
-		else
-		{
-			peerConnectionFactory = PeerConnection::DefaultFactory();
-		}
+		auto config = options.config;
+		auto peerConnectionFactory = options.factory ?: PeerConnection::DefaultFactory();
 
 		// Set SDP semantics to Unified Plan.
 		config.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
@@ -159,49 +145,70 @@ namespace mediasoupclient
 		return false;
 	}
 
-	std::string PeerConnection::CreateOffer(
-	  const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions& options)
+	class CreateSessionDescriptionObserver : public webrtc::CreateSessionDescriptionObserver
 	{
+	public:
+		using Callback = std::function<void(std::string, webrtc::RTCError)>;
+		CreateSessionDescriptionObserver(Callback fn): callback(fn) {};
+
+	private:
+		/* Virtual methods inherited from webrtc::CreateSessionDescriptionObserver. */
+		void OnSuccess(webrtc::SessionDescriptionInterface* desc) override {
+			std::string sdp;
+			desc->ToString(&sdp);
+			delete desc;
+
+			callback(sdp, webrtc::RTCError::OK());
+		}
+
+		void OnFailure(webrtc::RTCError error) override {
+			callback({}, error);
+		}
+	private:
+		Callback callback;
+	};
+
+	void PeerConnection::CreateOffer(const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions& opts, SDPHandler callback) {
 		MSC_TRACE();
 
-		CreateSessionDescriptionObserver* sessionDescriptionObserver =
-		  new rtc::RefCountedObject<CreateSessionDescriptionObserver>();
-
-		auto future = sessionDescriptionObserver->GetFuture();
-
-		this->pc->CreateOffer(sessionDescriptionObserver, options);
-
-		return future.get();
+		this->pc->CreateOffer(rtc::make_ref_counted<CreateSessionDescriptionObserver>(callback), opts);
 	}
 
-	std::string PeerConnection::CreateAnswer(
-	  const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions& options)
-	{
+	void PeerConnection::CreateAnswer(const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions& opts, SDPHandler callback) {
 		MSC_TRACE();
 
-		CreateSessionDescriptionObserver* sessionDescriptionObserver =
-		  new rtc::RefCountedObject<CreateSessionDescriptionObserver>();
-
-		auto future = sessionDescriptionObserver->GetFuture();
-
-		this->pc->CreateAnswer(sessionDescriptionObserver, options);
-
-		return future.get();
+		this->pc->CreateAnswer(rtc::make_ref_counted<CreateSessionDescriptionObserver>(callback), opts);
 	}
 
-	void PeerConnection::SetLocalDescription(PeerConnection::SdpType type, const std::string& sdp)
+	namespace {
+		webrtc::SdpType WebRtcSdpType(PeerConnection::SdpType t) {
+			switch (t) {
+				case PeerConnection::SdpType::OFFER:	return webrtc::SdpType::kOffer;
+				case PeerConnection::SdpType::PRANSWER:	return webrtc::SdpType::kPrAnswer;
+				case PeerConnection::SdpType::ANSWER:	return webrtc::SdpType::kAnswer;
+				default:								abort();
+			}
+		}
+	}
+
+	class SetLocalDescriptionObserver : public webrtc::SetLocalDescriptionObserverInterface {
+	public:
+		using Callback = std::function<void(webrtc::RTCError error)>;
+
+		SetLocalDescriptionObserver(Callback fn): callback(fn) {};
+	private:
+		void OnSetLocalDescriptionComplete(webrtc::RTCError error) override { callback(error); }
+	private:
+		Callback callback;
+	};
+
+	void PeerConnection::SetLocalDescription(PeerConnection::SdpType type, const std::string& sdp, SDPHandler callback)
 	{
 		MSC_TRACE();
 
 		webrtc::SdpParseError error;
-		webrtc::SessionDescriptionInterface* sessionDescription;
-		rtc::scoped_refptr<SetSessionDescriptionObserver> observer(
-		  new rtc::RefCountedObject<SetSessionDescriptionObserver>());
+		auto sessionDescription = webrtc::CreateSessionDescription(WebRtcSdpType(type), sdp, &error);
 
-		const auto& typeStr = sdpType2String[type];
-		auto future         = observer->GetFuture();
-
-		sessionDescription = webrtc::CreateSessionDescription(typeStr, sdp, &error);
 		if (sessionDescription == nullptr)
 		{
 			MSC_WARN(
@@ -209,29 +216,39 @@ namespace mediasoupclient
 			  error.line.c_str(),
 			  error.description.c_str());
 
-			observer->Reject(error.description);
-
-			return future.get();
+			return this->pc->signaling_thread()->PostTask([callback] {
+				callback({}, webrtc::RTCError(webrtc::RTCErrorType::INVALID_PARAMETER));
+			});
 		}
 
-		this->pc->SetLocalDescription(observer, sessionDescription);
+		std::string normalizedSdp;
+		sessionDescription->ToString(&normalizedSdp);
 
-		return future.get();
+		SetLocalDescriptionObserver::Callback wrappedCallback = [normalizedSdp, callback](auto error) {
+			callback(error.ok() ? normalizedSdp : "", error);
+		};
+
+		this->pc->SetLocalDescription(std::move(sessionDescription), rtc::make_ref_counted<SetLocalDescriptionObserver>(wrappedCallback));
 	}
 
-	void PeerConnection::SetRemoteDescription(PeerConnection::SdpType type, const std::string& sdp)
+	class SetRemoteDescriptionObserver : public webrtc::SetRemoteDescriptionObserverInterface {
+	public:
+		using Callback = std::function<void(webrtc::RTCError error)>;
+
+		SetRemoteDescriptionObserver(Callback fn): callback(fn) {};
+	private:
+		void OnSetRemoteDescriptionComplete(webrtc::RTCError error) override { callback(error); }
+	private:
+		Callback callback;
+	};
+
+	void PeerConnection::SetRemoteDescription(PeerConnection::SdpType type, const std::string& sdp, SDPHandler callback)
 	{
 		MSC_TRACE();
 
 		webrtc::SdpParseError error;
-		webrtc::SessionDescriptionInterface* sessionDescription;
-		rtc::scoped_refptr<SetSessionDescriptionObserver> observer(
-		  new rtc::RefCountedObject<SetSessionDescriptionObserver>());
+		auto sessionDescription = webrtc::CreateSessionDescription(WebRtcSdpType(type), sdp, &error);
 
-		const auto& typeStr = sdpType2String[type];
-		auto future         = observer->GetFuture();
-
-		sessionDescription = webrtc::CreateSessionDescription(typeStr, sdp, &error);
 		if (sessionDescription == nullptr)
 		{
 			MSC_WARN(
@@ -239,19 +256,27 @@ namespace mediasoupclient
 			  error.line.c_str(),
 			  error.description.c_str());
 
-			observer->Reject(error.description);
-
-			return future.get();
+			return this->pc->signaling_thread()->PostTask([callback] {
+				callback({}, webrtc::RTCError(webrtc::RTCErrorType::INVALID_PARAMETER));
+			});
 		}
 
-		this->pc->SetRemoteDescription(observer, sessionDescription);
+		std::string normalizedSdp;
+		sessionDescription->ToString(&normalizedSdp);
 
-		return future.get();
+		SetLocalDescriptionObserver::Callback wrappedCallback = [normalizedSdp, callback](auto error) {
+			callback(error.ok() ? normalizedSdp : "", error);
+		};
+
+		this->pc->SetRemoteDescription(std::move(sessionDescription), rtc::make_ref_counted<SetRemoteDescriptionObserver>(wrappedCallback));
 	}
 
 	const std::string PeerConnection::GetLocalDescription()
 	{
 		MSC_TRACE();
+		
+		// TODO
+		// assert(this->pc->signaling_thread()->IsCurrent());
 
 		auto desc = this->pc->local_description();
 		std::string sdp;
@@ -264,6 +289,9 @@ namespace mediasoupclient
 	const std::string PeerConnection::GetRemoteDescription()
 	{
 		MSC_TRACE();
+
+		// TODO
+		// assert(this->pc->signaling_thread()->IsCurrent());
 
 		auto desc = this->pc->remote_description();
 		std::string sdp;
@@ -341,46 +369,64 @@ namespace mediasoupclient
 		return result.ok();
 	}
 
-	json PeerConnection::GetStats()
+	using RTCStatsReport = rtc::scoped_refptr<const webrtc::RTCStatsReport>;
+	class RTCStatsCollectorCallback : public webrtc::RTCStatsCollectorCallback
+	{
+	public:
+		using Callback = std::function<void(const RTCStatsReport&, webrtc::RTCError)>;
+
+		RTCStatsCollectorCallback(Callback fn): callback(fn) {};
+
+	private:
+		/* Virtual methods inherited from webrtc::RTCStatsCollectorCallback. */
+		void OnStatsDelivered(const RTCStatsReport& report) override {
+			callback(report, webrtc::RTCError::OK());
+		}
+	private:
+		Callback callback;
+	};
+
+	void PeerConnection::GetStats(StatsHandler callback)
 	{
 		MSC_TRACE();
 
-		rtc::scoped_refptr<RTCStatsCollectorCallback> callback(
-		  new rtc::RefCountedObject<RTCStatsCollectorCallback>());
-
-		auto future = callback->GetFuture();
-
-		this->pc->GetStats(callback.get());
-
-		return future.get();
+		this->pc->signaling_thread()->PostTask([pc = this->pc, callback] {
+			if (pc->signaling_state() == webrtc::PeerConnectionInterface::SignalingState::kClosed) {
+				callback(nullptr, webrtc::RTCError(webrtc::RTCErrorType::INVALID_STATE));
+			} else {
+				pc->GetStats(rtc::make_ref_counted<RTCStatsCollectorCallback>(callback));
+			}
+		});
 	}
 
-	json PeerConnection::GetStats(rtc::scoped_refptr<webrtc::RtpSenderInterface> selector)
+	void PeerConnection::GetStats(rtc::scoped_refptr<webrtc::RtpSenderInterface> selector, StatsHandler callback)
 	{
 		MSC_TRACE();
 
-		rtc::scoped_refptr<RTCStatsCollectorCallback> callback(
-		  new rtc::RefCountedObject<RTCStatsCollectorCallback>());
-
-		auto future = callback->GetFuture();
-
-		this->pc->GetStats(std::move(selector), callback);
-
-		return future.get();
+		this->pc->signaling_thread()->PostTask([pc = this->pc, selector, callback] {
+			if (pc->signaling_state() == webrtc::PeerConnectionInterface::SignalingState::kClosed) {
+				callback(nullptr, webrtc::RTCError(webrtc::RTCErrorType::INVALID_STATE));
+			} else if (!selector) {
+				callback(nullptr, webrtc::RTCError(webrtc::RTCErrorType::INVALID_PARAMETER));
+			} else {
+				pc->GetStats(selector, rtc::make_ref_counted<RTCStatsCollectorCallback>(callback));
+			}
+		});
 	}
 
-	json PeerConnection::GetStats(rtc::scoped_refptr<webrtc::RtpReceiverInterface> selector)
+	void PeerConnection::GetStats(rtc::scoped_refptr<webrtc::RtpReceiverInterface> selector, StatsHandler callback)
 	{
 		MSC_TRACE();
 
-		rtc::scoped_refptr<RTCStatsCollectorCallback> callback(
-		  new rtc::RefCountedObject<RTCStatsCollectorCallback>());
-
-		auto future = callback->GetFuture();
-
-		this->pc->GetStats(std::move(selector), callback);
-
-		return future.get();
+		this->pc->signaling_thread()->PostTask([pc = this->pc, selector, callback] {
+			if (pc->signaling_state() == webrtc::PeerConnectionInterface::SignalingState::kClosed) {
+				callback(nullptr, webrtc::RTCError(webrtc::RTCErrorType::INVALID_STATE));
+			} else if (!selector) {
+				callback(nullptr, webrtc::RTCError(webrtc::RTCErrorType::INVALID_PARAMETER));
+			} else {
+				pc->GetStats(selector, rtc::make_ref_counted<RTCStatsCollectorCallback>(callback));
+			}
+		});
 	}
 
 	rtc::scoped_refptr<webrtc::DataChannelInterface> PeerConnection::CreateDataChannel(
@@ -401,110 +447,6 @@ namespace mediasoupclient
 
 		return result.MoveValue();
 	}
-
-	/* SetSessionDescriptionObserver */
-
-	std::future<void> PeerConnection::SetSessionDescriptionObserver::GetFuture()
-	{
-		MSC_TRACE();
-
-		return this->promise.get_future();
-	}
-
-	void PeerConnection::SetSessionDescriptionObserver::Reject(const std::string& error)
-	{
-		MSC_TRACE();
-
-		this->promise.set_exception(std::make_exception_ptr(MediaSoupClientError(error.c_str())));
-	}
-
-	void PeerConnection::SetSessionDescriptionObserver::OnSuccess()
-	{
-		MSC_TRACE();
-
-		this->promise.set_value();
-	};
-
-	void PeerConnection::SetSessionDescriptionObserver::OnFailure(webrtc::RTCError error)
-	{
-		MSC_TRACE();
-
-		MSC_WARN(
-		  "webtc::SetSessionDescriptionObserver failure [%s:%s]",
-		  webrtc::ToString(error.type()),
-		  error.message());
-
-		auto message = std::string(error.message());
-
-		this->Reject(message);
-	};
-
-	/* CreateSessionDescriptionObserver */
-
-	std::future<std::string> PeerConnection::CreateSessionDescriptionObserver::GetFuture()
-	{
-		MSC_TRACE();
-
-		return this->promise.get_future();
-	}
-
-	void PeerConnection::CreateSessionDescriptionObserver::Reject(const std::string& error)
-	{
-		MSC_TRACE();
-
-		this->promise.set_exception(std::make_exception_ptr(MediaSoupClientError(error.c_str())));
-	}
-
-	void PeerConnection::CreateSessionDescriptionObserver::OnSuccess(
-	  webrtc::SessionDescriptionInterface* desc)
-	{
-		MSC_TRACE();
-
-		// This callback should take the ownership of |desc|.
-		std::unique_ptr<webrtc::SessionDescriptionInterface> ownedDesc(desc);
-
-		std::string sdp;
-
-		ownedDesc->ToString(&sdp);
-		this->promise.set_value(sdp);
-	};
-
-	void PeerConnection::CreateSessionDescriptionObserver::OnFailure(webrtc::RTCError error)
-	{
-		MSC_TRACE();
-
-		MSC_WARN(
-		  "webtc::CreateSessionDescriptionObserver failure [%s:%s]",
-		  webrtc::ToString(error.type()),
-		  error.message());
-
-		auto message = std::string(error.message());
-
-		this->Reject(message);
-	}
-
-	/* RTCStatsCollectorCallback */
-
-	std::future<json> PeerConnection::RTCStatsCollectorCallback::GetFuture()
-	{
-		MSC_TRACE();
-
-		return this->promise.get_future();
-	}
-
-	void PeerConnection::RTCStatsCollectorCallback::OnStatsDelivered(
-	  const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report)
-	{
-		MSC_TRACE();
-
-		std::string s = report->ToJson();
-
-		// RtpReceiver stats JSON string is sometimes empty.
-		if (s.empty())
-			this->promise.set_value(json::array());
-		else
-			this->promise.set_value(json::parse(s));
-	};
 
 	/* PeerConnection::PrivateListener */
 

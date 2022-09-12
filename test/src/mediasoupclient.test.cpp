@@ -34,6 +34,20 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 
 	static json routerRtpCapabilities;
 
+	auto loadDevice = [](json capabilities) {
+		std::promise<void> promise;
+
+		device->Load(capabilities, [&promise](auto v) {
+			if (v) {
+				promise.set_exception(v);
+			} else {
+				promise.set_value();
+			}
+		});
+
+		promise.get_future().get();
+	};
+
 	SECTION("create a Device succeeds")
 	{
 		REQUIRE_NOTHROW(device.reset(new mediasoupclient::Device()));
@@ -59,8 +73,7 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 		    TransportRemoteParameters["id"],
 		    TransportRemoteParameters["iceParameters"],
 		    TransportRemoteParameters["iceCandidates"],
-		    TransportRemoteParameters["dtlsParameters"],
-		    nullptr),
+		    TransportRemoteParameters["dtlsParameters"]),
 		  MediaSoupClientInvalidStateError);
 	}
 
@@ -71,7 +84,7 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 			"codecs" : {}
 		})"_json;
 
-		REQUIRE_THROWS_AS(device->Load(routerRtpCapabilities), MediaSoupClientTypeError);
+		REQUIRE_THROWS_AS(loadDevice(routerRtpCapabilities), MediaSoupClientTypeError);
 		REQUIRE(!device->IsLoaded());
 	}
 
@@ -84,20 +97,20 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 			codec.erase("mimeType");
 		}
 
-		REQUIRE_THROWS_AS(device->Load(routerRtpCapabilities), MediaSoupClientTypeError);
+		REQUIRE_THROWS_AS(loadDevice(routerRtpCapabilities), MediaSoupClientTypeError);
 	}
 
 	SECTION("device.load() succeeds")
 	{
 		routerRtpCapabilities = generateRouterRtpCapabilities();
 
-		REQUIRE_NOTHROW(device->Load(routerRtpCapabilities));
+		REQUIRE_NOTHROW(loadDevice(routerRtpCapabilities));
 		REQUIRE(device->IsLoaded());
 	}
 
 	SECTION("device.load() rejects if already loaded")
 	{
-		REQUIRE_THROWS_AS(device->Load(routerRtpCapabilities), MediaSoupClientInvalidStateError);
+		REQUIRE_THROWS_AS(loadDevice(routerRtpCapabilities), MediaSoupClientInvalidStateError);
 	}
 
 	SECTION("device.GetRtpCapabilities() succeeds")
@@ -132,7 +145,6 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 		  TransportRemoteParameters["iceCandidates"],
 		  TransportRemoteParameters["dtlsParameters"],
 		  TransportRemoteParameters["sctpParameters"],
-		  nullptr,
 		  appData)));
 
 		REQUIRE(sendTransport->GetId() == TransportRemoteParameters["id"].get<std::string>());
@@ -148,8 +160,7 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 		  TransportRemoteParameters["id"],
 		  TransportRemoteParameters["iceParameters"],
 		  TransportRemoteParameters["iceCandidates"],
-		  TransportRemoteParameters["dtlsParameters"],
-		  nullptr)));
+		  TransportRemoteParameters["dtlsParameters"])));
 
 		REQUIRE(recvTransport->GetId() == TransportRemoteParameters["id"].get<std::string>());
 		REQUIRE(!recvTransport->IsClosed());
@@ -609,7 +620,11 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 
 	SECTION("sendTransport.GetStats() succeeds")
 	{
-		REQUIRE_NOTHROW(sendTransport->GetStats());
+		std::promise<webrtc::RTCError> promise;
+		sendTransport->GetStats([&promise](auto, auto err) { promise.set_value(err); });
+
+		auto error = promise.get_future().get();
+		REQUIRE(error.ok());
 	}
 
 	SECTION("sendTransport.RestartIce() succeeds")
@@ -687,7 +702,11 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 
 	SECTION("producer.GetStats() succeeds")
 	{
-		REQUIRE_NOTHROW(videoProducer->GetStats());
+		std::promise<webrtc::RTCError> promise;
+		videoProducer->GetStats([&promise](auto, auto err) { promise.set_value(err); });
+
+		auto error = promise.get_future().get();
+		REQUIRE(error.ok());
 	}
 
 	SECTION("consumer.Resume() succeeds")
@@ -706,7 +725,11 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 
 	SECTION("consumer.GetStats() succeeds")
 	{
-		REQUIRE_NOTHROW(videoConsumer->GetStats());
+		std::promise<webrtc::RTCError> promise;
+		videoConsumer->GetStats([&promise](auto, auto err) { promise.set_value(err); });
+
+		auto error = promise.get_future().get();
+		REQUIRE(error.ok());
 	}
 
 	SECTION("producer.Close() succeeds")
@@ -716,11 +739,13 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 		REQUIRE(audioProducer->IsClosed());
 	}
 
-	SECTION("producer.getStats() throws if closed")
+	SECTION("producer.getStats() is empty if closed")
 	{
-		REQUIRE_THROWS_AS(
-			audioProducer->GetStats(),
-			MediaSoupClientError);
+		std::promise<mediasoupclient::PeerConnection::RTCStatsReport> promise;
+		audioProducer->GetStats([&promise](auto v, auto) { promise.set_value(v); });
+
+		auto report = promise.get_future().get();
+		REQUIRE(report->size() == 0);
 	}
 
 	SECTION("consumer.Close() succeeds")
@@ -730,11 +755,13 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 		REQUIRE(audioConsumer->IsClosed());
 	}
 
-	SECTION("consumer.getStats() throws if closed")
+	SECTION("consumer.getStats() is empty if closed")
 	{
-		REQUIRE_THROWS_AS(
-			audioConsumer->GetStats(),
-			MediaSoupClientError);
+		std::promise<mediasoupclient::PeerConnection::RTCStatsReport> promise;
+		audioConsumer->GetStats([&promise](auto v, auto) { promise.set_value(v); });
+
+		auto report = promise.get_future().get();
+		REQUIRE(report->size() == 0);
 	}
 
 	SECTION("transport.Close() fires 'OnTransportClose' in live Producers/Consumers")
@@ -786,11 +813,13 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 			MediaSoupClientError);
 	}
 
-	SECTION("transport.getStats() throws if closed")
+	SECTION("transport.getStats() fails if closed")
 	{
-		REQUIRE_THROWS_AS(
-			sendTransport->GetStats(),
-			MediaSoupClientError);
+		std::promise<webrtc::RTCError> promise;
+		sendTransport->GetStats([&promise](auto, auto err) { promise.set_value(err); });
+
+		auto error = promise.get_future().get();
+		REQUIRE(!error.ok());
 	}
 
 	SECTION("transport.restartIce() throws if closed")

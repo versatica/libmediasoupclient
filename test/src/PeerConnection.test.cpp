@@ -9,7 +9,7 @@ TEST_CASE("PeerConnection", "[PeerConnection]")
 	static std::list<std::string> iceServerUris;
 	static mediasoupclient::PeerConnection::PrivateListener listener;
 	static mediasoupclient::PeerConnection::Options peerConnectionOptions;
-	static mediasoupclient::PeerConnection pc(&listener, &peerConnectionOptions);
+	static mediasoupclient::PeerConnection pc(&listener, peerConnectionOptions);
 
 	static std::string offer;
 
@@ -38,55 +38,83 @@ TEST_CASE("PeerConnection", "[PeerConnection]")
 		configuration.servers.push_back(iceServer);
 
 		mediasoupclient::PeerConnection::PrivateListener listener;
-		mediasoupclient::PeerConnection pc(&listener, &peerConnectionOptions);
+		mediasoupclient::PeerConnection pc(&listener, peerConnectionOptions);
 
 		REQUIRE(!pc.SetConfiguration(configuration));
 	}
 
 	SECTION("'pc.GetStats()' succeeds")
 	{
-		REQUIRE_NOTHROW(pc.GetStats());
+		std::promise<mediasoupclient::PeerConnection::RTCStatsReport> promise;
+		pc.GetStats([&promise](auto v, auto) { promise.set_value(v); });
+
+		auto stats = promise.get_future().get();
+		REQUIRE(stats);
 	}
 
 	SECTION("'pc.CreateAnswer()' fails if no remote offer has been provided")
 	{
-		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
+		std::promise<webrtc::RTCError> promise;
+		pc.CreateAnswer([&promise](auto, auto err) { promise.set_value(err); });
 
-		REQUIRE_THROWS_AS(pc.CreateAnswer(options), MediaSoupClientError);
+		auto error = promise.get_future().get();
+		REQUIRE(!error.ok());
 	}
 
 	SECTION("'pc.SetRemoteDescription()' fails if incorrect SDP is provided")
 	{
-		auto sdp = std::string();
+		std::promise<webrtc::RTCError> promise;
+		
+		pc.SetRemoteDescription(mediasoupclient::PeerConnection::SdpType::OFFER, {}, [&promise](auto, auto err) {
+			promise.set_value(err);
+		});
 
-		REQUIRE_THROWS_AS(
-		  pc.SetLocalDescription(mediasoupclient::PeerConnection::SdpType::OFFER, sdp),
-		  MediaSoupClientError);
+		auto error = promise.get_future().get();
+		REQUIRE(!error.ok());
 	}
 
 	SECTION("'pc.SetRemoteDescription()' succeeds if correct SDP is provided")
 	{
 		auto sdp = helpers::readFile("test/data/webrtc.sdp");
 
-		REQUIRE_NOTHROW(pc.SetRemoteDescription(mediasoupclient::PeerConnection::SdpType::OFFER, sdp));
+		std::promise<webrtc::RTCError> promise;
+		
+		pc.SetRemoteDescription(mediasoupclient::PeerConnection::SdpType::OFFER, sdp, [&promise](auto, auto err) {
+			promise.set_value(err);
+		});
+
+		auto error = promise.get_future().get();
+		REQUIRE(error.ok());
 	}
 
 	SECTION("'pc.CreateOffer()' succeeds")
 	{
-		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
+		std::promise<std::string> promise;
+		pc.CreateOffer([&promise](auto sdp, auto) { promise.set_value(sdp); });
 
-		REQUIRE_NOTHROW(offer = pc.CreateOffer(options));
+		offer = promise.get_future().get();
+		REQUIRE(!offer.empty());
 	}
 
 	SECTION("'pc.SetRemoteDescription()' succeeds")
 	{
-		REQUIRE_NOTHROW(pc.SetRemoteDescription(mediasoupclient::PeerConnection::SdpType::OFFER, offer));
+		std::promise<webrtc::RTCError> promise;
+		pc.SetRemoteDescription(mediasoupclient::PeerConnection::SdpType::OFFER, offer, [&promise](auto, auto err) {
+			promise.set_value(err);
+		});
+
+		auto error = promise.get_future().get();
+		REQUIRE(error.ok());
 	}
 
 	SECTION("'pc.CreateAnswer()' succeeds if remote offer is provided")
 	{
 		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
 
-		REQUIRE_NOTHROW(pc.CreateAnswer(options));
+		std::promise<webrtc::RTCError> promise;
+		pc.CreateAnswer([&promise](auto, auto err) { promise.set_value(err); });
+
+		auto error = promise.get_future().get();
+		REQUIRE(error.ok());
 	}
 }

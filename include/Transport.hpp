@@ -54,6 +54,9 @@ namespace mediasoupclient
 	protected:
 		void SetHandler(Handler* handler);
 
+		// Can be invoked before the transport connects; safe for use in any thread
+		void GetDtlsParameters(Handler::DtlsParametersCallback) const;
+
 		/* Pure virtual methods inherited from Handler::PrivateListener */
 	public:
 		void OnConnect(nlohmann::json& dtlsParameters) override;
@@ -127,6 +130,11 @@ namespace mediasoupclient
 		friend Device;
 
 	public:
+		// Can be invoked before calling Produce to get DTLS parameters ahead of time; non-blocking.
+		//
+		// The next call to Produce should use the same arguments, otherwise an error will be thrown.
+		void GetDtlsParameters(rtc::scoped_refptr<webrtc::MediaStreamTrackInterface>, std::vector<webrtc::RtpEncodingParameters>*, Handler::DtlsParametersCallback);
+
 		Producer* Produce(
 		  Producer::Listener* producerListener,
 		  webrtc::MediaStreamTrackInterface* track,
@@ -195,6 +203,11 @@ namespace mediasoupclient
 		friend Device;
 
 	public:
+		// Can be invoked before calling Consume to get DTLS parameters ahead of time; non-blocking.
+		//
+		// The next call to Consume should use the same arguments, otherwise an error will be thrown.
+		void GetDtlsParameters(const std::string& id, const std::string& kind, nlohmann::json* rtpParameters, Handler::DtlsParametersCallback);
+
 		Consumer* Consume(
 		  Consumer::Listener* consumerListener,
 		  const std::string& id,

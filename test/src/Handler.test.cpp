@@ -14,10 +14,15 @@ static mediasoupclient::PeerConnection::Options PeerConnectionOptions;
 class FakeHandlerListener : public mediasoupclient::Handler::PrivateListener
 {
 public:
-	void OnConnect(json& /*transportLocalParameters*/) override{};
+	json dtlsParameters;
+
+	void OnConnect(json& dtlsParameters) override {
+		this->dtlsParameters = dtlsParameters;
+	}
 
 	void OnConnectionStateChange(
 	  webrtc::PeerConnectionInterface::IceConnectionState /*connectionState*/) override{};
+
 };
 
 TEST_CASE("Handler", "[Handler]")
@@ -63,10 +68,26 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 		REQUIRE_THROWS_AS(sendHandler.Send(nullptr, nullptr, nullptr, nullptr), MediaSoupClientError);
 	}
 
-	SECTION("sendHandler.Send() succeeds if a track is provided")
-	{
+	static json preflightDtlsParameters;
+
+	SECTION("sendHandler.GetDtlsParameters succeeds") {
 		track = createAudioTrack("test-track-id");
 
+		std::promise<json> promise;
+		sendHandler.GetDtlsParameters(track, nullptr, [&promise](auto j, auto) { promise.set_value(j); });
+
+		preflightDtlsParameters = promise.get_future().get();
+
+		REQUIRE(preflightDtlsParameters.contains("fingerprints"));
+	}
+
+	SECTION("sendHandler.Send() fails if an unexpected track is provided after GetDtlsParameters")
+	{
+		REQUIRE_THROWS_AS(sendHandler.Send(createAudioTrack("test-track-id"), nullptr, nullptr, nullptr), MediaSoupClientInvalidStateError);
+	}
+
+	SECTION("sendHandler.Send() succeeds if a track is provided")
+	{
 		mediasoupclient::SendHandler::SendResult sendResult;
 
 		REQUIRE_NOTHROW(sendResult = sendHandler.Send(track, nullptr, nullptr, nullptr));
@@ -75,6 +96,9 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 
 		REQUIRE(sendResult.rtpParameters["codecs"].size() == 1);
 		REQUIRE(sendResult.rtpParameters["headerExtensions"].size() == 3);
+
+		REQUIRE(handlerListener.dtlsParameters.contains("fingerprints"));
+		REQUIRE(handlerListener.dtlsParameters == preflightDtlsParameters);
 	}
 
 	SECTION("sendHandler.Send() succeeds if track is already handled")
@@ -175,6 +199,43 @@ TEST_CASE("RecvHandler", "[Handler][RecvHandler]")
 	  TransportRemoteParameters["dtlsParameters"],
 	  TransportRemoteParameters["sctpParameters"],
 	  PeerConnectionOptions);
+
+	static json preflightDtlsParameters;
+
+	SECTION("recvHander.GetDtlsParameters")
+	{
+		mediasoupclient::RecvHandler recvHandler2(&handlerListener,
+			TransportRemoteParameters["iceParameters"],
+			TransportRemoteParameters["iceCandidates"],
+			TransportRemoteParameters["dtlsParameters"],
+			TransportRemoteParameters["sctpParameters"],
+			PeerConnectionOptions);
+
+		std::promise<json> promise;
+		recvHandler2.GetDtlsParameters("test", "audio", &rtpParameters, [&promise](auto j, auto) { promise.set_value(j); });
+		preflightDtlsParameters = promise.get_future().get();
+
+		REQUIRE(preflightDtlsParameters.contains("fingerprints"));
+
+		SECTION("causes recvHander.Receive() to fail if parameters don't match")
+		{
+			REQUIRE_THROWS_AS(recvHandler2.Receive("test2", "audio", &rtpParameters), MediaSoupClientInvalidStateError);
+			REQUIRE_THROWS_AS(recvHandler2.Receive("test", "audio2", &rtpParameters), MediaSoupClientInvalidStateError);
+
+			auto rtpParameters2 = rtpParameters;
+			rtpParameters2["yikes"] = true;
+
+			REQUIRE_THROWS_AS(recvHandler2.Receive("test", "audio", &rtpParameters2), MediaSoupClientInvalidStateError);
+		}
+
+		SECTION("next call to recvHander.Receive() succeeds if parameters match")
+		{
+			REQUIRE_NOTHROW(recvHandler2.Receive("test", "audio", &rtpParameters));
+
+			REQUIRE(handlerListener.dtlsParameters.contains("fingerprints"));
+			REQUIRE(handlerListener.dtlsParameters == preflightDtlsParameters);
+		}
+	}
 
 	SECTION("recvHander.Receive() succeeds if correct rtpParameters are provided")
 	{

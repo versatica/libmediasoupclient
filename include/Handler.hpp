@@ -61,8 +61,15 @@ namespace mediasoupclient
 		void UpdateIceServers(const nlohmann::json& iceServerUris);
 		virtual void RestartIce(const nlohmann::json& iceParameters) = 0;
 
+		using DtlsParametersCallback = std::function<void(const nlohmann::json&, webrtc::RTCError)>;
+		void GetDtlsParameters(DtlsParametersCallback);
 	protected:
-		void SetupTransport(const std::string& localDtlsRole, nlohmann::json& localSdpObject);
+		void SetupTransport(const nlohmann::json& localSdpObject);
+
+		virtual std::string DefaultLocalDtlsRole() = 0;
+		virtual void CreateLocalSDP(PeerConnection::SDPHandler) = 0;
+	private:
+		std::string LocalDtlsRole();
 
 		/* Methods inherited from PeerConnectionListener. */
 	public:
@@ -108,6 +115,8 @@ namespace mediasoupclient
 		  const nlohmann::json& sendingRemoteRtpParametersByKind = nlohmann::json());
 
 	public:
+		void GetDtlsParameters(rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track, std::vector<webrtc::RtpEncodingParameters>* encodings, DtlsParametersCallback callback);
+
 		SendResult Send(
 		  webrtc::MediaStreamTrackInterface* track,
 		  std::vector<webrtc::RtpEncodingParameters>* encodings,
@@ -121,11 +130,17 @@ namespace mediasoupclient
 		DataChannel SendDataChannel(const std::string& label, webrtc::DataChannelInit dataChannelInit);
 
 	private:
+		std::string DefaultLocalDtlsRole() override { return "server"; }
+		void CreateLocalSDP(PeerConnection::SDPHandler fn) override { this->pc->CreateOffer(fn); }
+
+	private:
 		// Generic sending RTP parameters for audio and video.
 		nlohmann::json sendingRtpParametersByKind;
 		// Generic sending RTP parameters for audio and video suitable for the SDP
 		// remote answer.
 		nlohmann::json sendingRemoteRtpParametersByKind;
+		// Set if DTLS parameters were extracted before setting up the transport
+		rtc::scoped_refptr<webrtc::RtpTransceiverInterface> initialTransceiver;
 	};
 
 	class RecvHandler : public Handler
@@ -137,7 +152,6 @@ namespace mediasoupclient
 			webrtc::RtpReceiverInterface* rtpReceiver{ nullptr };
 			webrtc::MediaStreamTrackInterface* track{ nullptr };
 		};
-
 	public:
 		RecvHandler(
 		  Handler::PrivateListener* privateListener,
@@ -147,12 +161,44 @@ namespace mediasoupclient
 		  const nlohmann::json& sctpParameters,
 		  const PeerConnection::Options& peerConnectionOptions);
 
-		RecvResult Receive(
-		  const std::string& id, const std::string& kind, const nlohmann::json* rtpParameters);
+		void GetDtlsParameters(const std::string& id, const std::string& kind, const nlohmann::json* rtpParameters, DtlsParametersCallback callback);
+
+		RecvResult Receive(const std::string& id, const std::string& kind, const nlohmann::json* rtpParameters);
 		void StopReceiving(const std::string& localId);
 		void GetReceiverStats(const std::string& localId, PeerConnection::StatsHandler);
 		void RestartIce(const nlohmann::json& iceParameters) override;
 		DataChannel ReceiveDataChannel(const std::string& label, webrtc::DataChannelInit dataChannelInit);
+
+	private:
+		std::string DefaultLocalDtlsRole() override { return "client"; }
+		void CreateLocalSDP(PeerConnection::SDPHandler fn) override { this->pc->CreateAnswer(fn); }
+
+		struct ConsumerRef {
+			ConsumerRef() = default;
+			ConsumerRef(const std::string& id, const std::string& kind, const nlohmann::json& rtpParameters): id(id), kind(kind), rtpParameters(rtpParameters) {}
+
+			std::string id;
+			std::string kind;
+			nlohmann::json rtpParameters;
+
+			friend bool operator == (const ConsumerRef &lhs, const ConsumerRef &rhs) {
+				return lhs.id == rhs.id && lhs.kind == rhs.kind && lhs.rtpParameters == rhs.rtpParameters;
+			}
+
+			friend bool operator != (const ConsumerRef &lhs, const ConsumerRef &rhs) {
+				return !(lhs == rhs);
+			}
+		};
+
+		struct RemoteOffer {
+			ConsumerRef consumer;
+			std::string localId;
+			std::string sdp;
+		};
+
+		struct RemoteOffer RemoteOffer(const std::string& id, const std::string& kind, const nlohmann::json& rtpParameters);
+
+		std::optional<struct RemoteOffer> initialOffer;
 	};
 } // namespace mediasoupclient
 

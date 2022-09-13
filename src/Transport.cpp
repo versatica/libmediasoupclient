@@ -66,6 +66,13 @@ namespace mediasoupclient
 		this->handler->GetTransportStats(callback);
 	}
 
+	void Transport::GetDtlsParameters(Handler::DtlsParametersCallback callback) const
+	{
+		MSC_TRACE();
+
+		this->handler->GetDtlsParameters(callback);
+	}
+
 	void Transport::RestartIce(const json& iceParameters)
 	{
 		MSC_TRACE();
@@ -164,6 +171,21 @@ namespace mediasoupclient
 		  sendingRemoteRtpParametersByKind));
 
 		Transport::SetHandler(this->sendHandler.get());
+	}
+
+	void SendTransport::GetDtlsParameters(rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track, std::vector<webrtc::RtpEncodingParameters>* encodings, Handler::DtlsParametersCallback callback) {
+		MSC_TRACE();
+
+		if (this->closed)
+			MSC_THROW_INVALID_STATE_ERROR("SendTransport closed");
+		else if (!track)
+			MSC_THROW_TYPE_ERROR("missing track");
+		else if (track->state() == webrtc::MediaStreamTrackInterface::TrackState::kEnded)
+			MSC_THROW_INVALID_STATE_ERROR("track ended");
+		else if (this->canProduceByKind->find(track->kind()) == this->canProduceByKind->end())
+			MSC_THROW_UNSUPPORTED_ERROR("cannot produce track kind");
+
+		this->sendHandler->GetDtlsParameters(track, encodings, callback);
 	}
 
 	/**
@@ -390,6 +412,23 @@ namespace mediasoupclient
 		  peerConnectionOptions));
 
 		Transport::SetHandler(this->recvHandler.get());
+	}
+
+	void RecvTransport::GetDtlsParameters(const std::string& id, const std::string& kind, nlohmann::json* rtpParameters, Handler::DtlsParametersCallback callback) {
+		MSC_TRACE();
+
+		if (this->closed)
+			MSC_THROW_INVALID_STATE_ERROR("RecvTransport closed");
+		else if (id.empty())
+			MSC_THROW_TYPE_ERROR("missing id");
+		else if (kind != "audio" && kind != "video")
+			MSC_THROW_TYPE_ERROR("invalid kind");
+		else if (!rtpParameters)
+			MSC_THROW_TYPE_ERROR("missing rtpParameters");
+		else if (!ortc::canReceive(*rtpParameters, *this->extendedRtpCapabilities))
+			MSC_THROW_UNSUPPORTED_ERROR("cannot consume this Producer");
+
+		this->recvHandler->GetDtlsParameters(id, kind, rtpParameters, callback);
 	}
 
 	/**

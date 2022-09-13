@@ -198,20 +198,40 @@ namespace mediasoupclient
 		return this->privateListener->OnConnectionStateChange(newState);
 	}
 
-	void Handler::SetupTransport(const std::string& localDtlsRole, json& localSdpObject)
+	static json DtlsParameters(const std::string& localDtlsRole, const json& localSdpObject) {
+		auto dtlsParameters = Sdp::Utils::extractDtlsParameters(localSdpObject);
+		dtlsParameters["role"] = localDtlsRole;
+		return dtlsParameters;
+	}
+
+	std::string Handler::LocalDtlsRole() {
+		return !this->forcedLocalDtlsRole.empty() ? this->forcedLocalDtlsRole : this->DefaultLocalDtlsRole();
+	}
+
+	void Handler::GetDtlsParameters(DtlsParametersCallback callback)
+	{
+		this->CreateLocalSDP([callback, role = LocalDtlsRole()](auto sdp, auto error) mutable {
+			json dtlsParameters = nullptr;
+
+			if (error.ok()) {
+				dtlsParameters = DtlsParameters(role, sdptransform::parse(sdp));
+			}
+
+			callback(dtlsParameters, error);
+		});
+	}
+
+	void Handler::SetupTransport(const json& localSdpObject)
 	{
 		MSC_TRACE();
 
 		assert(!localSdpObject.empty());
 
 		// Get our local DTLS parameters.
-		auto dtlsParameters = Sdp::Utils::extractDtlsParameters(localSdpObject);
-
-		// Set our DTLS role.
-		dtlsParameters["role"] = localDtlsRole;
+		auto dtlsParameters = DtlsParameters(LocalDtlsRole(), localSdpObject);
 
 		// Update the remote DTLS role in the SDP.
-		std::string remoteDtlsRole = localDtlsRole == "client" ? "server" : "client";
+		std::string remoteDtlsRole = LocalDtlsRole() == "client" ? "server" : "client";
 		this->remoteSdp->UpdateDtlsRole(remoteDtlsRole);
 
 		// May throw.
@@ -240,6 +260,34 @@ namespace mediasoupclient
 		this->sendingRemoteRtpParametersByKind = sendingRemoteRtpParametersByKind;
 	};
 
+	namespace {
+		void Normalize(std::vector<webrtc::RtpEncodingParameters>* encodings) {
+			if (encodings && encodings->size() > 1)
+			{
+				uint8_t idx = 0;
+				for (webrtc::RtpEncodingParameters& encoding : *encodings)
+				{
+					encoding.rid = std::string("r").append(std::to_string(idx++));
+				}
+			}
+		}
+	}
+
+	void SendHandler::GetDtlsParameters(rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track, std::vector<webrtc::RtpEncodingParameters>* encodings, DtlsParametersCallback callback) {
+		Normalize(encodings);
+
+		webrtc::RtpTransceiverInit transceiverInit;
+		transceiverInit.direction = webrtc::RtpTransceiverDirection::kSendOnly;
+
+		if (encodings && !encodings->empty())
+			transceiverInit.send_encodings = *encodings;
+
+		assert(!this->initialTransceiver);
+		this->initialTransceiver = this->pc->AddTransceiver(track, transceiverInit);
+
+		Handler::GetDtlsParameters(callback);
+	}
+
 	SendHandler::SendResult SendHandler::Send(
 	  webrtc::MediaStreamTrackInterface* track,
 	  std::vector<webrtc::RtpEncodingParameters>* encodings,
@@ -254,14 +302,7 @@ namespace mediasoupclient
 
 		MSC_DEBUG("[kind:%s, track->id():%s]", track->kind().c_str(), track->id().c_str());
 
-		if (encodings && encodings->size() > 1)
-		{
-			uint8_t idx = 0;
-			for (webrtc::RtpEncodingParameters& encoding : *encodings)
-			{
-				encoding.rid = std::string("r").append(std::to_string(idx++));
-			}
-		}
+		Normalize(encodings);
 
 		json sendingRtpParameters = this->sendingRtpParametersByKind[track->kind()];
 
@@ -276,14 +317,27 @@ namespace mediasoupclient
 
 		const Sdp::RemoteSdp::MediaSectionIdx mediaSectionIdx = this->remoteSdp->GetNextMediaSectionIdx();
 
-		webrtc::RtpTransceiverInit transceiverInit;
-		transceiverInit.direction = webrtc::RtpTransceiverDirection::kSendOnly;
+		rtc::scoped_refptr<webrtc::RtpTransceiverInterface> transceiver;
 
-		if (encodings && !encodings->empty())
-			transceiverInit.send_encodings = *encodings;
+		if (this->initialTransceiver) {
+			auto initialTrack = this->initialTransceiver->sender()->track();
 
-		rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> wrappedTrack(track);
-		rtc::scoped_refptr<webrtc::RtpTransceiverInterface> transceiver = this->pc->AddTransceiver(wrappedTrack, transceiverInit);
+			if (initialTrack != track) {
+				MSC_THROW_INVALID_STATE_ERROR("expected same track used in GetDtlsParameters");
+			}
+
+			transceiver = this->initialTransceiver;
+			this->initialTransceiver = nullptr;
+		} else {
+			webrtc::RtpTransceiverInit transceiverInit;
+			transceiverInit.direction = webrtc::RtpTransceiverDirection::kSendOnly;
+
+			if (encodings && !encodings->empty())
+				transceiverInit.send_encodings = *encodings;
+
+			rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> wrappedTrack(track);
+			transceiver = this->pc->AddTransceiver(wrappedTrack, transceiverInit);
+		}
 
 		if (!transceiver)
 			MSC_THROW_ERROR("error creating transceiver");
@@ -301,8 +355,7 @@ namespace mediasoupclient
 
 			// Transport is not ready.
 			if (!this->transportReady)
-				this->SetupTransport(
-				  !this->forcedLocalDtlsRole.empty() ? this->forcedLocalDtlsRole : "server", localSdpObject);
+				this->SetupTransport(localSdpObject);
 
 			std::string scalability_mode =
 			  encodings && encodings->size()
@@ -493,8 +546,7 @@ namespace mediasoupclient
 
 			if (!this->transportReady)
 			{
-				this->SetupTransport(
-				  !this->forcedLocalDtlsRole.empty() ? this->forcedLocalDtlsRole : "server", localSdpObject);
+				this->SetupTransport(localSdpObject);
 			}
 
 			MSC_DEBUG("calling pc.setLocalDescription() [offer:%s]", offer.c_str());
@@ -698,6 +750,40 @@ namespace mediasoupclient
 		MSC_TRACE();
 	};
 
+	void RecvHandler::GetDtlsParameters(const std::string& id, const std::string& kind, const nlohmann::json* rtpParameters, DtlsParametersCallback callback) {
+		auto offer = RemoteOffer(id, kind, *rtpParameters);
+
+		assert(!this->initialOffer.has_value());
+		this->initialOffer = offer;
+
+		this->pc->SetRemoteDescription(PeerConnection::SdpType::OFFER, offer.sdp, [=] (auto, auto err) {
+			if (err.ok()) {
+				Handler::GetDtlsParameters(callback);
+			} else {
+				callback(nullptr, err);
+			}
+		});
+	}
+
+	struct RecvHandler::RemoteOffer RecvHandler::RemoteOffer(const std::string& id, const std::string& kind, const nlohmann::json& rtpParameters) {
+		std::string localId;
+
+		// mid is optional, check whether it exists and is a non empty string.
+		auto midIt = rtpParameters.find("mid");
+		if (midIt != rtpParameters.end() && (midIt->is_string() && !midIt->get<std::string>().empty()))
+			localId = midIt->get<std::string>();
+		else
+			localId = std::to_string(this->mapMidTransceiver.size());
+
+		const auto& cname = rtpParameters["rtcp"]["cname"];
+
+		this->remoteSdp->Receive(localId, kind, rtpParameters, cname, id);
+
+		ConsumerRef consumer(id, kind, rtpParameters);
+
+		return { consumer, localId, this->remoteSdp->GetSdp() };
+	}
+
 	RecvHandler::RecvResult RecvHandler::Receive(
 	  const std::string& id, const std::string& kind, const json* rtpParameters)
 	{
@@ -705,32 +791,31 @@ namespace mediasoupclient
 
 		MSC_DEBUG("[id:%s, kind:%s]", id.c_str(), kind.c_str());
 
-		std::string localId;
+		struct RemoteOffer offer;
 
-		// mid is optional, check whether it exists and is a non empty string.
-		auto midIt = rtpParameters->find("mid");
-		if (midIt != rtpParameters->end() && (midIt->is_string() && !midIt->get<std::string>().empty()))
-			localId = midIt->get<std::string>();
-		else
-			localId = std::to_string(this->mapMidTransceiver.size());
+		if (this->initialOffer.has_value()) {
+			offer = this->initialOffer.value();
 
-		const auto& cname = (*rtpParameters)["rtcp"]["cname"];
+			if (offer.consumer != ConsumerRef(id, kind, *rtpParameters)) {
+				MSC_THROW_INVALID_STATE_ERROR("expected same consumer arguments used in GetDtlsParameters");
+			}
 
-		this->remoteSdp->Receive(localId, kind, *rtpParameters, cname, id);
+			this->initialOffer = {};
+		} else {
+			offer = RemoteOffer(id, kind, *rtpParameters);
 
-		auto offer = this->remoteSdp->GetSdp();
+			MSC_DEBUG("calling pc->setRemoteDescription():\n%s", offer.sdp.c_str());
 
-		MSC_DEBUG("calling pc->setRemoteDescription():\n%s", offer.c_str());
-
-		// May throw.
-		SetRemoteDescription(*pc, PeerConnection::SdpType::OFFER, offer);
+			// May throw.
+			SetRemoteDescription(*pc, PeerConnection::SdpType::OFFER, offer.sdp);
+		}
 
 		// May throw.
 		auto answer         = CreateAnswer(*pc);
 		auto localSdpObject = sdptransform::parse(answer);
 		auto mediaIt        = find_if(
-      localSdpObject["media"].begin(), localSdpObject["media"].end(), [&localId](const json& m) {
-        return m["mid"].get<std::string>() == localId;
+      localSdpObject["media"].begin(), localSdpObject["media"].end(), [&offer](const json& m) {
+        return m["mid"].get<std::string>() == offer.localId;
       });
 
 		auto& answerMediaObject = *mediaIt;
@@ -742,8 +827,7 @@ namespace mediasoupclient
 		answer = sdptransform::write(localSdpObject);
 
 		if (!this->transportReady)
-			this->SetupTransport(
-			  !this->forcedLocalDtlsRole.empty() ? this->forcedLocalDtlsRole : "client", localSdpObject);
+			this->SetupTransport(localSdpObject);
 
 		MSC_DEBUG("calling pc->SetLocalDescription():\n%s", answer.c_str());
 
@@ -752,8 +836,8 @@ namespace mediasoupclient
 
 		auto transceivers  = this->pc->GetTransceivers();
 		auto transceiverIt = std::find_if(
-		  transceivers.begin(), transceivers.end(), [&localId](webrtc::RtpTransceiverInterface* t) {
-			  return t->mid() == localId;
+		  transceivers.begin(), transceivers.end(), [&offer](webrtc::RtpTransceiverInterface* t) {
+			  return t->mid() == offer.localId;
 		  });
 
 		if (transceiverIt == transceivers.end())
@@ -762,11 +846,11 @@ namespace mediasoupclient
 		auto& transceiver = *transceiverIt;
 
 		// Store in the map.
-		this->mapMidTransceiver[localId] = transceiver;
+		this->mapMidTransceiver[offer.localId] = transceiver;
 
 		RecvResult recvResult;
 
-		recvResult.localId     = localId;
+		recvResult.localId     = offer.localId;
 		recvResult.rtpReceiver = transceiver->receiver();
 		recvResult.track       = transceiver->receiver()->track();
 
@@ -811,8 +895,7 @@ namespace mediasoupclient
 			if (!this->transportReady)
 			{
 				auto localSdpObject = sdptransform::parse(sdpAnswer);
-				this->SetupTransport(
-				  !this->forcedLocalDtlsRole.empty() ? this->forcedLocalDtlsRole : "client", localSdpObject);
+				this->SetupTransport(localSdpObject);
 			}
 
 			MSC_DEBUG("calling pc->setLocalDescription() [answer: %s]", sdpAnswer.c_str());

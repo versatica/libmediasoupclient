@@ -67,6 +67,8 @@ namespace mediasoupclient
 
 		~PeerConnection() = default;
 
+		rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> Factory() const { return factory; }
+
 		void Close();
 
 		webrtc::PeerConnectionInterface::RTCConfiguration GetConfiguration() const;
@@ -107,6 +109,7 @@ namespace mediasoupclient
 	private:
 		// PeerConnection instance.
 		rtc::scoped_refptr<webrtc::PeerConnectionInterface> pc;
+		rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> factory;
 	};
 } // namespace mediasoupclient
 

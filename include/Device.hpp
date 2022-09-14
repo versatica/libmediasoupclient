@@ -22,13 +22,7 @@ namespace mediasoupclient
 		const nlohmann::json& GetRtpCapabilities() const;
 		const nlohmann::json& GetSctpCapabilities() const;
 
-		using LoadCallback = std::function<void(std::exception_ptr)>;
-
-		void Load(nlohmann::json routerRtpCapabilities, LoadCallback callback) { 
-			Load(routerRtpCapabilities, {}, callback);
-		}
-
-		void Load(nlohmann::json routerRtpCapabilities, const PeerConnection::Options& opts, LoadCallback);
+		void Load(nlohmann::json routerRtpCapabilities, const PeerConnection::Options& opts = {});
 
 		bool CanProduce(const std::string& kind);
 		SendTransport* CreateSendTransport(

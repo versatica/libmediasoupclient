@@ -48,13 +48,13 @@ namespace mediasoupclient
 	/**
 	 * Initialize the Device.
 	 */
-	void Device::Load(nlohmann::json routerRtpCapabilities, const PeerConnection::Options& opts, LoadCallback callback)
+	void Device::Load(nlohmann::json routerRtpCapabilities, const PeerConnection::Options& opts)
 	{
 		MSC_TRACE();
 
-		Handler::GetNativeRtpCapabilities(opts, [=](auto nativeRtpCapabilities, auto error) mutable {
-			std::exception_ptr exception;
+		std::promise<void> promise;
 
+		Handler::GetNativeRtpCapabilities(opts, [=, &promise](auto nativeRtpCapabilities, auto error) mutable {
 			try {
 				if (this->loaded)
 					MSC_THROW_INVALID_STATE_ERROR("already loaded");
@@ -94,17 +94,17 @@ namespace mediasoupclient
 
 				// This may throw.
 				ortc::validateSctpCapabilities(this->sctpCapabilities);
-			} catch(...) {
-				exception = std::current_exception();
-			}
 
-			if (!exception) {
 				this->peerConnectionOptions = opts;
 				this->loaded = true;
-			}
 
-			callback(exception);
+				promise.set_value();
+			} catch(...) {
+				promise.set_exception(std::current_exception());
+			}
 		});
+
+		return promise.get_future().get();
 	}
 
 	/**

@@ -60,25 +60,13 @@ TEST_CASE("Device", "[Device]")
 	{
 		routerRtpCapabilities = generateRouterRtpCapabilities();
 
-		std::promise<void> promise;
-		device->Load(routerRtpCapabilities, [&promise](auto ex) {
-			if (ex) {
-				promise.set_exception(ex);
-			} else {
-				promise.set_value();
-			}
-		});
-
-		REQUIRE_NOTHROW(promise.get_future().get());
+		REQUIRE_NOTHROW(device->Load(routerRtpCapabilities));
 		REQUIRE(device->IsLoaded());
 	}
 
 	SECTION("device.Load() fails if already loaded")
 	{
-		std::promise<void> promise;
-		device->Load(routerRtpCapabilities, [&promise](auto v) { promise.set_exception(v); });
-
-		REQUIRE_THROWS_AS(promise.get_future().get(), MediaSoupClientInvalidStateError);
+		REQUIRE_THROWS_AS(device->Load(routerRtpCapabilities), MediaSoupClientInvalidStateError);
 	}
 
 	SECTION("device.GetRtpCapabilities() succeeds")

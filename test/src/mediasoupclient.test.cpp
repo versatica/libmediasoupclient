@@ -34,20 +34,6 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 
 	static json routerRtpCapabilities;
 
-	auto loadDevice = [](json capabilities) {
-		std::promise<void> promise;
-
-		device->Load(capabilities, [&promise](auto v) {
-			if (v) {
-				promise.set_exception(v);
-			} else {
-				promise.set_value();
-			}
-		});
-
-		promise.get_future().get();
-	};
-
 	SECTION("create a Device succeeds")
 	{
 		REQUIRE_NOTHROW(device.reset(new mediasoupclient::Device()));
@@ -84,7 +70,7 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 			"codecs" : {}
 		})"_json;
 
-		REQUIRE_THROWS_AS(loadDevice(routerRtpCapabilities), MediaSoupClientTypeError);
+		REQUIRE_THROWS_AS(device->Load(routerRtpCapabilities), MediaSoupClientTypeError);
 		REQUIRE(!device->IsLoaded());
 	}
 
@@ -97,20 +83,20 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 			codec.erase("mimeType");
 		}
 
-		REQUIRE_THROWS_AS(loadDevice(routerRtpCapabilities), MediaSoupClientTypeError);
+		REQUIRE_THROWS_AS(device->Load(routerRtpCapabilities), MediaSoupClientTypeError);
 	}
 
 	SECTION("device.load() succeeds")
 	{
 		routerRtpCapabilities = generateRouterRtpCapabilities();
 
-		REQUIRE_NOTHROW(loadDevice(routerRtpCapabilities));
+		REQUIRE_NOTHROW(device->Load(routerRtpCapabilities));
 		REQUIRE(device->IsLoaded());
 	}
 
 	SECTION("device.load() rejects if already loaded")
 	{
-		REQUIRE_THROWS_AS(loadDevice(routerRtpCapabilities), MediaSoupClientInvalidStateError);
+		REQUIRE_THROWS_AS(device->Load(routerRtpCapabilities), MediaSoupClientInvalidStateError);
 	}
 
 	SECTION("device.GetRtpCapabilities() succeeds")

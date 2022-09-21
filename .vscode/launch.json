@@ -1,0 +1,86 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "All",
+            "args": ["-L", "warn", "-W", "warn"],
+
+            "type": "lldb",
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Device",
+            "args": ["-L", "warn", "-W", "warn", "[Device]"],
+
+            "type": "lldb",
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Handler",
+            "args": ["-L", "warn", "-W", "warn", "[Handler]"],
+
+            "type": "lldb",
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "mediasoupclient",
+            "args": ["-L", "warn", "-W", "warn", "[mediasoupclient]"],
+
+            "type": "lldb",
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "ortc",
+            "args": ["-L", "warn", "-W", "warn", "[ortc]"],
+
+            "type": "lldb",
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "PeerConnection",
+            "args": ["-L", "warn", "-W", "warn", "[PeerConnection]"],
+
+            "type": "lldb",
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "SendRemoteSdp",
+            "args": ["-L", "warn", "-W", "warn", "[SendRemoteSdp]"],
+
+            "type": "lldb",
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "scalabilityMode",
+            "args": ["-L", "warn", "-W", "warn", "[scalabilityMode]"],
+
+            "type": "lldb",
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Sdp",
+            "args": ["-L", "warn", "-W", "warn", "[sdp]"],
+
+            "type": "lldb",
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}",
+            "cwd": "${workspaceFolder}"
+        },
+    ]
+}

@@ -135,6 +135,13 @@ namespace mediasoupclient
 		// The next call to Produce should use the same arguments, otherwise an error will be thrown.
 		void GetDtlsParameters(rtc::scoped_refptr<webrtc::MediaStreamTrackInterface>, std::vector<webrtc::RtpEncodingParameters>*, Handler::DtlsParametersCallback);
 
+		using ProduceContext = SendHandler::SendResult;
+
+		// Can be invoked before calling Produce to get RTP parameters ahead of time; blocking / throws.
+		//
+		// Creating a produce context modifies internal state. If successful, Produce must be called afterwards.
+		ProduceContext CreateProduceContext(rtc::scoped_refptr<webrtc::MediaStreamTrackInterface>, const std::vector<webrtc::RtpEncodingParameters>*, const nlohmann::json* codecOptions, const nlohmann::json* codec);
+
 		Producer* Produce(
 		  Producer::Listener* producerListener,
 		  webrtc::MediaStreamTrackInterface* track,
@@ -142,6 +149,12 @@ namespace mediasoupclient
 		  const nlohmann::json* codecOptions,
 		  const nlohmann::json* codec,
 		  const nlohmann::json& appData = nlohmann::json::object());
+
+		Producer* Produce(
+			Producer::Listener* producerListener,
+			const ProduceContext&,
+			const nlohmann::json& appData = nlohmann::json::object()
+		);
 
 		DataProducer* ProduceData(
 		  DataProducer::Listener* listener,

@@ -188,17 +188,7 @@ namespace mediasoupclient
 		this->sendHandler->GetDtlsParameters(track, encodings, callback);
 	}
 
-	/**
-	 * Create a Producer.
-	 */
-	Producer* SendTransport::Produce(
-	  Producer::Listener* producerListener,
-	  webrtc::MediaStreamTrackInterface* track,
-	  const std::vector<webrtc::RtpEncodingParameters>* encodings,
-	  const json* codecOptions,
-	  const json* codec,
-	  const json& appData)
-	{
+	SendTransport::ProduceContext SendTransport::CreateProduceContext(rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track, const std::vector<webrtc::RtpEncodingParameters>* encodings, const nlohmann::json* codecOptions, const nlohmann::json* codec) {
 		MSC_TRACE();
 
 		if (this->closed)
@@ -213,7 +203,6 @@ namespace mediasoupclient
 		if (codecOptions)
 			ortc::validateProducerCodecOptions(const_cast<json&>(*codecOptions));
 
-		std::string producerId;
 		std::vector<webrtc::RtpEncodingParameters> normalizedEncodings;
 
 		if (encodings)
@@ -238,10 +227,40 @@ namespace mediasoupclient
 		// May throw.
 		auto sendResult = this->sendHandler->Send(track, &normalizedEncodings, codecOptions, codec);
 
+		// This will fill rtpParameters's missing fields with default values.
+		ortc::validateRtpParameters(sendResult.rtpParameters);
+
+		return sendResult;
+	}
+
+	/**
+	 * Create a Producer.
+	 */
+	Producer* SendTransport::Produce(
+	  Producer::Listener* producerListener,
+	  webrtc::MediaStreamTrackInterface* track,
+	  const std::vector<webrtc::RtpEncodingParameters>* encodings,
+	  const json* codecOptions,
+	  const json* codec,
+	  const json& appData)
+	{
+		MSC_TRACE();
+
+		auto ctx = this->CreateProduceContext(rtc::scoped_refptr<webrtc::MediaStreamTrackInterface>(track), encodings, codecOptions, codec);
+		return Produce(producerListener, ctx, appData);
+	}
+
+	Producer* SendTransport::Produce(Producer::Listener* producerListener, const ProduceContext& sendResult, const nlohmann::json& appData)
+	{
+		std::string producerId;
+		auto track = sendResult.rtpSender->track();
+
 		try
 		{
-			// This will fill rtpParameters's missing fields with default values.
-			ortc::validateRtpParameters(sendResult.rtpParameters);
+			if (this->closed)
+				MSC_THROW_INVALID_STATE_ERROR("SendTransport closed");
+			else if (!track)
+				MSC_THROW_TYPE_ERROR("missing track");
 
 			// May throw.
 			producerId =

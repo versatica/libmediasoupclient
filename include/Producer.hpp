@@ -87,7 +87,7 @@ namespace mediasoupclient
 		// Paused flag.
 		bool paused{ false };
 		// Video Max spatial layer.
-		uint8_t maxSpatialLayer{ 0 };
+		uint8_t maxSpatialLayer{ (uint8_t) -1 };
 		// App custom data.
 		nlohmann::json appData;
 	};

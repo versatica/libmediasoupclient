@@ -516,51 +516,13 @@ namespace mediasoupclient
 		auto* transceiver = localIdIt->second;
 		auto parameters   = transceiver->sender()->GetParameters();
 
-		bool hasLowEncoding{ false };
-		bool hasMediumEncoding{ false };
-		bool hasHighEncoding{ false };
-		webrtc::RtpEncodingParameters* lowEncoding{ nullptr };
-		webrtc::RtpEncodingParameters* mediumEncoding{ nullptr };
-		webrtc::RtpEncodingParameters* highEncoding{ nullptr };
-
-		if (!parameters.encodings.empty())
+		// Edit encodings. Activate only the layers below or equal to spatialLayer.
+		if (!parameters.encodings.empty() && (spatialLayer < parameters.encodings.size()))
 		{
-			hasLowEncoding = true;
-			lowEncoding    = &parameters.encodings[0];
-		}
-
-		if (parameters.encodings.size() > 1)
-		{
-			hasMediumEncoding = true;
-			mediumEncoding    = &parameters.encodings[1];
-		}
-
-		if (parameters.encodings.size() > 2)
-		{
-			hasHighEncoding = true;
-			highEncoding    = &parameters.encodings[2];
-		}
-
-		// Edit encodings.
-		if (spatialLayer == 1u)
-		{
-			hasLowEncoding && (lowEncoding->active = true);
-			hasMediumEncoding && (mediumEncoding->active = false);
-			hasHighEncoding && (highEncoding->active = false);
-		}
-
-		else if (spatialLayer == 2u)
-		{
-			hasLowEncoding && (lowEncoding->active = true);
-			hasMediumEncoding && (mediumEncoding->active = true);
-			hasHighEncoding && (highEncoding->active = false);
-		}
-
-		else if (spatialLayer == 3u)
-		{
-			hasLowEncoding && (lowEncoding->active = true);
-			hasMediumEncoding && (mediumEncoding->active = true);
-			hasHighEncoding && (highEncoding->active = true);
+			for (int i = parameters.encodings.size() - 1; i >= 0; i--)
+			{
+				parameters.encodings[i].active = (i <= spatialLayer);
+			}
 		}
 
 		auto result = transceiver->sender()->SetParameters(parameters);

@@ -13,11 +13,11 @@ rtc::scoped_refptr<webrtc::AudioTrackInterface> createAudioTrack(const std::stri
 
 	rtc::scoped_refptr<webrtc::AudioSourceInterface> source = PeerConnection::DefaultFactory()->CreateAudioSource(options);
 
-	return PeerConnection::DefaultFactory()->CreateAudioTrack(label, source);
+	return PeerConnection::DefaultFactory()->CreateAudioTrack(label, source.get());
 }
 
 // Video track creation.
 rtc::scoped_refptr<webrtc::VideoTrackInterface> createVideoTrack(const std::string& label)
 {
-	return PeerConnection::DefaultFactory()->CreateVideoTrack(label, webrtc::FakeVideoTrackSource::Create());
+	return PeerConnection::DefaultFactory()->CreateVideoTrack(label, webrtc::FakeVideoTrackSource::Create().get());
 }

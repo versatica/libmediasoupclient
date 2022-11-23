@@ -79,13 +79,13 @@ namespace mediasoupclient
 		// PrivateListener instance.
 		PrivateListener* privateListener{ nullptr };
 		// Remote SDP instance.
-		std::unique_ptr<Sdp::RemoteSdp> remoteSdp{ nullptr };
+		std::unique_ptr<Sdp::RemoteSdp> remoteSdp;
 		// Got transport local and remote parameters.
 		bool transportReady{ false };
 		// Map of RTCTransceivers indexed by MID.
-		std::unordered_map<std::string, webrtc::RtpTransceiverInterface*> mapMidTransceiver{};
+		std::unordered_map<std::string, rtc::scoped_refptr<webrtc::RtpTransceiverInterface>> mapMidTransceiver{};
 		// PeerConnection instance.
-		std::unique_ptr<PeerConnection> pc{ nullptr };
+		std::unique_ptr<PeerConnection> pc;
 		bool hasDataChannelMediaSection = false;
 		uint32_t nextSendSctpStreamId   = 0;
 		// Initial server side DTLS role. If not 'auto', it will force the opposite
@@ -99,7 +99,7 @@ namespace mediasoupclient
 		struct SendResult
 		{
 			std::string localId;
-			webrtc::RtpSenderInterface* rtpSender{ nullptr };
+			rtc::scoped_refptr<webrtc::RtpSenderInterface> rtpSender;
 			nlohmann::json rtpParameters;
 		};
 
@@ -118,12 +118,12 @@ namespace mediasoupclient
 		void GetDtlsParameters(rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track, std::vector<webrtc::RtpEncodingParameters>* encodings, DtlsParametersCallback callback);
 
 		SendResult Send(
-		  webrtc::MediaStreamTrackInterface* track,
+		  rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track,
 		  std::vector<webrtc::RtpEncodingParameters>* encodings,
 		  const nlohmann::json* codecOptions,
 		  const nlohmann::json* codec);
 		void StopSending(const std::string& localId);
-		void ReplaceTrack(const std::string& localId, webrtc::MediaStreamTrackInterface* track);
+		void ReplaceTrack(const std::string& localId, rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track);
 		void SetMaxSpatialLayer(const std::string& localId, uint8_t spatialLayer);
 		void GetSenderStats(const std::string& localId, PeerConnection::StatsHandler);
 		void RestartIce(const nlohmann::json& iceParameters) override;
@@ -149,8 +149,8 @@ namespace mediasoupclient
 		struct RecvResult
 		{
 			std::string localId;
-			webrtc::RtpReceiverInterface* rtpReceiver{ nullptr };
-			webrtc::MediaStreamTrackInterface* track{ nullptr };
+			rtc::scoped_refptr<webrtc::RtpReceiverInterface> rtpReceiver;
+			rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track;
 		};
 	public:
 		RecvHandler(

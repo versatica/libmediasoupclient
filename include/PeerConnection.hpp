@@ -58,7 +58,7 @@ namespace mediasoupclient
 		struct Options
 		{
 			webrtc::PeerConnectionInterface::RTCConfiguration config;
-			rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> factory{ nullptr };
+			rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> factory;
 		};
 
 	public:
@@ -94,7 +94,7 @@ namespace mediasoupclient
 		  rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track,
 		  webrtc::RtpTransceiverInit rtpTransceiverInit);
 		std::vector<rtc::scoped_refptr<webrtc::RtpSenderInterface>> GetSenders();
-		bool RemoveTrack(webrtc::RtpSenderInterface* sender);
+		bool RemoveTrack(rtc::scoped_refptr<webrtc::RtpSenderInterface> sender);
 
 		using RTCStatsReport = rtc::scoped_refptr<const webrtc::RTCStatsReport>;
 		using StatsHandler = std::function<void(const RTCStatsReport &, webrtc::RTCError)>;

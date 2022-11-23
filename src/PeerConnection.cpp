@@ -149,7 +149,12 @@ namespace mediasoupclient
 	{
 	public:
 		using Callback = std::function<void(std::string, webrtc::RTCError)>;
-		CreateSessionDescriptionObserver(Callback fn): callback(fn) {};
+		CreateSessionDescriptionObserver(rtc::scoped_refptr<webrtc::PeerConnectionInterface> pc, Callback fn): pc(pc), callback(fn) {};
+
+		~CreateSessionDescriptionObserver() {
+			// Make sure pc isn't destroyed within our callback
+			pc->signaling_thread()->PostTask([pc = this->pc] {});
+		}
 
 	private:
 		/* Virtual methods inherited from webrtc::CreateSessionDescriptionObserver. */
@@ -165,19 +170,20 @@ namespace mediasoupclient
 			callback({}, error);
 		}
 	private:
+		rtc::scoped_refptr<webrtc::PeerConnectionInterface> pc; // keep alive
 		Callback callback;
 	};
 
 	void PeerConnection::CreateOffer(const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions& opts, SDPHandler callback) {
 		MSC_TRACE();
 
-		this->pc->CreateOffer(rtc::make_ref_counted<CreateSessionDescriptionObserver>(callback), opts);
+		this->pc->CreateOffer(rtc::make_ref_counted<CreateSessionDescriptionObserver>(this->pc, callback).get(), opts);
 	}
 
 	void PeerConnection::CreateAnswer(const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions& opts, SDPHandler callback) {
 		MSC_TRACE();
 
-		this->pc->CreateAnswer(rtc::make_ref_counted<CreateSessionDescriptionObserver>(callback), opts);
+		this->pc->CreateAnswer(rtc::make_ref_counted<CreateSessionDescriptionObserver>(this->pc, callback).get(), opts);
 	}
 
 	namespace {
@@ -195,10 +201,17 @@ namespace mediasoupclient
 	public:
 		using Callback = std::function<void(webrtc::RTCError error)>;
 
-		SetLocalDescriptionObserver(Callback fn): callback(fn) {};
+		SetLocalDescriptionObserver(rtc::scoped_refptr<webrtc::PeerConnectionInterface> pc, Callback fn): pc(pc), callback(fn) {};
+
+		~SetLocalDescriptionObserver() {
+			// Make sure pc isn't destroyed within our callback
+			pc->signaling_thread()->PostTask([pc = this->pc] {});
+		}
+
 	private:
 		void OnSetLocalDescriptionComplete(webrtc::RTCError error) override { callback(error); }
 	private:
+		rtc::scoped_refptr<webrtc::PeerConnectionInterface> pc; // keep alive
 		Callback callback;
 	};
 
@@ -228,17 +241,24 @@ namespace mediasoupclient
 			callback(error.ok() ? normalizedSdp : "", error);
 		};
 
-		this->pc->SetLocalDescription(std::move(sessionDescription), rtc::make_ref_counted<SetLocalDescriptionObserver>(wrappedCallback));
+		this->pc->SetLocalDescription(std::move(sessionDescription), rtc::make_ref_counted<SetLocalDescriptionObserver>(this->pc, wrappedCallback));
 	}
 
 	class SetRemoteDescriptionObserver : public webrtc::SetRemoteDescriptionObserverInterface {
 	public:
 		using Callback = std::function<void(webrtc::RTCError error)>;
 
-		SetRemoteDescriptionObserver(Callback fn): callback(fn) {};
+		SetRemoteDescriptionObserver(rtc::scoped_refptr<webrtc::PeerConnectionInterface> pc, Callback fn): pc(pc), callback(fn) {};
+
+		~SetRemoteDescriptionObserver() {
+			// Make sure pc isn't destroyed within our callback
+			pc->signaling_thread()->PostTask([pc = this->pc] {});
+		}
+
 	private:
 		void OnSetRemoteDescriptionComplete(webrtc::RTCError error) override { callback(error); }
 	private:
+		rtc::scoped_refptr<webrtc::PeerConnectionInterface> pc; // keep alive
 		Callback callback;
 	};
 
@@ -268,7 +288,7 @@ namespace mediasoupclient
 			callback(error.ok() ? normalizedSdp : "", error);
 		};
 
-		this->pc->SetRemoteDescription(std::move(sessionDescription), rtc::make_ref_counted<SetRemoteDescriptionObserver>(wrappedCallback));
+		this->pc->SetRemoteDescription(std::move(sessionDescription), rtc::make_ref_counted<SetRemoteDescriptionObserver>(this->pc, wrappedCallback));
 	}
 
 	const std::string PeerConnection::GetLocalDescription()
@@ -360,12 +380,11 @@ namespace mediasoupclient
 		return this->pc->GetSenders();
 	}
 
-	bool PeerConnection::RemoveTrack(webrtc::RtpSenderInterface* sender)
+	bool PeerConnection::RemoveTrack(rtc::scoped_refptr<webrtc::RtpSenderInterface> sender)
 	{
 		MSC_TRACE();
 
-		auto wrapped_sender = rtc::scoped_refptr<webrtc::RtpSenderInterface>(sender);
-		auto result = this->pc->RemoveTrackOrError(wrapped_sender);
+		auto result = this->pc->RemoveTrackOrError(sender);
 		return result.ok();
 	}
 
@@ -394,7 +413,7 @@ namespace mediasoupclient
 			if (pc->signaling_state() == webrtc::PeerConnectionInterface::SignalingState::kClosed) {
 				callback(nullptr, webrtc::RTCError(webrtc::RTCErrorType::INVALID_STATE));
 			} else {
-				pc->GetStats(rtc::make_ref_counted<RTCStatsCollectorCallback>(callback));
+				pc->GetStats(rtc::make_ref_counted<RTCStatsCollectorCallback>(callback).get());
 			}
 		});
 	}

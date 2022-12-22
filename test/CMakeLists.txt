@@ -11,11 +11,14 @@ set(
 	src/fakeParameters.cpp
 	src/scalabilityMode.test.cpp
 	src/tests.cpp
+	src/catch_amalgamated.cpp
 	include/FakeTransportListener.hpp
 	include/MediaStreamTrackFactory.hpp
 	include/helpers.hpp
 	include/fakeParameters.hpp
 )
+
+add_definitions(-DCATCH_AMALGAMATED_CUSTOM_MAIN)
 
 # Create target.
 add_executable(test_mediasoupclient ${SOURCE_FILES})
@@ -24,7 +27,6 @@ add_executable(test_mediasoupclient ${SOURCE_FILES})
 target_include_directories(test_mediasoupclient PRIVATE
 	include
 	${mediasoupclient_SOURCE_DIR}/include
-	${mediasoupclient_SOURCE_DIR}/deps/catch/single_include/catch2
 )
 
 if(APPLE)

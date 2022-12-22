@@ -1,7 +1,5 @@
 # libsdptransform
 
-[![][travis-ci-shield-libsdptransform]][travis-ci-libsdptransform]
-
 C++ version of the [sdp-transform](https://github.com/clux/sdp-transform/) JavaScript library exposing the same API.
 
 **libsdptransform** is a simple parser and writer of SDP. Defines internal grammar based on [RFC4566 - SDP](http://tools.ietf.org/html/rfc4566), [RFC5245 - ICE](http://tools.ietf.org/html/rfc5245), and many more.
@@ -535,9 +533,3 @@ Special thanks to [Eirik Albrigtsen](https://github.com/clux), the author of the
 ## License
 
 [MIT](LICENSE)
-
-
-
-
-[travis-ci-shield-libsdptransform]: https://travis-ci.com/ibc/libsdptransform.svg?branch=master
-[travis-ci-libsdptransform]: https://travis-ci.com/ibc/libsdptransform

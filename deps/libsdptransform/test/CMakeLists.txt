@@ -5,14 +5,14 @@ set(
 	SOURCE_FILES
 	tests.cpp
 	parse.test.cpp
+	catch_amalgamated.cpp
 )
 
 set(
 	HEADER_FILES
-	include/helpers.hpp
-	include/catch.hpp
 )
 
+add_definitions(-DCATCH_AMALGAMATED_CUSTOM_MAIN)
 add_executable(test_sdptransform ${SOURCE_FILES} ${HEADER_FILES})
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Android")

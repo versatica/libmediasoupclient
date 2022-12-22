@@ -1,10 +1,9 @@
-#define CATCH_CONFIG_RUNNER
-
 #include "Logger.hpp"
 #include "PeerConnection.hpp"
 #include "mediasoupclient.hpp"
-#include <catch.hpp>
+#include "catch_amalgamated.hpp"
 #include <string>
+
 
 int main(int argc, char* argv[])
 {

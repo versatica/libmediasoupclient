@@ -2,7 +2,7 @@
 #include "MediaSoupClientErrors.hpp"
 #include "MediaStreamTrackFactory.hpp"
 #include "fakeParameters.hpp"
-#include <catch.hpp>
+#include "catch_amalgamated.hpp"
 #include <iostream>
 #include <memory>
 

@@ -17,8 +17,8 @@ int main(int argc, char* argv[])
 	// Build a new parser on top of Catch.
 	// clang-format off
 	auto cli = session.cli()
-	  | Catch::clara::Opt(logLevelStr, "debug|warn|error|none")["-L"]["--log-level"]("libmediasoupclient log level (default: none)")
-	  | Catch::clara::Opt(webrtcLogLevelStr, "verbose|info|warn|error|none")["-W"]["--webrtc-log-level"]("libwebrtc log level (default: none)");
+	  | Catch::Clara::Opt(logLevelStr, "debug|warn|error|none")["-L"]["--log-level"]("libmediasoupclient log level (default: none)")
+	  | Catch::Clara::Opt(webrtcLogLevelStr, "verbose|info|warn|error|none")["-W"]["--webrtc-log-level"]("libwebrtc log level (default: none)");
 	// clang-format on
 
 	// Now pass the new composite back to Catch so it uses that.

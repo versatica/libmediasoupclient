@@ -1,6 +1,6 @@
-#include "catch.hpp"
-#include "helpers.hpp"
 #include "sdptransform.hpp"
+#include "helpers.hpp"
+#include "catch_amalgamated.hpp"
 
 SCENARIO("normalSdp", "[parse]")
 {

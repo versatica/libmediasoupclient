@@ -46,7 +46,7 @@ function get_dep()
 function get_libsdptransform()
 {
 	GIT_REPO="https://github.com/ibc/libsdptransform.git"
-	GIT_TAG="1.2.9"
+	GIT_TAG="1.2.10"
 	DEST="deps/libsdptransform"
 
 	get_dep "${GIT_REPO}" "${GIT_TAG}" "${DEST}"
@@ -54,8 +54,8 @@ function get_libsdptransform()
 
 function get_catch()
 {
-	GIT_REPO="https://github.com/philsquared/Catch.git"
-	GIT_TAG="v2.11.1"
+	GIT_REPO="https://github.com/catchorg/Catch2.git"
+	GIT_TAG="v2.13.9"
 	DEST="deps/catch"
 
 	get_dep "${GIT_REPO}" "${GIT_TAG}" "${DEST}"

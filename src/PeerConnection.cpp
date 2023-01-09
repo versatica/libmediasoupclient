@@ -159,11 +159,16 @@ namespace mediasoupclient
 	private:
 		/* Virtual methods inherited from webrtc::CreateSessionDescriptionObserver. */
 		void OnSuccess(webrtc::SessionDescriptionInterface* desc) override {
-			std::string sdp;
-			desc->ToString(&sdp);
-			delete desc;
+			if (desc) {
+				std::string sdp;
+				desc->ToString(&sdp);
+				delete desc;
 
-			callback(sdp, webrtc::RTCError::OK());
+				callback(sdp, webrtc::RTCError::OK());
+			} else {
+				// Our SDP may be null if the connection was closed during creation
+				callback({}, {webrtc::RTCErrorType::INVALID_STATE, "sdp is null"});
+			}
 		}
 
 		void OnFailure(webrtc::RTCError error) override {

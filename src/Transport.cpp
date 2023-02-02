@@ -288,15 +288,7 @@ namespace mediasoupclient
 		return producer;
 	}
 
-	DataProducer* SendTransport::ProduceData(
-	  DataProducer::Listener* dataProducerListener,
-	  const std::string& label,
-	  const std::string& protocol,
-	  bool ordered,
-	  int maxRetransmits,
-	  int maxPacketLifeTime,
-	  const nlohmann::json& appData)
-	{
+	SendTransport::ProduceDataContext SendTransport::CreateProduceDataContext(const std::string& label, const std::string& protocol, bool ordered, int maxRetransmits, int maxPacketLifeTime) {
 		MSC_TRACE();
 
 		if (!this->hasSctpParameters)
@@ -319,10 +311,29 @@ namespace mediasoupclient
 		}
 
 		// This may throw.
-		auto sendResult = this->sendHandler->SendDataChannel(label, dataChannelInit);
+		return this->sendHandler->SendDataChannel(label, dataChannelInit);
+	}
+
+	DataProducer* SendTransport::ProduceData(
+	  DataProducer::Listener* dataProducerListener,
+	  const std::string& label,
+	  const std::string& protocol,
+	  bool ordered,
+	  int maxRetransmits,
+	  int maxPacketLifeTime,
+	  const nlohmann::json& appData)
+	{
+		MSC_TRACE();
+
+		auto ctx = CreateProduceDataContext(label, protocol, ordered, maxRetransmits, maxPacketLifeTime);
+		return ProduceData(dataProducerListener, ctx, appData);
+	}
+
+	DataProducer* SendTransport::ProduceData(DataProducer::Listener* dataProducerListener, const ProduceDataContext& sendResult, const nlohmann::json& appData) {
+		MSC_TRACE();
 
 		auto dataChannelId =
-		  this->listener->OnProduceData(this, sendResult.sctpStreamParameters, label, protocol, appData);
+		  this->listener->OnProduceData(this, sendResult.sctpStreamParameters, sendResult.dataChannel->label(), sendResult.dataChannel->protocol(), appData);
 
 		auto* dataProducer = new DataProducer(
 		  this,

@@ -141,8 +141,14 @@ namespace mediasoupclient
 
 		// Can be invoked before calling Produce to get RTP parameters ahead of time; blocking / throws.
 		//
-		// Creating a produce context modifies internal state. If successful, Produce must be called afterwards.
+		// Creating a ProduceContext modifies internal state. If successful, Produce must be called afterwards.
 		ProduceContext CreateProduceContext(rtc::scoped_refptr<webrtc::MediaStreamTrackInterface>, const std::vector<webrtc::RtpEncodingParameters>*, const nlohmann::json* codecOptions, const nlohmann::json* codec);
+
+		Producer* Produce(
+			Producer::Listener* producerListener,
+			const ProduceContext&,
+			const nlohmann::json& appData = nlohmann::json::object()
+		);
 
 		Producer* Produce(
 		  Producer::Listener* producerListener,
@@ -152,11 +158,21 @@ namespace mediasoupclient
 		  const nlohmann::json* codec,
 		  const nlohmann::json& appData = nlohmann::json::object());
 
-		Producer* Produce(
-			Producer::Listener* producerListener,
-			const ProduceContext&,
-			const nlohmann::json& appData = nlohmann::json::object()
-		);
+		using ProduceDataContext = Handler::DataChannel;
+
+		// Can be invoked before calling ProduceData to get SCTP parameters ahead of time; blocking / throws.
+		//
+		// Creating a ProduceDataContext modifies internal state. If successful, ProduceContext must be called afterwards.
+		ProduceDataContext CreateProduceDataContext(const std::string& label = "",
+			const std::string& protocol   = "",
+			bool ordered                  = true,
+			int maxRetransmits            = 0,
+			int maxPacketLifeTime         = 0);
+
+		DataProducer* ProduceData(
+		  DataProducer::Listener*,
+		  const ProduceDataContext&,
+		  const nlohmann::json& appData = nlohmann::json::object());
 
 		DataProducer* ProduceData(
 		  DataProducer::Listener* listener,

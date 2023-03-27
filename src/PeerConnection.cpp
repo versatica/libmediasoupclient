@@ -100,7 +100,7 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		auto config = options.config;
-		this->factory = options.factory ?: PeerConnection::DefaultFactory();
+		this->factory = options.factory ? options.factory : PeerConnection::DefaultFactory();
 
 		// Set SDP semantics to Unified Plan.
 		config.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;

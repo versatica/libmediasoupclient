@@ -127,10 +127,16 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	"${LIBWEBRTC_INCLUDE_PATH}/third_party/abseil-cpp"
 )
 
+if (WIN32)
+set(LIBWEBRTC_BASENAME webrtc.lib)
+else ()
+set(LIBWEBRTC_BASENAME libwebrtc${CMAKE_STATIC_LIBRARY_SUFFIX})
+endif()
+
 # Public (interface) dependencies.
 target_link_libraries(${PROJECT_NAME} PUBLIC
 	sdptransform
-	${LIBWEBRTC_BINARY_PATH}/libwebrtc${CMAKE_STATIC_LIBRARY_SUFFIX}
+	${LIBWEBRTC_BINARY_PATH}/${LIBWEBRTC_BASENAME}
 )
 
 # Compile definitions for libwebrtc.

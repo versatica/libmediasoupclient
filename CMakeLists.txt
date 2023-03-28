@@ -14,7 +14,7 @@ configure_file (
 )
 
 # C++ standard requirements.
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Project options.
@@ -124,6 +124,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/include
 target_include_directories(${PROJECT_NAME} PUBLIC
 	"${PROJECT_SOURCE_DIR}/deps/libsdptransform/include"
 	"${LIBWEBRTC_INCLUDE_PATH}"
+	"${LIBWEBRTC_INCLUDE_PATH}/rtc_base/synchronization"
 	"${LIBWEBRTC_INCLUDE_PATH}/third_party/abseil-cpp"
 )
 

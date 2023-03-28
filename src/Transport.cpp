@@ -240,7 +240,7 @@ namespace mediasoupclient
 		  producerListener,
 		  producerId,
 		  sendResult.localId,
-		  sendResult.rtpSender,
+		  sendResult.rtpSender.get(),
 		  track,
 		  sendResult.rtpParameters,
 		  appData);
@@ -435,8 +435,8 @@ namespace mediasoupclient
 		  id,
 		  recvResult.localId,
 		  producerId,
-		  recvResult.rtpReceiver,
-		  recvResult.track,
+		  recvResult.rtpReceiver.get(),
+		  recvResult.track.get(),
 		  *rtpParameters,
 		  appData);
 

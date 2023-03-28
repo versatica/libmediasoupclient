@@ -68,7 +68,7 @@ namespace mediasoupclient
 		// Got transport local and remote parameters.
 		bool transportReady{ false };
 		// Map of RTCTransceivers indexed by MID.
-		std::unordered_map<std::string, webrtc::RtpTransceiverInterface*> mapMidTransceiver{};
+		std::unordered_map<std::string, rtc::scoped_refptr<webrtc::RtpTransceiverInterface>> mapMidTransceiver{};
 		// PeerConnection instance.
 		std::unique_ptr<PeerConnection> pc{ nullptr };
 		bool hasDataChannelMediaSection = false;
@@ -84,7 +84,7 @@ namespace mediasoupclient
 		struct SendResult
 		{
 			std::string localId;
-			webrtc::RtpSenderInterface* rtpSender{ nullptr };
+			rtc::scoped_refptr<webrtc::RtpSenderInterface> rtpSender{ nullptr };
 			nlohmann::json rtpParameters;
 		};
 
@@ -126,8 +126,8 @@ namespace mediasoupclient
 		struct RecvResult
 		{
 			std::string localId;
-			webrtc::RtpReceiverInterface* rtpReceiver{ nullptr };
-			webrtc::MediaStreamTrackInterface* track{ nullptr };
+			rtc::scoped_refptr<webrtc::RtpReceiverInterface> rtpReceiver{ nullptr };
+			rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track{ nullptr };
 		};
 
 	public:

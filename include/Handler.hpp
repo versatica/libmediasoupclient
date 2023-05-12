@@ -21,6 +21,7 @@ namespace mediasoupclient
 		class PrivateListener
 		{
 		public:
+			virtual ~PrivateListener() = default;
 			virtual void OnConnect(nlohmann::json& dtlsParameters) = 0;
 			virtual void OnConnectionStateChange(
 			  webrtc::PeerConnectionInterface::IceConnectionState connectionState) = 0;

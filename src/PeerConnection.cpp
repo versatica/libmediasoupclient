@@ -139,7 +139,7 @@ namespace mediasoupclient
 
 		MSC_WARN(
 		  "webrtc::PeerConnection::SetConfiguration failed [%s:%s]",
-		  webrtc::ToString(error.type()),
+		  webrtc::ToString(error.type()).data(),
 		  error.message());
 
 		return false;
@@ -408,7 +408,7 @@ namespace mediasoupclient
 		{
 			MSC_WARN(
 					"webtc::SetLocalDescriptionObserver failure [%s:%s]",
-					webrtc::ToString(error.type()),
+					webrtc::ToString(error.type()).data(),
 					error.message());
 
 			auto message = std::string(error.message());
@@ -445,7 +445,7 @@ namespace mediasoupclient
 		{
 			MSC_WARN(
 					"webtc::SetRemoteDescriptionObserver failure [%s:%s]",
-					webrtc::ToString(error.type()),
+					webrtc::ToString(error.type()).data(),
 					error.message());
 
 			auto message = std::string(error.message());
@@ -487,7 +487,7 @@ namespace mediasoupclient
 
 		MSC_WARN(
 		  "webtc::SetSessionDescriptionObserver failure [%s:%s]",
-		  webrtc::ToString(error.type()),
+		  webrtc::ToString(error.type()).data(),
 		  error.message());
 
 		auto message = std::string(error.message());
@@ -531,7 +531,7 @@ namespace mediasoupclient
 
 		MSC_WARN(
 		  "webtc::CreateSessionDescriptionObserver failure [%s:%s]",
-		  webrtc::ToString(error.type()),
+		  webrtc::ToString(error.type()).data(),
 		  error.message());
 
 		auto message = std::string(error.message());

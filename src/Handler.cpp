@@ -85,6 +85,9 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
+		// Clear the stored transceivers before closing the PeerConnection.
+		this->mapMidTransceiver.clear();
+
 		this->pc->Close();
 	};
 

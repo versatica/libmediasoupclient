@@ -3,7 +3,7 @@
 #include "MediaSoupClientErrors.hpp"
 #include "fakeParameters.hpp"
 #include "ortc.hpp"
-#include <catch.hpp>
+#include "catch_amalgamated.hpp"
 
 TEST_CASE("Device", "[Device]")
 {

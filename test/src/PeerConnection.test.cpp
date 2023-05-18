@@ -2,7 +2,7 @@
 #include "PeerConnection.hpp"
 #include "helpers.hpp"
 #include "sdp/Utils.hpp"
-#include <catch.hpp>
+#include "catch_amalgamated.hpp"
 
 TEST_CASE("PeerConnection", "[PeerConnection]")
 {

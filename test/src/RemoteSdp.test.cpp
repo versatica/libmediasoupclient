@@ -1,7 +1,7 @@
+#include "sdp/RemoteSdp.hpp"
 #include "helpers.hpp"
 #include "sdptransform.hpp"
-#include "sdp/RemoteSdp.hpp"
-#include <catch.hpp>
+#include "catch_amalgamated.hpp"
 
 TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 {

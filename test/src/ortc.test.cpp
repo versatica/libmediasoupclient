@@ -1,6 +1,6 @@
-#include "fakeParameters.hpp"
 #include "ortc.hpp"
-#include <catch.hpp>
+#include "fakeParameters.hpp"
+#include "catch_amalgamated.hpp"
 
 using namespace mediasoupclient;
 

@@ -1,5 +1,6 @@
 /build/
 /node_modules/
+/deps/catch/
 
 compile_commands.json
 

@@ -11,6 +11,7 @@ set(mediasoupclient_VERSION_PATCH 0)
 configure_file (
 	"${PROJECT_SOURCE_DIR}/version.hpp.in"
 	"${PROJECT_SOURCE_DIR}/include/version.hpp"
+	NEWLINE_STYLE LF
 )
 
 # C++ standard requirements.

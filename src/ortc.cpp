@@ -1208,7 +1208,7 @@ namespace mediasoupclient
 
 		/**
 		 * Generate RTP parameters of the given kind for sending media.
-		 * Just the first media codec per kind is considered.
+		 * All media codecs with matching kind are considered.
 		 * NOTE: mid, encodings and rtcp fields are left empty.
 		 */
 		json getSendingRtpParameters(const std::string& kind, const json& extendedRtpCapabilities)
@@ -1270,9 +1270,6 @@ namespace mediasoupclient
 
 					rtpParameters["codecs"].push_back(rtxCodec);
 				}
-
-				// NOTE: We assume a single media codec plus an optional RTX codec.
-				break;
 			}
 
 			for (const auto& extendedExtension : extendedRtpCapabilities["headerExtensions"])
@@ -1364,9 +1361,6 @@ namespace mediasoupclient
 
 					rtpParameters["codecs"].push_back(rtxCodec);
 				}
-
-				// NOTE: We assume a single media codec plus an optional RTX codec.
-				break;
 			}
 
 			for (const auto& extendedExtension : extendedRtpCapabilities["headerExtensions"])

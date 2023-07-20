@@ -17,6 +17,10 @@ set(
 	include/fakeParameters.hpp
 )
 
+# Run tests in Release due to a limitation in libwebrtc.
+# https://github.com/versatica/libmediasoupclient/pull/154#issuecomment-1643503447
+set(CMAKE_BUILD_TYPE "Release")
+
 # Create target.
 add_executable(test_mediasoupclient ${SOURCE_FILES})
 

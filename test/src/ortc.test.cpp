@@ -118,9 +118,11 @@ TEST_CASE("getSendingRtpParameters", "[getSendingRtpParameters]")
 
 		auto videoSendRtpParameters = ortc::getSendingRtpParameters("video", extendedRtpCapabilities);
 
-		REQUIRE(videoSendRtpParameters["codecs"].size() == 2);
+		REQUIRE(videoSendRtpParameters["codecs"].size() == 4);
 		REQUIRE(videoSendRtpParameters["codecs"][0]["mimeType"] == "video/VP8");
 		REQUIRE(videoSendRtpParameters["codecs"][1]["mimeType"] == "video/rtx");
+		REQUIRE(videoSendRtpParameters["codecs"][2]["mimeType"] == "video/H264");
+		REQUIRE(videoSendRtpParameters["codecs"][3]["mimeType"] == "video/rtx");
 	}
 }
 

@@ -477,3 +477,22 @@ json generateConsumerRemoteParameters(const std::string& codecMimeType)
 
 	return json::object();
 };
+
+json generateIceServers()
+{
+	auto json = R"(
+	[
+		{
+			"urls"       : [
+				"turn:t1.server.com",
+				"turn:t2.server.com"
+			],
+			"username"   : "fakeuser",
+			"credential" : "fakepass"
+		},
+		{
+			"urls" : "stun:s.server.com"
+		}
+	])"_json;
+	return json;
+};

@@ -11,5 +11,6 @@ json generateLocalDtlsParameters();
 json generateTransportRemoteParameters();
 std::string generateProducerRemoteId();
 json generateConsumerRemoteParameters(const std::string& codecMimeType);
+json generateIceServers();
 
 #endif

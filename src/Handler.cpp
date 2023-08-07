@@ -108,10 +108,23 @@ namespace mediasoupclient
 
 		for (const auto& iceServerDescription : iceServersDescription)
 		{
+			if (!iceServerDescription.contains("urls")) {
+				continue;
+			}
 			webrtc::PeerConnectionInterface::IceServer iceServer;
-			iceServer.urls = iceServerDescription.at("urls").get<std::vector<std::string>>();
-			iceServer.username = iceServerDescription.at("username").get<std::string>();
-			iceServer.password = iceServerDescription.at("credential").get<std::string>();
+			if (iceServerDescription["urls"].is_string()) {
+				iceServer.urls = { iceServerDescription["urls"].get<std::string>() };
+			} else if (iceServerDescription["urls"].is_array()) {
+				iceServer.urls = iceServerDescription["urls"].get<std::vector<std::string>>();
+			} else {
+				continue;
+			}
+			if (iceServerDescription.contains("username")) {
+				iceServer.username = iceServerDescription["username"].get<std::string>();
+			}
+			if (iceServerDescription.contains("credential")) {
+				iceServer.password = iceServerDescription["credential"].get<std::string>();
+			}
 			configuration.servers.push_back(iceServer);
 		}
 

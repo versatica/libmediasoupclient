@@ -1,6 +1,8 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.14)
 
 project(mediasoupclient LANGUAGES CXX)
+
+include(FetchContent)
 
 # Set version number.
 set(mediasoupclient_VERSION_MAJOR 3)

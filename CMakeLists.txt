@@ -109,7 +109,6 @@ if(${MEDIASOUPCLIENT_LOG_DEV})
 endif()
 
 # Source Dependencies.
-# add_subdirectory(deps/libsdptransform "${CMAKE_CURRENT_BINARY_DIR}/libsdptransform")
 
 message(STATUS "\nFetching libsdptransform...\n")
 FetchContent_Declare(

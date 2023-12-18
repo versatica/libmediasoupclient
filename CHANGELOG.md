@@ -1,7 +1,7 @@
 # Changelog
 
 
-### NOT RELEASED
+### 3.4.1
 
 * Clear the stored transceivers before closing the PeerConnection ([#156](https://github.com/versatica/libmediasoupclient/pull/156)). Thanks @adriancretu.
 * Fix non-virtual destructors ([PR #157](https://github.com/versatica/libmediasoupclient/pull/157)). Thanks @adriancretu.

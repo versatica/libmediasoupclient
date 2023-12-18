@@ -1,3 +1,0 @@
-# Documentation
-
-* [Grammar](Grammar.md)

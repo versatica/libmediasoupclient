@@ -1,6 +1,11 @@
 # Changelog
 
 
+### 3.4.2
+
+* Fix explicit codec selection ([#164](https://github.com/versatica/libmediasoupclient/pull/164)). Thanks @fedulvtubudul.
+
+
 ### 3.4.1
 
 * Clear the stored transceivers before closing the PeerConnection ([#156](https://github.com/versatica/libmediasoupclient/pull/156)). Thanks @adriancretu.

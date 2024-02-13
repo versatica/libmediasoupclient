@@ -212,7 +212,8 @@ namespace mediasoupclient
 		if (encodings && !encodings->empty())
 			transceiverInit.send_encodings = *encodings;
 
-		webrtc::RtpTransceiverInterface* transceiver = this->pc->AddTransceiver(track, transceiverInit);
+		rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> scopedTrack{ track };
+		auto transceiver = this->pc->AddTransceiver(scopedTrack, transceiverInit);
 
 		if (!transceiver)
 			MSC_THROW_ERROR("error creating transceiver");
@@ -359,7 +360,7 @@ namespace mediasoupclient
 		SendResult sendResult;
 
 		sendResult.localId       = localId;
-		sendResult.rtpSender     = transceiver->sender();
+		sendResult.rtpSender     = transceiver->sender().get();
 		sendResult.rtpParameters = sendingRtpParameters;
 
 		return sendResult;
@@ -461,7 +462,7 @@ namespace mediasoupclient
 		if (locaIdIt == this->mapMidTransceiver.end())
 			MSC_THROW_ERROR("associated RtpTransceiver not found");
 
-		auto* transceiver = locaIdIt->second;
+		auto transceiver = locaIdIt->second;
 
 		transceiver->sender()->SetTrack(nullptr);
 		this->pc->RemoveTrack(transceiver->sender());
@@ -500,7 +501,7 @@ namespace mediasoupclient
 		if (localIdIt == this->mapMidTransceiver.end())
 			MSC_THROW_ERROR("associated RtpTransceiver not found");
 
-		auto* transceiver = localIdIt->second;
+		auto transceiver = localIdIt->second;
 
 		transceiver->sender()->SetTrack(track);
 	}
@@ -516,7 +517,7 @@ namespace mediasoupclient
 		if (localIdIt == this->mapMidTransceiver.end())
 			MSC_THROW_ERROR("associated RtpTransceiver not found");
 
-		auto* transceiver = localIdIt->second;
+		auto transceiver = localIdIt->second;
 		auto parameters   = transceiver->sender()->GetParameters();
 
 		bool hasLowEncoding{ false };
@@ -583,7 +584,7 @@ namespace mediasoupclient
 		if (localIdIt == this->mapMidTransceiver.end())
 			MSC_THROW_ERROR("associated RtpTransceiver not found");
 
-		auto* transceiver = localIdIt->second;
+		auto transceiver = localIdIt->second;
 		auto stats        = this->pc->GetStats(transceiver->sender());
 
 		return stats;
@@ -690,7 +691,7 @@ namespace mediasoupclient
 
 		auto transceivers  = this->pc->GetTransceivers();
 		auto transceiverIt = std::find_if(
-		  transceivers.begin(), transceivers.end(), [&localId](webrtc::RtpTransceiverInterface* t) {
+		  transceivers.begin(), transceivers.end(), [&localId](rtc::scoped_refptr<webrtc::RtpTransceiverInterface> t) {
 			  return t->mid() == localId;
 		  });
 
@@ -705,8 +706,8 @@ namespace mediasoupclient
 		RecvResult recvResult;
 
 		recvResult.localId     = localId;
-		recvResult.rtpReceiver = transceiver->receiver();
-		recvResult.track       = transceiver->receiver()->track();
+		recvResult.rtpReceiver = transceiver->receiver().get();
+		recvResult.track       = transceiver->receiver()->track().get();
 
 		return recvResult;
 	}

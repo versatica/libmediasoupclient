@@ -81,6 +81,7 @@ namespace mediasoupclient
 		private:
 			std::promise<void> promise;
 		};
+
 		class SetSessionDescriptionObserver : public webrtc::SetSessionDescriptionObserver
 		{
 		public:

@@ -48,6 +48,40 @@ namespace mediasoupclient
 			void OnInterestingUsage(int usagePattern) override;
 		};
 
+		class SetLocalDescriptionObserver : public webrtc::SetLocalDescriptionObserverInterface
+		{
+		public:
+			SetLocalDescriptionObserver()           = default;
+			~SetLocalDescriptionObserver() override = default;
+
+			std::future<void> GetFuture();
+			void Reject(const std::string& error);
+
+			/* Virtual methods inherited from webrtc::SetLocalDescriptionObserver. */
+		public:
+			void OnSetLocalDescriptionComplete(webrtc::RTCError error) override;
+
+		private:
+			std::promise<void> promise;
+		};
+
+		class SetRemoteDescriptionObserver : public webrtc::SetRemoteDescriptionObserverInterface
+		{
+		public:
+			SetRemoteDescriptionObserver()           = default;
+			~SetRemoteDescriptionObserver() override = default;
+
+			std::future<void> GetFuture();
+			void Reject(const std::string& error);
+
+			/* Virtual methods inherited from webrtc::SetRemoteDescriptionObserver. */
+		public:
+			void OnSetRemoteDescriptionComplete(webrtc::RTCError error) override;
+
+		private:
+			std::promise<void> promise;
+		};
+
 		class SetSessionDescriptionObserver : public webrtc::SetSessionDescriptionObserver
 		{
 		public:
@@ -126,7 +160,7 @@ namespace mediasoupclient
 		  rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track,
 		  webrtc::RtpTransceiverInit rtpTransceiverInit);
 		std::vector<rtc::scoped_refptr<webrtc::RtpSenderInterface>> GetSenders();
-		bool RemoveTrack(webrtc::RtpSenderInterface* sender);
+		bool RemoveTrack(rtc::scoped_refptr<webrtc::RtpSenderInterface> sender);
 		nlohmann::json GetStats();
 		nlohmann::json GetStats(rtc::scoped_refptr<webrtc::RtpSenderInterface> selector);
 		nlohmann::json GetStats(rtc::scoped_refptr<webrtc::RtpReceiverInterface> selector);

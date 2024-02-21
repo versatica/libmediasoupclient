@@ -191,7 +191,7 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 		/* clang-format on */
 
 		REQUIRE_NOTHROW(audioProducer.reset(sendTransport->Produce(
-		  &producerListener, audioTrack, nullptr, &codecOptions, nullptr, appData)));
+		  &producerListener, audioTrack.get(), nullptr, &codecOptions, nullptr, appData)));
 
 		REQUIRE(
 		  sendTransportListener.onConnectTimesCalled ==
@@ -235,7 +235,7 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 		audioProducer->Resume();
 
 		REQUIRE_NOTHROW(videoProducer.reset(
-		  sendTransport->Produce(&producerListener, videoTrack, &encodings, nullptr, nullptr)));
+		  sendTransport->Produce(&producerListener, videoTrack.get(), &encodings, nullptr, nullptr)));
 
 		REQUIRE(
 		  sendTransportListener.onConnectTimesCalled ==
@@ -647,7 +647,7 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 
 		auto newAudioTrack = createAudioTrack("audio-track-id-2");
 
-		REQUIRE_NOTHROW(audioProducer->ReplaceTrack(newAudioTrack));
+		REQUIRE_NOTHROW(audioProducer->ReplaceTrack(newAudioTrack.get()));
 		REQUIRE(audioProducer->GetTrack() == newAudioTrack);
 		// Producer was already paused.
 		REQUIRE(audioProducer->IsPaused());
@@ -657,7 +657,7 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 
 		auto newVideoTrack = createVideoTrack("video-track-id-2");
 
-		REQUIRE_NOTHROW(videoProducer->ReplaceTrack(newVideoTrack));
+		REQUIRE_NOTHROW(videoProducer->ReplaceTrack(newVideoTrack.get()));
 		REQUIRE(videoProducer->GetTrack() == newVideoTrack);
 		REQUIRE(!videoProducer->IsPaused());
 
@@ -767,7 +767,7 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 		REQUIRE_THROWS_AS(
 			sendTransport->Produce(
 				&producerListener,
-				audioTrack, nullptr,  nullptr, nullptr),
+				audioTrack.get(), nullptr,  nullptr, nullptr),
 			MediaSoupClientError);
 	}
 

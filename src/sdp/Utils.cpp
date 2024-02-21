@@ -256,17 +256,17 @@ namespace mediasoupclient
 				{
 					auto& ssrcGroups = *jsonSsrcGroupsIt;
 
-					std::find_if(
-					  ssrcGroups.begin(), ssrcGroups.end(), [&firstSsrc, &firstRtxSsrc](const json& line) {
+					for (const auto& line : ssrcGroups)
+					{
 						  auto jsonSemanticsIt = line.find("semantics");
 
 						  if (jsonSemanticsIt == line.end() || !jsonSemanticsIt->is_string())
-							  return false;
+							  continue;
 
 						  auto jsonSsrcsIt = line.find("ssrcs");
 
 						  if (jsonSsrcsIt == line.end() || !jsonSsrcsIt->is_string())
-							  return false;
+							  continue;
 
 						  auto v = mediasoupclient::Utils::split(jsonSsrcsIt->get<std::string>(), ' ');
 
@@ -274,11 +274,11 @@ namespace mediasoupclient
 						  {
 							  firstRtxSsrc = std::stoull(v[1]);
 
-							  return true;
+							  break;
 						  }
 
-						  return false;
-					  });
+						  continue;
+					  };
 				}
 
 				jsonSsrcIt = std::find_if(mSsrcs.begin(), mSsrcs.end(), [](const json& line) {

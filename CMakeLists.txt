@@ -26,8 +26,12 @@ option(MEDIASOUPCLIENT_LOG_TRACE   "Enable MSC_LOG_TRACE (See Logger.hpp)" OFF)
 option(MEDIASOUPCLIENT_LOG_DEV     "Enable MSC_LOG_DEV (See Logger.hpp)" OFF)
 
 # Project configuration.
-set(LIBWEBRTC_INCLUDE_PATH "" CACHE STRING "libwebrtc include path")
-set(LIBWEBRTC_BINARY_PATH "" CACHE STRING "libwebrtc binary path")
+if(NOT LIBWEBRTC_INCLUDE_PATH)
+	set(LIBWEBRTC_INCLUDE_PATH "" CACHE STRING "libwebrtc include path")
+endif()
+if(NOT LIBWEBRTC_BINARY_PATH)
+	set(LIBWEBRTC_BINARY_PATH "" CACHE STRING "libwebrtc binary path")
+endif()
 
 if(NOT LIBWEBRTC_INCLUDE_PATH)
 	message(FATAL_ERROR "LIBWEBRTC_INCLUDE_PATH not provided")

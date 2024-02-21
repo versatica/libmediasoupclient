@@ -423,7 +423,6 @@ namespace mediasoupclient
 		}
 		else
 		{
-			MSC_THROW_ERROR("Failed creating data channel");
 			this->promise.set_value();
 		}
 	};

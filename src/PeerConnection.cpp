@@ -92,7 +92,9 @@ namespace mediasoupclient
 
 			this->peerConnectionFactory = webrtc::CreatePeerConnectionFactory(
 			  this->networkThread.get(),
-			  this->workerThread.get(),
+			  // TMP: Use the same  thread for signaling and worker.
+			  // this->workerThread.get(),
+			  this->signalingThread.get(),
 			  this->signalingThread.get(),
 			  nullptr /*default_adm*/,
 			  webrtc::CreateBuiltinAudioEncoderFactory(),

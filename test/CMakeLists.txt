@@ -80,4 +80,8 @@ add_subdirectory(deps/libwebrtc "${CMAKE_CURRENT_BINARY_DIR}/libwebrtc")
 # Public (interface) dependencies.
 target_link_libraries(test_mediasoupclient PUBLIC
 	webrtc
+	${LIBWEBRTC_BINARY_PATH}/api/video_codecs/libbuiltin_video_encoder_factory${CMAKE_STATIC_LIBRARY_SUFFIX}
+	${LIBWEBRTC_BINARY_PATH}/api/video_codecs/libbuiltin_video_decoder_factory${CMAKE_STATIC_LIBRARY_SUFFIX}
+	${LIBWEBRTC_BINARY_PATH}/media/librtc_simulcast_encoder_adapter${CMAKE_STATIC_LIBRARY_SUFFIX}
+	${LIBWEBRTC_BINARY_PATH}/media/librtc_internal_video_codecs${CMAKE_STATIC_LIBRARY_SUFFIX}
 )

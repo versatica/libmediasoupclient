@@ -98,7 +98,7 @@ namespace mediasoupclient
 		return this->pc->GetStats();
 	}
 
-	void Handler::UpdateIceServers(const json& iceServerUris)
+	void Handler::UpdateIceServers(const json& iceServersDescription)
 	{
 		MSC_TRACE();
 
@@ -106,11 +106,25 @@ namespace mediasoupclient
 
 		configuration.servers.clear();
 
-		for (const auto& iceServerUri : iceServerUris)
+		for (const auto& iceServerDescription : iceServersDescription)
 		{
+			if (!iceServerDescription.contains("urls")) {
+				continue;
+			}
 			webrtc::PeerConnectionInterface::IceServer iceServer;
-
-			iceServer.uri = iceServerUri.get<std::string>();
+			if (iceServerDescription["urls"].is_string()) {
+				iceServer.urls = { iceServerDescription["urls"].get<std::string>() };
+			} else if (iceServerDescription["urls"].is_array()) {
+				iceServer.urls = iceServerDescription["urls"].get<std::vector<std::string>>();
+			} else {
+				continue;
+			}
+			if (iceServerDescription.contains("username")) {
+				iceServer.username = iceServerDescription["username"].get<std::string>();
+			}
+			if (iceServerDescription.contains("credential")) {
+				iceServer.password = iceServerDescription["credential"].get<std::string>();
+			}
 			configuration.servers.push_back(iceServer);
 		}
 

@@ -21,9 +21,9 @@ void MediaStreamTrackFactory::Create()
 {
 	if (Factory)
 		return;
-	NetworkThread   = rtc::Thread::CreateWithSocketServer();
-	WorkerThread    = rtc::Thread::Create();
-	SignalingThread = rtc::Thread::Create();
+	NetworkThread   = webrtc::Thread::CreateWithSocketServer();
+	WorkerThread    = webrtc::Thread::Create();
+	SignalingThread = webrtc::Thread::Create();
 
 	NetworkThread->SetName("network_thread", nullptr);
 	SignalingThread->SetName("signaling_thread", nullptr);
@@ -92,25 +92,25 @@ void MediaStreamTrackFactory::ReleaseThreads()
 }
 
 // Audio track creation.
-rtc::scoped_refptr<webrtc::AudioTrackInterface> createAudioTrack(const std::string& label)
+webrtc::scoped_refptr<webrtc::AudioTrackInterface> createAudioTrack(const std::string& label)
 {
 	MediaStreamTrackFactory& singleton = MediaStreamTrackFactory::getInstance();
 
-	cricket::AudioOptions options;
+	webrtc::AudioOptions options;
 	options.highpass_filter = false;
 
-	rtc::scoped_refptr<webrtc::AudioSourceInterface> source =
+	webrtc::scoped_refptr<webrtc::AudioSourceInterface> source =
 	  singleton.Factory->CreateAudioSource(options);
 
 	return singleton.Factory->CreateAudioTrack(label, source.get());
 }
 
 // Video track creation.
-rtc::scoped_refptr<webrtc::VideoTrackInterface> createVideoTrack(const std::string& label)
+webrtc::scoped_refptr<webrtc::VideoTrackInterface> createVideoTrack(const std::string& label)
 {
 	MediaStreamTrackFactory& singleton = MediaStreamTrackFactory::getInstance();
 
-	rtc::scoped_refptr<webrtc::FakeVideoTrackSource> source = webrtc::FakeVideoTrackSource::Create();
+	webrtc::scoped_refptr<webrtc::FakeVideoTrackSource> source = webrtc::FakeVideoTrackSource::Create();
 
 	return singleton.Factory->CreateVideoTrack(source, label);
 }

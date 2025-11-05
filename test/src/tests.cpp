@@ -9,7 +9,7 @@
 int main(int argc, char* argv[])
 {
 	mediasoupclient::Logger::LogLevel logLevel{ mediasoupclient::Logger::LogLevel::LOG_NONE };
-	rtc::LoggingSeverity webrtcLogLevel{ rtc::LoggingSeverity::LS_NONE };
+	webrtc::LoggingSeverity webrtcLogLevel{ webrtc::LoggingSeverity::LS_NONE };
 	Catch::Session session;
 	std::string logLevelStr;
 	std::string webrtcLogLevelStr;
@@ -40,18 +40,18 @@ int main(int argc, char* argv[])
 		logLevel = mediasoupclient::Logger::LogLevel::LOG_ERROR;
 
 	if (webrtcLogLevelStr == "verbose")
-		webrtcLogLevel = rtc::LoggingSeverity::LS_VERBOSE;
+		webrtcLogLevel = webrtc::LoggingSeverity::LS_VERBOSE;
 	else if (webrtcLogLevelStr == "info")
-		webrtcLogLevel = rtc::LoggingSeverity::LS_INFO;
+		webrtcLogLevel = webrtc::LoggingSeverity::LS_INFO;
 	else if (webrtcLogLevelStr == "warn")
-		webrtcLogLevel = rtc::LoggingSeverity::LS_WARNING;
+		webrtcLogLevel = webrtc::LoggingSeverity::LS_WARNING;
 	else if (webrtcLogLevelStr == "error")
-		webrtcLogLevel = rtc::LoggingSeverity::LS_ERROR;
+		webrtcLogLevel = webrtc::LoggingSeverity::LS_ERROR;
 
 	mediasoupclient::Logger::SetLogLevel(logLevel);
 	mediasoupclient::Logger::SetHandler(new mediasoupclient::Logger::DefaultLogHandler());
 
-	rtc::LogMessage::LogToDebug(webrtcLogLevel);
+	webrtc::LogMessage::LogToDebug(webrtcLogLevel);
 
 	// Initialization.
 	mediasoupclient::Initialize();

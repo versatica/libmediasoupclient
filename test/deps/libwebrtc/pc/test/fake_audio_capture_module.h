@@ -46,7 +46,7 @@ class FakeAudioCaptureModule : public webrtc::AudioDeviceModule {
   static const size_t kNumberBytesPerSample = sizeof(Sample);
 
   // Creates a FakeAudioCaptureModule or returns NULL on failure.
-  static rtc::scoped_refptr<FakeAudioCaptureModule> Create();
+  static webrtc::scoped_refptr<FakeAudioCaptureModule> Create();
 
   // Returns the number of frames that have been successfully pulled by the
   // instance. Note that correctly detecting success can only be done if the
@@ -214,7 +214,7 @@ class FakeAudioCaptureModule : public webrtc::AudioDeviceModule {
   bool started_ RTC_GUARDED_BY(mutex_);
   int64_t next_frame_time_ RTC_GUARDED_BY(process_thread_checker_);
 
-  std::unique_ptr<rtc::Thread> process_thread_;
+  std::unique_ptr<webrtc::Thread> process_thread_;
 
   // Buffer for storing samples received from the webrtc::AudioTransport.
   char rec_buffer_[kNumberSamples * kNumberBytesPerSample];

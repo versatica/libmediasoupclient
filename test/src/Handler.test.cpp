@@ -50,7 +50,7 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 	  RtpParametersByKind,
 	  RtpParametersByKind);
 
-	static rtc::scoped_refptr<webrtc::AudioTrackInterface> track;
+	static webrtc::scoped_refptr<webrtc::AudioTrackInterface> track;
 
 	static std::string localId;
 

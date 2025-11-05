@@ -1,23 +1,23 @@
+#include "api/jsep.h"
+#include "api/peer_connection_interface.h"
 #define MSC_CLASS "PeerConnection"
 
 #include "PeerConnection.hpp"
 #include "Logger.hpp"
 #include "MediaSoupClientErrors.hpp"
-#include "Utils.hpp"
 #include <api/audio_codecs/builtin_audio_decoder_factory.h>
 #include <api/audio_codecs/builtin_audio_encoder_factory.h>
 #include <api/create_peerconnection_factory.h>
 #include <api/video_codecs/builtin_video_decoder_factory.h>
 #include <api/video_codecs/builtin_video_encoder_factory.h>
+#include <api/field_trials.h>
 #include <rtc_base/ssl_adapter.h>
 
-#include "api/video_codecs/video_decoder_factory.h"
 #include "api/video_codecs/video_decoder_factory_template.h"
 #include "api/video_codecs/video_decoder_factory_template_dav1d_adapter.h"
 #include "api/video_codecs/video_decoder_factory_template_libvpx_vp8_adapter.h"
 #include "api/video_codecs/video_decoder_factory_template_libvpx_vp9_adapter.h"
 #include "api/video_codecs/video_decoder_factory_template_open_h264_adapter.h"
-#include "api/video_codecs/video_encoder_factory.h"
 #include "api/video_codecs/video_encoder_factory_template.h"
 #include "api/video_codecs/video_encoder_factory_template_libaom_av1_adapter.h"
 #include "api/video_codecs/video_encoder_factory_template_libvpx_vp8_adapter.h"
@@ -31,13 +31,6 @@ namespace mediasoupclient
 	/* Static. */
 
 	// clang-format off
-	std::map<PeerConnection::SdpType, const std::string> PeerConnection::sdpType2String =
-	{
-		{ PeerConnection::SdpType::OFFER,    "offer"    },
-		{ PeerConnection::SdpType::PRANSWER, "pranswer" },
-		{ PeerConnection::SdpType::ANSWER,   "answer"   }
-	};
-
 	std::map<webrtc::PeerConnectionInterface::IceConnectionState, const std::string>
 		PeerConnection::iceConnectionState2String =
 	{
@@ -86,13 +79,13 @@ namespace mediasoupclient
 		if ((options != nullptr) && (options->factory != nullptr))
 		{
 			this->peerConnectionFactory =
-			  rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>(options->factory);
+			  webrtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>(options->factory);
 		}
 		else
 		{
-			this->networkThread   = rtc::Thread::CreateWithSocketServer();
-			this->signalingThread = rtc::Thread::Create();
-			this->workerThread    = rtc::Thread::Create();
+			this->networkThread   = webrtc::Thread::CreateWithSocketServer();
+			this->signalingThread = webrtc::Thread::Create();
+			this->workerThread    = webrtc::Thread::Create();
 
 			this->networkThread->SetName("network_thread", nullptr);
 			this->signalingThread->SetName("signaling_thread", nullptr);
@@ -102,6 +95,8 @@ namespace mediasoupclient
 			{
 				MSC_THROW_INVALID_STATE_ERROR("thread start errored");
 			}
+			auto trials = "WebRTC-SupportVP9SVC/EnabledByFlag_3SL3TL/";
+			auto field_trials = webrtc::FieldTrials::Create(trials);
 
 			this->peerConnectionFactory = webrtc::CreatePeerConnectionFactory(
 			  this->networkThread.get(),
@@ -121,15 +116,22 @@ namespace mediasoupclient
 			    webrtc::OpenH264DecoderTemplateAdapter,
 			    webrtc::Dav1dDecoderTemplateAdapter>>(),
 			  nullptr /*audio_mixer*/,
-			  nullptr /*audio_processing*/);
+			  nullptr /*audio_processing*/,
+			  nullptr /*audio_frame_processor*/,
+			  std::move(field_trials));
 		}
 
 		// Set SDP semantics to Unified Plan.
 		config.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
 
 		// Create the webrtc::Peerconnection.
-		this->pc =
-		  this->peerConnectionFactory->CreatePeerConnection(config, nullptr, nullptr, privateListener);
+		auto pc_or_error =
+		  this->peerConnectionFactory->CreatePeerConnectionOrError(config,
+							     webrtc::PeerConnectionDependencies{privateListener});
+		if (!pc_or_error.ok()) {
+			MSC_THROW_INVALID_STATE_ERROR("failed to create peer connection: %s", pc_or_error.error().message());
+		}
+		this->pc = pc_or_error.value();
 	}
 
 	void PeerConnection::Close()
@@ -171,7 +173,7 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		CreateSessionDescriptionObserver* sessionDescriptionObserver =
-		  new rtc::RefCountedObject<CreateSessionDescriptionObserver>();
+		  new webrtc::RefCountedObject<CreateSessionDescriptionObserver>();
 
 		auto future = sessionDescriptionObserver->GetFuture();
 
@@ -186,7 +188,7 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		CreateSessionDescriptionObserver* sessionDescriptionObserver =
-		  new rtc::RefCountedObject<CreateSessionDescriptionObserver>();
+		  new webrtc::RefCountedObject<CreateSessionDescriptionObserver>();
 
 		auto future = sessionDescriptionObserver->GetFuture();
 
@@ -195,19 +197,18 @@ namespace mediasoupclient
 		return future.get();
 	}
 
-	void PeerConnection::SetLocalDescription(PeerConnection::SdpType type, const std::string& sdp)
+	void PeerConnection::SetLocalDescription(webrtc::SdpType type, const std::string& sdp)
 	{
 		MSC_TRACE();
 
 		webrtc::SdpParseError error;
 		std::unique_ptr<webrtc::SessionDescriptionInterface> sessionDescription;
-		rtc::scoped_refptr<SetLocalDescriptionObserver> observer(
-		  new rtc::RefCountedObject<SetLocalDescriptionObserver>());
+		webrtc::scoped_refptr<SetLocalDescriptionObserver> observer(
+		  new webrtc::RefCountedObject<SetLocalDescriptionObserver>());
 
-		const auto& typeStr = sdpType2String[type];
 		auto future         = observer->GetFuture();
 
-		sessionDescription.reset(webrtc::CreateSessionDescription(typeStr, sdp, &error));
+		sessionDescription = webrtc::CreateSessionDescription(type, sdp, &error);
 		if (sessionDescription == nullptr)
 		{
 			MSC_WARN(
@@ -225,19 +226,18 @@ namespace mediasoupclient
 		return future.get();
 	}
 
-	void PeerConnection::SetRemoteDescription(PeerConnection::SdpType type, const std::string& sdp)
+	void PeerConnection::SetRemoteDescription(webrtc::SdpType type, const std::string& sdp)
 	{
 		MSC_TRACE();
 
 		webrtc::SdpParseError error;
 		std::unique_ptr<webrtc::SessionDescriptionInterface> sessionDescription;
-		rtc::scoped_refptr<SetRemoteDescriptionObserver> observer(
-		  new rtc::RefCountedObject<SetRemoteDescriptionObserver>());
+		webrtc::scoped_refptr<SetRemoteDescriptionObserver> observer(
+		  new webrtc::RefCountedObject<SetRemoteDescriptionObserver>());
 
-		const auto& typeStr = sdpType2String[type];
 		auto future         = observer->GetFuture();
 
-		sessionDescription.reset(webrtc::CreateSessionDescription(typeStr, sdp, &error));
+		sessionDescription = webrtc::CreateSessionDescription(type, sdp, &error);
 		if (sessionDescription == nullptr)
 		{
 			MSC_WARN(
@@ -279,15 +279,15 @@ namespace mediasoupclient
 		return sdp;
 	}
 
-	std::vector<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>> PeerConnection::GetTransceivers() const
+	std::vector<webrtc::scoped_refptr<webrtc::RtpTransceiverInterface>> PeerConnection::GetTransceivers() const
 	{
 		MSC_TRACE();
 
 		return this->pc->GetTransceivers();
 	}
 
-	rtc::scoped_refptr<webrtc::RtpTransceiverInterface> PeerConnection::AddTransceiver(
-	  cricket::MediaType mediaType)
+	webrtc::scoped_refptr<webrtc::RtpTransceiverInterface> PeerConnection::AddTransceiver(
+	  webrtc::MediaType mediaType)
 	{
 		MSC_TRACE();
 
@@ -295,7 +295,7 @@ namespace mediasoupclient
 
 		if (!result.ok())
 		{
-			rtc::scoped_refptr<webrtc::RtpTransceiverInterface> transceiver = nullptr;
+			webrtc::scoped_refptr<webrtc::RtpTransceiverInterface> transceiver = nullptr;
 
 			return transceiver;
 		}
@@ -303,8 +303,8 @@ namespace mediasoupclient
 		return result.value();
 	}
 
-	rtc::scoped_refptr<webrtc::RtpTransceiverInterface> PeerConnection::AddTransceiver(
-	  rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track,
+	webrtc::scoped_refptr<webrtc::RtpTransceiverInterface> PeerConnection::AddTransceiver(
+	  webrtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track,
 	  webrtc::RtpTransceiverInit rtpTransceiverInit)
 	{
 		MSC_TRACE();
@@ -323,7 +323,7 @@ namespace mediasoupclient
 
 		if (!result.ok())
 		{
-			rtc::scoped_refptr<webrtc::RtpTransceiverInterface> transceiver = nullptr;
+			webrtc::scoped_refptr<webrtc::RtpTransceiverInterface> transceiver = nullptr;
 
 			return transceiver;
 		}
@@ -331,14 +331,14 @@ namespace mediasoupclient
 		return result.value();
 	}
 
-	std::vector<rtc::scoped_refptr<webrtc::RtpSenderInterface>> PeerConnection::GetSenders()
+	std::vector<webrtc::scoped_refptr<webrtc::RtpSenderInterface>> PeerConnection::GetSenders()
 	{
 		MSC_TRACE();
 
 		return this->pc->GetSenders();
 	}
 
-	bool PeerConnection::RemoveTrack(rtc::scoped_refptr<webrtc::RtpSenderInterface> sender)
+	bool PeerConnection::RemoveTrack(webrtc::scoped_refptr<webrtc::RtpSenderInterface> sender)
 	{
 		MSC_TRACE();
 
@@ -351,8 +351,8 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		rtc::scoped_refptr<RTCStatsCollectorCallback> callback(
-		  new rtc::RefCountedObject<RTCStatsCollectorCallback>());
+		webrtc::scoped_refptr<RTCStatsCollectorCallback> callback(
+		  new webrtc::RefCountedObject<RTCStatsCollectorCallback>());
 
 		auto future = callback->GetFuture();
 
@@ -361,12 +361,12 @@ namespace mediasoupclient
 		return future.get();
 	}
 
-	json PeerConnection::GetStats(rtc::scoped_refptr<webrtc::RtpSenderInterface> selector)
+	json PeerConnection::GetStats(webrtc::scoped_refptr<webrtc::RtpSenderInterface> selector)
 	{
 		MSC_TRACE();
 
-		rtc::scoped_refptr<RTCStatsCollectorCallback> callback(
-		  new rtc::RefCountedObject<RTCStatsCollectorCallback>());
+		webrtc::scoped_refptr<RTCStatsCollectorCallback> callback(
+		  new webrtc::RefCountedObject<RTCStatsCollectorCallback>());
 
 		auto future = callback->GetFuture();
 
@@ -375,12 +375,12 @@ namespace mediasoupclient
 		return future.get();
 	}
 
-	json PeerConnection::GetStats(rtc::scoped_refptr<webrtc::RtpReceiverInterface> selector)
+	json PeerConnection::GetStats(webrtc::scoped_refptr<webrtc::RtpReceiverInterface> selector)
 	{
 		MSC_TRACE();
 
-		rtc::scoped_refptr<RTCStatsCollectorCallback> callback(
-		  new rtc::RefCountedObject<RTCStatsCollectorCallback>());
+		webrtc::scoped_refptr<RTCStatsCollectorCallback> callback(
+		  new webrtc::RefCountedObject<RTCStatsCollectorCallback>());
 
 		auto future = callback->GetFuture();
 
@@ -389,7 +389,7 @@ namespace mediasoupclient
 		return future.get();
 	}
 
-	rtc::scoped_refptr<webrtc::DataChannelInterface> PeerConnection::CreateDataChannel(
+	webrtc::scoped_refptr<webrtc::DataChannelInterface> PeerConnection::CreateDataChannel(
 	  const std::string& label, const webrtc::DataChannelInit* config)
 	{
 		MSC_TRACE();
@@ -573,7 +573,7 @@ namespace mediasoupclient
 	}
 
 	void PeerConnection::RTCStatsCollectorCallback::OnStatsDelivered(
-	  const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report)
+	  const webrtc::scoped_refptr<const webrtc::RTCStatsReport>& report)
 	{
 		MSC_TRACE();
 
@@ -603,7 +603,7 @@ namespace mediasoupclient
 	 * Triggered when media is received on a new stream from remote peer.
 	 */
 	void PeerConnection::PrivateListener::OnAddStream(
-	  rtc::scoped_refptr<webrtc::MediaStreamInterface> /*stream*/)
+	  webrtc::scoped_refptr<webrtc::MediaStreamInterface> /*stream*/)
 	{
 		MSC_TRACE();
 	}
@@ -612,7 +612,7 @@ namespace mediasoupclient
 	 * Triggered when a remote peer closes a stream.
 	 */
 	void PeerConnection::PrivateListener::OnRemoveStream(
-	  rtc::scoped_refptr<webrtc::MediaStreamInterface> /*stream*/)
+	  webrtc::scoped_refptr<webrtc::MediaStreamInterface> /*stream*/)
 	{
 		MSC_TRACE();
 	}
@@ -621,7 +621,7 @@ namespace mediasoupclient
 	 * Triggered when a remote peer opens a data channel.
 	 */
 	void PeerConnection::PrivateListener::OnDataChannel(
-	  rtc::scoped_refptr<webrtc::DataChannelInterface> /*dataChannel*/)
+	  webrtc::scoped_refptr<webrtc::DataChannelInterface> /*dataChannel*/)
 	{
 		MSC_TRACE();
 	}
@@ -679,7 +679,7 @@ namespace mediasoupclient
 	 * Triggered when the ICE candidates have been removed.
 	 */
 	void PeerConnection::PrivateListener::OnIceCandidatesRemoved(
-	  const std::vector<cricket::Candidate>& /*candidates*/)
+	  const std::vector<webrtc::Candidate>& /*candidates*/)
 	{
 		MSC_TRACE();
 	}
@@ -700,8 +700,8 @@ namespace mediasoupclient
 	 * compatibility (and is called in the exact same situations as OnTrack).
 	 */
 	void PeerConnection::PrivateListener::OnAddTrack(
-	  rtc::scoped_refptr<webrtc::RtpReceiverInterface> /*receiver*/,
-	  const std::vector<rtc::scoped_refptr<webrtc::MediaStreamInterface>>& /*streams*/)
+	  webrtc::scoped_refptr<webrtc::RtpReceiverInterface> /*receiver*/,
+	  const std::vector<webrtc::scoped_refptr<webrtc::MediaStreamInterface>>& /*streams*/)
 	{
 		MSC_TRACE();
 	}
@@ -720,7 +720,7 @@ namespace mediasoupclient
 	 *   https://w3c.github.io/webrtc-pc/#set-description
 	 */
 	void PeerConnection::PrivateListener::OnTrack(
-	  rtc::scoped_refptr<webrtc::RtpTransceiverInterface> /*transceiver*/)
+	  webrtc::scoped_refptr<webrtc::RtpTransceiverInterface> /*transceiver*/)
 	{
 		MSC_TRACE();
 	}
@@ -736,7 +736,7 @@ namespace mediasoupclient
 	 *   https://w3c.github.io/webrtc-pc/#process-remote-track-removal
 	 */
 	void PeerConnection::PrivateListener::OnRemoveTrack(
-	  rtc::scoped_refptr<webrtc::RtpReceiverInterface> /*receiver*/)
+	  webrtc::scoped_refptr<webrtc::RtpReceiverInterface> /*receiver*/)
 	{
 		MSC_TRACE();
 	}

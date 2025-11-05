@@ -18,6 +18,7 @@ namespace mediasoupclient
 		class PrivateListener
 		{
 		public:
+			virtual ~PrivateListener()                                  = default;
 			virtual void OnClose(Consumer* consumer)                    = 0;
 			virtual nlohmann::json OnGetStats(const Consumer* consumer) = 0;
 		};
@@ -26,6 +27,7 @@ namespace mediasoupclient
 		class Listener
 		{
 		public:
+			virtual ~Listener()                               = default;
 			virtual void OnTransportClose(Consumer* consumer) = 0;
 		};
 

@@ -1,3 +1,4 @@
+#include "Transport.hpp"
 #define MSC_CLASS "Device"
 
 #include "Device.hpp"
@@ -66,32 +67,38 @@ namespace mediasoupclient
 		// This may throw.
 		ortc::validateRtpCapabilities(nativeRtpCapabilities);
 
-		// Get extended RTP capabilities.
-		this->extendedRtpCapabilities =
-		  ortc::getExtendedRtpCapabilities(nativeRtpCapabilities, routerRtpCapabilities);
-
-		MSC_DEBUG("got extended RTP capabilities:\n%s", this->extendedRtpCapabilities.dump(4).c_str());
+		// Get extended RTP capabilities as a function, that SendHandler can invoke to compute the matching capabilities from the current local capabilities.
+		// This is required for WebRTC M140+ where header extension ids may differ from the previosly pre-computed sendExtendedRtpCapabilities, resulting in
+		// failure when setting the generated SDP answer as RemoteDescription, since the header extension ids in the answer do not match those in the offer.
+		// See: https://github.com/versatica/mediasoup-client/pull/336 for the JS counterpart and more rationale.
+		this->getSendExtendedRtpCapabilities = [routerRtpCapabilities](json& currentLocalRtpCapabilities) {
+			auto routerRtpCapabilitiesCopy = routerRtpCapabilities;
+			return ortc::getExtendedRtpCapabilities(currentLocalRtpCapabilities, routerRtpCapabilitiesCopy);
+		};
+		const auto recvExtendedRtpCapabilities =
+			ortc::getExtendedRtpCapabilities(nativeRtpCapabilities, routerRtpCapabilities);
 
 		// Check whether we can produce audio/video.
-		this->canProduceByKind["audio"] = ortc::canSend("audio", this->extendedRtpCapabilities);
-		this->canProduceByKind["video"] = ortc::canSend("video", this->extendedRtpCapabilities);
+		this->canProduceByKind["audio"] = ortc::canSend("audio", recvExtendedRtpCapabilities);
+		this->canProduceByKind["video"] = ortc::canSend("video", recvExtendedRtpCapabilities);
 
 		// Generate our receiving RTP capabilities for receiving media.
-		this->recvRtpCapabilities = ortc::getRecvRtpCapabilities(this->extendedRtpCapabilities);
-
-		MSC_DEBUG("got receiving RTP capabilities:\n%s", this->recvRtpCapabilities.dump(4).c_str());
+		this->recvRtpCapabilities = ortc::getRecvRtpCapabilities(recvExtendedRtpCapabilities);
 
 		// This may throw.
 		ortc::validateRtpCapabilities(this->recvRtpCapabilities);
 
+		MSC_DEBUG("got receiving RTP capabilities:\n%s", this->recvRtpCapabilities.dump(4).c_str());
+	
 		// Generate our SCTP capabilities.
 		this->sctpCapabilities = Handler::GetNativeSctpCapabilities();
-
-		MSC_DEBUG("got receiving SCTP capabilities:\n%s", this->sctpCapabilities.dump(4).c_str());
-
+		
 		// This may throw.
 		ortc::validateSctpCapabilities(this->sctpCapabilities);
 
+		MSC_DEBUG("got receiving SCTP capabilities:\n%s", this->sctpCapabilities.dump(4).c_str());
+
+		
 		MSC_DEBUG("succeeded");
 
 		this->loaded = true;
@@ -147,7 +154,7 @@ namespace mediasoupclient
 		  dtlsParameters,
 		  sctpParameters,
 		  peerConnectionOptions,
-		  &this->extendedRtpCapabilities,
+		  this->getSendExtendedRtpCapabilities,
 		  &this->canProduceByKind,
 		  appData);
 
@@ -203,7 +210,7 @@ namespace mediasoupclient
 		  dtlsParameters,
 		  sctpParameters,
 		  peerConnectionOptions,
-		  &this->extendedRtpCapabilities,
+		  &this->recvRtpCapabilities,
 		  appData);
 
 		return transport;

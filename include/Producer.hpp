@@ -18,6 +18,7 @@ namespace mediasoupclient
 		class PrivateListener
 		{
 		public:
+			virtual ~PrivateListener()               = default;
 			virtual void OnClose(Producer* producer) = 0;
 			virtual void OnReplaceTrack(
 			  const Producer* producer, webrtc::MediaStreamTrackInterface* newTrack)             = 0;
@@ -29,6 +30,7 @@ namespace mediasoupclient
 		class Listener
 		{
 		public:
+			virtual ~Listener()                               = default;
 			virtual void OnTransportClose(Producer* producer) = 0;
 		};
 

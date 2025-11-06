@@ -158,7 +158,7 @@ namespace mediasoupclient
 	  const json& dtlsParameters,
 	  const json& sctpParameters,
 	  const PeerConnection::Options* peerConnectionOptions,
-	  const std::function<nlohmann::json(nlohmann::json&)>& getSendExtendedRtpCapabilities)
+	  const std::function<nlohmann::json(nlohmann::json&)> getSendExtendedRtpCapabilities)
 	  : Handler(
 	      privateListener, iceParameters, iceCandidates, dtlsParameters, sctpParameters, peerConnectionOptions)
 	  , getSendExtendedRtpCapabilities(getSendExtendedRtpCapabilities)

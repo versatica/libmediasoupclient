@@ -98,7 +98,7 @@ namespace mediasoupclient
 		  const nlohmann::json& dtlsParameters,
 		  const nlohmann::json& sctpParameters,
 		  const PeerConnection::Options* peerConnectionOptions,
-		  const std::function<nlohmann::json(nlohmann::json&)>& getSendExtendedRtpCapabilities);
+		  const std::function<nlohmann::json(nlohmann::json&)> getSendExtendedRtpCapabilities);
 
 	public:
 		SendResult Send(
@@ -114,7 +114,7 @@ namespace mediasoupclient
 		DataChannel SendDataChannel(const std::string& label, webrtc::DataChannelInit dataChannelInit);
 
 	private:
-		const std::function<nlohmann::json(nlohmann::json&)>& getSendExtendedRtpCapabilities;
+		const std::function<nlohmann::json(nlohmann::json&)> getSendExtendedRtpCapabilities;
 	};
 
 	class RecvHandler : public Handler

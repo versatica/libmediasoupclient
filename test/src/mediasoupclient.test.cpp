@@ -27,8 +27,8 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 	static std::unique_ptr<mediasoupclient::DataProducer> dataProducer;
 	static std::unique_ptr<mediasoupclient::DataConsumer> dataConsumer;
 
-	static rtc::scoped_refptr<webrtc::AudioTrackInterface> audioTrack;
-	static rtc::scoped_refptr<webrtc::VideoTrackInterface> videoTrack;
+	static webrtc::scoped_refptr<webrtc::AudioTrackInterface> audioTrack;
+	static webrtc::scoped_refptr<webrtc::VideoTrackInterface> videoTrack;
 
 	static FakeProducerListener producerListener;
 	static FakeConsumerListener consumerListener;

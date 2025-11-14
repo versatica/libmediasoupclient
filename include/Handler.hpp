@@ -30,7 +30,7 @@ namespace mediasoupclient
 	public:
 		struct DataChannel
 		{
-			rtc::scoped_refptr<webrtc::DataChannelInterface> dataChannel;
+			webrtc::scoped_refptr<webrtc::DataChannelInterface> dataChannel;
 			nlohmann::json sctpStreamParameters;
 		};
 
@@ -69,7 +69,7 @@ namespace mediasoupclient
 		// Got transport local and remote parameters.
 		bool transportReady{ false };
 		// Map of RTCTransceivers indexed by MID.
-		std::unordered_map<std::string, rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>
+		std::unordered_map<std::string, webrtc::scoped_refptr<webrtc::RtpTransceiverInterface>>
 		  mapMidTransceiver{};
 		// PeerConnection instance.
 		std::unique_ptr<PeerConnection> pc{ nullptr };
@@ -98,8 +98,7 @@ namespace mediasoupclient
 		  const nlohmann::json& dtlsParameters,
 		  const nlohmann::json& sctpParameters,
 		  const PeerConnection::Options* peerConnectionOptions,
-		  const nlohmann::json& sendingRtpParametersByKind,
-		  const nlohmann::json& sendingRemoteRtpParametersByKind = nlohmann::json());
+		  const std::function<nlohmann::json(nlohmann::json&)> getSendExtendedRtpCapabilities);
 
 	public:
 		SendResult Send(
@@ -115,11 +114,7 @@ namespace mediasoupclient
 		DataChannel SendDataChannel(const std::string& label, webrtc::DataChannelInit dataChannelInit);
 
 	private:
-		// Generic sending RTP parameters for audio and video.
-		nlohmann::json sendingRtpParametersByKind;
-		// Generic sending RTP parameters for audio and video suitable for the SDP
-		// remote answer.
-		nlohmann::json sendingRemoteRtpParametersByKind;
+		const std::function<nlohmann::json(nlohmann::json&)> getSendExtendedRtpCapabilities;
 	};
 
 	class RecvHandler : public Handler

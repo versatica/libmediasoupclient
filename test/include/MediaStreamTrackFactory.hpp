@@ -30,7 +30,7 @@ public:
 
 	void ReleaseThreads();
 
-	rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> Factory;
+	webrtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> Factory;
 	mediasoupclient::PeerConnection::Options PeerConnectionOptions;
 
 private:
@@ -47,13 +47,13 @@ private:
 	 * MediaStreamTrack holds reference to the threads of the PeerConnectionFactory.
 	 * Use plain pointers in order to avoid threads being destructed before tracks.
 	 */
-	std::unique_ptr<rtc::Thread> NetworkThread;
-	std::unique_ptr<rtc::Thread> WorkerThread;
-	std::unique_ptr<rtc::Thread> SignalingThread;
+	std::unique_ptr<webrtc::Thread> NetworkThread;
+	std::unique_ptr<webrtc::Thread> WorkerThread;
+	std::unique_ptr<webrtc::Thread> SignalingThread;
 };
 
-rtc::scoped_refptr<webrtc::AudioTrackInterface> createAudioTrack(const std::string& label);
+webrtc::scoped_refptr<webrtc::AudioTrackInterface> createAudioTrack(const std::string& label);
 
-rtc::scoped_refptr<webrtc::VideoTrackInterface> createVideoTrack(const std::string& label);
+webrtc::scoped_refptr<webrtc::VideoTrackInterface> createVideoTrack(const std::string& label);
 
 #endif

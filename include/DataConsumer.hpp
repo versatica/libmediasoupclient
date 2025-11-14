@@ -15,12 +15,14 @@ namespace mediasoupclient
 		class PrivateListener
 		{
 		public:
+			virtual ~PrivateListener()                       = default;
 			virtual void OnClose(DataConsumer* dataConsumer) = 0;
 		};
 
 		class Listener
 		{
 		public:
+			virtual ~Listener()                                   = default;
 			// DataChannel state changes.
 			virtual void OnConnecting(DataConsumer* dataConsumer) = 0;
 			virtual void OnOpen(DataConsumer* dataConsumer)       = 0;
@@ -39,7 +41,7 @@ namespace mediasoupclient
 		  PrivateListener* privateListener,
 		  const std::string& id,
 		  const std::string& dataProducerId,
-		  rtc::scoped_refptr<webrtc::DataChannelInterface> dataChannel,
+		  webrtc::scoped_refptr<webrtc::DataChannelInterface> dataChannel,
 		  const nlohmann::json& sctpStreamParameters,
 		  const nlohmann::json& appData);
 
@@ -66,7 +68,7 @@ namespace mediasoupclient
 		PrivateListener* privateListener;
 		std::string id;
 		std::string dataProducerId;
-		rtc::scoped_refptr<webrtc::DataChannelInterface> dataChannel;
+		webrtc::scoped_refptr<webrtc::DataChannelInterface> dataChannel;
 		bool closed{ false };
 		nlohmann::json sctpParameters;
 		nlohmann::json appData;

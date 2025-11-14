@@ -29,9 +29,9 @@ namespace mediasoupclient
 		class Listener
 		{
 		public:
-			virtual ~Listener() = default;
+			virtual ~Listener()                                                                             = default;
 			virtual std::future<void> OnConnect(Transport* transport, const nlohmann::json& dtlsParameters) = 0;
-			virtual void OnConnectionStateChange(Transport* transport, const std::string& connectionState) = 0;
+			virtual void OnConnectionStateChange(Transport* transport, const std::string& connectionState)  = 0;
 		};
 
 		/* Only child classes will create transport intances */
@@ -39,7 +39,6 @@ namespace mediasoupclient
 		Transport(
 		  Listener* listener,
 		  const std::string& id,
-		  const nlohmann::json* extendedRtpCapabilities,
 		  const nlohmann::json& appData);
 
 	public:
@@ -65,8 +64,6 @@ namespace mediasoupclient
 	protected:
 		// Closed flag.
 		bool closed{ false };
-		// Extended RTP capabilities.
-		const nlohmann::json* extendedRtpCapabilities{ nullptr };
 		// SCTP max message size if enabled, null otherwise.
 		size_t maxSctpMessageSize{ 0u };
 		// Whether the Consumer for RTP probation has been created.
@@ -121,7 +118,7 @@ namespace mediasoupclient
 		  const nlohmann::json& dtlsParameters,
 		  const nlohmann::json& sctpParameters,
 		  const PeerConnection::Options* peerConnectionOptions,
-		  const nlohmann::json* extendedRtpCapabilities,
+		  const std::function<nlohmann::json(nlohmann::json&)>& getSendExtendedRtpCapabilities,
 		  const std::map<std::string, bool>* canProduceByKind,
 		  const nlohmann::json& appData);
 
@@ -190,7 +187,7 @@ namespace mediasoupclient
 		  const nlohmann::json& dtlsParameters,
 		  const nlohmann::json& sctpParameters,
 		  const PeerConnection::Options* peerConnectionOptions,
-		  const nlohmann::json* extendedRtpCapabilities,
+		  const nlohmann::json* recvRtpCapabilities,
 		  const nlohmann::json& appData);
 
 		/* Device is the only one constructing Transports */
@@ -230,6 +227,8 @@ namespace mediasoupclient
 		std::unordered_map<std::string, DataConsumer*> dataConsumers;
 		// SendHandler instance.
 		std::unique_ptr<RecvHandler> recvHandler;
+		
+		const nlohmann::json* recvRtpCapabilities;
 	};
 } // namespace mediasoupclient
 #endif

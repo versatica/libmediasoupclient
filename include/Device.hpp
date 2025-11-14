@@ -61,7 +61,7 @@ namespace mediasoupclient
 		// Loaded flag.
 		bool loaded{ false };
 		// Extended RTP capabilities.
-		nlohmann::json extendedRtpCapabilities;
+		std::function<nlohmann::json(nlohmann::json&)> getSendExtendedRtpCapabilities;
 		// Local RTP capabilities for receiving media.
 		nlohmann::json recvRtpCapabilities;
 		// Whether we can produce audio/video based on computed extended RTP capabilities.

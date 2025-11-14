@@ -60,7 +60,7 @@ TEST_CASE("PeerConnection", "[PeerConnection]")
 		auto sdp = std::string();
 
 		REQUIRE_THROWS_AS(
-		  pc.SetLocalDescription(mediasoupclient::PeerConnection::SdpType::OFFER, sdp),
+		  pc.SetLocalDescription(webrtc::SdpType::kOffer, sdp),
 		  MediaSoupClientError);
 	}
 
@@ -68,7 +68,7 @@ TEST_CASE("PeerConnection", "[PeerConnection]")
 	{
 		auto sdp = helpers::readFile("test/data/webrtc.sdp");
 
-		REQUIRE_NOTHROW(pc.SetRemoteDescription(mediasoupclient::PeerConnection::SdpType::OFFER, sdp));
+		REQUIRE_NOTHROW(pc.SetRemoteDescription(webrtc::SdpType::kOffer, sdp));
 	}
 
 	SECTION("'pc.CreateOffer()' succeeds")
@@ -80,7 +80,7 @@ TEST_CASE("PeerConnection", "[PeerConnection]")
 
 	SECTION("'pc.SetRemoteDescription()' succeeds")
 	{
-		REQUIRE_NOTHROW(pc.SetRemoteDescription(mediasoupclient::PeerConnection::SdpType::OFFER, offer));
+		REQUIRE_NOTHROW(pc.SetRemoteDescription(webrtc::SdpType::kOffer, offer));
 	}
 
 	SECTION("'pc.CreateAnswer()' succeeds if remote offer is provided")

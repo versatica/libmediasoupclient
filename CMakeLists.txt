@@ -6,8 +6,8 @@ include(FetchContent)
 
 # Set version number.
 set(mediasoupclient_VERSION_MAJOR 3)
-set(mediasoupclient_VERSION_MINOR 4)
-set(mediasoupclient_VERSION_PATCH 3)
+set(mediasoupclient_VERSION_MINOR 5)
+set(mediasoupclient_VERSION_PATCH 0)
 
 # Configure a header file to pass the version.
 configure_file (

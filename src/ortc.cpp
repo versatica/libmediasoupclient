@@ -1593,7 +1593,7 @@ namespace mediasoupclient
 					{
 						filteredCodecs.push_back(codecs[idx]);
 
-						if (isRtxCodec(codecs[idx + 1]))
+						if (codecs.size() > (idx + 1) && isRtxCodec(codecs[idx + 1]))
 							filteredCodecs.push_back(codecs[idx + 1]);
 
 						break;

@@ -1798,7 +1798,7 @@ static std::string getH264ProfileLevelId(const json& codec)
 	auto profileLevelIdIt  = parameters.find("profile-level-id");
 
 	if (profileLevelIdIt == parameters.end())
-		return "";
+		return "42e01f";
 	else if (profileLevelIdIt->is_number())
 		return std::to_string(profileLevelIdIt->get<int32_t>());
 	else

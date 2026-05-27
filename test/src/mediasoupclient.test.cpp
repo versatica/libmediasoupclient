@@ -214,7 +214,7 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 		REQUIRE(audioProducer->GetRtpSender() != nullptr);
 		REQUIRE(audioProducer->GetTrack() == audioTrack);
 		REQUIRE(audioProducer->IsPaused());
-		REQUIRE(audioProducer->GetMaxSpatialLayer() == 0);
+		REQUIRE(audioProducer->GetMaxSpatialLayer() == (uint8_t) -1);
 		REQUIRE(audioProducer->GetAppData() == appData);
 		REQUIRE(audioProducer->GetRtpParameters()["codecs"].size() == 1);
 

@@ -5,6 +5,7 @@ on:
         branches: [v3]
     pull_request:
         paths:
+            - "include/**"
             - "src/**"
             - "test/**"
     workflow_dispatch:

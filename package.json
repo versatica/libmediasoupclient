@@ -5,6 +5,9 @@
     "os": [
         "!win32"
     ],
+    "engines": {
+        "node": ">=24"
+    },
     "scripts": {
         "lint": "node scripts/clang-scripts.mjs lint",
         "format": "node scripts/clang-scripts.mjs format",

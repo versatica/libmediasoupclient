@@ -220,17 +220,11 @@ function checkClangToolVersion(clangToolBinary, requiredVersion) {
         // Extract the mayor version number from the output.
         const match = output.match(/version (\d+)/);
 
-        console.error("output: ", output);
-        console.error("match: ", match);
-
         if (match && match[1]) {
             version = parseInt(match[1], 10);
         } else {
             throw new Error(`checkClangToolVersion() | unable to parse output of '${clangToolBinary} --version': ${output}`);
         }
-
-        console.error("version: ", version);
-        console.error("requiredVersion: ", requiredVersion);
 
         if (version === requiredVersion) {
             logInfo(`checkClangToolVersion() | ${clangToolBinary} version is the required one (${requiredVersion})`);

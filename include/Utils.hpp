@@ -48,16 +48,16 @@ namespace mediasoupclient
 		inline std::string getRandomString(size_t len)
 		{
 			/* clang-format off */
-		static std::vector<char> chars =
-		{
-			'0','1','2','3','4','5','6','7','8','9',
-			'a','b','c','d','e','f','g','h','i','j',
-			'k','l','m','n','o','p','q','r','s','t',
-			'u','v','w','x','y','z',
-			'A','B','C','D','E','F','G','H','I','J',
-			'K','L','M','N','O','P','Q','R','S','T',
-			'U','V','W','X','Y','Z'
-		};
+			static std::vector<char> chars =
+			{
+			    '0','1','2','3','4','5','6','7','8','9',
+			    'a','b','c','d','e','f','g','h','i','j',
+			    'k','l','m','n','o','p','q','r','s','t',
+			    'u','v','w','x','y','z',
+			    'A','B','C','D','E','F','G','H','I','J',
+			    'K','L','M','N','O','P','Q','R','S','T',
+			    'U','V','W','X','Y','Z'
+			};
 			/* clang-format on */
 
 			// Seed with time.
@@ -74,7 +74,9 @@ namespace mediasoupclient
 			s.reserve(len);
 
 			while ((len--) != 0u)
+			{
 				s += chars[dis(rng)];
+			}
 
 			return s;
 		}
@@ -100,7 +102,9 @@ namespace mediasoupclient
 			{
 				s += *it;
 				if (it != v.end() - 1)
+				{
 					s += delimiter;
+				}
 			}
 
 			return s;
@@ -115,7 +119,9 @@ namespace mediasoupclient
 			{
 				s += std::to_string(*it);
 				if (it != v.end() - 1)
+				{
 					s += delimiter;
+				}
 			}
 
 			return s;
@@ -149,7 +155,9 @@ namespace mediasoupclient
 			iss >> std::noskipws >> ll;
 
 			if (iss.eof() && !iss.fail())
+			{
 				return std::stoll(str);
+			}
 
 			return 0;
 		}
@@ -162,7 +170,9 @@ namespace mediasoupclient
 			iss >> std::noskipws >> d;
 
 			if (iss.eof() && !iss.fail())
+			{
 				return std::stod(str);
+			}
 
 			return 0.0f;
 		}

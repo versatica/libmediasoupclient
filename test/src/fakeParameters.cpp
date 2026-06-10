@@ -141,9 +141,11 @@ json generateRouterRtpCapabilities()
 		}
 	])"_json;
 
-	json capabilities = { { "codecs", codecs },
-		                    { "headerExtensions", headerExtensions },
-		                    { "fecMechanisms", fecMechanisms } };
+	json capabilities = {
+		{ "codecs",           codecs           },
+    { "headerExtensions", headerExtensions },
+    { "fecMechanisms",    fecMechanisms    }
+	};
 
 	return capabilities;
 };
@@ -180,9 +182,13 @@ json generateRtpParametersByKind()
 		auto kind = codec["kind"].get<std::string>();
 
 		if (kind == "audio")
+		{
 			rtpParametersByKind["audio"]["codecs"].push_back(codec);
+		}
 		else if (kind == "video")
+		{
 			rtpParametersByKind["video"]["codecs"].push_back(codec);
+		}
 	}
 
 	auto headerExtensions = generateRouterRtpCapabilities()["headerExtensions"];
@@ -194,9 +200,13 @@ json generateRtpParametersByKind()
 		auto kind = ext["kind"].get<std::string>();
 
 		if (kind == "audio")
+		{
 			rtpParametersByKind["audio"]["headerExtensions"].push_back(ext);
+		}
 		else if (kind == "video")
+		{
 			rtpParametersByKind["video"]["headerExtensions"].push_back(ext);
+		}
 	}
 
 	return rtpParametersByKind;

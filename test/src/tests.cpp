@@ -29,24 +29,40 @@ int main(int argc, char* argv[])
 	ret = session.applyCommandLine(argc, argv);
 
 	if (ret != 0) // Indicates a command line error.
+	{
 		return ret;
+	}
 
 	// Apply log levels.
 	if (logLevelStr == "debug")
+	{
 		logLevel = mediasoupclient::Logger::LogLevel::LOG_DEBUG;
+	}
 	else if (logLevelStr == "warn")
+	{
 		logLevel = mediasoupclient::Logger::LogLevel::LOG_WARN;
+	}
 	else if (logLevelStr == "error")
+	{
 		logLevel = mediasoupclient::Logger::LogLevel::LOG_ERROR;
+	}
 
 	if (webrtcLogLevelStr == "verbose")
+	{
 		webrtcLogLevel = webrtc::LoggingSeverity::LS_VERBOSE;
+	}
 	else if (webrtcLogLevelStr == "info")
+	{
 		webrtcLogLevel = webrtc::LoggingSeverity::LS_INFO;
+	}
 	else if (webrtcLogLevelStr == "warn")
+	{
 		webrtcLogLevel = webrtc::LoggingSeverity::LS_WARNING;
+	}
 	else if (webrtcLogLevelStr == "error")
+	{
 		webrtcLogLevel = webrtc::LoggingSeverity::LS_ERROR;
+	}
 
 	mediasoupclient::Logger::SetLogLevel(logLevel);
 	mediasoupclient::Logger::SetHandler(new mediasoupclient::Logger::DefaultLogHandler());

@@ -10,15 +10,17 @@
 static const json TransportRemoteParameters = generateTransportRemoteParameters();
 static const json RtpParametersByKind       = generateRtpParametersByKind();
 static const json RouterRtpCapabilities     = generateRouterRtpCapabilities();
-static const auto getSendCapabilities       = [](json& currentLocalRtpCapabilities) {
-			auto routerRtpCapabilitiesCopy = RouterRtpCapabilities;
-			return mediasoupclient::ortc::getExtendedRtpCapabilities(currentLocalRtpCapabilities, routerRtpCapabilitiesCopy);
-		};
+static const auto getSendCapabilities       = [](json& currentLocalRtpCapabilities)
+{
+	auto routerRtpCapabilitiesCopy = RouterRtpCapabilities;
+	return mediasoupclient::ortc::getExtendedRtpCapabilities(
+	  currentLocalRtpCapabilities, routerRtpCapabilitiesCopy);
+};
 
 class FakeHandlerListener : public mediasoupclient::Handler::PrivateListener
 {
 public:
-	void OnConnect(json& /*transportLocalParameters*/) override{};
+	void OnConnect(json& /*transportLocalParameters*/) override {};
 
 	void OnConnectionStateChange(
 	  webrtc::PeerConnectionInterface::IceConnectionState /*connectionState*/) override{};

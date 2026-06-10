@@ -1,9 +1,9 @@
 #ifndef MSC_PRODUCER_HPP
 #define MSC_PRODUCER_HPP
 
-#include <json.hpp>
 #include <api/media_stream_interface.h> // webrtc::MediaStreamTrackInterface
 #include <api/rtp_sender_interface.h>   // webrtc::RtpSenderInterface
+#include <json.hpp>
 #include <string>
 
 namespace mediasoupclient

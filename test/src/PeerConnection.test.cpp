@@ -59,9 +59,7 @@ TEST_CASE("PeerConnection", "[PeerConnection]")
 	{
 		auto sdp = std::string();
 
-		REQUIRE_THROWS_AS(
-		  pc.SetLocalDescription(webrtc::SdpType::kOffer, sdp),
-		  MediaSoupClientError);
+		REQUIRE_THROWS_AS(pc.SetLocalDescription(webrtc::SdpType::kOffer, sdp), MediaSoupClientError);
 	}
 
 	SECTION("'pc.SetRemoteDescription()' succeeds if correct SDP is provided")

@@ -1,9 +1,9 @@
 #ifndef MSC_CONSUMER_HPP
 #define MSC_CONSUMER_HPP
 
-#include <json.hpp>
 #include <api/media_stream_interface.h> // webrtc::MediaStreamTrackInterface
 #include <api/rtp_receiver_interface.h> // webrtc::RtpReceiverInterface
+#include <json.hpp>
 #include <string>
 
 namespace mediasoupclient

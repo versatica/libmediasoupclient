@@ -2,8 +2,8 @@
 #define MSC_DATAPRODUCER_HPP
 
 #include "Handler.hpp"
-#include <json.hpp>
 #include <api/data_channel_interface.h>
+#include <json.hpp>
 #include <string>
 
 namespace mediasoupclient
@@ -24,7 +24,7 @@ namespace mediasoupclient
 		class Listener
 		{
 		public:
-			virtual ~Listener()                                                                    = default;
+			virtual ~Listener() = default;
 			// DataChannel state changes.
 			virtual void OnOpen(DataProducer* dataProducer)                                        = 0;
 			virtual void OnClose(DataProducer* dataProducer)                                       = 0;

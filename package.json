@@ -1,13 +1,18 @@
 {
-  "name": "libmediasoupclient-node-utils",
-  "version": "0.0.0",
-  "private": true,
-  "os": [
-    "!win32"
-  ],
-  "devDependencies": {
-    "clang-tools-prebuilt": "^0.1.4",
-    "gulp": "^4.0.2",
-    "gulp-clang-format": "^1.0.27"
-  }
+    "name": "libmediasoupclient-utils",
+    "version": "0.0.1",
+    "private": true,
+    "os": [
+        "!win32"
+    ],
+    "scripts": {
+        "lint": "node scripts/clang-scripts.mjs lint",
+        "format": "node scripts/clang-scripts.mjs format",
+        "tidy": "node scripts/clang-scripts.mjs tidy",
+        "tidy:fix": "node scripts/clang-scripts.mjs tidy:fix",
+        "normalize-compile-commands": "node scripts/clang-scripts.mjs normalize-compile-commands"
+    },
+    "devDependencies": {
+        "glob": "^10.3.10"
+    }
 }

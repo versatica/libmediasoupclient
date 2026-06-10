@@ -17,8 +17,14 @@ namespace mediasoupclient
 	  webrtc::MediaStreamTrackInterface* track,
 	  const json& rtpParameters,
 	  const json& appData)
-	  : privateListener(privateListener), listener(listener), id(id), localId(localId),
-	    rtpSender(rtpSender), track(track), rtpParameters(rtpParameters), appData(appData)
+	  : privateListener(privateListener),
+	    listener(listener),
+	    id(id),
+	    localId(localId),
+	    rtpSender(rtpSender),
+	    track(track),
+	    rtpParameters(rtpParameters),
+	    appData(appData)
 	{
 		MSC_TRACE();
 	}
@@ -101,7 +107,9 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (this->closed)
+		{
 			return;
+		}
 
 		this->closed = true;
 
@@ -111,7 +119,9 @@ namespace mediasoupclient
 	json Producer::GetStats() const
 	{
 		if (this->closed)
+		{
 			MSC_THROW_INVALID_STATE_ERROR("Producer closed");
+		}
 
 		return this->privateListener->OnGetStats(this);
 	}
@@ -158,11 +168,17 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (this->closed)
+		{
 			MSC_THROW_INVALID_STATE_ERROR("Producer closed");
+		}
 		else if (track == nullptr)
+		{
 			MSC_THROW_TYPE_ERROR("missing track");
+		}
 		else if (track->state() == webrtc::MediaStreamTrackInterface::TrackState::kEnded)
+		{
 			MSC_THROW_INVALID_STATE_ERROR("track ended");
+		}
 
 		// Do nothing if this is the same track as the current handled one.
 		if (track == this->track)
@@ -184,9 +200,13 @@ namespace mediasoupclient
 		// If this Producer was paused/resumed and the state of the new
 		// track does not match, fix it.
 		if (!paused)
+		{
 			this->track->set_enabled(true);
+		}
 		else
+		{
 			this->track->set_enabled(false);
+		}
 	}
 
 	/**
@@ -197,12 +217,18 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (this->closed)
+		{
 			MSC_THROW_INVALID_STATE_ERROR("Producer closed");
+		}
 		else if (this->track->kind() != "video")
+		{
 			MSC_THROW_TYPE_ERROR("not a video Producer");
+		}
 
 		if (spatialLayer == this->maxSpatialLayer)
+		{
 			return;
+		}
 
 		// May throw.
 		this->privateListener->OnSetMaxSpatialLayer(this, spatialLayer);
@@ -218,7 +244,9 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (this->closed)
+		{
 			return;
+		}
 
 		this->closed = true;
 

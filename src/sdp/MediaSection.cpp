@@ -42,7 +42,9 @@ namespace mediasoupclient
 				candidateObject["type"]       = candidate["type"];
 
 				if (candidate.find("tcpType") != candidate.end())
+				{
 					candidateObject["tcptype"] = candidate["tcpType"];
+				}
 
 				this->mediaObject["candidates"].push_back(candidateObject);
 			}
@@ -126,18 +128,27 @@ namespace mediasoupclient
 			this->mediaObject["mid"]        = offerMediaObject["mid"];
 			this->mediaObject["type"]       = type;
 			this->mediaObject["protocol"]   = offerMediaObject["protocol"];
-			this->mediaObject["connection"] = { { "ip", "127.0.0.1" }, { "version", 4 } };
-			this->mediaObject["port"]       = 7;
+			this->mediaObject["connection"] = {
+				{ "ip",      "127.0.0.1" },
+        { "version", 4           }
+			};
+			this->mediaObject["port"] = 7;
 
 			// Set DTLS role.
 			auto dtlsRole = dtlsParameters["role"].get<std::string>();
 
 			if (dtlsRole == "client")
+			{
 				this->mediaObject["setup"] = "active";
+			}
 			else if (dtlsRole == "server")
+			{
 				this->mediaObject["setup"] = "passive";
+			}
 			else if (dtlsRole == "auto")
+			{
 				this->mediaObject["setup"] = "actpass";
+			}
 
 			if (type == "audio" || type == "video")
 			{
@@ -162,7 +173,9 @@ namespace mediasoupclient
 						auto channels = codec["channels"].get<uint8_t>();
 
 						if (channels > 1)
+						{
 							rtp["encoding"] = channels;
+						}
 					}
 
 					this->mediaObject["rtp"].push_back(rtp);
@@ -173,10 +186,12 @@ namespace mediasoupclient
 					{
 						auto& offerCodecs = offerRtpParameters["codecs"];
 						auto codecIt      = find_if(
-              offerCodecs.begin(),
-              offerCodecs.end(),
-              [&codec](json& offerCodec)
-              { return offerCodec["payloadType"] == codec["payloadType"]; });
+						  offerCodecs.begin(),
+						  offerCodecs.end(),
+						  [&codec](json& offerCodec)
+						  {
+							  return offerCodec["payloadType"] == codec["payloadType"];
+						  });
 
 						auto& offerCodec = *codecIt;
 						auto mimeType    = codec["mimeType"].get<std::string>();
@@ -274,16 +289,24 @@ namespace mediasoupclient
 					for (auto& item : codecParameters.items())
 					{
 						if (!config.str().empty())
+						{
 							config << ";";
+						}
 
 						config << item.key();
 						config << "=";
 						if (item.value().is_string())
+						{
 							config << item.value().get<std::string>();
+						}
 						else if (item.value().is_number_float())
+						{
 							config << item.value().get<float>();
+						}
 						else if (item.value().is_number())
+						{
 							config << item.value().get<int64_t>();
+						}
 					}
 
 					if (!config.str().empty())
@@ -312,7 +335,9 @@ namespace mediasoupclient
 					auto payloadType = codec["payloadType"].get<uint8_t>();
 
 					if (!payloads.empty())
+					{
 						payloads.append(" ");
+					}
 
 					payloads.append(std::to_string(payloadType));
 				}
@@ -325,12 +350,17 @@ namespace mediasoupclient
 				{
 					const auto& localExts = offerMediaObject["ext"];
 					auto localExtIt       = find_if(
-            localExts.begin(),
-            localExts.end(),
-            [&ext](const json& localExt) { return localExt["uri"] == ext["uri"]; });
+					  localExts.begin(),
+					  localExts.end(),
+					  [&ext](const json& localExt)
+					  {
+						  return localExt["uri"] == ext["uri"];
+					  });
 
 					if (localExtIt == localExts.end())
+					{
 						continue;
+					}
 
 					// clang-format off
 					this->mediaObject["ext"].push_back(
@@ -403,11 +433,17 @@ namespace mediasoupclient
 			MSC_TRACE();
 
 			if (role == "client")
+			{
 				this->mediaObject["setup"] = "active";
+			}
 			else if (role == "server")
+			{
 				this->mediaObject["setup"] = "passive";
+			}
 			else if (role == "auto")
+			{
 				this->mediaObject["setup"] = "actpass";
+			}
 		}
 
 		OfferMediaSection::OfferMediaSection(
@@ -428,12 +464,19 @@ namespace mediasoupclient
 			this->mediaObject["type"] = kind;
 
 			if (sctpParameters == nullptr)
+			{
 				this->mediaObject["protocol"] = "UDP/TLS/RTP/SAVPF";
+			}
 			else
+			{
 				this->mediaObject["protocol"] = "UDP/DTLS/SCTP";
+			}
 
-			this->mediaObject["connection"] = { { "ip", "127.0.0.1" }, { "version", 4 } };
-			this->mediaObject["port"]       = 7;
+			this->mediaObject["connection"] = {
+				{ "ip",      "127.0.0.1" },
+        { "version", 4           }
+			};
+			this->mediaObject["port"] = 7;
 
 			// Set DTLS role.
 			this->mediaObject["setup"] = "actpass";
@@ -461,7 +504,9 @@ namespace mediasoupclient
 						auto channels = codec["channels"].get<uint8_t>();
 
 						if (channels > 1)
+						{
 							rtp["encoding"] = channels;
+						}
 					}
 
 					this->mediaObject["rtp"].push_back(rtp);
@@ -480,16 +525,24 @@ namespace mediasoupclient
 					for (auto& item : codecParameters.items())
 					{
 						if (!config.str().empty())
+						{
 							config << ";";
+						}
 
 						config << item.key();
 						config << "=";
 						if (item.value().is_string())
+						{
 							config << item.value().get<std::string>();
+						}
 						else if (item.value().is_number_float())
+						{
 							config << item.value().get<float>();
+						}
 						else if (item.value().is_number())
+						{
 							config << item.value().get<int64_t>();
+						}
 					}
 
 					if (!config.str().empty())
@@ -518,7 +571,9 @@ namespace mediasoupclient
 					auto payloadType = codec["payloadType"].get<uint8_t>();
 
 					if (!payloads.empty())
+					{
 						payloads.append(" ");
+					}
 
 					payloads.append(std::to_string(payloadType));
 				}
@@ -546,9 +601,13 @@ namespace mediasoupclient
 
 				auto rtxIt = encoding.find("rtx");
 				if ((rtxIt != encoding.end()) && ((*rtxIt).find("ssrc") != (*rtxIt).end()))
+				{
 					rtxSsrc = encoding["rtx"]["ssrc"].get<uint32_t>();
+				}
 				else
+				{
 					rtxSsrc = 0u;
+				}
 
 				this->mediaObject["ssrcs"]      = json::array();
 				this->mediaObject["ssrcGroups"] = json::array();
@@ -562,23 +621,43 @@ namespace mediasoupclient
 					msid.append(" ").append(trackId);
 
 					this->mediaObject["ssrcs"].push_back(
-					  { { "id", ssrc }, { "attribute", "cname" }, { "value", cname } });
+					  {
+					    { "id",        ssrc    },
+              { "attribute", "cname" },
+              { "value",     cname   }
+          });
 
 					this->mediaObject["ssrcs"].push_back(
-					  { { "id", ssrc }, { "attribute", "msid" }, { "value", msid } });
+					  {
+					    { "id",        ssrc   },
+              { "attribute", "msid" },
+              { "value",     msid   }
+          });
 
 					if (rtxSsrc != 0u)
 					{
 						std::string ssrcs = std::to_string(ssrc).append(" ").append(std::to_string(rtxSsrc));
 
 						this->mediaObject["ssrcs"].push_back(
-						  { { "id", rtxSsrc }, { "attribute", "cname" }, { "value", cname } });
+						  {
+						    { "id",        rtxSsrc },
+                { "attribute", "cname" },
+                { "value",     cname   }
+            });
 
 						this->mediaObject["ssrcs"].push_back(
-						  { { "id", rtxSsrc }, { "attribute", "msid" }, { "value", msid } });
+						  {
+						    { "id",        rtxSsrc },
+                { "attribute", "msid"  },
+                { "value",     msid    }
+            });
 
 						// Associate original and retransmission SSRCs.
-						this->mediaObject["ssrcGroups"].push_back({ { "semantics", "FID" }, { "ssrcs", ssrcs } });
+						this->mediaObject["ssrcGroups"].push_back(
+						  {
+						    { "semantics", "FID" },
+                { "ssrcs",     ssrcs }
+            });
 					}
 				}
 			}

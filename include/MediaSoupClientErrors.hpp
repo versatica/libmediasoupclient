@@ -2,7 +2,6 @@
 #define MSC_MEDIASOUP_CLIENT_ERRORS_HPP
 
 #include "Logger.hpp"
-#include <cstdio> // std::snprintf()
 #include <stdexcept>
 
 class MediaSoupClientError : public std::runtime_error

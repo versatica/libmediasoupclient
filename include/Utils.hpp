@@ -4,7 +4,6 @@
 #include <cstdint> // uint32_t
 #include <ctime>   // generator seed
 #include <random>  // generators header
-#include <set>
 #include <sstream> // istringstream
 #include <string>
 #include <vector>
@@ -14,23 +13,23 @@ namespace mediasoupclient
 	namespace Utils
 	{
 		template<typename T>
-		T getRandomInteger(T min, T max);
-		std::string getRandomInteger(size_t len);
+		T GetRandomInteger(T min, T max);
+		std::string GetRandomInteger(size_t len);
 
-		std::vector<std::string> split(const std::string& s, char delimiter);
-		std::string join(const std::vector<std::string>& v, char delimiter);
-		std::string join(const std::vector<uint32_t>& v, char delimiter);
+		std::vector<std::string> Split(const std::string& s, char delimiter);
+		std::string Join(const std::vector<std::string>& v, char delimiter);
+		std::string Join(const std::vector<uint32_t>& v, char delimiter);
 
 		// https://stackoverflow.com/a/447307/4827838.
-		bool isInt(const std::string& str);
-		bool isFloat(const std::string& str);
-		int toInt(const std::string& str);
-		float toFloat(const std::string& str);
+		bool IsInt(const std::string& str);
+		bool IsFloat(const std::string& str);
+		int ToInt(const std::string& str);
+		float ToFloat(const std::string& str);
 
 		/* Inline utils implementations */
 
 		template<typename T>
-		inline T getRandomInteger(T min, T max)
+		inline T GetRandomInteger(T min, T max)
 		{
 			// Seed with time.
 			static unsigned int seed = time(nullptr);
@@ -45,7 +44,7 @@ namespace mediasoupclient
 			return dis(rng);
 		}
 
-		inline std::string getRandomString(size_t len)
+		inline std::string GetRandomString(size_t len)
 		{
 			/* clang-format off */
 			static std::vector<char> chars =
@@ -81,7 +80,7 @@ namespace mediasoupclient
 			return s;
 		}
 
-		inline std::vector<std::string> split(const std::string& s, char delimiter)
+		inline std::vector<std::string> Split(const std::string& s, char delimiter)
 		{
 			std::vector<std::string> tokens;
 			std::string token;
@@ -93,7 +92,7 @@ namespace mediasoupclient
 			return tokens;
 		}
 
-		inline std::string join(const std::vector<std::string>& v, char delimiter)
+		inline std::string Join(const std::vector<std::string>& v, char delimiter)
 		{
 			std::string s;
 
@@ -110,7 +109,7 @@ namespace mediasoupclient
 			return s;
 		}
 
-		inline std::string join(const std::vector<uint32_t>& v, char delimiter)
+		inline std::string Join(const std::vector<uint32_t>& v, char delimiter)
 		{
 			std::string s;
 
@@ -127,7 +126,7 @@ namespace mediasoupclient
 			return s;
 		}
 
-		inline bool isInt(const std::string& str)
+		inline bool IsInt(const std::string& str)
 		{
 			std::istringstream iss(str);
 			int64_t l;
@@ -137,7 +136,7 @@ namespace mediasoupclient
 			return iss.eof() && !iss.fail();
 		}
 
-		inline bool isFloat(const std::string& str)
+		inline bool IsFloat(const std::string& str)
 		{
 			std::istringstream iss(str);
 			float f;
@@ -147,7 +146,7 @@ namespace mediasoupclient
 			return iss.eof() && !iss.fail();
 		}
 
-		inline int toInt(const std::string& str)
+		inline int ToInt(const std::string& str)
 		{
 			std::istringstream iss(str);
 			int64_t ll;
@@ -162,7 +161,7 @@ namespace mediasoupclient
 			return 0;
 		}
 
-		inline float toFloat(const std::string& str)
+		inline float ToFloat(const std::string& str)
 		{
 			std::istringstream iss(str);
 			double d;

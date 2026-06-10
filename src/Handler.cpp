@@ -15,7 +15,7 @@ using json = nlohmann::json;
 constexpr uint16_t SctpNumStreamsOs{ 1024u };
 constexpr uint16_t SctpNumStreamsMis{ 1024u };
 
-json SctpNumStreams = {
+static json SctpNumStreams = {
 	{ "OS",  SctpNumStreamsOs  },
   { "MIS", SctpNumStreamsMis }
 };
@@ -131,7 +131,7 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		return this->privateListener->OnConnectionStateChange(newState);
+		this->privateListener->OnConnectionStateChange(newState);
 	}
 
 	void Handler::SetupTransport(const std::string& localDtlsRole, json& localSdpObject)
@@ -271,13 +271,13 @@ namespace mediasoupclient
 				  !this->forcedLocalDtlsRole.empty() ? this->forcedLocalDtlsRole : "server", localSdpObject);
 			}
 
-			std::string scalability_mode =
+			std::string scalabilityMode =
 			  encodings && encodings->size()
 			    ? ((*encodings)[0].scalability_mode.has_value() ? (*encodings)[0].scalability_mode.value()
 			                                                    : "")
 			    : "";
 
-			const json& layers = parseScalabilityMode(scalability_mode);
+			const json& layers = parseScalabilityMode(scalabilityMode);
 
 			auto spatialLayers = layers["spatialLayers"].get<int>();
 
@@ -572,7 +572,7 @@ namespace mediasoupclient
 		if (!parameters.encodings.empty())
 		{
 			hasLowEncoding = true;
-			lowEncoding    = &parameters.encodings[0];
+			lowEncoding    = parameters.encodings.data();
 		}
 
 		if (parameters.encodings.size() > 1)
@@ -750,7 +750,7 @@ namespace mediasoupclient
 		auto transceiverIt = std::find_if(
 		  transceivers.begin(),
 		  transceivers.end(),
-		  [&localId](webrtc::scoped_refptr<webrtc::RtpTransceiverInterface> t)
+		  [&localId](const webrtc::scoped_refptr<webrtc::RtpTransceiverInterface>& t)
 		  {
 			  return t->mid() == localId;
 		  });

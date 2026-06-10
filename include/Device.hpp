@@ -1,7 +1,6 @@
 #ifndef MSC_DEVICE_HPP
 #define MSC_DEVICE_HPP
 
-#include "Handler.hpp"
 #include "Transport.hpp"
 #include <json.hpp>
 #include <map>

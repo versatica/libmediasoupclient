@@ -8,7 +8,6 @@
 #include <cctype>    // ::tolower
 #include <list>
 #include <map>
-#include <set>
 #include <vector>
 
 namespace mediasoupclient
@@ -276,7 +275,7 @@ namespace mediasoupclient
 				}
 
 				auto& ssrcMsidLine = *jsonSsrcIt;
-				auto v = mediasoupclient::Utils::split(ssrcMsidLine["value"].get<std::string>(), ' ');
+				auto v = mediasoupclient::Utils::Split(ssrcMsidLine["value"].get<std::string>(), ' ');
 				auto& streamId = v[0];
 				auto& trackId  = v[1];
 				auto firstSsrc = ssrcMsidLine["id"].get<std::uint32_t>();
@@ -306,7 +305,7 @@ namespace mediasoupclient
 							continue;
 						}
 
-						auto v = mediasoupclient::Utils::split(jsonSsrcsIt->get<std::string>(), ' ');
+						auto v = mediasoupclient::Utils::Split(jsonSsrcsIt->get<std::string>(), ' ');
 
 						if (std::stoull(v[0]) == firstSsrc)
 						{
@@ -314,8 +313,6 @@ namespace mediasoupclient
 
 							break;
 						}
-
-						continue;
 					};
 				}
 
@@ -362,7 +359,7 @@ namespace mediasoupclient
 				offerMediaObject["ssrcs"]      = json::array();
 
 				std::vector<uint32_t> ussrcs = ssrcs;
-				auto ssrcsLine               = mediasoupclient::Utils::join(ussrcs, ' ');
+				auto ssrcsLine               = mediasoupclient::Utils::Join(ussrcs, ' ');
 
 				std::string msidValue(streamId);
 				msidValue.append(" ").append(trackId);
@@ -503,7 +500,7 @@ namespace mediasoupclient
 						}
 
 						auto fidLine = line["ssrcs"].get<std::string>();
-						auto v       = mediasoupclient::Utils::split(fidLine, ' ');
+						auto v       = mediasoupclient::Utils::Split(fidLine, ' ');
 						auto ssrc    = std::stoull(v[0]);
 						auto rtxSsrc = std::stoull(v[1]);
 
@@ -615,7 +612,7 @@ namespace mediasoupclient
 					// Write the codec fmtp.config back.
 					std::ostringstream config;
 
-					for (auto& item : parameters.items())
+					for (const auto& item : parameters.items())
 					{
 						if (!config.str().empty())
 						{

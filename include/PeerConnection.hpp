@@ -152,8 +152,8 @@ namespace mediasoupclient
 		std::string CreateAnswer(const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions& options);
 		void SetLocalDescription(webrtc::SdpType type, const std::string& sdp);
 		void SetRemoteDescription(webrtc::SdpType type, const std::string& sdp);
-		const std::string GetLocalDescription();
-		const std::string GetRemoteDescription();
+		std::string GetLocalDescription();
+		std::string GetRemoteDescription();
 		std::vector<webrtc::scoped_refptr<webrtc::RtpTransceiverInterface>> GetTransceivers() const;
 		webrtc::scoped_refptr<webrtc::RtpTransceiverInterface> AddTransceiver(webrtc::MediaType mediaType);
 		webrtc::scoped_refptr<webrtc::RtpTransceiverInterface> AddTransceiver(

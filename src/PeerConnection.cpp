@@ -5,14 +5,6 @@
 #include "Logger.hpp"
 #include "MediaSoupClientErrors.hpp"
 #include "PeerConnection.hpp"
-#include <api/audio_codecs/builtin_audio_decoder_factory.h>
-#include <api/audio_codecs/builtin_audio_encoder_factory.h>
-#include <api/create_peerconnection_factory.h>
-#include <api/field_trials.h>
-#include <api/video_codecs/builtin_video_decoder_factory.h>
-#include <api/video_codecs/builtin_video_encoder_factory.h>
-#include <rtc_base/ssl_adapter.h>
-
 #include "api/video_codecs/video_decoder_factory_template.h"
 #include "api/video_codecs/video_decoder_factory_template_dav1d_adapter.h"
 #include "api/video_codecs/video_decoder_factory_template_libvpx_vp8_adapter.h"
@@ -23,6 +15,13 @@
 #include "api/video_codecs/video_encoder_factory_template_libvpx_vp8_adapter.h"
 #include "api/video_codecs/video_encoder_factory_template_libvpx_vp9_adapter.h"
 #include "api/video_codecs/video_encoder_factory_template_open_h264_adapter.h"
+#include <api/audio_codecs/builtin_audio_decoder_factory.h>
+#include <api/audio_codecs/builtin_audio_encoder_factory.h>
+#include <api/create_peerconnection_factory.h>
+#include <api/field_trials.h>
+#include <api/video_codecs/builtin_video_decoder_factory.h>
+#include <api/video_codecs/builtin_video_encoder_factory.h>
+#include <rtc_base/ssl_adapter.h>
 
 using json = nlohmann::json;
 
@@ -97,8 +96,8 @@ namespace mediasoupclient
 			{
 				MSC_THROW_INVALID_STATE_ERROR("thread start errored");
 			}
-			auto trials       = "WebRTC-SupportVP9SVC/EnabledByFlag_3SL3TL/";
-			auto field_trials = webrtc::FieldTrials::Create(trials);
+			const auto* trials = "WebRTC-SupportVP9SVC/EnabledByFlag_3SL3TL/";
+			auto fieldTrials   = webrtc::FieldTrials::Create(trials);
 
 			this->peerConnectionFactory = webrtc::CreatePeerConnectionFactory(
 			  this->networkThread.get(),
@@ -120,21 +119,21 @@ namespace mediasoupclient
 			  nullptr /*audio_mixer*/,
 			  nullptr /*audio_processing*/,
 			  nullptr /*audio_frame_processor*/,
-			  std::move(field_trials));
+			  std::move(fieldTrials));
 		}
 
 		// Set SDP semantics to Unified Plan.
 		config.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
 
 		// Create the webrtc::Peerconnection.
-		auto pc_or_error = this->peerConnectionFactory->CreatePeerConnectionOrError(
+		auto pcOrError = this->peerConnectionFactory->CreatePeerConnectionOrError(
 		  config, webrtc::PeerConnectionDependencies{ privateListener });
-		if (!pc_or_error.ok())
+		if (!pcOrError.ok())
 		{
 			MSC_THROW_INVALID_STATE_ERROR(
-			  "failed to create peer connection: %s", pc_or_error.error().message());
+			  "failed to create peer connection: %s", pcOrError.error().message());
 		}
-		this->pc = pc_or_error.value();
+		this->pc = pcOrError.value();
 	}
 
 	void PeerConnection::Close()
@@ -164,7 +163,7 @@ namespace mediasoupclient
 
 		MSC_WARN(
 		  "webrtc::PeerConnection::SetConfiguration failed [%s:%s]",
-		  webrtc::ToString(error.type()).data(),
+		  std::string(webrtc::ToString(error.type())).c_str(),
 		  error.message());
 
 		return false;
@@ -209,8 +208,6 @@ namespace mediasoupclient
 		webrtc::scoped_refptr<SetLocalDescriptionObserver> observer(
 		  new webrtc::RefCountedObject<SetLocalDescriptionObserver>());
 
-		auto future = observer->GetFuture();
-
 		sessionDescription = webrtc::CreateSessionDescription(type, sdp, &error);
 		if (sessionDescription == nullptr)
 		{
@@ -220,13 +217,9 @@ namespace mediasoupclient
 			  error.description.c_str());
 
 			observer->Reject(error.description);
-
-			return future.get();
 		}
 
 		this->pc->SetLocalDescription(std::move(sessionDescription), observer);
-
-		return future.get();
 	}
 
 	void PeerConnection::SetRemoteDescription(webrtc::SdpType type, const std::string& sdp)
@@ -238,8 +231,6 @@ namespace mediasoupclient
 		webrtc::scoped_refptr<SetRemoteDescriptionObserver> observer(
 		  new webrtc::RefCountedObject<SetRemoteDescriptionObserver>());
 
-		auto future = observer->GetFuture();
-
 		sessionDescription = webrtc::CreateSessionDescription(type, sdp, &error);
 		if (sessionDescription == nullptr)
 		{
@@ -249,20 +240,16 @@ namespace mediasoupclient
 			  error.description.c_str());
 
 			observer->Reject(error.description);
-
-			return future.get();
 		}
 
 		this->pc->SetRemoteDescription(std::move(sessionDescription), observer);
-
-		return future.get();
 	}
 
-	const std::string PeerConnection::GetLocalDescription()
+	std::string PeerConnection::GetLocalDescription()
 	{
 		MSC_TRACE();
 
-		auto desc = this->pc->local_description();
+		const auto* desc = this->pc->local_description();
 		std::string sdp;
 
 		desc->ToString(&sdp);
@@ -270,11 +257,11 @@ namespace mediasoupclient
 		return sdp;
 	}
 
-	const std::string PeerConnection::GetRemoteDescription()
+	std::string PeerConnection::GetRemoteDescription()
 	{
 		MSC_TRACE();
 
-		auto desc = this->pc->remote_description();
+		const auto* desc = this->pc->remote_description();
 		std::string sdp;
 
 		desc->ToString(&sdp);
@@ -345,7 +332,7 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		const auto result = this->pc->RemoveTrackOrError(sender);
+		const auto result = this->pc->RemoveTrackOrError(std::move(sender));
 
 		return result.ok();
 	}
@@ -434,8 +421,8 @@ namespace mediasoupclient
 		if (!error.ok())
 		{
 			MSC_WARN(
-			  "webtc::SetLocalDescriptionObserver failure [%s:%s]",
-			  webrtc::ToString(error.type()).data(),
+			  "webrtc::SetLocalDescriptionObserverWrapper failure [%s:%s]",
+			  std::string(webrtc::ToString(error.type())).c_str(),
 			  error.message());
 
 			auto message = std::string(error.message());
@@ -471,8 +458,8 @@ namespace mediasoupclient
 		if (!error.ok())
 		{
 			MSC_WARN(
-			  "webtc::SetRemoteDescriptionObserver failure [%s:%s]",
-			  webrtc::ToString(error.type()).data(),
+			  "webrtc::SetRemoteDescriptionObserverWrapper failure [%s:%s]",
+			  std::string(webrtc::ToString(error.type())).c_str(),
 			  error.message());
 
 			auto message = std::string(error.message());
@@ -513,8 +500,8 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		MSC_WARN(
-		  "webtc::SetSessionDescriptionObserver failure [%s:%s]",
-		  webrtc::ToString(error.type()).data(),
+		  "webrtc::SetSessionDescriptionObserver failure [%s:%s]",
+		  std::string(webrtc::ToString(error.type())).c_str(),
 		  error.message());
 
 		auto message = std::string(error.message());
@@ -558,7 +545,7 @@ namespace mediasoupclient
 
 		MSC_WARN(
 		  "webtc::CreateSessionDescriptionObserver failure [%s:%s]",
-		  webrtc::ToString(error.type()).data(),
+		  std::string(webrtc::ToString(error.type())).c_str(),
 		  error.message());
 
 		auto message = std::string(error.message());

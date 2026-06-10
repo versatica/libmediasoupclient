@@ -7,10 +7,10 @@
 #include "Handler.hpp"
 #include "Producer.hpp"
 
-#include <json.hpp>
 #include <api/media_stream_interface.h>    // webrtc::MediaStreamTrackInterface
 #include <api/peer_connection_interface.h> // webrtc::PeerConnectionInterface
 #include <api/rtp_parameters.h>            // webrtc::RtpEncodingParameters
+#include <json.hpp>
 
 #include <future>
 #include <map>
@@ -29,17 +29,14 @@ namespace mediasoupclient
 		class Listener
 		{
 		public:
-			virtual ~Listener()                                                                             = default;
+			virtual ~Listener() = default;
 			virtual std::future<void> OnConnect(Transport* transport, const nlohmann::json& dtlsParameters) = 0;
-			virtual void OnConnectionStateChange(Transport* transport, const std::string& connectionState)  = 0;
+			virtual void OnConnectionStateChange(Transport* transport, const std::string& connectionState) = 0;
 		};
 
 		/* Only child classes will create transport intances */
 	protected:
-		Transport(
-		  Listener* listener,
-		  const std::string& id,
-		  const nlohmann::json& appData);
+		Transport(Listener* listener, const std::string& id, const nlohmann::json& appData);
 
 	public:
 		virtual ~Transport() = default;
@@ -227,7 +224,7 @@ namespace mediasoupclient
 		std::unordered_map<std::string, DataConsumer*> dataConsumers;
 		// SendHandler instance.
 		std::unique_ptr<RecvHandler> recvHandler;
-		
+
 		const nlohmann::json* recvRtpCapabilities;
 	};
 } // namespace mediasoupclient

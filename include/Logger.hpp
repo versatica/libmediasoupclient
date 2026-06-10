@@ -81,7 +81,7 @@ namespace mediasoupclient
 	public:
 		static LogLevel logLevel;
 		static LogHandlerInterface* handler;
-		static const size_t bufferSize{ 50000 };
+		static const size_t BufferSize{ 50000 };
 		static char buffer[];
 	};
 } // namespace mediasoupclient
@@ -92,6 +92,7 @@ namespace mediasoupclient
 
 using Logger = mediasoupclient::Logger;
 
+// NOLINTBEGIN
 #define _MSC_LOG_SEPARATOR_CHAR "\n"
 
 #ifdef MSC_LOG_FILE_LINE
@@ -104,6 +105,7 @@ using Logger = mediasoupclient::Logger;
 	#define _MSC_LOG_STR_DESC _MSC_LOG_STR " | "
 	#define _MSC_LOG_ARG MSC_CLASS, __FUNCTION__
 #endif
+// NOLINTEND
 
 #ifdef MSC_LOG_TRACE
 	#define MSC_TRACE() \
@@ -111,7 +113,7 @@ using Logger = mediasoupclient::Logger;
 		{ \
 			if (Logger::handler && Logger::logLevel == Logger::LogLevel::LOG_DEBUG) \
 			{ \
-				int loggerWritten = std::snprintf(Logger::buffer, Logger::bufferSize, "[TRACE]" _MSC_LOG_STR, _MSC_LOG_ARG); \
+				int loggerWritten = std::snprintf(Logger::buffer, Logger::BufferSize, "[TRACE]" _MSC_LOG_STR, _MSC_LOG_ARG); \
 				Logger::handler->OnLog(Logger::LogLevel::LOG_TRACE, Logger::buffer, loggerWritten); \
 			} \
 		} \
@@ -125,7 +127,7 @@ using Logger = mediasoupclient::Logger;
 	{ \
 		if (Logger::handler && Logger::logLevel == Logger::LogLevel::LOG_DEBUG) \
 		{ \
-			int loggerWritten = std::snprintf(Logger::buffer, Logger::bufferSize, "[DEBUG]" _MSC_LOG_STR_DESC desc, _MSC_LOG_ARG, ##__VA_ARGS__); \
+			int loggerWritten = std::snprintf(Logger::buffer, Logger::BufferSize, "[DEBUG]" _MSC_LOG_STR_DESC desc, _MSC_LOG_ARG, ##__VA_ARGS__); \
 			Logger::handler->OnLog(Logger::LogLevel::LOG_DEBUG, Logger::buffer, loggerWritten); \
 		} \
 	} \
@@ -136,7 +138,7 @@ using Logger = mediasoupclient::Logger;
 	{ \
 		if (Logger::handler && Logger::logLevel >= Logger::LogLevel::LOG_WARN) \
 		{ \
-			int loggerWritten = std::snprintf(Logger::buffer, Logger::bufferSize, "[WARN]" _MSC_LOG_STR_DESC desc, _MSC_LOG_ARG, ##__VA_ARGS__); \
+			int loggerWritten = std::snprintf(Logger::buffer, Logger::BufferSize, "[WARN]" _MSC_LOG_STR_DESC desc, _MSC_LOG_ARG, ##__VA_ARGS__); \
 			Logger::handler->OnLog(Logger::LogLevel::LOG_WARN, Logger::buffer, loggerWritten); \
 		} \
 	} \
@@ -147,7 +149,7 @@ using Logger = mediasoupclient::Logger;
 	{ \
 		if (Logger::handler && Logger::logLevel >= Logger::LogLevel::LOG_ERROR) \
 		{ \
-			int loggerWritten = std::snprintf(Logger::buffer, Logger::bufferSize, "[ERROR]" _MSC_LOG_STR_DESC desc, _MSC_LOG_ARG, ##__VA_ARGS__); \
+			int loggerWritten = std::snprintf(Logger::buffer, Logger::BufferSize, "[ERROR]" _MSC_LOG_STR_DESC desc, _MSC_LOG_ARG, ##__VA_ARGS__); \
 			Logger::handler->OnLog(Logger::LogLevel::LOG_ERROR, Logger::buffer, loggerWritten); \
 		} \
 	} \

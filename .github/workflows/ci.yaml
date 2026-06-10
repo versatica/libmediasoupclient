@@ -1,0 +1,38 @@
+name: CI
+
+on:
+    push:
+        branches: [v3]
+    pull_request:
+        paths:
+            - "include/**"
+            - "src/**"
+            - "test/**"
+    workflow_dispatch:
+
+jobs:
+    lint:
+        name: Lint
+        runs-on: macos-15
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "24"
+                  cache: "npm"
+
+            - name: Install clang-format
+              run: brew install clang-format@22
+
+            - name: Check clang-format version
+              run: clang-format --version
+
+            - name: Install dependencies
+              run: npm ci --foreground-scripts
+
+            - name: Run lint
+              run: npm run lint

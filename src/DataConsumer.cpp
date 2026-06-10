@@ -16,8 +16,13 @@ namespace mediasoupclient
 	  webrtc::scoped_refptr<webrtc::DataChannelInterface> dataChannel,
 	  const json& sctpStreamParameters,
 	  const json& appData)
-	  : listener(listener), privateListener(privateListener), id(id), dataProducerId(dataProducerId),
-	    dataChannel(dataChannel), sctpParameters(sctpStreamParameters), appData(appData)
+	  : listener(listener),
+	    privateListener(privateListener),
+	    id(id),
+	    dataProducerId(dataProducerId),
+	    dataChannel(dataChannel),
+	    sctpParameters(sctpStreamParameters),
+	    appData(appData)
 	{
 		MSC_TRACE();
 
@@ -161,7 +166,9 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (this->closed)
+		{
 			return;
+		}
 
 		this->closed = true;
 		this->dataChannel->Close();
@@ -176,7 +183,9 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (this->closed)
+		{
 			return;
+		}
 
 		this->closed = true;
 		this->dataChannel->Close();

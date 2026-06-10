@@ -163,7 +163,8 @@ TEST_CASE("ortc::canReceive", "[ortc::canReceive]")
 {
 	json remoteCaps = generateRouterRtpCapabilities();
 	json localCaps  = generateRouterRtpCapabilities();
-	auto extendedRtpCapabilities = ortc::getRecvRtpCapabilities(ortc::getExtendedRtpCapabilities(localCaps, remoteCaps));
+	auto extendedRtpCapabilities =
+	  ortc::getRecvRtpCapabilities(ortc::getExtendedRtpCapabilities(localCaps, remoteCaps));
 
 	SECTION("it can receive")
 	{
@@ -185,7 +186,6 @@ TEST_CASE("ortc::canReceive", "[ortc::canReceive]")
 				}
 			]
 		})"_json;
-
 
 		REQUIRE(ortc::canReceive(rtpParameters, extendedRtpCapabilities));
 	}

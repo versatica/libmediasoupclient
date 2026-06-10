@@ -16,7 +16,9 @@ namespace mediasoupclient
 	  const json& iceCandidates,
 	  const json& dtlsParameters,
 	  const json& sctpParameters)
-	  : iceParameters(iceParameters), iceCandidates(iceCandidates), dtlsParameters(dtlsParameters),
+	  : iceParameters(iceParameters),
+	    iceCandidates(iceCandidates),
+	    dtlsParameters(dtlsParameters),
 	    sctpParameters(sctpParameters)
 	{
 		MSC_TRACE();
@@ -48,7 +50,9 @@ namespace mediasoupclient
 
 		// If ICE parameters are given, add ICE-Lite indicator.
 		if (this->iceParameters.find("iceLite") != this->iceParameters.end())
+		{
 			this->sdpObject["icelite"] = "ice-lite";
+		}
 
 		// clang-format off
 		this->sdpObject["msidSemantic"] =
@@ -63,7 +67,7 @@ namespace mediasoupclient
 
 		this->sdpObject["fingerprint"] = {
 			{ "type", this->dtlsParameters.at("fingerprints")[numFingerprints - 1]["algorithm"] },
-			{ "hash", this->dtlsParameters.at("fingerprints")[numFingerprints - 1]["value"] }
+			{ "hash", this->dtlsParameters.at("fingerprints")[numFingerprints - 1]["value"]     }
 		};
 
 		// clang-format off
@@ -94,7 +98,9 @@ namespace mediasoupclient
 		this->iceParameters = iceParameters;
 
 		if (iceParameters.find("iceLite") != iceParameters.end())
+		{
 			sdpObject["icelite"] = "ice-lite";
+		}
 
 		for (auto idx{ 0u }; idx < this->mediaSections.size(); ++idx)
 		{
@@ -114,7 +120,9 @@ namespace mediasoupclient
 		this->dtlsParameters["role"] = role;
 
 		if (iceParameters.find("iceLite") != iceParameters.end())
+		{
 			sdpObject["icelite"] = "ice-lite";
+		}
 
 		for (auto idx{ 0u }; idx < this->mediaSections.size(); ++idx)
 		{
@@ -137,7 +145,9 @@ namespace mediasoupclient
 			auto* mediaSection = this->mediaSections[idx];
 
 			if (mediaSection->IsClosed())
+			{
 				return { idx, mediaSection->GetMid() };
+			}
 		}
 
 		// If no closed media section is found, return next one.
@@ -232,7 +242,10 @@ namespace mediasoupclient
 		auto mediaSectionIt = find_if(
 		  this->mediaSections.begin(),
 		  this->mediaSections.end(),
-		  [](const MediaSection* mediaSection) { return mediaSection->IsClosed(); });
+		  [](const MediaSection* mediaSection)
+		  {
+			  return mediaSection->IsClosed();
+		  });
 
 		if (mediaSectionIt != this->mediaSections.end())
 		{
@@ -264,9 +277,13 @@ namespace mediasoupclient
 		// NOTE: Closing the first m section is a pain since it invalidates the
 		// bundled transport, so let's avoid it.
 		if (mid == this->firstMid)
+		{
 			mediaSection->Disable();
+		}
 		else
+		{
 			mediaSection->Close();
+		}
 
 		// Update SDP media section.
 		this->sdpObject["media"][idx] = mediaSection->GetObject();
@@ -292,7 +309,9 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (this->firstMid.empty())
+		{
 			this->firstMid = newMediaSection->GetMid();
+		}
 
 		// Add it in the vector.
 		this->mediaSections.push_back(newMediaSection);
@@ -359,9 +378,13 @@ namespace mediasoupclient
 			if (!mediaSection->IsClosed())
 			{
 				if (mids.empty())
+				{
 					mids = mediaSection->GetMid();
+				}
 				else
+				{
 					mids.append(" ").append(mediaSection->GetMid());
+				}
 			}
 		}
 

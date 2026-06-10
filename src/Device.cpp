@@ -28,7 +28,9 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (!this->loaded)
+		{
 			MSC_THROW_INVALID_STATE_ERROR("not loaded");
+		}
 
 		return this->recvRtpCapabilities;
 	}
@@ -41,7 +43,9 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (!this->loaded)
+		{
 			MSC_THROW_INVALID_STATE_ERROR("not loaded");
+		}
 
 		return this->sctpCapabilities;
 	}
@@ -54,7 +58,9 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (this->loaded)
+		{
 			MSC_THROW_INVALID_STATE_ERROR("already loaded");
+		}
 
 		// This may throw.
 		ortc::validateRtpCapabilities(routerRtpCapabilities);
@@ -67,16 +73,20 @@ namespace mediasoupclient
 		// This may throw.
 		ortc::validateRtpCapabilities(nativeRtpCapabilities);
 
-		// Get extended RTP capabilities as a function, that SendHandler can invoke to compute the matching capabilities from the current local capabilities.
-		// This is required for WebRTC M140+ where header extension ids may differ from the previosly pre-computed sendExtendedRtpCapabilities, resulting in
-		// failure when setting the generated SDP answer as RemoteDescription, since the header extension ids in the answer do not match those in the offer.
-		// See: https://github.com/versatica/mediasoup-client/pull/336 for the JS counterpart and more rationale.
-		this->getSendExtendedRtpCapabilities = [routerRtpCapabilities](json& currentLocalRtpCapabilities) {
+		// Get extended RTP capabilities as a function, that SendHandler can invoke to compute the
+		// matching capabilities from the current local capabilities. This is required for WebRTC M140+
+		// where header extension ids may differ from the previosly pre-computed
+		// sendExtendedRtpCapabilities, resulting in failure when setting the generated SDP answer as
+		// RemoteDescription, since the header extension ids in the answer do not match those in the
+		// offer. See: https://github.com/versatica/mediasoup-client/pull/336 for the JS counterpart and
+		// more rationale.
+		this->getSendExtendedRtpCapabilities = [routerRtpCapabilities](json& currentLocalRtpCapabilities)
+		{
 			auto routerRtpCapabilitiesCopy = routerRtpCapabilities;
 			return ortc::getExtendedRtpCapabilities(currentLocalRtpCapabilities, routerRtpCapabilitiesCopy);
 		};
 		const auto recvExtendedRtpCapabilities =
-			ortc::getExtendedRtpCapabilities(nativeRtpCapabilities, routerRtpCapabilities);
+		  ortc::getExtendedRtpCapabilities(nativeRtpCapabilities, routerRtpCapabilities);
 
 		// Check whether we can produce audio/video.
 		this->canProduceByKind["audio"] = ortc::canSend("audio", recvExtendedRtpCapabilities);
@@ -89,16 +99,15 @@ namespace mediasoupclient
 		ortc::validateRtpCapabilities(this->recvRtpCapabilities);
 
 		MSC_DEBUG("got receiving RTP capabilities:\n%s", this->recvRtpCapabilities.dump(4).c_str());
-	
+
 		// Generate our SCTP capabilities.
 		this->sctpCapabilities = Handler::GetNativeSctpCapabilities();
-		
+
 		// This may throw.
 		ortc::validateSctpCapabilities(this->sctpCapabilities);
 
 		MSC_DEBUG("got receiving SCTP capabilities:\n%s", this->sctpCapabilities.dump(4).c_str());
 
-		
 		MSC_DEBUG("succeeded");
 
 		this->loaded = true;
@@ -113,9 +122,13 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (!this->loaded)
+		{
 			MSC_THROW_INVALID_STATE_ERROR("not loaded");
+		}
 		else if (kind != "audio" && kind != "video")
+		{
 			MSC_THROW_TYPE_ERROR("invalid kind");
+		}
 
 		return this->canProduceByKind[kind];
 	}
@@ -133,9 +146,13 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (!this->loaded)
+		{
 			MSC_THROW_INVALID_STATE_ERROR("not loaded");
+		}
 		else if (!appData.is_object())
+		{
 			MSC_THROW_TYPE_ERROR("appData must be a JSON object");
+		}
 
 		// Validate arguments.
 		ortc::validateIceParameters(const_cast<json&>(iceParameters));
@@ -143,7 +160,9 @@ namespace mediasoupclient
 		ortc::validateDtlsParameters(const_cast<json&>(dtlsParameters));
 
 		if (!sctpParameters.is_null())
+		{
 			ortc::validateSctpParameters(const_cast<json&>(sctpParameters));
+		}
 
 		// Create a new Transport.
 		auto* transport = new SendTransport(
@@ -189,9 +208,13 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (!this->loaded)
+		{
 			MSC_THROW_INVALID_STATE_ERROR("not loaded");
+		}
 		else if (!appData.is_object())
+		{
 			MSC_THROW_TYPE_ERROR("appData must be a JSON object");
+		}
 
 		// Validate arguments.
 		ortc::validateIceParameters(const_cast<json&>(iceParameters));
@@ -199,7 +222,9 @@ namespace mediasoupclient
 		ortc::validateDtlsParameters(const_cast<json&>(dtlsParameters));
 
 		if (!sctpParameters.is_null())
+		{
 			ortc::validateSctpParameters(const_cast<json&>(sctpParameters));
+		}
 
 		// Create a new Transport.
 		auto* transport = new RecvTransport(

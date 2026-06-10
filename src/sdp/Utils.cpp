@@ -8,7 +8,6 @@
 #include <cctype>    // ::tolower
 #include <list>
 #include <map>
-#include <set>
 #include <vector>
 
 namespace mediasoupclient
@@ -38,14 +37,18 @@ namespace mediasoupclient
 					if (kind == "audio")
 					{
 						if (gotAudio)
+						{
 							continue;
+						}
 
 						gotAudio = true;
 					}
 					else if (kind == "video")
 					{
 						if (gotVideo)
+						{
 							continue;
+						}
 
 						gotVideo = true;
 					}
@@ -77,9 +80,13 @@ namespace mediasoupclient
 							auto jsonEncodingIt = rtp.find("encoding");
 
 							if (jsonEncodingIt != rtp.end() && jsonEncodingIt->is_string())
+							{
 								codec["channels"] = std::stoi(jsonEncodingIt->get<std::string>());
+							}
 							else
+							{
 								codec["channels"] = 1;
+							}
 						}
 
 						codecsMap[codec["preferredPayloadType"].get<uint8_t>()] = codec;
@@ -92,7 +99,9 @@ namespace mediasoupclient
 						auto jsonPayloadIt = codecsMap.find(fmtp["payload"]);
 
 						if (jsonPayloadIt == codecsMap.end())
+						{
 							continue;
+						}
 
 						// If preset, convert 'profile-id' parameter (VP8 and VP9) into
 						// integer since we define it that way in mediasoup RtpCodecParameters
@@ -100,7 +109,9 @@ namespace mediasoupclient
 						auto profileIdIt = parameters.find("profile-id");
 
 						if (profileIdIt != parameters.end() && profileIdIt->is_string())
+						{
 							parameters["profile-id"] = std::stoi(profileIdIt->get<std::string>());
+						}
 
 						auto& codec = jsonPayloadIt->second;
 
@@ -113,7 +124,9 @@ namespace mediasoupclient
 						auto jsonCodecIt = codecsMap.find(std::stoi(fb["payload"].get<std::string>()));
 
 						if (jsonCodecIt == codecsMap.end())
+						{
 							continue;
+						}
 
 						auto& codec = jsonCodecIt->second;
 
@@ -127,7 +140,9 @@ namespace mediasoupclient
 						auto jsonSubtypeIt = fb.find("subtype");
 
 						if (jsonSubtypeIt != fb.end())
+						{
 							feedback["parameter"] = *jsonSubtypeIt;
+						}
 
 						codec["rtcpFeedback"].push_back(feedback);
 					}
@@ -183,20 +198,30 @@ namespace mediasoupclient
 				}
 
 				if (m.find("fingerprint") != m.end())
+				{
 					fingerprint = m["fingerprint"];
+				}
 				else if (sdpObject.find("fingerprint") != sdpObject.end())
+				{
 					fingerprint = sdpObject["fingerprint"];
+				}
 
 				if (m.find("setup") != m.end())
 				{
 					std::string setup = m["setup"];
 
 					if (setup == "active")
+					{
 						role = "client";
+					}
 					else if (setup == "passive")
+					{
 						role = "server";
+					}
 					else if (setup == "actpass")
+					{
 						role = "auto";
+					}
 				}
 
 				// clang-format off
@@ -222,7 +247,9 @@ namespace mediasoupclient
 				MSC_TRACE();
 
 				if (numStreams <= 1)
+				{
 					return;
+				}
 
 				// Get the SSRC.
 				auto mSsrcs = offerMediaObject["ssrcs"];
@@ -235,7 +262,9 @@ namespace mediasoupclient
 					  auto jsonAttributeIt = line.find("attribute");
 
 					  if (jsonAttributeIt == line.end() || !jsonAttributeIt->is_string())
+					  {
 						  return false;
+					  }
 
 					  return jsonAttributeIt->get<std::string>() == "msid";
 				  });
@@ -246,7 +275,7 @@ namespace mediasoupclient
 				}
 
 				auto& ssrcMsidLine = *jsonSsrcIt;
-				auto v = mediasoupclient::Utils::split(ssrcMsidLine["value"].get<std::string>(), ' ');
+				auto v = mediasoupclient::Utils::Split(ssrcMsidLine["value"].get<std::string>(), ' ');
 				auto& streamId = v[0];
 				auto& trackId  = v[1];
 				auto firstSsrc = ssrcMsidLine["id"].get<std::uint32_t>();
@@ -265,14 +294,18 @@ namespace mediasoupclient
 						auto jsonSemanticsIt = line.find("semantics");
 
 						if (jsonSemanticsIt == line.end() || !jsonSemanticsIt->is_string())
+						{
 							continue;
+						}
 
 						auto jsonSsrcsIt = line.find("ssrcs");
 
 						if (jsonSsrcsIt == line.end() || !jsonSsrcsIt->is_string())
+						{
 							continue;
+						}
 
-						auto v = mediasoupclient::Utils::split(jsonSsrcsIt->get<std::string>(), ' ');
+						auto v = mediasoupclient::Utils::Split(jsonSsrcsIt->get<std::string>(), ' ');
 
 						if (std::stoull(v[0]) == firstSsrc)
 						{
@@ -280,8 +313,6 @@ namespace mediasoupclient
 
 							break;
 						}
-
-						continue;
 					};
 				}
 
@@ -292,17 +323,23 @@ namespace mediasoupclient
 				  {
 					  auto jsonAttributeIt = line.find("attribute");
 					  if (jsonAttributeIt == line.end() || !jsonAttributeIt->is_string())
+					  {
 						  return false;
+					  }
 
 					  auto jsonIdIt = line.find("id");
 					  if (jsonIdIt == line.end() || !jsonIdIt->is_number())
+					  {
 						  return false;
+					  }
 
 					  return (jsonAttributeIt->get<std::string>() == "cname");
 				  });
 
 				if (jsonSsrcIt == mSsrcs.end())
+				{
 					MSC_THROW_ERROR("CNAME line not found");
+				}
 
 				auto cname    = (*jsonSsrcIt)["value"].get<std::string>();
 				auto ssrcs    = json::array();
@@ -313,14 +350,16 @@ namespace mediasoupclient
 					ssrcs.push_back(firstSsrc + i);
 
 					if (firstRtxSsrc != 0u)
+					{
 						rtxSsrcs.push_back(firstRtxSsrc + i);
+					}
 				}
 
 				offerMediaObject["ssrcGroups"] = json::array();
 				offerMediaObject["ssrcs"]      = json::array();
 
 				std::vector<uint32_t> ussrcs = ssrcs;
-				auto ssrcsLine               = mediasoupclient::Utils::join(ussrcs, ' ');
+				auto ssrcsLine               = mediasoupclient::Utils::Join(ussrcs, ' ');
 
 				std::string msidValue(streamId);
 				msidValue.append(" ").append(trackId);
@@ -400,7 +439,9 @@ namespace mediasoupclient
 				auto jsonMssrcsIt = offerMediaObject.find("ssrcs");
 
 				if (jsonMssrcsIt == offerMediaObject.end())
+				{
 					return "";
+				}
 
 				const json& mSsrcs = *jsonMssrcsIt;
 
@@ -415,7 +456,9 @@ namespace mediasoupclient
 				  });
 
 				if (jsonSsrcIt == mSsrcs.end())
+				{
 					return "";
+				}
 
 				const auto& ssrcCnameLine = *jsonSsrcIt;
 
@@ -433,7 +476,9 @@ namespace mediasoupclient
 				}
 
 				if (ssrcs.empty())
+				{
 					MSC_THROW_ERROR("no a=ssrc lines found");
+				}
 
 				ssrcs.unique();
 
@@ -450,10 +495,12 @@ namespace mediasoupclient
 					for (const auto& line : ssrcGroups)
 					{
 						if (line["semantics"].get<std::string>() != "FID")
+						{
 							continue;
+						}
 
 						auto fidLine = line["ssrcs"].get<std::string>();
-						auto v       = mediasoupclient::Utils::split(fidLine, ' ');
+						auto v       = mediasoupclient::Utils::Split(fidLine, ' ');
 						auto ssrc    = std::stoull(v[0]);
 						auto rtxSsrc = std::stoull(v[1]);
 
@@ -472,13 +519,17 @@ namespace mediasoupclient
 
 				for (auto& ssrc : ssrcs)
 				{
-					json encoding = { { "ssrc", ssrc } };
+					json encoding = {
+						{ "ssrc", ssrc }
+					};
 
 					auto it = ssrcToRtxSsrc.find(ssrc);
 
 					if (it != ssrcToRtxSsrc.end())
 					{
-						encoding["rtx"] = { { "ssrc", it->second } };
+						encoding["rtx"] = {
+							{ "ssrc", it->second }
+						};
 					}
 
 					encodings.push_back(encoding);
@@ -499,30 +550,45 @@ namespace mediasoupclient
 
 					// Avoid parsing codec parameters for unhandled codecs.
 					if (mimeType != "audio/opus")
+					{
 						continue;
+					}
 
 					auto& rtps     = answerMediaObject["rtp"];
 					auto jsonRtpIt = find_if(
 					  rtps.begin(),
 					  rtps.end(),
-					  [&codec](const json& r) { return r["payload"] == codec["payloadType"]; });
+					  [&codec](const json& r)
+					  {
+						  return r["payload"] == codec["payloadType"];
+					  });
 
 					if (jsonRtpIt == rtps.end())
+					{
 						continue;
+					}
 
 					// Just in case.
 					if (answerMediaObject.find("fmtp") == answerMediaObject.end())
+					{
 						answerMediaObject["fmtp"] = json::array();
+					}
 
 					auto& fmtps     = answerMediaObject["fmtp"];
 					auto jsonFmtpIt = find_if(
 					  fmtps.begin(),
 					  fmtps.end(),
-					  [&codec](const json& f) { return f["payload"] == codec["payloadType"]; });
+					  [&codec](const json& f)
+					  {
+						  return f["payload"] == codec["payloadType"];
+					  });
 
 					if (jsonFmtpIt == fmtps.end())
 					{
-						json fmtp = { { "payload", codec["payloadType"] }, { "config", "" } };
+						json fmtp = {
+							{ "payload", codec["payloadType"] },
+              { "config",  ""                   }
+						};
 
 						answerMediaObject["fmtp"].push_back(fmtp);
 						jsonFmtpIt = answerMediaObject["fmtp"].end() - 1;
@@ -546,24 +612,32 @@ namespace mediasoupclient
 					// Write the codec fmtp.config back.
 					std::ostringstream config;
 
-					for (auto& item : parameters.items())
+					for (const auto& item : parameters.items())
 					{
 						if (!config.str().empty())
+						{
 							config << ";";
+						}
 
 						config << item.key();
 						config << "=";
 						if (item.value().is_string())
+						{
 							config << item.value().get<std::string>();
+						}
 						else if (item.value().is_number_float())
+						{
 							config << item.value().get<float>();
+						}
 						else if (item.value().is_number())
+						{
 							config << item.value().get<int>();
+						}
 					}
 
 					fmtp["config"] = config.str();
 				}
 			}
 		} // namespace Utils
-	}   // namespace Sdp
+	} // namespace Sdp
 } // namespace mediasoupclient

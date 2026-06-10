@@ -2,15 +2,15 @@
 #include "api/peer_connection_interface.h"
 #define MSC_CLASS "PeerConnection"
 
-#include "PeerConnection.hpp"
 #include "Logger.hpp"
 #include "MediaSoupClientErrors.hpp"
+#include "PeerConnection.hpp"
 #include <api/audio_codecs/builtin_audio_decoder_factory.h>
 #include <api/audio_codecs/builtin_audio_encoder_factory.h>
 #include <api/create_peerconnection_factory.h>
+#include <api/field_trials.h>
 #include <api/video_codecs/builtin_video_decoder_factory.h>
 #include <api/video_codecs/builtin_video_encoder_factory.h>
-#include <api/field_trials.h>
 #include <rtc_base/ssl_adapter.h>
 
 #include "api/video_codecs/video_decoder_factory_template.h"
@@ -73,7 +73,9 @@ namespace mediasoupclient
 		webrtc::PeerConnectionInterface::RTCConfiguration config;
 
 		if (options != nullptr)
+		{
 			config = options->config;
+		}
 
 		// PeerConnection factory provided.
 		if ((options != nullptr) && (options->factory != nullptr))
@@ -95,7 +97,7 @@ namespace mediasoupclient
 			{
 				MSC_THROW_INVALID_STATE_ERROR("thread start errored");
 			}
-			auto trials = "WebRTC-SupportVP9SVC/EnabledByFlag_3SL3TL/";
+			auto trials       = "WebRTC-SupportVP9SVC/EnabledByFlag_3SL3TL/";
 			auto field_trials = webrtc::FieldTrials::Create(trials);
 
 			this->peerConnectionFactory = webrtc::CreatePeerConnectionFactory(
@@ -125,11 +127,12 @@ namespace mediasoupclient
 		config.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
 
 		// Create the webrtc::Peerconnection.
-		auto pc_or_error =
-		  this->peerConnectionFactory->CreatePeerConnectionOrError(config,
-							     webrtc::PeerConnectionDependencies{privateListener});
-		if (!pc_or_error.ok()) {
-			MSC_THROW_INVALID_STATE_ERROR("failed to create peer connection: %s", pc_or_error.error().message());
+		auto pc_or_error = this->peerConnectionFactory->CreatePeerConnectionOrError(
+		  config, webrtc::PeerConnectionDependencies{ privateListener });
+		if (!pc_or_error.ok())
+		{
+			MSC_THROW_INVALID_STATE_ERROR(
+			  "failed to create peer connection: %s", pc_or_error.error().message());
 		}
 		this->pc = pc_or_error.value();
 	}
@@ -206,7 +209,7 @@ namespace mediasoupclient
 		webrtc::scoped_refptr<SetLocalDescriptionObserver> observer(
 		  new webrtc::RefCountedObject<SetLocalDescriptionObserver>());
 
-		auto future         = observer->GetFuture();
+		auto future = observer->GetFuture();
 
 		sessionDescription = webrtc::CreateSessionDescription(type, sdp, &error);
 		if (sessionDescription == nullptr)
@@ -235,7 +238,7 @@ namespace mediasoupclient
 		webrtc::scoped_refptr<SetRemoteDescriptionObserver> observer(
 		  new webrtc::RefCountedObject<SetRemoteDescriptionObserver>());
 
-		auto future         = observer->GetFuture();
+		auto future = observer->GetFuture();
 
 		sessionDescription = webrtc::CreateSessionDescription(type, sdp, &error);
 		if (sessionDescription == nullptr)
@@ -581,9 +584,13 @@ namespace mediasoupclient
 
 		// RtpReceiver stats JSON string is sometimes empty.
 		if (s.empty())
+		{
 			this->promise.set_value(json::array());
+		}
 		else
+		{
 			this->promise.set_value(json::parse(s));
+		}
 	};
 
 	/* PeerConnection::PrivateListener */

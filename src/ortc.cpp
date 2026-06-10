@@ -5,8 +5,8 @@
 #include "MediaSoupClientErrors.hpp"
 #include "media/base/codec.h"
 #include "media/base/sdp_video_format_utils.h"
-#include <api/video_codecs/h264_profile_level_id.h>
 #include <algorithm> // std::find_if
+#include <api/video_codecs/h264_profile_level_id.h>
 #include <regex>
 #include <stdexcept>
 #include <string>
@@ -41,7 +41,9 @@ namespace mediasoupclient
 			MSC_TRACE();
 
 			if (!caps.is_object())
+			{
 				MSC_THROW_TYPE_ERROR("caps is not an object");
+			}
 
 			auto codecsIt           = caps.find("codecs");
 			auto headerExtensionsIt = caps.find("headerExtensions");
@@ -92,7 +94,9 @@ namespace mediasoupclient
 			  "^(audio|video)/(.+)", std::regex_constants::ECMAScript | std::regex_constants::icase);
 
 			if (!codec.is_object())
+			{
 				MSC_THROW_TYPE_ERROR("codec is not an object");
+			}
 
 			auto mimeTypeIt             = codec.find("mimeType");
 			auto preferredPayloadTypeIt = codec.find("preferredPayloadType");
@@ -103,36 +107,48 @@ namespace mediasoupclient
 
 			// mimeType is mandatory.
 			if (mimeTypeIt == codec.end() || !mimeTypeIt->is_string())
+			{
 				MSC_THROW_TYPE_ERROR("missing codec.mimeType");
+			}
 
 			std::smatch mimeTypeMatch;
 			std::string regexTarget = mimeTypeIt->get<std::string>();
 			std::regex_match(regexTarget, mimeTypeMatch, MimeTypeRegex);
 
 			if (mimeTypeMatch.empty())
+			{
 				MSC_THROW_TYPE_ERROR("invalid codec.mimeType");
+			}
 
 			// Just override kind with media component of mimeType.
 			codec["kind"] = mimeTypeMatch[1].str();
 
 			// preferredPayloadType is optional.
 			if (preferredPayloadTypeIt != codec.end() && !preferredPayloadTypeIt->is_number_integer())
+			{
 				MSC_THROW_TYPE_ERROR("invalid codec.preferredPayloadType");
+			}
 
 			// clockRate is mandatory.
 			if (clockRateIt == codec.end() || !clockRateIt->is_number_integer())
+			{
 				MSC_THROW_TYPE_ERROR("missing codec.clockRate");
+			}
 
 			// channels is optional. If unset, set it to 1 (just if audio).
 			if (codec["kind"] == "audio")
 			{
 				if (channelsIt == codec.end() || !channelsIt->is_number_integer())
+				{
 					codec["channels"] = 1;
+				}
 			}
 			else
 			{
 				if (channelsIt != codec.end())
+				{
 					codec.erase("channels");
+				}
 			}
 
 			// parameters is optional. If unset, set it to an empty object.
@@ -148,13 +164,17 @@ namespace mediasoupclient
 				auto& value     = it.value();
 
 				if (!value.is_string() && !value.is_number() && value != nullptr)
+				{
 					MSC_THROW_TYPE_ERROR("invalid codec parameter");
+				}
 
 				// Specific parameters validation.
 				if (key == "apt")
 				{
 					if (!value.is_number_integer())
+					{
 						MSC_THROW_TYPE_ERROR("invalid codec apt parameter");
+					}
 				}
 			}
 
@@ -181,18 +201,24 @@ namespace mediasoupclient
 			MSC_TRACE();
 
 			if (!fb.is_object())
+			{
 				MSC_THROW_TYPE_ERROR("fb is not an object");
+			}
 
 			auto typeIt      = fb.find("type");
 			auto parameterIt = fb.find("parameter");
 
 			// type is mandatory.
 			if (typeIt == fb.end() || !typeIt->is_string())
+			{
 				MSC_THROW_TYPE_ERROR("missing fb.type");
+			}
 
 			// parameter is optional. If unset set it to an empty string.
 			if (parameterIt == fb.end() || !parameterIt->is_string())
+			{
 				fb["parameter"] = "";
+			}
 		}
 
 		/**
@@ -205,7 +231,9 @@ namespace mediasoupclient
 			MSC_TRACE();
 
 			if (!ext.is_object())
+			{
 				MSC_THROW_TYPE_ERROR("ext is not an object");
+			}
 
 			auto kindIt             = ext.find("kind");
 			auto uriIt              = ext.find("uri");
@@ -215,33 +243,49 @@ namespace mediasoupclient
 
 			// kind is mandatory.
 			if (kindIt == ext.end() || !kindIt->is_string())
+			{
 				MSC_THROW_TYPE_ERROR("missing ext.kind");
+			}
 
 			kindIt           = ext.find("kind");
 			std::string kind = kindIt->get<std::string>();
 
 			if (kind != "audio" && kind != "video")
+			{
 				MSC_THROW_TYPE_ERROR("invalid ext.kind");
+			}
 
 			// uri is mandatory.
 			if (uriIt == ext.end() || !uriIt->is_string() || uriIt->get<std::string>().empty())
+			{
 				MSC_THROW_TYPE_ERROR("missing ext.uri");
+			}
 
 			// preferredId is mandatory.
 			if (preferredIdIt == ext.end() || !preferredIdIt->is_number_integer())
+			{
 				MSC_THROW_TYPE_ERROR("missing ext.preferredId");
+			}
 
 			// preferredEncrypt is optional. If unset set it to false.
 			if (preferredEncryptIt != ext.end() && !preferredEncryptIt->is_boolean())
+			{
 				MSC_THROW_TYPE_ERROR("invalid ext.preferredEncrypt");
+			}
 			else if (preferredEncryptIt == ext.end())
+			{
 				ext["preferredEncrypt"] = false;
+			}
 
 			// direction is optional. If unset set it to sendrecv.
 			if (directionIt != ext.end() && !directionIt->is_string())
+			{
 				MSC_THROW_TYPE_ERROR("invalid ext.direction");
+			}
 			else if (directionIt == ext.end())
+			{
 				ext["direction"] = "sendrecv";
+			}
 		}
 
 		/**
@@ -254,7 +298,9 @@ namespace mediasoupclient
 			MSC_TRACE();
 
 			if (!params.is_object())
+			{
 				MSC_THROW_TYPE_ERROR("params is not an object");
+			}
 
 			auto midIt              = params.find("mid");
 			auto codecsIt           = params.find("codecs");
@@ -270,7 +316,9 @@ namespace mediasoupclient
 
 			// codecs is mandatory.
 			if (codecsIt == params.end() || !codecsIt->is_array())
+			{
 				MSC_THROW_TYPE_ERROR("missing params.codecs");
+			}
 
 			for (auto& codec : *codecsIt)
 			{
@@ -336,7 +384,9 @@ namespace mediasoupclient
 			  "^(audio|video)/(.+)", std::regex_constants::ECMAScript | std::regex_constants::icase);
 
 			if (!codec.is_object())
+			{
 				MSC_THROW_TYPE_ERROR("codec is not an object");
+			}
 
 			auto mimeTypeIt     = codec.find("mimeType");
 			auto payloadTypeIt  = codec.find("payloadType");
@@ -347,22 +397,30 @@ namespace mediasoupclient
 
 			// mimeType is mandatory.
 			if (mimeTypeIt == codec.end() || !mimeTypeIt->is_string())
+			{
 				MSC_THROW_TYPE_ERROR("missing codec.mimeType");
+			}
 
 			std::smatch mimeTypeMatch;
 			std::string regexTarget = mimeTypeIt->get<std::string>();
 			std::regex_match(regexTarget, mimeTypeMatch, MimeTypeRegex);
 
 			if (mimeTypeMatch.empty())
+			{
 				MSC_THROW_TYPE_ERROR("invalid codec.mimeType");
+			}
 
 			// payloadType is mandatory.
 			if (payloadTypeIt == codec.end() || !payloadTypeIt->is_number_integer())
+			{
 				MSC_THROW_TYPE_ERROR("missing codec.payloadType");
+			}
 
 			// clockRate is mandatory.
 			if (clockRateIt == codec.end() || !clockRateIt->is_number_integer())
+			{
 				MSC_THROW_TYPE_ERROR("missing codec.clockRate");
+			}
 
 			// Retrieve media kind from mimeType.
 			auto kind = mimeTypeMatch[1].str();
@@ -371,12 +429,16 @@ namespace mediasoupclient
 			if (kind == "audio")
 			{
 				if (channelsIt == codec.end() || !channelsIt->is_number_integer())
+				{
 					codec["channels"] = 1;
+				}
 			}
 			else
 			{
 				if (channelsIt != codec.end())
+				{
 					codec.erase("channels");
+				}
 			}
 
 			// parameters is optional. If unset, set it to an empty object.
@@ -392,13 +454,17 @@ namespace mediasoupclient
 				auto& value     = it.value();
 
 				if (!value.is_string() && !value.is_number() && value != nullptr)
+				{
 					MSC_THROW_TYPE_ERROR("invalid codec parameter");
+				}
 
 				// Specific parameters validation.
 				if (key == "apt")
 				{
 					if (!value.is_number_integer())
+					{
 						MSC_THROW_TYPE_ERROR("invalid codec apt parameter");
+					}
 				}
 			}
 
@@ -425,7 +491,9 @@ namespace mediasoupclient
 			MSC_TRACE();
 
 			if (!ext.is_object())
+			{
 				MSC_THROW_TYPE_ERROR("ext is not an object");
+			}
 
 			auto uriIt        = ext.find("uri");
 			auto idIt         = ext.find("id");
@@ -440,13 +508,19 @@ namespace mediasoupclient
 
 			// id is mandatory.
 			if (idIt == ext.end() || !idIt->is_number_integer())
+			{
 				MSC_THROW_TYPE_ERROR("missing ext.id");
+			}
 
 			// encrypt is optional. If unset set it to false.
 			if (encryptIt != ext.end() && !encryptIt->is_boolean())
+			{
 				MSC_THROW_TYPE_ERROR("invalid ext.encrypt");
+			}
 			else if (encryptIt == ext.end())
+			{
 				ext["encrypt"] = false;
+			}
 
 			// parameters is optional. If unset, set it to an empty object.
 			if (parametersIt == ext.end() || !parametersIt->is_object())
@@ -460,7 +534,9 @@ namespace mediasoupclient
 				auto& value = it.value();
 
 				if (!value.is_string() && !value.is_number())
+				{
 					MSC_THROW_TYPE_ERROR("invalid header extension parameter");
+				}
 			}
 		}
 
@@ -474,7 +550,9 @@ namespace mediasoupclient
 			MSC_TRACE();
 
 			if (!encoding.is_object())
+			{
 				MSC_THROW_TYPE_ERROR("encoding is not an object");
+			}
 
 			auto ssrcIt            = encoding.find("ssrc");
 			auto ridIt             = encoding.find("rid");
@@ -484,7 +562,9 @@ namespace mediasoupclient
 
 			// ssrc is optional.
 			if (ssrcIt != encoding.end() && !ssrcIt->is_number_integer())
+			{
 				MSC_THROW_TYPE_ERROR("invalid encoding.ssrc");
+			}
 
 			// rid is optional.
 			if (ridIt != encoding.end() && (!ridIt->is_string() || ridIt->get<std::string>().empty()))
@@ -503,12 +583,16 @@ namespace mediasoupclient
 
 				// RTX ssrc is mandatory if rtx is present.
 				if (rtxSsrcIt == rtxIt->end() || !rtxSsrcIt->is_number_integer())
+				{
 					MSC_THROW_TYPE_ERROR("missing encoding.rtx.ssrc");
+				}
 			}
 
 			// dtx is optional. If unset set it to false.
 			if (dtxIt == encoding.end() || !dtxIt->is_boolean())
+			{
 				encoding["dtx"] = false;
+			}
 
 			// scalabilityMode is optional.
 			// clang-format off
@@ -532,18 +616,24 @@ namespace mediasoupclient
 			MSC_TRACE();
 
 			if (!rtcp.is_object())
+			{
 				MSC_THROW_TYPE_ERROR("rtcp is not an object");
+			}
 
 			auto cnameIt       = rtcp.find("cname");
 			auto reducedSizeIt = rtcp.find("reducedSize");
 
 			// cname is optional.
 			if (cnameIt != rtcp.end() && !cnameIt->is_string())
+			{
 				MSC_THROW_TYPE_ERROR("invalid rtcp.cname");
+			}
 
 			// reducedSize is optional. If unset set it to true.
 			if (reducedSizeIt == rtcp.end() || !reducedSizeIt->is_boolean())
+			{
 				rtcp["reducedSize"] = true;
+			}
 		}
 
 		/**
@@ -556,13 +646,17 @@ namespace mediasoupclient
 			MSC_TRACE();
 
 			if (!caps.is_object())
+			{
 				MSC_THROW_TYPE_ERROR("caps is not an object");
+			}
 
 			auto numStreamsIt = caps.find("numStreams");
 
 			// numStreams is mandatory.
 			if (numStreamsIt == caps.end() || !numStreamsIt->is_object())
+			{
 				MSC_THROW_TYPE_ERROR("missing caps.numStreams");
+			}
 
 			ortc::validateNumSctpStreams(*numStreamsIt);
 		}
@@ -577,18 +671,24 @@ namespace mediasoupclient
 			MSC_TRACE();
 
 			if (!numStreams.is_object())
+			{
 				MSC_THROW_TYPE_ERROR("numStreams is not an object");
+			}
 
 			auto osIt  = numStreams.find("OS");
 			auto misIt = numStreams.find("MIS");
 
 			// OS is mandatory.
 			if (osIt == numStreams.end() || !osIt->is_number_integer())
+			{
 				MSC_THROW_TYPE_ERROR("missing numStreams.OS");
+			}
 
 			// MIS is mandatory.
 			if (misIt == numStreams.end() || !misIt->is_number_integer())
+			{
 				MSC_THROW_TYPE_ERROR("missing numStreams.MIS");
+			}
 		}
 
 		/**
@@ -601,7 +701,9 @@ namespace mediasoupclient
 			MSC_TRACE();
 
 			if (!params.is_object())
+			{
 				MSC_THROW_TYPE_ERROR("params is not an object");
+			}
 
 			auto portIt           = params.find("port");
 			auto osIt             = params.find("OS");
@@ -610,15 +712,21 @@ namespace mediasoupclient
 
 			// port is mandatory.
 			if (portIt == params.end() || !portIt->is_number_integer())
+			{
 				MSC_THROW_TYPE_ERROR("missing params.port");
+			}
 
 			// OS is mandatory.
 			if (osIt == params.end() || !osIt->is_number_integer())
+			{
 				MSC_THROW_TYPE_ERROR("missing params.OS");
+			}
 
 			// MIS is mandatory.
 			if (misIt == params.end() || !misIt->is_number_integer())
+			{
 				MSC_THROW_TYPE_ERROR("missing params.MIS");
+			}
 
 			// maxMessageSize is mandatory.
 			if (maxMessageSizeIt == params.end() || !maxMessageSizeIt->is_number_integer())
@@ -637,7 +745,9 @@ namespace mediasoupclient
 			MSC_TRACE();
 
 			if (!params.is_object())
+			{
 				MSC_THROW_TYPE_ERROR("params is not an object");
+			}
 
 			auto streamIdIt          = params.find("streamId");
 			auto orderedIt           = params.find("ordered");
@@ -648,15 +758,21 @@ namespace mediasoupclient
 
 			// streamId is mandatory.
 			if (streamIdIt == params.end() || !streamIdIt->is_number_integer())
+			{
 				MSC_THROW_TYPE_ERROR("missing params.streamId");
+			}
 
 			// ordered is optional.
 			bool orderedGiven = false;
 
 			if (orderedIt != params.end() && orderedIt->is_boolean())
+			{
 				orderedGiven = true;
+			}
 			else
+			{
 				params["ordered"] = true;
+			}
 
 			// maxPacketLifeTime is optional. If unset set it to 0.
 			if (maxPacketLifeTimeIt == params.end() || !maxPacketLifeTimeIt->is_number_integer())
@@ -697,11 +813,15 @@ namespace mediasoupclient
 
 			// label is optional. If unset set it to empty string.
 			if (labelIt == params.end() || !labelIt->is_string())
+			{
 				params["label"] = "";
+			}
 
 			// protocol is optional. If unset set it to empty string.
 			if (protocolIt == params.end() || !protocolIt->is_string())
+			{
 				params["protocol"] = "";
+			}
 		}
 
 		/**
@@ -714,7 +834,9 @@ namespace mediasoupclient
 			MSC_TRACE();
 
 			if (!params.is_object())
+			{
 				MSC_THROW_TYPE_ERROR("params is not an object");
+			}
 
 			auto usernameFragmentIt = params.find("usernameFragment");
 			auto passwordIt         = params.find("password");
@@ -736,7 +858,9 @@ namespace mediasoupclient
 
 			// iceLIte is optional. If unset set it to false.
 			if (iceLiteIt == params.end() || !iceLiteIt->is_boolean())
+			{
 				params["iceLite"] = false;
+			}
 		}
 
 		/**
@@ -755,7 +879,9 @@ namespace mediasoupclient
 			  "(host|srflx|prflx|relay)", std::regex_constants::ECMAScript | std::regex_constants::icase);
 
 			if (!params.is_object())
+			{
 				MSC_THROW_TYPE_ERROR("params is not an object");
+			}
 
 			auto foundationIt = params.find("foundation");
 			auto priorityIt   = params.find("priority");
@@ -774,7 +900,9 @@ namespace mediasoupclient
 
 			// priority is mandatory.
 			if (priorityIt == params.end() || !priorityIt->is_number_unsigned())
+			{
 				MSC_THROW_TYPE_ERROR("missing params.priority");
+			}
 
 			// ip is mandatory.
 			if (ipIt == params.end() || (!ipIt->is_string() || ipIt->get<std::string>().empty()))
@@ -793,11 +921,15 @@ namespace mediasoupclient
 			std::regex_match(regexTarget, protocolMatch, ProtocolRegex);
 
 			if (protocolMatch.empty())
+			{
 				MSC_THROW_TYPE_ERROR("invalid params.protocol");
+			}
 
 			// port is mandatory.
 			if (portIt == params.end() || !portIt->is_number_unsigned())
+			{
 				MSC_THROW_TYPE_ERROR("missing params.port");
+			}
 
 			// type is mandatory.
 			if (typeIt == params.end() || (!typeIt->is_string() || typeIt->get<std::string>().empty()))
@@ -810,7 +942,9 @@ namespace mediasoupclient
 			std::regex_match(regexTarget, typeMatch, TypeRegex);
 
 			if (typeMatch.empty())
+			{
 				MSC_THROW_TYPE_ERROR("invalid params.type");
+			}
 		}
 
 		/**
@@ -823,7 +957,9 @@ namespace mediasoupclient
 			MSC_TRACE();
 
 			if (!params.is_array())
+			{
 				MSC_THROW_TYPE_ERROR("params is not an array");
+			}
 
 			for (auto& iceCandidate : params)
 			{
@@ -841,7 +977,9 @@ namespace mediasoupclient
 			MSC_TRACE();
 
 			if (!params.is_object())
+			{
 				MSC_THROW_TYPE_ERROR("params is not an object");
+			}
 
 			auto algorithmIt = params.find("algorithm");
 			auto valueIt     = params.find("value");
@@ -874,7 +1012,9 @@ namespace mediasoupclient
 			  "(auto|client|server)", std::regex_constants::ECMAScript | std::regex_constants::icase);
 
 			if (!params.is_object())
+			{
 				MSC_THROW_TYPE_ERROR("params is not an object");
+			}
 
 			auto roleIt         = params.find("role");
 			auto fingerprintsIt = params.find("fingerprints");
@@ -890,7 +1030,9 @@ namespace mediasoupclient
 			std::regex_match(regexTarget, roleMatch, RoleRegex);
 
 			if (roleMatch.empty())
+			{
 				MSC_THROW_TYPE_ERROR("invalid params.role");
+			}
 
 			// fingerprints is mandatory.
 			if (fingerprintsIt == params.end() || (!fingerprintsIt->is_array() || fingerprintsIt->empty()))
@@ -899,7 +1041,9 @@ namespace mediasoupclient
 			}
 
 			for (auto& fingerprint : *fingerprintsIt)
+			{
 				validateDtlsFingerprint(fingerprint);
+			}
 		}
 
 		/**
@@ -912,7 +1056,9 @@ namespace mediasoupclient
 			MSC_TRACE();
 
 			if (!params.is_object())
+			{
 				MSC_THROW_TYPE_ERROR("params is not an object");
+			}
 
 			auto opusStereoIt              = params.find("opusStereo");
 			auto opusFecIt                 = params.find("opusFec");
@@ -1004,7 +1150,9 @@ namespace mediasoupclient
 			for (auto& remoteCodec : *remoteCapsCodecsIt)
 			{
 				if (isRtxCodec(remoteCodec))
+				{
 					continue;
+				}
 
 				json& localCodecs = localCaps["codecs"];
 
@@ -1012,10 +1160,14 @@ namespace mediasoupclient
 				  localCodecs.begin(),
 				  localCodecs.end(),
 				  [&remoteCodec](json& localCodec)
-				  { return matchCodecs(localCodec, remoteCodec, /*strict*/ true, /*modify*/ true); });
+				  {
+					  return matchCodecs(localCodec, remoteCodec, /*strict*/ true, /*modify*/ true);
+				  });
 
 				if (matchingLocalCodecIt == localCodecs.end())
+				{
 					continue;
+				}
 
 				auto& matchingLocalCodec = *matchingLocalCodecIt;
 
@@ -1036,7 +1188,9 @@ namespace mediasoupclient
 				// clang-format on
 
 				if (matchingLocalCodec.contains("channels"))
+				{
 					extendedCodec["channels"] = matchingLocalCodec["channels"];
+				}
 
 				extendedRtpCapabilities["codecs"].push_back(extendedCodec);
 			}
@@ -1057,21 +1211,25 @@ namespace mediasoupclient
 				  });
 
 				if (localCodecIt == localCodecs.end())
+				{
 					continue;
+				}
 
 				auto& matchingLocalRtxCodec = *localCodecIt;
 				auto& remoteCodecs          = remoteCaps["codecs"];
 				auto remoteCodecIt          = std::find_if(
-          remoteCodecs.begin(),
-          remoteCodecs.end(),
-          [&extendedCodec](const json& remoteCodec)
-          {
-            return isRtxCodec(remoteCodec) &&
-                   remoteCodec["parameters"]["apt"] == extendedCodec["remotePayloadType"];
-          });
+				  remoteCodecs.begin(),
+				  remoteCodecs.end(),
+				  [&extendedCodec](const json& remoteCodec)
+				  {
+					  return isRtxCodec(remoteCodec) &&
+					         remoteCodec["parameters"]["apt"] == extendedCodec["remotePayloadType"];
+				  });
 
 				if (remoteCodecIt == remoteCodecs.end())
+				{
 					continue;
+				}
 
 				auto& matchingRemoteRtxCodec = *remoteCodecIt;
 
@@ -1088,10 +1246,15 @@ namespace mediasoupclient
 				auto localExtIt = std::find_if(
 				  localExts.begin(),
 				  localExts.end(),
-				  [&remoteExt](const json& localExt) { return matchHeaderExtensions(localExt, remoteExt); });
+				  [&remoteExt](const json& localExt)
+				  {
+					  return matchHeaderExtensions(localExt, remoteExt);
+				  });
 
 				if (localExtIt == localExts.end())
+				{
 					continue;
+				}
 
 				auto& matchingLocalExt = *localExtIt;
 
@@ -1111,13 +1274,21 @@ namespace mediasoupclient
 				auto remoteExtDirection = remoteExt["direction"].get<std::string>();
 
 				if (remoteExtDirection == "sendrecv")
+				{
 					extendedExt["direction"] = "sendrecv";
+				}
 				else if (remoteExtDirection == "recvonly")
+				{
 					extendedExt["direction"] = "sendonly";
+				}
 				else if (remoteExtDirection == "sendonly")
+				{
 					extendedExt["direction"] = "recvonly";
+				}
 				else if (remoteExtDirection == "inactive")
+				{
 					extendedExt["direction"] = "inactive";
+				}
 
 				extendedRtpCapabilities["headerExtensions"].push_back(extendedExt);
 			}
@@ -1156,13 +1327,17 @@ namespace mediasoupclient
 				// clang-format on
 
 				if (extendedCodec.contains("channels"))
+				{
 					codec["channels"] = extendedCodec["channels"];
+				}
 
 				rtpCapabilities["codecs"].push_back(codec);
 
 				// Add RTX codec.
 				if (extendedCodec["remoteRtxPayloadType"] == nullptr)
+				{
 					continue;
+				}
 
 				auto mimeType = extendedCodec["kind"].get<std::string>().append("/rtx");
 
@@ -1194,7 +1369,9 @@ namespace mediasoupclient
 
 				// Ignore RTP extensions not valid for receiving.
 				if (direction != "sendrecv" && direction != "recvonly")
+				{
 					continue;
+				}
 
 				// clang-format off
 				json ext =
@@ -1236,7 +1413,9 @@ namespace mediasoupclient
 			for (const auto& extendedCodec : extendedRtpCapabilities["codecs"])
 			{
 				if (kind != extendedCodec["kind"].get<std::string>())
+				{
 					continue;
+				}
 
 				// clang-format off
 				json codec =
@@ -1250,7 +1429,9 @@ namespace mediasoupclient
 				// clang-format on
 
 				if (extendedCodec.contains("channels"))
+				{
 					codec["channels"] = extendedCodec["channels"];
+				}
 
 				rtpParameters["codecs"].push_back(codec);
 
@@ -1282,13 +1463,17 @@ namespace mediasoupclient
 			for (const auto& extendedExtension : extendedRtpCapabilities["headerExtensions"])
 			{
 				if (kind != extendedExtension["kind"].get<std::string>())
+				{
 					continue;
+				}
 
 				std::string direction = extendedExtension["direction"].get<std::string>();
 
 				// Ignore RTP extensions not valid for sending.
 				if (direction != "sendrecv" && direction != "sendonly")
+				{
 					continue;
+				}
 
 				// clang-format off
 				json ext =
@@ -1327,7 +1512,9 @@ namespace mediasoupclient
 			for (const auto& extendedCodec : extendedRtpCapabilities["codecs"])
 			{
 				if (kind != extendedCodec["kind"].get<std::string>())
+				{
 					continue;
+				}
 
 				// clang-format off
 				json codec =
@@ -1341,7 +1528,9 @@ namespace mediasoupclient
 				// clang-format on
 
 				if (extendedCodec.contains("channels"))
+				{
 					codec["channels"] = extendedCodec["channels"];
+				}
 
 				rtpParameters["codecs"].push_back(codec);
 
@@ -1373,13 +1562,17 @@ namespace mediasoupclient
 			for (const auto& extendedExtension : extendedRtpCapabilities["headerExtensions"])
 			{
 				if (kind != extendedExtension["kind"].get<std::string>())
+				{
 					continue;
+				}
 
 				std::string direction = extendedExtension["direction"].get<std::string>();
 
 				// Ignore RTP extensions not valid for sending.
 				if (direction != "sendrecv" && direction != "sendonly")
+				{
 					continue;
+				}
 
 				// clang-format off
 				json ext =
@@ -1418,9 +1611,13 @@ namespace mediasoupclient
 						auto type = fb["type"].get<std::string>();
 
 						if (type == "goog-remb")
+						{
 							it = rtcpFeedback.erase(it);
+						}
 						else
+						{
 							++it;
+						}
 					}
 				}
 
@@ -1448,9 +1645,13 @@ namespace mediasoupclient
 						auto type = fb["type"].get<std::string>();
 
 						if (type == "transport-cc")
+						{
 							it = rtcpFeedback.erase(it);
+						}
 						else
+						{
 							++it;
+						}
 					}
 				}
 
@@ -1467,9 +1668,13 @@ namespace mediasoupclient
 					auto type = fb["type"].get<std::string>();
 
 					if (type == "transport-cc" || type == "goog-remb")
+					{
 						it = rtcpFeedback.erase(it);
+					}
 					else
+					{
 						++it;
+					}
 				}
 			}
 
@@ -1538,9 +1743,12 @@ namespace mediasoupclient
 
 			const auto& codecs = extendedRtpCapabilities["codecs"];
 			auto codecIt       = std::find_if(
-        codecs.begin(),
-        codecs.end(),
-        [&kind](const json& codec) { return kind == codec["kind"].get<std::string>(); });
+			  codecs.begin(),
+			  codecs.end(),
+			  [&kind](const json& codec)
+			  {
+				  return kind == codec["kind"].get<std::string>();
+			  });
 
 			return codecIt != codecs.end();
 		}
@@ -1557,15 +1765,19 @@ namespace mediasoupclient
 			validateRtpParameters(rtpParameters);
 
 			if (rtpParameters["codecs"].empty())
+			{
 				return false;
+			}
 
 			auto& firstMediaCodec = rtpParameters["codecs"][0];
 			const auto& codecs    = extendedRtpCapabilities["codecs"];
 			auto codecIt          = std::find_if(
-        codecs.begin(),
-        codecs.end(),
-        [&firstMediaCodec](const json& codec)
-        { return codec["preferredPayloadType"] == firstMediaCodec["payloadType"]; });
+			  codecs.begin(),
+			  codecs.end(),
+			  [&firstMediaCodec](const json& codec)
+			  {
+				  return codec["preferredPayloadType"] == firstMediaCodec["payloadType"];
+			  });
 
 			return codecIt != codecs.end();
 		}
@@ -1582,7 +1794,9 @@ namespace mediasoupclient
 				filteredCodecs.push_back(codecs[0]);
 
 				if (codecs.size() > 1 && isRtxCodec(codecs[1]))
+				{
 					filteredCodecs.push_back(codecs[1]);
+				}
 			}
 			// Otherwise look for a compatible set of codecs.
 			else
@@ -1594,14 +1808,18 @@ namespace mediasoupclient
 						filteredCodecs.push_back(codecs[idx]);
 
 						if (codecs.size() > (idx + 1) && isRtxCodec(codecs[idx + 1]))
+						{
 							filteredCodecs.push_back(codecs[idx + 1]);
+						}
 
 						break;
 					}
 				}
 
 				if (filteredCodecs.size() == 0)
+				{
 					MSC_THROW_TYPE_ERROR("no matching codec found");
+				}
 			}
 
 			return filteredCodecs;
@@ -1638,16 +1856,24 @@ static bool matchCodecs(json& aCodec, json& bCodec, bool strict, bool modify)
 	std::transform(bMimeType.begin(), bMimeType.end(), bMimeType.begin(), ::tolower);
 
 	if (aMimeType != bMimeType)
+	{
 		return false;
+	}
 
 	if (aCodec["clockRate"] != bCodec["clockRate"])
+	{
 		return false;
+	}
 
 	if (aCodec.contains("channels") != bCodec.contains("channels"))
+	{
 		return false;
+	}
 
 	if (aCodec.contains("channels") && aCodec["channels"] != bCodec["channels"])
+	{
 		return false;
+	}
 
 	// Match H264 parameters.
 	if (aMimeType == "video/h264")
@@ -1658,7 +1884,9 @@ static bool matchCodecs(json& aCodec, json& bCodec, bool strict, bool modify)
 			auto bPacketizationMode = getH264PacketizationMode(bCodec);
 
 			if (aPacketizationMode != bPacketizationMode)
+			{
 				return false;
+			}
 
 			webrtc::CodecParameterMap aParameters;
 			webrtc::CodecParameterMap bParameters;
@@ -1671,7 +1899,9 @@ static bool matchCodecs(json& aCodec, json& bCodec, bool strict, bool modify)
 			bParameters["profile-level-id"]        = getH264ProfileLevelId(bCodec);
 
 			if (!webrtc::H264IsSameProfile(aParameters, bParameters))
+			{
 				return false;
+			}
 
 			webrtc::CodecParameterMap newParameters;
 
@@ -1710,7 +1940,9 @@ static bool matchCodecs(json& aCodec, json& bCodec, bool strict, bool modify)
 			auto bProfileId = getVP9ProfileId(bCodec);
 
 			if (aProfileId != bProfileId)
+			{
 				return false;
+			}
 		}
 	}
 
@@ -1722,7 +1954,9 @@ static bool matchHeaderExtensions(const json& aExt, const json& bExt)
 	MSC_TRACE();
 
 	if (aExt["kind"] != bExt["kind"])
+	{
 		return false;
+	}
 
 	return aExt["uri"] == bExt["uri"];
 }
@@ -1741,10 +1975,14 @@ static json reduceRtcpFeedback(const json& codecA, const json& codecB)
 		  rtcpFeedbackBIt->begin(),
 		  rtcpFeedbackBIt->end(),
 		  [&aFb](const json& bFb)
-		  { return (aFb["type"] == bFb["type"] && aFb["parameter"] == bFb["parameter"]); });
+		  {
+			  return (aFb["type"] == bFb["type"] && aFb["parameter"] == bFb["parameter"]);
+		  });
 
 		if (rtcpFeedbackIt != rtcpFeedbackBIt->end())
+		{
 			reducedRtcpFeedback.push_back(*rtcpFeedbackIt);
+		}
 	}
 
 	return reducedRtcpFeedback;
@@ -1798,11 +2036,17 @@ static std::string getH264ProfileLevelId(const json& codec)
 	auto profileLevelIdIt  = parameters.find("profile-level-id");
 
 	if (profileLevelIdIt == parameters.end())
+	{
 		return "";
+	}
 	else if (profileLevelIdIt->is_number())
+	{
 		return std::to_string(profileLevelIdIt->get<int32_t>());
+	}
 	else
+	{
 		return profileLevelIdIt->get<std::string>();
+	}
 }
 
 static std::string getVP9ProfileId(const json& codec)
@@ -1813,10 +2057,16 @@ static std::string getVP9ProfileId(const json& codec)
 	auto profileIdIt       = parameters.find("profile-id");
 
 	if (profileIdIt == parameters.end())
+	{
 		return "0";
+	}
 
 	if (profileIdIt->is_number())
+	{
 		return std::to_string(profileIdIt->get<int32_t>());
+	}
 	else
+	{
 		return profileIdIt->get<std::string>();
+	}
 }

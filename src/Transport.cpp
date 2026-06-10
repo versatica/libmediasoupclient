@@ -11,8 +11,7 @@ namespace mediasoupclient
 {
 	/* Transport */
 
-	Transport::Transport(
-	  Listener* listener, const std::string& id, const json& appData)
+	Transport::Transport(Listener* listener, const std::string& id, const json& appData)
 	  : listener(listener), id(id), appData(appData)
 	{
 		MSC_TRACE();
@@ -51,7 +50,9 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (this->closed)
+		{
 			return;
+		}
 
 		this->closed = true;
 
@@ -64,9 +65,13 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (this->closed)
+		{
 			MSC_THROW_INVALID_STATE_ERROR("Transport closed");
+		}
 		else
+		{
 			return this->handler->GetTransportStats();
+		}
 	}
 
 	void Transport::RestartIce(const json& iceParameters)
@@ -74,9 +79,13 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (this->closed)
+		{
 			MSC_THROW_INVALID_STATE_ERROR("Transport closed");
+		}
 		else
+		{
 			return this->handler->RestartIce(iceParameters);
+		}
 	}
 
 	void Transport::UpdateIceServers(const json& iceServers)
@@ -84,9 +93,13 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (this->closed)
+		{
 			MSC_THROW_INVALID_STATE_ERROR("Transport closed");
+		}
 		else
+		{
 			return this->handler->UpdateIceServers(iceServers);
+		}
 	}
 
 	void Transport::SetHandler(Handler* handler)
@@ -101,7 +114,9 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (this->closed)
+		{
 			MSC_THROW_INVALID_STATE_ERROR("Transport closed");
+		}
 
 		return this->listener->OnConnect(this, dtlsParameters).get();
 	}
@@ -132,8 +147,7 @@ namespace mediasoupclient
 	  const std::map<std::string, bool>* canProduceByKind,
 	  const json& appData)
 
-	  : Transport(listener, id, appData), listener(listener),
-	    canProduceByKind(canProduceByKind)
+	  : Transport(listener, id, appData), listener(listener), canProduceByKind(canProduceByKind)
 	{
 		MSC_TRACE();
 
@@ -143,7 +157,9 @@ namespace mediasoupclient
 			auto maxMessageSizeIt   = sctpParameters.find("maxMessageSize");
 
 			if (maxMessageSizeIt->is_number_integer())
+			{
 				this->maxSctpMessageSize = maxMessageSizeIt->get<size_t>();
+			}
 		}
 
 		this->sendHandler.reset(new SendHandler(
@@ -172,16 +188,26 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (this->closed)
+		{
 			MSC_THROW_INVALID_STATE_ERROR("SendTransport closed");
+		}
 		else if (!track)
+		{
 			MSC_THROW_TYPE_ERROR("missing track");
+		}
 		else if (track->state() == webrtc::MediaStreamTrackInterface::TrackState::kEnded)
+		{
 			MSC_THROW_INVALID_STATE_ERROR("track ended");
+		}
 		else if (this->canProduceByKind->find(track->kind()) == this->canProduceByKind->end())
+		{
 			MSC_THROW_UNSUPPORTED_ERROR("cannot produce track kind");
+		}
 
 		if (codecOptions)
+		{
 			ortc::validateProducerCodecOptions(const_cast<json&>(*codecOptions));
+		}
 
 		std::string producerId;
 		std::vector<webrtc::RtpEncodingParameters> normalizedEncodings;
@@ -252,7 +278,9 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (!this->hasSctpParameters)
+		{
 			MSC_THROW_ERROR("SctpParameters are mandatory when using data producer listener");
+		}
 
 		webrtc::DataChannelInit dataChannelInit;
 		dataChannelInit.protocol = protocol;
@@ -294,7 +322,9 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (this->closed)
+		{
 			return;
+		}
 
 		Transport::Close();
 
@@ -322,7 +352,9 @@ namespace mediasoupclient
 		this->producers.erase(producer->GetId());
 
 		if (this->closed)
+		{
 			return;
+		}
 
 		// May throw.
 		this->sendHandler->StopSending(producer->GetLocalId());
@@ -354,7 +386,9 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (this->closed)
+		{
 			MSC_THROW_INVALID_STATE_ERROR("SendTransport closed");
+		}
 
 		return this->sendHandler->GetSenderStats(producer->GetLocalId());
 	}
@@ -371,8 +405,7 @@ namespace mediasoupclient
 	  const PeerConnection::Options* peerConnectionOptions,
 	  const json* recvRtpCapabilities,
 	  const json& appData)
-	  : Transport(listener, id, appData)
-	  , recvRtpCapabilities(recvRtpCapabilities)
+	  : Transport(listener, id, appData), recvRtpCapabilities(recvRtpCapabilities)
 	{
 		MSC_TRACE();
 
@@ -403,19 +436,33 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (this->closed)
+		{
 			MSC_THROW_INVALID_STATE_ERROR("RecvTransport closed");
+		}
 		else if (id.empty())
+		{
 			MSC_THROW_TYPE_ERROR("missing id");
+		}
 		else if (producerId.empty())
+		{
 			MSC_THROW_TYPE_ERROR("missing producerId");
+		}
 		else if (kind != "audio" && kind != "video")
+		{
 			MSC_THROW_TYPE_ERROR("invalid kind");
+		}
 		else if (!rtpParameters)
+		{
 			MSC_THROW_TYPE_ERROR("missing rtpParameters");
+		}
 		else if (!appData.is_object())
+		{
 			MSC_THROW_TYPE_ERROR("appData must be a JSON object");
+		}
 		else if (!ortc::canReceive(*rtpParameters, *this->recvRtpCapabilities))
+		{
 			MSC_THROW_UNSUPPORTED_ERROR("cannot consume this Producer");
+		}
 
 		// May throw.
 		auto recvResult = this->recvHandler->Receive(id, kind, rtpParameters);
@@ -478,13 +525,21 @@ namespace mediasoupclient
 		dataChannelInit.id       = streamId;
 
 		if (this->closed)
+		{
 			MSC_THROW_INVALID_STATE_ERROR("RecvTransport closed");
+		}
 		else if (id.empty())
+		{
 			MSC_THROW_TYPE_ERROR("missing id");
+		}
 		else if (producerId.empty())
+		{
 			MSC_THROW_TYPE_ERROR("missing producerId");
+		}
 		else if (!this->hasSctpParameters)
+		{
 			MSC_THROW_TYPE_ERROR("Cannot use DataChannels with this transport. SctpParameters are not set.");
+		}
 
 		// This may throw.
 		auto recvResult = this->recvHandler->ReceiveDataChannel(label, dataChannelInit);
@@ -502,7 +557,9 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (this->closed)
+		{
 			return;
+		}
 
 		Transport::Close();
 
@@ -530,7 +587,9 @@ namespace mediasoupclient
 		this->consumers.erase(consumer->GetId());
 
 		if (this->closed)
+		{
 			return;
+		}
 
 		// May throw.
 		this->recvHandler->StopReceiving(consumer->GetLocalId());
@@ -548,7 +607,9 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (this->closed)
+		{
 			MSC_THROW_INVALID_STATE_ERROR("RecvTransport closed");
+		}
 
 		return this->recvHandler->GetReceiverStats(consumer->GetLocalId());
 	}

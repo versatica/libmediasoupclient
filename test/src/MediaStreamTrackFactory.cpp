@@ -20,7 +20,9 @@ using namespace mediasoupclient;
 void MediaStreamTrackFactory::Create()
 {
 	if (Factory)
+	{
 		return;
+	}
 	NetworkThread   = webrtc::Thread::CreateWithSocketServer();
 	WorkerThread    = webrtc::Thread::Create();
 	SignalingThread = webrtc::Thread::Create();

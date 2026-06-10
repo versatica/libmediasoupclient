@@ -18,8 +18,14 @@ namespace mediasoupclient
 	  webrtc::MediaStreamTrackInterface* track,
 	  const json& rtpParameters,
 	  const json& appData)
-	  : privateListener(privateListener), listener(listener), id(id), localId(localId),
-	    producerId(producerId), rtpReceiver(rtpReceiver), track(track), rtpParameters(rtpParameters),
+	  : privateListener(privateListener),
+	    listener(listener),
+	    id(id),
+	    localId(localId),
+	    producerId(producerId),
+	    rtpReceiver(rtpReceiver),
+	    track(track),
+	    rtpParameters(rtpParameters),
 	    appData(appData)
 	{
 		MSC_TRACE();
@@ -103,7 +109,9 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (this->closed)
+		{
 			return;
+		}
 
 		this->closed = true;
 
@@ -113,7 +121,9 @@ namespace mediasoupclient
 	json Consumer::GetStats() const
 	{
 		if (this->closed)
+		{
 			MSC_THROW_INVALID_STATE_ERROR("Consumer closed");
+		}
 
 		return this->privateListener->OnGetStats(this);
 	}
@@ -160,7 +170,9 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		if (this->closed)
+		{
 			return;
+		}
 
 		this->closed = true;
 

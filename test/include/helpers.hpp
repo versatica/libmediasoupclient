@@ -13,7 +13,9 @@ namespace helpers
 		std::ifstream in(file);
 
 		if (!in)
+		{
 			throw std::invalid_argument("could not open file");
+		}
 
 		std::string content;
 

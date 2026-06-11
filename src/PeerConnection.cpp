@@ -1,6 +1,5 @@
 #include "api/jsep.h"
 #include "api/peer_connection_interface.h"
-#include "rtc_base/thread.h"
 #define MSC_CLASS "PeerConnection"
 
 #include "Logger.hpp"

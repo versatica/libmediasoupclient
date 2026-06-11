@@ -1,6 +1,10 @@
 # Changelog
 
 
+### 3.5.1
+
+* Fix deadlock on `PeerConnection` calls ([187](https://github.com/versatica/libmediasoupclient/issues/187)).
+
 ### 3.5.0
 
 * Update to libwebrtc M140/7339 ([#173](https://github.com/versatica/libmediasoupclient/pull/188)). Credits to @revidee.

@@ -13,8 +13,6 @@
  * correctly.
  */
 
-#include "fakeParameters.hpp"
-#include "mediasoupclient.hpp"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
 #include "api/create_peerconnection_factory.h"
@@ -28,6 +26,8 @@
 #include "api/video_codecs/video_encoder_factory_template_libvpx_vp8_adapter.h"
 #include "api/video_codecs/video_encoder_factory_template_libvpx_vp9_adapter.h"
 #include "api/video_codecs/video_encoder_factory_template_open_h264_adapter.h"
+#include "fakeParameters.hpp"
+#include "mediasoupclient.hpp"
 #include "rtc_base/thread.h"
 #include <catch.hpp>
 #include <memory>
@@ -46,8 +46,7 @@ public:
 	}
 
 	void OnConnectionStateChange(
-	  mediasoupclient::Transport* /*transport*/,
-	  const std::string& /*connectionState*/) override
+	  mediasoupclient::Transport* /*transport*/, const std::string& /*connectionState*/) override
 	{
 	}
 
@@ -87,8 +86,7 @@ public:
 	}
 
 	void OnConnectionStateChange(
-	  mediasoupclient::Transport* /*transport*/,
-	  const std::string& /*connectionState*/) override
+	  mediasoupclient::Transport* /*transport*/, const std::string& /*connectionState*/) override
 	{
 	}
 };
@@ -96,13 +94,17 @@ public:
 class SmokeProducerListener : public mediasoupclient::Producer::Listener
 {
 public:
-	void OnTransportClose(mediasoupclient::Producer* /*producer*/) override {}
+	void OnTransportClose(mediasoupclient::Producer* /*producer*/) override
+	{
+	}
 };
 
 class SmokeConsumerListener : public mediasoupclient::Consumer::Listener
 {
 public:
-	void OnTransportClose(mediasoupclient::Consumer* /*consumer*/) override {}
+	void OnTransportClose(mediasoupclient::Consumer* /*consumer*/) override
+	{
+	}
 };
 
 TEST_CASE("Smoke", "[Smoke]")
@@ -203,12 +205,13 @@ TEST_CASE("Smoke", "[Smoke]")
 		auto consumerParams = generateConsumerRemoteParameters("audio/opus");
 		SmokeConsumerListener consumerListener;
 		mediasoupclient::Consumer* consumer{ nullptr };
-		REQUIRE_NOTHROW(consumer = recvTransport->Consume(
-		                  &consumerListener,
-		                  consumerParams["id"].get<std::string>(),
-		                  consumerParams["producerId"].get<std::string>(),
-		                  consumerParams["kind"].get<std::string>(),
-		                  &consumerParams["rtpParameters"]));
+		REQUIRE_NOTHROW(
+		  consumer = recvTransport->Consume(
+		    &consumerListener,
+		    consumerParams["id"].get<std::string>(),
+		    consumerParams["producerId"].get<std::string>(),
+		    consumerParams["kind"].get<std::string>(),
+		    &consumerParams["rtpParameters"]));
 		REQUIRE(consumer != nullptr);
 
 		delete consumer;

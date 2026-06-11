@@ -25,27 +25,31 @@ using namespace mediasoupclient;
 // No pc/test/ dependency; safe to link against a release-mode libwebrtc.
 namespace
 {
-class NullVideoTrackSource : public webrtc::VideoTrackSource
-{
-public:
-	NullVideoTrackSource() : webrtc::VideoTrackSource(/*remote=*/false) {}
-
-	webrtc::VideoSourceInterface<webrtc::VideoFrame>* source() override
+	class NullVideoTrackSource : public webrtc::VideoTrackSource
 	{
-		return nullptr;
-	}
+	public:
+		NullVideoTrackSource() : webrtc::VideoTrackSource(/*remote=*/false)
+		{
+		}
 
-protected:
-	// VideoTrackSource::AddOrUpdateSink/RemoveSink forward to source(), which is
-	// null here. Override them as no-ops to prevent the null dereference.
-	void AddOrUpdateSink(
-	  webrtc::VideoSinkInterface<webrtc::VideoFrame>* /*sink*/,
-	  const webrtc::VideoSinkWants& /*wants*/) override
-	{
-	}
+		webrtc::VideoSourceInterface<webrtc::VideoFrame>* source() override
+		{
+			return nullptr;
+		}
 
-	void RemoveSink(webrtc::VideoSinkInterface<webrtc::VideoFrame>* /*sink*/) override {}
-};
+	protected:
+		// VideoTrackSource::AddOrUpdateSink/RemoveSink forward to source(), which is
+		// null here. Override them as no-ops to prevent the null dereference.
+		void AddOrUpdateSink(
+		  webrtc::VideoSinkInterface<webrtc::VideoFrame>* /*sink*/,
+		  const webrtc::VideoSinkWants& /*wants*/) override
+		{
+		}
+
+		void RemoveSink(webrtc::VideoSinkInterface<webrtc::VideoFrame>* /*sink*/) override
+		{
+		}
+	};
 } // namespace
 
 void MediaStreamTrackFactory::Create()
@@ -53,7 +57,9 @@ void MediaStreamTrackFactory::Create()
 	mediasoupclient::Initialize();
 
 	if (Factory)
+	{
 		return;
+	}
 
 	NetworkThread   = webrtc::Thread::CreateWithSocketServer();
 	WorkerThread    = webrtc::Thread::Create();
@@ -63,7 +69,9 @@ void MediaStreamTrackFactory::Create()
 	SignalingThread->SetName("signaling_thread", nullptr);
 
 	if (!NetworkThread->Start() || !WorkerThread->Start() || !SignalingThread->Start())
+	{
 		MSC_THROW_INVALID_STATE_ERROR("thread start errored");
+	}
 
 	// nullptr ADM → platform default (CoreAudio/ALSA/WASAPI). No pc/test/ headers needed.
 	Factory = webrtc::CreatePeerConnectionFactory(
@@ -89,7 +97,9 @@ void MediaStreamTrackFactory::Create()
 	  nullptr);
 
 	if (!Factory)
+	{
 		MSC_THROW_INVALID_STATE_ERROR("peer connection factory creation errored");
+	}
 
 	PeerConnectionOptions.factory = Factory.get();
 }
@@ -105,15 +115,17 @@ webrtc::scoped_refptr<webrtc::AudioTrackInterface> createAudioTrack(const std::s
 	auto& f = MediaStreamTrackFactory::getInstance();
 
 	if (!f.AudioSource)
+	{
 		f.AudioSource = f.Factory->CreateAudioSource({});
+	}
 
 	return f.Factory->CreateAudioTrack(id, f.AudioSource.get());
 }
 
 webrtc::scoped_refptr<webrtc::VideoTrackInterface> createVideoTrack(const std::string& id)
 {
-	auto& f      = MediaStreamTrackFactory::getInstance();
-	auto source  = webrtc::make_ref_counted<NullVideoTrackSource>();
+	auto& f     = MediaStreamTrackFactory::getInstance();
+	auto source = webrtc::make_ref_counted<NullVideoTrackSource>();
 
 	return f.Factory->CreateVideoTrack(source, id);
 }

@@ -22,22 +22,28 @@ if [ "$1" == "rebuild" ]; then
 		-DLIBWEBRTC_INCLUDE_PATH:PATH=${PATH_TO_LIBWEBRTC_SOURCES} \
 		-DLIBWEBRTC_BINARY_PATH:PATH=${PATH_TO_LIBWEBRTC_BINARY} \
 		-DMEDIASOUPCLIENT_BUILD_TESTS="true" \
-		-DCMAKE_CXX_FLAGS="-fvisibility=hidden"
+		-DCMAKE_CXX_FLAGS="-fvisibility=hidden" \
+		-DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
 	# Remove the 'rebuild' argument.
 	shift
 fi
 
 # Compile.
-echo "[INFO] compiling mediasoupclient and test_mediasoupclient: cmake --build build"
+echo "[INFO] compiling mediasoupclient and tests: cmake --build build"
 
 cmake --build build
 
-# Run test.
+# Resolve test binary path.
 if [ "${OS}" = "Darwin" ]; then
-	TEST_BINARY=./build/test/test_mediasoupclient.app/Contents/MacOS/test_mediasoupclient
+	TEST_BINARY=./build/test/test.app/Contents/MacOS/test
 else
-	TEST_BINARY=./build/test/test_mediasoupclient
+	TEST_BINARY=./build/test/test
+fi
+
+if [ ! -f "${TEST_BINARY}" ]; then
+	echo "[ERROR] Test binary not found: ${TEST_BINARY}"
+	exit 1
 fi
 
 echo "[INFO] running tests: ${TEST_BINARY} $@"

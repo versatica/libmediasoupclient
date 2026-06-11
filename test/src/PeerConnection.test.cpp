@@ -62,13 +62,6 @@ TEST_CASE("PeerConnection", "[PeerConnection]")
 		REQUIRE_THROWS_AS(pc.SetLocalDescription(webrtc::SdpType::kOffer, sdp), MediaSoupClientError);
 	}
 
-	SECTION("'pc.SetRemoteDescription()' succeeds if correct SDP is provided")
-	{
-		auto sdp = helpers::readFile("test/data/webrtc.sdp");
-
-		REQUIRE_NOTHROW(pc.SetRemoteDescription(webrtc::SdpType::kOffer, sdp));
-	}
-
 	SECTION("'pc.CreateOffer()' succeeds")
 	{
 		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;

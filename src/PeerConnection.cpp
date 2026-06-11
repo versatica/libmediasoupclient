@@ -18,7 +18,6 @@
 #include <api/audio_codecs/builtin_audio_decoder_factory.h>
 #include <api/audio_codecs/builtin_audio_encoder_factory.h>
 #include <api/create_peerconnection_factory.h>
-#include <api/field_trials.h>
 #include <api/video_codecs/builtin_video_decoder_factory.h>
 #include <api/video_codecs/builtin_video_encoder_factory.h>
 #include <rtc_base/ssl_adapter.h>
@@ -96,8 +95,6 @@ namespace mediasoupclient
 			{
 				MSC_THROW_INVALID_STATE_ERROR("thread start errored");
 			}
-			const auto* trials = "WebRTC-SupportVP9SVC/EnabledByFlag_3SL3TL/";
-			auto fieldTrials   = webrtc::FieldTrials::Create(trials);
 
 			this->peerConnectionFactory = webrtc::CreatePeerConnectionFactory(
 			  this->networkThread.get(),
@@ -119,7 +116,7 @@ namespace mediasoupclient
 			  nullptr /*audio_mixer*/,
 			  nullptr /*audio_processing*/,
 			  nullptr /*audio_frame_processor*/,
-			  std::move(fieldTrials));
+			  nullptr /*field_trials*/);
 		}
 
 		// Set SDP semantics to Unified Plan.
@@ -207,6 +204,7 @@ namespace mediasoupclient
 		std::unique_ptr<webrtc::SessionDescriptionInterface> sessionDescription;
 		webrtc::scoped_refptr<SetLocalDescriptionObserver> observer(
 		  new webrtc::RefCountedObject<SetLocalDescriptionObserver>());
+		auto future = observer->GetFuture();
 
 		sessionDescription = webrtc::CreateSessionDescription(type, sdp, &error);
 		if (sessionDescription == nullptr)
@@ -217,9 +215,13 @@ namespace mediasoupclient
 			  error.description.c_str());
 
 			observer->Reject(error.description);
+			future.get();
+
+			return;
 		}
 
 		this->pc->SetLocalDescription(std::move(sessionDescription), observer);
+		future.get();
 	}
 
 	void PeerConnection::SetRemoteDescription(webrtc::SdpType type, const std::string& sdp)
@@ -230,6 +232,7 @@ namespace mediasoupclient
 		std::unique_ptr<webrtc::SessionDescriptionInterface> sessionDescription;
 		webrtc::scoped_refptr<SetRemoteDescriptionObserver> observer(
 		  new webrtc::RefCountedObject<SetRemoteDescriptionObserver>());
+		auto future = observer->GetFuture();
 
 		sessionDescription = webrtc::CreateSessionDescription(type, sdp, &error);
 		if (sessionDescription == nullptr)
@@ -240,9 +243,13 @@ namespace mediasoupclient
 			  error.description.c_str());
 
 			observer->Reject(error.description);
+			future.get();
+
+			return;
 		}
 
 		this->pc->SetRemoteDescription(std::move(sessionDescription), observer);
+		future.get();
 	}
 
 	std::string PeerConnection::GetLocalDescription()

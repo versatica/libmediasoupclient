@@ -59,9 +59,9 @@ namespace mediasoupclient
 	}
 
 	void Device::Load(
-		  json routerRtpCapabilities,
-		  const PeerConnection::Options* peerConnectionOptions,
-		  bool preferLocalCodecsOrder)
+	  json routerRtpCapabilities,
+	  const PeerConnection::Options* peerConnectionOptions,
+	  bool preferLocalCodecsOrder)
 	{
 		MSC_TRACE();
 

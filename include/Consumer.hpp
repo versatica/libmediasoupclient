@@ -87,7 +87,7 @@ namespace mediasoupclient
 		// Paused flag.
 		bool paused{ false };
 		// App custom data.
-		nlohmann::json appData{};
+		nlohmann::json appData;
 	};
 } // namespace mediasoupclient
 

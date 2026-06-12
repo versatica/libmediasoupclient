@@ -3,7 +3,7 @@
 #include <stdexcept>
 
 // ---------------------------------------------------------------------------
-// Private listener classes — full definitions
+// Private listener classes
 // ---------------------------------------------------------------------------
 
 class RoomClient::SendTransportListener : public mediasoupclient::SendTransport::Listener
@@ -17,6 +17,7 @@ public:
 	std::future<void> OnConnect(mediasoupclient::Transport* /*transport*/, const json& dtlsParameters) override
 	{
 		std::promise<void> p;
+
 		try
 		{
 			this->protoo.Request(

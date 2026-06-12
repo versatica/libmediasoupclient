@@ -1,9 +1,9 @@
-#include "Transport.hpp"
 #define MSC_CLASS "Device"
 
 #include "Device.hpp"
 #include "Logger.hpp"
 #include "MediaSoupClientErrors.hpp"
+#include "Transport.hpp"
 #include "ortc.hpp"
 
 using json = nlohmann::json;

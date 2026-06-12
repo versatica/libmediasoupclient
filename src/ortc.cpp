@@ -1125,7 +1125,7 @@ namespace mediasoupclient
 		/**
 		 * Generate extended RTP capabilities for sending and receiving.
 		 */
-		json getExtendedRtpCapabilities(json& localCaps, json& remoteCaps)
+		json getExtendedRtpCapabilities(json& localCaps, json& remoteCaps, bool preferLocalCodecsOrder)
 		{
 			MSC_TRACE();
 
@@ -1144,55 +1144,111 @@ namespace mediasoupclient
 			};
 			// clang-format on
 
-			// Match media codecs and keep the order preferred by remoteCaps.
-			auto remoteCapsCodecsIt = remoteCaps.find("codecs");
-
-			for (auto& remoteCodec : *remoteCapsCodecsIt)
+			// Match media codecs.
+			if (preferLocalCodecsOrder)
 			{
-				if (isRtxCodec(remoteCodec))
-				{
-					continue;
-				}
-
+				// Keep order preferred by local capabilities.
 				json& localCodecs = localCaps["codecs"];
 
-				auto matchingLocalCodecIt = std::find_if(
-				  localCodecs.begin(),
-				  localCodecs.end(),
-				  [&remoteCodec](json& localCodec)
-				  {
-					  return matchCodecs(localCodec, remoteCodec, /*strict*/ true, /*modify*/ true);
-				  });
-
-				if (matchingLocalCodecIt == localCodecs.end())
+				for (auto& localCodec : localCodecs)
 				{
-					continue;
+					if (isRtxCodec(localCodec))
+					{
+						continue;
+					}
+
+					auto& remoteCodecs         = remoteCaps["codecs"];
+					auto matchingRemoteCodecIt = std::find_if(
+					  remoteCodecs.begin(),
+					  remoteCodecs.end(),
+					  [&localCodec](json& remoteCodec)
+					  {
+						  return matchCodecs(remoteCodec, localCodec, /*strict*/ true, /*modify*/ true);
+					  });
+
+					if (matchingRemoteCodecIt == remoteCodecs.end())
+					{
+						continue;
+					}
+
+					auto& matchingRemoteCodec = *matchingRemoteCodecIt;
+
+					// clang-format off
+					json extendedCodec =
+					{
+						{ "mimeType",             localCodec["mimeType"]                          },
+						{ "kind",                 localCodec["kind"]                              },
+						{ "clockRate",            localCodec["clockRate"]                         },
+						{ "localPayloadType",     localCodec["preferredPayloadType"]              },
+						{ "localRtxPayloadType",  nullptr                                         },
+						{ "remotePayloadType",    matchingRemoteCodec["preferredPayloadType"]     },
+						{ "remoteRtxPayloadType", nullptr                                         },
+						{ "localParameters",      localCodec["parameters"]                        },
+						{ "remoteParameters",     matchingRemoteCodec["parameters"]               },
+						{ "rtcpFeedback",         reduceRtcpFeedback(localCodec, matchingRemoteCodec) }
+					};
+					// clang-format on
+
+					if (localCodec.contains("channels"))
+					{
+						extendedCodec["channels"] = localCodec["channels"];
+					}
+
+					extendedRtpCapabilities["codecs"].push_back(extendedCodec);
 				}
+			}
+			else
+			{
+				// Keep order preferred by remote capabilities.
+				auto remoteCapsCodecsIt = remoteCaps.find("codecs");
 
-				auto& matchingLocalCodec = *matchingLocalCodecIt;
-
-				// clang-format off
-				json extendedCodec =
+				for (auto& remoteCodec : *remoteCapsCodecsIt)
 				{
-					{ "mimeType",             matchingLocalCodec["mimeType"]                      },
-					{ "kind",                 matchingLocalCodec["kind"]                          },
-					{ "clockRate",            matchingLocalCodec["clockRate"]                     },
-					{ "localPayloadType",     matchingLocalCodec["preferredPayloadType"]          },
-					{ "localRtxPayloadType",  nullptr                                             },
-					{ "remotePayloadType",    remoteCodec["preferredPayloadType"]                 },
-					{ "remoteRtxPayloadType", nullptr                                             },
-					{ "localParameters",      matchingLocalCodec["parameters"]                    },
-					{ "remoteParameters",     remoteCodec["parameters"]                           },
-					{ "rtcpFeedback",         reduceRtcpFeedback(matchingLocalCodec, remoteCodec) }
-				};
-				// clang-format on
+					if (isRtxCodec(remoteCodec))
+					{
+						continue;
+					}
 
-				if (matchingLocalCodec.contains("channels"))
-				{
-					extendedCodec["channels"] = matchingLocalCodec["channels"];
+					json& localCodecs = localCaps["codecs"];
+
+					auto matchingLocalCodecIt = std::find_if(
+					  localCodecs.begin(),
+					  localCodecs.end(),
+					  [&remoteCodec](json& localCodec)
+					  {
+						  return matchCodecs(localCodec, remoteCodec, /*strict*/ true, /*modify*/ true);
+					  });
+
+					if (matchingLocalCodecIt == localCodecs.end())
+					{
+						continue;
+					}
+
+					auto& matchingLocalCodec = *matchingLocalCodecIt;
+
+					// clang-format off
+					json extendedCodec =
+					{
+						{ "mimeType",             matchingLocalCodec["mimeType"]                      },
+						{ "kind",                 matchingLocalCodec["kind"]                          },
+						{ "clockRate",            matchingLocalCodec["clockRate"]                     },
+						{ "localPayloadType",     matchingLocalCodec["preferredPayloadType"]          },
+						{ "localRtxPayloadType",  nullptr                                             },
+						{ "remotePayloadType",    remoteCodec["preferredPayloadType"]                 },
+						{ "remoteRtxPayloadType", nullptr                                             },
+						{ "localParameters",      matchingLocalCodec["parameters"]                    },
+						{ "remoteParameters",     remoteCodec["parameters"]                           },
+						{ "rtcpFeedback",         reduceRtcpFeedback(matchingLocalCodec, remoteCodec) }
+					};
+					// clang-format on
+
+					if (matchingLocalCodec.contains("channels"))
+					{
+						extendedCodec["channels"] = matchingLocalCodec["channels"];
+					}
+
+					extendedRtpCapabilities["codecs"].push_back(extendedCodec);
 				}
-
-				extendedRtpCapabilities["codecs"].push_back(extendedCodec);
 			}
 
 			// Match RTX codecs.
@@ -1791,6 +1847,11 @@ namespace mediasoupclient
 			// If no capability codec is given, take the first one (and RTX).
 			if (!capCodec || !capCodec->is_object())
 			{
+				if (codecs.empty())
+				{
+					MSC_THROW_TYPE_ERROR("empty codecs");
+				}
+
 				filteredCodecs.push_back(codecs[0]);
 
 				if (codecs.size() > 1 && isRtxCodec(codecs[1]))

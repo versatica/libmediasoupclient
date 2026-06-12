@@ -17,9 +17,14 @@ namespace mediasoupclient
 		bool IsLoaded() const;
 		const nlohmann::json& GetRtpCapabilities() const;
 		const nlohmann::json& GetSctpCapabilities() const;
+		[[deprecated("Use Load(routerRtpCapabilities, peerConnectionOptions, preferLocalCodecsOrder)")]]
 		void Load(
 		  nlohmann::json routerRtpCapabilities,
 		  const PeerConnection::Options* peerConnectionOptions = nullptr);
+		void Load(
+		  nlohmann::json routerRtpCapabilities,
+		  const PeerConnection::Options* peerConnectionOptions,
+		  bool preferLocalCodecsOrder);
 		bool CanProduce(const std::string& kind);
 		SendTransport* CreateSendTransport(
 		  SendTransport::Listener* listener,

@@ -57,6 +57,64 @@ TEST_CASE("getExtendedCapabilities", "[ortc][getExtendedCapabilities]")
 
 		REQUIRE(extendedRtpCapabilities["headerExtensions"].size() == 8);
 	}
+
+	SECTION("succeeds with preferLocalCodecsOrder = true, preserving local codec order")
+	{
+		json remoteCaps = generateRouterRtpCapabilities();
+		json localCaps  = generateRouterRtpCapabilities();
+
+		// Reorder local codecs so H264 comes before VP8.
+		json reordered = json::array();
+		reordered.push_back(localCaps["codecs"][0]); // opus
+		reordered.push_back(localCaps["codecs"][3]); // H264
+		reordered.push_back(localCaps["codecs"][4]); // H264-rtx
+		reordered.push_back(localCaps["codecs"][1]); // VP8
+		reordered.push_back(localCaps["codecs"][2]); // VP8-rtx
+		localCaps["codecs"] = reordered;
+
+		auto extendedRtpCapabilities =
+		  ortc::getExtendedRtpCapabilities(localCaps, remoteCaps, true /*preferLocalCodecsOrder*/);
+
+		REQUIRE(extendedRtpCapabilities["codecs"].size() == 3);
+
+		auto codecs = extendedRtpCapabilities["codecs"];
+
+		// Local order preserved: opus, H264, VP8.
+		REQUIRE(codecs[0]["mimeType"] == "audio/opus");
+		REQUIRE(codecs[1]["mimeType"] == "video/H264");
+		REQUIRE(codecs[1]["remoteRtxPayloadType"] == 104);
+		REQUIRE(codecs[1]["localRtxPayloadType"] == 104);
+		REQUIRE(codecs[2]["mimeType"] == "video/VP8");
+		REQUIRE(codecs[2]["remoteRtxPayloadType"] == 102);
+		REQUIRE(codecs[2]["localRtxPayloadType"] == 102);
+	}
+
+	SECTION("succeeds with preferLocalCodecsOrder = false (default), preserving remote codec order")
+	{
+		json remoteCaps = generateRouterRtpCapabilities();
+		json localCaps  = generateRouterRtpCapabilities();
+
+		// Same reorder of local caps as above.
+		json reordered = json::array();
+		reordered.push_back(localCaps["codecs"][0]); // opus
+		reordered.push_back(localCaps["codecs"][3]); // H264
+		reordered.push_back(localCaps["codecs"][4]); // H264-rtx
+		reordered.push_back(localCaps["codecs"][1]); // VP8
+		reordered.push_back(localCaps["codecs"][2]); // VP8-rtx
+		localCaps["codecs"] = reordered;
+
+		auto extendedRtpCapabilities =
+		  ortc::getExtendedRtpCapabilities(localCaps, remoteCaps, false /*preferLocalCodecsOrder*/);
+
+		REQUIRE(extendedRtpCapabilities["codecs"].size() == 3);
+
+		auto codecs = extendedRtpCapabilities["codecs"];
+
+		// Remote order preserved: opus, VP8, H264.
+		REQUIRE(codecs[0]["mimeType"] == "audio/opus");
+		REQUIRE(codecs[1]["mimeType"] == "video/VP8");
+		REQUIRE(codecs[2]["mimeType"] == "video/H264");
+	}
 }
 
 TEST_CASE("getRecvRtpCapabilities", "[getRecvRtpCapabilities]")
@@ -276,5 +334,11 @@ TEST_CASE("ortc::reduceCodecs", "[ortc::reduceCodecs]")
 		})"_json;
 
 		REQUIRE_THROWS_AS(ortc::reduceCodecs(caps["codecs"], &capCodec), MediaSoupClientTypeError);
+	}
+
+	SECTION("it throws if codecs is empty and no capability codec is given")
+	{
+		json empty = json::array();
+		REQUIRE_THROWS_AS(ortc::reduceCodecs(empty, nullptr), MediaSoupClientTypeError);
 	}
 }

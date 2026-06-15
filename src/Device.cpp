@@ -55,6 +55,14 @@ namespace mediasoupclient
 	 */
 	void Device::Load(json routerRtpCapabilities, const PeerConnection::Options* peerConnectionOptions)
 	{
+		Load(std::move(routerRtpCapabilities), peerConnectionOptions, false);
+	}
+
+	void Device::Load(
+	  json routerRtpCapabilities,
+	  const PeerConnection::Options* peerConnectionOptions,
+	  bool preferLocalCodecsOrder)
+	{
 		MSC_TRACE();
 
 		if (this->loaded)
@@ -80,13 +88,15 @@ namespace mediasoupclient
 		// RemoteDescription, since the header extension ids in the answer do not match those in the
 		// offer. See: https://github.com/versatica/mediasoup-client/pull/336 for the JS counterpart and
 		// more rationale.
-		this->getSendExtendedRtpCapabilities = [routerRtpCapabilities](json& currentLocalRtpCapabilities)
+		this->getSendExtendedRtpCapabilities =
+		  [routerRtpCapabilities, preferLocalCodecsOrder](json& currentLocalRtpCapabilities)
 		{
 			auto routerRtpCapabilitiesCopy = routerRtpCapabilities;
-			return ortc::getExtendedRtpCapabilities(currentLocalRtpCapabilities, routerRtpCapabilitiesCopy);
+			return ortc::getExtendedRtpCapabilities(
+			  currentLocalRtpCapabilities, routerRtpCapabilitiesCopy, preferLocalCodecsOrder);
 		};
-		const auto recvExtendedRtpCapabilities =
-		  ortc::getExtendedRtpCapabilities(nativeRtpCapabilities, routerRtpCapabilities);
+		const auto recvExtendedRtpCapabilities = ortc::getExtendedRtpCapabilities(
+		  nativeRtpCapabilities, routerRtpCapabilities, preferLocalCodecsOrder);
 
 		// Check whether we can produce audio/video.
 		this->canProduceByKind["audio"] = ortc::canSend("audio", recvExtendedRtpCapabilities);

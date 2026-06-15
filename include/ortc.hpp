@@ -25,7 +25,8 @@ namespace mediasoupclient
 		void validateIceCandidates(nlohmann::json& params);
 		void validateDtlsParameters(nlohmann::json& params);
 		void validateProducerCodecOptions(nlohmann::json& params);
-		nlohmann::json getExtendedRtpCapabilities(nlohmann::json& localCaps, nlohmann::json& remoteCaps);
+		nlohmann::json getExtendedRtpCapabilities(
+		  nlohmann::json& localCaps, nlohmann::json& remoteCaps, bool preferLocalCodecsOrder = false);
 		nlohmann::json getRecvRtpCapabilities(const nlohmann::json& extendedRtpCapabilities);
 		nlohmann::json getSendingRtpParameters(
 		  const std::string& kind, const nlohmann::json& extendedRtpCapabilities);

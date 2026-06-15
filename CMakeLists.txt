@@ -22,6 +22,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Project options.
 option(MEDIASOUPCLIENT_BUILD_TESTS "Build unit tests" OFF)
+option(MEDIASOUPCLIENT_BUILD_DEMO  "Build demo app" OFF)
 option(MEDIASOUPCLIENT_LOG_TRACE   "Enable MSC_LOG_TRACE (See Logger.hpp)" OFF)
 option(MEDIASOUPCLIENT_LOG_DEV     "Enable MSC_LOG_DEV (See Logger.hpp)" OFF)
 
@@ -43,6 +44,7 @@ endif()
 
 message("\n=========== libmediasoupclient Build Configuration ===========\n")
 message(STATUS "MEDIASOUPCLIENT_BUILD_TESTS : " ${MEDIASOUPCLIENT_BUILD_TESTS})
+message(STATUS "MEDIASOUPCLIENT_BUILD_DEMO  : " ${MEDIASOUPCLIENT_BUILD_DEMO})
 message(STATUS "MEDIASOUPCLIENT_LOG_TRACE   : " ${MEDIASOUPCLIENT_LOG_TRACE})
 message(STATUS "MEDIASOUPCLIENT_LOG_DEV     : " ${MEDIASOUPCLIENT_LOG_DEV})
 message(STATUS "LIBWEBRTC_INCLUDE_PATH      : " ${LIBWEBRTC_INCLUDE_PATH})
@@ -158,3 +160,7 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC
 
 install(TARGETS mediasoupclient DESTINATION lib)
 install(FILES ${HEADER_FILES} DESTINATION include/mediasoupclient)
+
+if (${MEDIASOUPCLIENT_BUILD_DEMO})
+	add_subdirectory(demo)
+endif()

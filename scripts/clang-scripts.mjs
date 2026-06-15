@@ -12,7 +12,7 @@ const NUM_CORES = getNumCores();
 const CLANG_FORMAT_VERSION = 22;
 const CLANG_TIDY_VERSION = 21;
 
-const CLANG_FORMAT_PATHS = ["src/**/*.cpp", "include/**/*.hpp", "test/**/*.cpp", "test/**/*.hpp"];
+const CLANG_FORMAT_PATHS = ["src/**/*.cpp", "include/**/*.hpp", "test/**/*.cpp", "test/**/*.hpp", "demo/**/*.cpp", "demo/**/*.hpp"];
 
 const CLANG_TIDY_PATHS = ["src/**/*.cpp", "test/**/*.cpp"];
 

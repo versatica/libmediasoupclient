@@ -36,21 +36,6 @@ namespace mediasoupclient
 	}
 
 	/**
-	 * SCTP capabilities of the Device for receiving media.
-	 */
-	const json& Device::GetSctpCapabilities() const
-	{
-		MSC_TRACE();
-
-		if (!this->loaded)
-		{
-			MSC_THROW_INVALID_STATE_ERROR("not loaded");
-		}
-
-		return this->sctpCapabilities;
-	}
-
-	/**
 	 * Initialize the Device.
 	 */
 	void Device::Load(json routerRtpCapabilities, const PeerConnection::Options* peerConnectionOptions)

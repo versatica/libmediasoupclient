@@ -12,14 +12,6 @@
 
 using json = nlohmann::json;
 
-constexpr uint16_t SctpNumStreamsOs{ 1024u };
-constexpr uint16_t SctpNumStreamsMis{ 1024u };
-
-static json SctpNumStreams = {
-	{ "OS",  SctpNumStreamsOs  },
-  { "MIS", SctpNumStreamsMis }
-};
-
 // Static functions declaration.
 static void fillJsonRtpEncodingParameters(
   json& jsonEncoding, const webrtc::RtpEncodingParameters& encoding);
@@ -48,17 +40,6 @@ namespace mediasoupclient
 		auto nativeRtpCapabilities = Sdp::Utils::extractRtpCapabilities(sdpObject);
 
 		return nativeRtpCapabilities;
-	}
-
-	json Handler::GetNativeSctpCapabilities()
-	{
-		MSC_TRACE();
-
-		json caps = {
-			{ "numStreams", SctpNumStreams }
-		};
-
-		return caps;
 	}
 
 	/* Handler instance methods. */

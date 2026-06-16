@@ -18,23 +18,26 @@ if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
 	if [ -f "${DEMO_BINARY}" ]; then
 		exec "${DEMO_BINARY}" --help
 	fi
-	echo "Usage: $(basename $0) [rebuild] [serverUrl] [origin]"
+	echo "Usage: $(basename $0) [rebuild] [options]"
 	echo "       $(basename $0) --help"
 	exit 0
 fi
 
-# rebuild: clean + reconfigure.
+# rebuild: wipe the build directory before configuring.
 if [ "$1" = "rebuild" ]; then
-	echo "[INFO] rebuilding: cmake . -Bbuild [...]"
+	echo "[INFO] rebuilding: removing build/"
 	rm -rf build/
-	cmake . -Bbuild \
-		-DLIBWEBRTC_INCLUDE_PATH:PATH=${PATH_TO_LIBWEBRTC_SOURCES} \
-		-DLIBWEBRTC_BINARY_PATH:PATH=${PATH_TO_LIBWEBRTC_BINARY} \
-		-DMEDIASOUPCLIENT_BUILD_DEMO="true" \
-		-DCMAKE_CXX_FLAGS="-fvisibility=hidden" \
-		-DCMAKE_POLICY_VERSION_MINIMUM=3.5
 	shift
 fi
+
+# Always configure (no-op when the build dir and flags are unchanged).
+echo "[INFO] configuring: cmake . -Bbuild [...]"
+cmake . -Bbuild \
+	-DLIBWEBRTC_INCLUDE_PATH:PATH=${PATH_TO_LIBWEBRTC_SOURCES} \
+	-DLIBWEBRTC_BINARY_PATH:PATH=${PATH_TO_LIBWEBRTC_BINARY} \
+	-DMEDIASOUPCLIENT_BUILD_DEMO="true" \
+	-DCMAKE_CXX_FLAGS="-fvisibility=hidden" \
+	-DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
 echo "[INFO] compiling: cmake --build build --target mediasoupclient_demo"
 cmake --build build --target mediasoupclient_demo

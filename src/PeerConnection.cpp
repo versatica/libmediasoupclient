@@ -20,6 +20,7 @@
 #include <api/create_peerconnection_factory.h>
 #include <api/video_codecs/builtin_video_decoder_factory.h>
 #include <api/video_codecs/builtin_video_encoder_factory.h>
+#include <api/sctp_transport_interface.h>
 #include <rtc_base/ssl_adapter.h>
 
 using json = nlohmann::json;
@@ -403,6 +404,18 @@ namespace mediasoupclient
 		}
 
 		return result.value();
+	}
+
+	std::optional<int> PeerConnection::GetSctpMaxChannels() const
+	{
+		auto sctpTransport = this->pc->GetSctpTransport();
+
+		if (!sctpTransport)
+		{
+			return std::nullopt;
+		}
+
+		return sctpTransport->Information().MaxChannels();
 	}
 
 	/* SetLocalDescriptionObserver */

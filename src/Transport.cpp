@@ -154,11 +154,18 @@ namespace mediasoupclient
 		if (sctpParameters != nullptr && sctpParameters.is_object())
 		{
 			this->hasSctpParameters = true;
-			auto maxMessageSizeIt   = sctpParameters.find("maxMessageSize");
 
-			if (maxMessageSizeIt->is_number_integer())
+			// Backward compatibility: prefer maxSendMessageSize, fall back to maxMessageSize.
+			auto maxSendIt    = sctpParameters.find("maxSendMessageSize");
+			auto maxLegacyIt  = sctpParameters.find("maxMessageSize");
+
+			if (maxSendIt != sctpParameters.end() && maxSendIt->is_number_integer())
 			{
-				this->maxSctpMessageSize = maxMessageSizeIt->get<size_t>();
+				this->maxSctpMessageSize = maxSendIt->get<size_t>();
+			}
+			else if (maxLegacyIt != sctpParameters.end() && maxLegacyIt->is_number_integer())
+			{
+				this->maxSctpMessageSize = maxLegacyIt->get<size_t>();
 			}
 		}
 
@@ -279,7 +286,7 @@ namespace mediasoupclient
 
 		if (!this->hasSctpParameters)
 		{
-			MSC_THROW_ERROR("SctpParameters are mandatory when using data producer listener");
+			MSC_THROW_UNSUPPORTED_ERROR("SCTP not enabled by remote transport");
 		}
 
 		webrtc::DataChannelInit dataChannelInit;

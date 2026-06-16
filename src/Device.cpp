@@ -110,14 +110,6 @@ namespace mediasoupclient
 
 		MSC_DEBUG("got receiving RTP capabilities:\n%s", this->recvRtpCapabilities.dump(4).c_str());
 
-		// Generate our SCTP capabilities.
-		this->sctpCapabilities = Handler::GetNativeSctpCapabilities();
-
-		// This may throw.
-		ortc::validateSctpCapabilities(this->sctpCapabilities);
-
-		MSC_DEBUG("got receiving SCTP capabilities:\n%s", this->sctpCapabilities.dump(4).c_str());
-
 		MSC_DEBUG("succeeded");
 
 		this->loaded = true;

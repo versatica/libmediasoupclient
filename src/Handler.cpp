@@ -435,7 +435,9 @@ namespace mediasoupclient
 		  this->pc->CreateDataChannel(label, &dataChannelInit);
 
 		// Increase next id.
-		this->nextSendSctpStreamId = (this->nextSendSctpStreamId + 1) % SctpNumStreamsMis;
+		this->nextSendSctpStreamId =
+		  (this->nextSendSctpStreamId + 1) %
+		  static_cast<uint32_t>(this->pc->GetSctpMaxChannels().value_or(65536));
 
 		// If this is the first DataChannel we need to create the SDP answer with
 		// m=application section.

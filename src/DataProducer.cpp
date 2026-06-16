@@ -144,6 +144,12 @@ namespace mediasoupclient
 			case webrtc::DataChannelInterface::DataState::kClosing:
 				break;
 			case webrtc::DataChannelInterface::DataState::kClosed:
+				if (this->closed)
+				{
+					break;
+				}
+
+				this->closed = true;
 				this->listener->OnClose(this);
 				break;
 			default:

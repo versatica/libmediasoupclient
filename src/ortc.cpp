@@ -726,9 +726,6 @@ namespace mediasoupclient
 			{
 				MSC_THROW_TYPE_ERROR("invalid params.maxReceiveMessageSize");
 			}
-
-			// NOTE: OS, MIS and maxMessageSize are kept for backwards compatibility but are
-			// no longer mandatory.
 		}
 
 		/**

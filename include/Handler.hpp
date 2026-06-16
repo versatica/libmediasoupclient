@@ -37,7 +37,8 @@ namespace mediasoupclient
 	public:
 		static nlohmann::json GetNativeRtpCapabilities(
 		  const PeerConnection::Options* peerConnectionOptions = nullptr);
-		[[deprecated("sctpCapabilities has been removed. See https://github.com/versatica/libmediasoupclient/issues/199")]]
+		[[deprecated(
+		  "sctpCapabilities has been removed. See https://github.com/versatica/libmediasoupclient/issues/199")]]
 		static nlohmann::json GetNativeSctpCapabilities();
 
 	public:

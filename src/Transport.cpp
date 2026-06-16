@@ -156,16 +156,16 @@ namespace mediasoupclient
 			this->hasSctpParameters = true;
 
 			// Backward compatibility: prefer maxSendMessageSize, fall back to maxMessageSize.
-			auto maxSendIt    = sctpParameters.find("maxSendMessageSize");
-			auto maxLegacyIt  = sctpParameters.find("maxMessageSize");
+			auto maxSendMessageSizeIt = sctpParameters.find("maxSendMessageSize");
+			auto maxMessageSizeIt     = sctpParameters.find("maxMessageSize");
 
-			if (maxSendIt != sctpParameters.end() && maxSendIt->is_number_integer())
+			if (maxSendMessageSizeIt != sctpParameters.end() && maxSendMessageSizeIt->is_number_integer())
 			{
-				this->maxSctpMessageSize = maxSendIt->get<size_t>();
+				this->maxSctpMessageSize = maxSendMessageSizeIt->get<size_t>();
 			}
-			else if (maxLegacyIt != sctpParameters.end() && maxLegacyIt->is_number_integer())
+			else if (maxMessageSizeIt != sctpParameters.end() && maxMessageSizeIt->is_number_integer())
 			{
-				this->maxSctpMessageSize = maxLegacyIt->get<size_t>();
+				this->maxSctpMessageSize = maxMessageSizeIt->get<size_t>();
 			}
 		}
 

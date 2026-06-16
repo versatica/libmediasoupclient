@@ -3,9 +3,9 @@
 
 #include <api/peer_connection_interface.h> // webrtc::PeerConnectionInterface
 #include <future>                          // std::promise, std::future
-#include <optional>
 #include <json.hpp>
 #include <memory> // std::unique_ptr
+#include <optional>
 
 namespace mediasoupclient
 {

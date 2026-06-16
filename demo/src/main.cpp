@@ -96,8 +96,8 @@ int main(int argc, char* argv[])
 	std::string origin;
 	std::string roomId = "demo-room";
 
-	app.add_option("--ws-url",  wsUrl,  "Protoo WebSocket URL (e.g. wss://localhost:4443)")->required();
-	app.add_option("--origin",  origin, "HTTP Origin header  (e.g. https://myserver:4443)")->required();
+	app.add_option("--ws-url", wsUrl, "Protoo WebSocket URL (e.g. wss://localhost:4443)")->required();
+	app.add_option("--origin", origin, "HTTP Origin header  (e.g. https://myserver:4443)")->required();
 	app.add_option("--room-id", roomId, "Room ID")->capture_default_str();
 
 	CLI11_PARSE(app, argc, argv);

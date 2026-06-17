@@ -705,10 +705,9 @@ namespace mediasoupclient
 				MSC_THROW_TYPE_ERROR("params is not an object");
 			}
 
-			auto portIt           = params.find("port");
-			auto osIt             = params.find("OS");
-			auto misIt            = params.find("MIS");
-			auto maxMessageSizeIt = params.find("maxMessageSize");
+			auto portIt               = params.find("port");
+			auto maxSendMessageSizeIt = params.find("maxSendMessageSize");
+			auto maxRecvMessageSizeIt = params.find("maxReceiveMessageSize");
 
 			// port is mandatory.
 			if (portIt == params.end() || !portIt->is_number_integer())
@@ -716,22 +715,16 @@ namespace mediasoupclient
 				MSC_THROW_TYPE_ERROR("missing params.port");
 			}
 
-			// OS is mandatory.
-			if (osIt == params.end() || !osIt->is_number_integer())
+			// maxSendMessageSize is optional.
+			if (maxSendMessageSizeIt != params.end() && !maxSendMessageSizeIt->is_number_integer())
 			{
-				MSC_THROW_TYPE_ERROR("missing params.OS");
+				MSC_THROW_TYPE_ERROR("invalid params.maxSendMessageSize");
 			}
 
-			// MIS is mandatory.
-			if (misIt == params.end() || !misIt->is_number_integer())
+			// maxReceiveMessageSize is optional.
+			if (maxRecvMessageSizeIt != params.end() && !maxRecvMessageSizeIt->is_number_integer())
 			{
-				MSC_THROW_TYPE_ERROR("missing params.MIS");
-			}
-
-			// maxMessageSize is mandatory.
-			if (maxMessageSizeIt == params.end() || !maxMessageSizeIt->is_number_integer())
-			{
-				MSC_THROW_TYPE_ERROR("missing params.maxMessageSize");
+				MSC_THROW_TYPE_ERROR("invalid params.maxReceiveMessageSize");
 			}
 		}
 

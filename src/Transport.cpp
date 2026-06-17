@@ -154,11 +154,18 @@ namespace mediasoupclient
 		if (sctpParameters != nullptr && sctpParameters.is_object())
 		{
 			this->hasSctpParameters = true;
-			auto maxMessageSizeIt   = sctpParameters.find("maxMessageSize");
 
-			if (maxMessageSizeIt->is_number_integer())
+			// Backward compatibility: prefer maxReceiveMessageSize, fall back to maxMessageSize.
+			auto maxReceiveMessageSizeIt = sctpParameters.find("maxReceiveMessageSize");
+			auto maxMessageSizeIt        = sctpParameters.find("maxMessageSize");
+
+			if (maxReceiveMessageSizeIt != sctpParameters.end() && maxReceiveMessageSizeIt->is_number_integer())
 			{
-				this->maxSctpMessageSize = maxMessageSizeIt->get<size_t>();
+				this->maxReceiveMessageSize = maxReceiveMessageSizeIt->get<size_t>();
+			}
+			else if (maxMessageSizeIt != sctpParameters.end() && maxMessageSizeIt->is_number_integer())
+			{
+				this->maxReceiveMessageSize = maxMessageSizeIt->get<size_t>();
 			}
 		}
 
@@ -279,7 +286,7 @@ namespace mediasoupclient
 
 		if (!this->hasSctpParameters)
 		{
-			MSC_THROW_ERROR("SctpParameters are mandatory when using data producer listener");
+			MSC_THROW_UNSUPPORTED_ERROR("SCTP not enabled by remote transport");
 		}
 
 		webrtc::DataChannelInit dataChannelInit;
@@ -409,7 +416,23 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		this->hasSctpParameters = sctpParameters != nullptr && sctpParameters.is_object();
+		if (sctpParameters != nullptr && sctpParameters.is_object())
+		{
+			this->hasSctpParameters = true;
+
+			// Backward compatibility: prefer maxSendMessageSize, fall back to maxMessageSize.
+			auto maxSendMessageSizeIt = sctpParameters.find("maxSendMessageSize");
+			auto maxMessageSizeIt     = sctpParameters.find("maxMessageSize");
+
+			if (maxSendMessageSizeIt != sctpParameters.end() && maxSendMessageSizeIt->is_number_integer())
+			{
+				this->maxSendMessageSize = maxSendMessageSizeIt->get<size_t>();
+			}
+			else if (maxMessageSizeIt != sctpParameters.end() && maxMessageSizeIt->is_number_integer())
+			{
+				this->maxSendMessageSize = maxMessageSizeIt->get<size_t>();
+			}
+		}
 
 		this->recvHandler.reset(new RecvHandler(
 		  dynamic_cast<RecvHandler::PrivateListener*>(this),
@@ -542,7 +565,8 @@ namespace mediasoupclient
 		}
 
 		// This may throw.
-		auto recvResult = this->recvHandler->ReceiveDataChannel(label, dataChannelInit);
+		auto recvResult =
+		  this->recvHandler->ReceiveDataChannel(label, dataChannelInit, this->maxSendMessageSize);
 
 		auto dataConsumer = new DataConsumer(
 		  listener, this, id, producerId, recvResult.dataChannel, recvResult.sctpStreamParameters, appData);

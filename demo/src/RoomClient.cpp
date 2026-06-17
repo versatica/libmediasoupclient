@@ -284,9 +284,8 @@ void RoomClient::Join()
 		  "createWebRtcTransport",
 		  // clang-format off
 		  {
-			{ "forceTcp",         false                                },
-			{ "sctpCapabilities", this->device.GetSctpCapabilities()  },
-			{ "appData",          { { "direction", "producer" } }     },
+			{ "forceTcp", false                           },
+			{ "appData",  { { "direction", "producer" } } },
 		  });
 		// clang-format on
 
@@ -307,9 +306,8 @@ void RoomClient::Join()
 		  "createWebRtcTransport",
 		  // clang-format off
 		  {
-			{ "forceTcp",         false                                },
-			{ "sctpCapabilities", this->device.GetSctpCapabilities()  },
-			{ "appData",          { { "direction", "consumer" } }     },
+			{ "forceTcp", false                           },
+			{ "appData",  { { "direction", "consumer" } } },
 		  });
 		// clang-format on
 
@@ -338,7 +336,6 @@ void RoomClient::Join()
 		{ "displayName",      this->displayName                   },
 		{ "device",           { { "name", "mediasoupclient" } }   },
 		{ "rtpCapabilities",  this->device.GetRtpCapabilities()   },
-		{ "sctpCapabilities", this->device.GetSctpCapabilities()  },
 	  });
 	// clang-format on
 

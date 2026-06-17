@@ -5,6 +5,7 @@
 #include <future>                          // std::promise, std::future
 #include <json.hpp>
 #include <memory> // std::unique_ptr
+#include <optional>
 
 namespace mediasoupclient
 {
@@ -166,6 +167,7 @@ namespace mediasoupclient
 		nlohmann::json GetStats(webrtc::scoped_refptr<webrtc::RtpReceiverInterface> selector);
 		webrtc::scoped_refptr<webrtc::DataChannelInterface> CreateDataChannel(
 		  const std::string& label, const webrtc::DataChannelInit* config);
+		std::optional<int> GetSctpMaxChannels() const;
 
 	private:
 		// Signaling and worker threads.

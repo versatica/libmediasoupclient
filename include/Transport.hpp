@@ -61,8 +61,6 @@ namespace mediasoupclient
 	protected:
 		// Closed flag.
 		bool closed{ false };
-		// SCTP max message size if enabled, null otherwise.
-		size_t maxSctpMessageSize{ 0u };
 		// Whether the Consumer for RTP probation has been created.
 		bool probatorConsumerCreated{ false };
 		// Whether this transport supports DataChannel.
@@ -163,6 +161,8 @@ namespace mediasoupclient
 		const std::map<std::string, bool>* canProduceByKind{ nullptr };
 		// SendHandler instance.
 		std::unique_ptr<SendHandler> sendHandler;
+		// Maximum size for SCTP messages received by mediasoup DataProducers (in bytes).
+		size_t maxReceiveMessageSize{ 0u };
 	};
 
 	class RecvTransport : public Transport,
@@ -226,6 +226,8 @@ namespace mediasoupclient
 		std::unique_ptr<RecvHandler> recvHandler;
 
 		const nlohmann::json* recvRtpCapabilities;
+		// Maximum size for SCTP messages sent by mediasoup DataConsumers (in bytes).
+		size_t maxSendMessageSize{ 0u };
 	};
 } // namespace mediasoupclient
 #endif

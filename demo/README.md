@@ -9,8 +9,8 @@ Connects to a [mediasoup-demo](https://github.com/versatica/mediasoup-demo) serv
 
 ## Build & Run
 
-`run.sh` always does an incremental build before launching the binary.
-Pass `rebuild` as the first argument to do a full clean reconfigure first.
+`run.sh` always configures (fast no-op when nothing changed) and builds before launching the binary.
+Pass `rebuild` as the first argument to wipe `build/` and start clean.
 
 ```bash
 # Incremental build + run

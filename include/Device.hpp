@@ -16,7 +16,6 @@ namespace mediasoupclient
 
 		bool IsLoaded() const;
 		const nlohmann::json& GetRtpCapabilities() const;
-		const nlohmann::json& GetSctpCapabilities() const;
 		[[deprecated("Use Load(routerRtpCapabilities, peerConnectionOptions, preferLocalCodecsOrder)")]]
 		void Load(
 		  nlohmann::json routerRtpCapabilities,
@@ -76,8 +75,6 @@ namespace mediasoupclient
 			{ "video", false }
 		};
 		// clang-format on
-		// Local SCTP capabilities.
-		nlohmann::json sctpCapabilities;
 	};
 } // namespace mediasoupclient
 

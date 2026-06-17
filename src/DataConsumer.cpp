@@ -48,13 +48,7 @@ namespace mediasoupclient
 				this->listener->OnClosing(this);
 				break;
 			case webrtc::DataChannelInterface::DataState::kClosed:
-				if (this->closed)
-				{
-					break;
-				}
-
-				this->closed = true;
-				this->listener->OnClose(this);
+				this->Close();
 				break;
 			default:
 				MSC_ERROR("unknown state %s", webrtc::DataChannelInterface::DataStateString(state));

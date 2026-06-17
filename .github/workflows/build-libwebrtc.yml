@@ -17,7 +17,7 @@ jobs:
             fail-fast: false
             matrix:
                 include:
-                    - os: ubuntu-24.04
+                    - os: ubuntu-26.04
                       artifact: libwebrtc-linux-x64
                       gn_args: >-
                           is_debug=false
@@ -105,7 +105,7 @@ jobs:
     release:
         name: Publish Release
         needs: build
-        runs-on: ubuntu-24.04
+        runs-on: ubuntu-26.04
         permissions:
             contents: write
 

@@ -565,7 +565,8 @@ namespace mediasoupclient
 		}
 
 		// This may throw.
-		auto recvResult = this->recvHandler->ReceiveDataChannel(label, dataChannelInit, this->maxSendMessageSize);
+		auto recvResult =
+		  this->recvHandler->ReceiveDataChannel(label, dataChannelInit, this->maxSendMessageSize);
 
 		auto dataConsumer = new DataConsumer(
 		  listener, this, id, producerId, recvResult.dataChannel, recvResult.sctpStreamParameters, appData);

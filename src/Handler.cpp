@@ -758,7 +758,7 @@ namespace mediasoupclient
 	}
 
 	Handler::DataChannel RecvHandler::ReceiveDataChannel(
-	  const std::string& label, webrtc::DataChannelInit dataChannelInit)
+	  const std::string& label, webrtc::DataChannelInit dataChannelInit, size_t maxMessageSize)
 	{
 		MSC_TRACE();
 
@@ -791,11 +791,31 @@ namespace mediasoupclient
 			this->pc->SetRemoteDescription(webrtc::SdpType::kOffer, sdpOffer);
 
 			webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
-			auto sdpAnswer = this->pc->CreateAnswer(options);
+			auto sdpAnswer      = this->pc->CreateAnswer(options);
+			auto localSdpObject = sdptransform::parse(sdpAnswer);
+
+			// Set maxMessageSize in the application media section (mirrors the
+			// transport's maxSendMessageSize, telling the remote what we can receive).
+			if (maxMessageSize > 0u)
+			{
+				auto mediaIt = std::find_if(
+				  localSdpObject["media"].begin(),
+				  localSdpObject["media"].end(),
+				  [](const json& m)
+				  {
+					  return m.at("type").get<std::string>() == "application";
+				  });
+
+				if (mediaIt != localSdpObject["media"].end())
+				{
+					(*mediaIt)["maxMessageSize"] = maxMessageSize;
+				}
+
+				sdpAnswer = sdptransform::write(localSdpObject);
+			}
 
 			if (!this->transportReady)
 			{
-				auto localSdpObject = sdptransform::parse(sdpAnswer);
 				this->SetupTransport(
 				  !this->forcedLocalDtlsRole.empty() ? this->forcedLocalDtlsRole : "client", localSdpObject);
 			}

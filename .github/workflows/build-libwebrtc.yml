@@ -26,35 +26,17 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                include:
-                    # ubuntu-24.04 is the latest Ubuntu version supported by ./build/install-build-deps.sh.
+                build:
                     - os: ubuntu-24.04
                       artifact: libwebrtc-linux-x64
-                      gn_args: >-
-                          is_debug=false
-                          is_component_build=false
-                          is_clang=false
-                          rtc_include_tests=false
-                          rtc_use_h264=true
-                          use_rtti=true
-                          use_custom_libcxx=false
-                          treat_warnings_as_errors=false
-                          use_ozone=true
+                      gn_args: is_debug=false is_component_build=false is_clang=false rtc_include_tests=false rtc_use_h264=true use_rtti=true use_custom_libcxx=false treat_warnings_as_errors=false use_ozone=true
 
                     - os: macos-15
                       artifact: libwebrtc-macos-arm64
-                      gn_args: >-
-                          is_debug=false
-                          is_component_build=false
-                          is_clang=true
-                          rtc_include_tests=false
-                          rtc_use_h264=true
-                          use_rtti=true
-                          use_custom_libcxx=false
+                      gn_args: is_debug=false is_component_build=false is_clang=true rtc_include_tests=false rtc_use_h264=true use_rtti=true use_custom_libcxx=false
 
-        name: Build (${{ matrix.os }})
-        runs-on: ${{ matrix.os }}
-        if: ${{ inputs.os == 'all' || inputs.os == matrix.os }}
+        name: Build (${{ matrix.build.os }})
+        runs-on: ${{ matrix.build.os }}
 
         steps:
             - name: Install depot_tools
@@ -77,13 +59,13 @@ jobs:
                   gclient sync
 
             - name: Install Linux build dependencies
-              if: runner.os == 'Linux'
+              if: ${{ runner.os == 'Linux' }}
               working-directory: ${{ runner.temp }}/webrtc-checkout/src
               run: sudo ./build/install-build-deps.sh --no-prompt
 
             - name: Generate build files
               working-directory: ${{ runner.temp }}/webrtc-checkout/src
-              run: gn gen out/${{ env.WEBRTC_REVISION }} --args='${{ matrix.gn_args }}'
+              run: gn gen out/${{ env.WEBRTC_REVISION }} --args='${{ matrix.build.gn_args }}'
 
             - name: Build
               working-directory: ${{ runner.temp }}/webrtc-checkout/src
@@ -104,14 +86,14 @@ jobs:
                     | tar czf "${ARTIFACT_DIR}/include.tar.gz" -T -
 
                   # Final tarball.
-                  tar czf "${{ runner.temp }}/${{ matrix.artifact }}.tar.gz" \
+                  tar czf "${{ runner.temp }}/${{ matrix.build.artifact }}.tar.gz" \
                     -C "${{ runner.temp }}" artifact/
 
             - name: Upload artifact
               uses: actions/upload-artifact@v4
               with:
-                  name: ${{ matrix.artifact }}
-                  path: ${{ runner.temp }}/${{ matrix.artifact }}.tar.gz
+                  name: ${{ matrix.build.artifact }}
+                  path: ${{ runner.temp }}/${{ matrix.build.artifact }}.tar.gz
                   retention-days: 7
 
     release:

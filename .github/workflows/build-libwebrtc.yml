@@ -6,6 +6,16 @@ name: Build libwebrtc
 
 on:
     workflow_dispatch:
+        inputs:
+            os:
+                description: OS to build for
+                required: true
+                default: all
+                type: choice
+                options:
+                    - all
+                    - ubuntu-24.04
+                    - macos-15
 
 env:
     WEBRTC_BRANCH: branch-heads/7339
@@ -44,6 +54,7 @@ jobs:
 
         name: Build (${{ matrix.os }})
         runs-on: ${{ matrix.os }}
+        if: inputs.os == 'all' || inputs.os == matrix.os
 
         steps:
             - name: Install depot_tools

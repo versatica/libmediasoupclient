@@ -54,7 +54,7 @@ jobs:
 
         name: Build (${{ matrix.os }})
         runs-on: ${{ matrix.os }}
-        if: inputs.os == 'all' || inputs.os == matrix.os
+        if: ${{ inputs.os == 'all' || inputs.os == matrix.os }}
 
         steps:
             - name: Install depot_tools

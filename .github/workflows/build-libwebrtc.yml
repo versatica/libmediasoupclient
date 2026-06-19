@@ -70,9 +70,9 @@ jobs:
                   # Static library.
                   cp out/${{ env.WEBRTC_REVISION }}/obj/libwebrtc.a "${ARTIFACT_DIR}/"
 
-                  # Headers: all .h files under src/, preserving directory structure,
-                  # excluding the build output directory.
-                  find . -name "*.h" ! -path "./out/${{ env.WEBRTC_REVISION }}/*" \
+                  # Headers: all .h and .inc files under src/, preserving directory
+                  # structure, excluding the build output directory.
+                  find . \( -name "*.h" -o -name "*.inc" \) ! -path "./out/${{ env.WEBRTC_REVISION }}/*" \
                     | tar czf "${ARTIFACT_DIR}/include.tar.gz" -T -
 
                   # Final tarball.

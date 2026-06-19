@@ -1,0 +1,75 @@
+name: Test
+
+# Downloads pre-built libwebrtc artifacts from the corresponding GitHub
+# Release (produced by build-libwebrtc.yml) and runs the libmediasoupclient
+# test suite.
+
+on:
+    push:
+        branches: [v3]
+    pull_request:
+        paths:
+            - "include/**"
+            - "src/**"
+            - "test/**"
+    workflow_dispatch:
+
+env:
+    WEBRTC_REVISION: m140
+
+jobs:
+    test:
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - os: ubuntu-24.04
+                      artifact: libwebrtc-linux-x64
+                      test_binary: ./build/test/test
+
+                    - os: macos-15
+                      artifact: libwebrtc-macos-arm64
+                      test_binary: ./build/test/test.app/Contents/MacOS/test
+
+        name: Test (${{ matrix.os }})
+        runs-on: ${{ matrix.os }}
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Download libwebrtc release artifact
+              run: |
+                  gh release download webrtc-${{ env.WEBRTC_REVISION }} \
+                    --pattern "${{ matrix.artifact }}.tar.gz" \
+                    --output "${{ runner.temp }}/${{ matrix.artifact }}.tar.gz" \
+                    --repo ${{ github.repository }}
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Extract libwebrtc
+              run: |
+                  WEBRTC_DIR="${{ runner.temp }}/webrtc"
+                  mkdir -p "${WEBRTC_DIR}/include"
+
+                  # Extract outer tarball, stripping the 'artifact/' prefix.
+                  tar xzf "${{ runner.temp }}/${{ matrix.artifact }}.tar.gz" \
+                    -C "${WEBRTC_DIR}" --strip-components=1
+
+                  # Extract headers, preserving directory structure.
+                  tar xzf "${WEBRTC_DIR}/include.tar.gz" -C "${WEBRTC_DIR}/include"
+
+            - name: Configure
+              run: |
+                  cmake . -Bbuild \
+                    -DLIBWEBRTC_INCLUDE_PATH="${{ runner.temp }}/webrtc/include" \
+                    -DLIBWEBRTC_BINARY_PATH="${{ runner.temp }}/webrtc" \
+                    -DMEDIASOUPCLIENT_BUILD_TESTS=ON \
+                    -DCMAKE_CXX_FLAGS="-fvisibility=hidden" \
+                    -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+
+            - name: Build
+              run: cmake --build build --target test --parallel
+
+            - name: Run tests
+              run: ${{ matrix.test_binary }}

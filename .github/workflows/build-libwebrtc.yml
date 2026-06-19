@@ -17,7 +17,8 @@ jobs:
             fail-fast: false
             matrix:
                 include:
-                    - os: ubuntu-26.04
+                    # ubuntu-24.04 is the latest Ubuntu version supported by ./build/install-build-deps.sh.
+                    - os: ubuntu-24.04
                       artifact: libwebrtc-linux-x64
                       gn_args: >-
                           is_debug=false

@@ -25,6 +25,32 @@
 
 using json = nlohmann::json;
 
+/**
+ * Waits for a future while pumping the current WebRTC thread's message queue
+ * if we are running on one.
+ *
+ * Without this, calling PeerConnection methods from the signaling thread
+ * deadlocks: future.get() blocks the thread, preventing it from processing
+ * the observer callback task that would resolve the future.
+ */
+template<typename T>
+static T waitForFuture(std::future<T>& future)
+{
+	auto* thread = webrtc::Thread::Current();
+
+	if (thread)
+	{
+		// We are on a WebRTC thread. Pump its message queue so observer
+		// callbacks (posted as tasks) can fire while we wait.
+		while (future.wait_for(std::chrono::milliseconds(0)) != std::future_status::ready)
+		{
+			thread->ProcessMessages(10);
+		}
+	}
+
+	return future.get();
+}
+
 namespace mediasoupclient
 {
 	/* Static. */
@@ -179,7 +205,7 @@ namespace mediasoupclient
 
 		this->pc->CreateOffer(sessionDescriptionObserver, options);
 
-		return future.get();
+		return waitForFuture(future);
 	}
 
 	std::string PeerConnection::CreateAnswer(
@@ -194,7 +220,7 @@ namespace mediasoupclient
 
 		this->pc->CreateAnswer(sessionDescriptionObserver, options);
 
-		return future.get();
+		return waitForFuture(future);
 	}
 
 	void PeerConnection::SetLocalDescription(webrtc::SdpType type, const std::string& sdp)
@@ -216,13 +242,13 @@ namespace mediasoupclient
 			  error.description.c_str());
 
 			observer->Reject(error.description);
-			future.get();
+			waitForFuture(future);
 
 			return;
 		}
 
 		this->pc->SetLocalDescription(std::move(sessionDescription), observer);
-		future.get();
+		waitForFuture(future);
 	}
 
 	void PeerConnection::SetRemoteDescription(webrtc::SdpType type, const std::string& sdp)
@@ -244,13 +270,12 @@ namespace mediasoupclient
 			  error.description.c_str());
 
 			observer->Reject(error.description);
-			future.get();
-
+			waitForFuture(future);
 			return;
 		}
 
 		this->pc->SetRemoteDescription(std::move(sessionDescription), observer);
-		future.get();
+		waitForFuture(future);
 	}
 
 	std::string PeerConnection::GetLocalDescription()
@@ -356,7 +381,7 @@ namespace mediasoupclient
 
 		this->pc->GetStats(callback.get());
 
-		return future.get();
+		return waitForFuture(future);
 	}
 
 	json PeerConnection::GetStats(webrtc::scoped_refptr<webrtc::RtpSenderInterface> selector)
@@ -370,7 +395,7 @@ namespace mediasoupclient
 
 		this->pc->GetStats(std::move(selector), callback);
 
-		return future.get();
+		return waitForFuture(future);
 	}
 
 	json PeerConnection::GetStats(webrtc::scoped_refptr<webrtc::RtpReceiverInterface> selector)
@@ -384,7 +409,7 @@ namespace mediasoupclient
 
 		this->pc->GetStats(std::move(selector), callback);
 
-		return future.get();
+		return waitForFuture(future);
 	}
 
 	webrtc::scoped_refptr<webrtc::DataChannelInterface> PeerConnection::CreateDataChannel(

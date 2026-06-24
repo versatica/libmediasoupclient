@@ -23,9 +23,10 @@ jobs:
             fail-fast: false
             matrix:
                 include:
-                    - os: ubuntu-24.04
-                      artifact: libwebrtc-linux-x64
-                      test_binary: ./build/test/test
+                    # TODO: Linux disabled as libwebrtc build fails.
+                    #- os: ubuntu-24.04
+                    #  artifact: libwebrtc-linux-x64
+                    #  test_binary: ./build/test/test
 
                     - os: macos-15
                       artifact: libwebrtc-macos-arm64

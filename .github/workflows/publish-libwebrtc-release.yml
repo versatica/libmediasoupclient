@@ -1,0 +1,44 @@
+name: Publish libwebrtc Release
+
+# Temporary workflow to publish a GitHub Release from an already-built
+# workflow artifact. Delete once the build-libwebrtc.yml release job is stable.
+
+on:
+    workflow_dispatch:
+        inputs:
+            run_id:
+                description: build-libwebrtc workflow run ID to download artifacts from
+                required: true
+
+env:
+    WEBRTC_BRANCH: branch-heads/7339
+    WEBRTC_REVISION: m140
+
+jobs:
+    release:
+        name: Publish Release
+        runs-on: ubuntu-26.04
+        permissions:
+            contents: write
+
+        steps:
+            - name: Download artifacts from workflow run
+              run: |
+                  gh run download ${{ inputs.run_id }} \
+                    --repo ${{ github.repository }} \
+                    --dir artifacts/
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Create or replace release
+              run: |
+                  gh release delete webrtc-${{ env.WEBRTC_REVISION }} \
+                    --repo ${{ github.repository }} --yes 2>/dev/null || true
+
+                  gh release create webrtc-${{ env.WEBRTC_REVISION }} \
+                    --repo ${{ github.repository }} \
+                    --title "libwebrtc ${{ env.WEBRTC_REVISION }} (${{ env.WEBRTC_BRANCH }})" \
+                    --notes "Pre-built libwebrtc static library and headers used by the CI test workflow." \
+                    artifacts/**/*.tar.gz
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

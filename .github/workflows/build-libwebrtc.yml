@@ -109,7 +109,6 @@ jobs:
                     --repo ${{ github.repository }} \
                     --title "libwebrtc ${{ env.WEBRTC_REVISION }} (${{ env.WEBRTC_BRANCH }})" \
                     --notes "Pre-built libwebrtc static library and headers used by the CI test workflow." \
-                    artifacts/libwebrtc-linux-x64/libwebrtc-linux-x64.tar.gz \
-                    artifacts/libwebrtc-macos-arm64/libwebrtc-macos-arm64.tar.gz
+                    artifacts/**/*.tar.gz
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

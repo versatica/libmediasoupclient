@@ -400,6 +400,20 @@ namespace mediasoupclient
 		return this->sendHandler->GetSenderStats(producer->GetLocalId());
 	}
 
+	void SendTransport::OnPause(const Producer* producer)
+	{
+		MSC_TRACE();
+
+		this->sendHandler->PauseSending(producer->GetLocalId());
+	}
+
+	void SendTransport::OnResume(const Producer* producer)
+	{
+		MSC_TRACE();
+
+		this->sendHandler->ResumeSending(producer->GetLocalId());
+	}
+
 	/* RecvTransport */
 
 	RecvTransport::RecvTransport(

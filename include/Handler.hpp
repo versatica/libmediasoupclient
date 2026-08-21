@@ -111,6 +111,8 @@ namespace mediasoupclient
 		nlohmann::json GetSenderStats(const std::string& localId);
 		void RestartIce(const nlohmann::json& iceParameters) override;
 		DataChannel SendDataChannel(const std::string& label, webrtc::DataChannelInit dataChannelInit);
+		void PauseSending(const std::string& localId);
+		void ResumeSending(const std::string& localId);
 
 	private:
 		const std::function<nlohmann::json(nlohmann::json&)> getSendExtendedRtpCapabilities;

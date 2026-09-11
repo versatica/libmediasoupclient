@@ -32,6 +32,9 @@ namespace mediasoupclient
 
 				for (const auto& m : sdpObject["media"])
 				{
+					if (m["port"] == 0)
+						continue;
+					
 					auto kind = m["type"].get<std::string>();
 
 					if (kind == "audio")

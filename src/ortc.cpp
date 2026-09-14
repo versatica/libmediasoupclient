@@ -1256,7 +1256,7 @@ namespace mediasoupclient
 				  [&extendedCodec](const json& localCodec)
 				  {
 					  return isRtxCodec(localCodec) &&
-					         localCodec["parameters"]["apt"] == extendedCodec["localPayloadType"];
+						       localCodec["parameters"]["apt"] == extendedCodec["localPayloadType"];
 				  });
 
 				if (localCodecIt == localCodecs.end())
@@ -1272,7 +1272,7 @@ namespace mediasoupclient
 				  [&extendedCodec](const json& remoteCodec)
 				  {
 					  return isRtxCodec(remoteCodec) &&
-					         remoteCodec["parameters"]["apt"] == extendedCodec["remotePayloadType"];
+						       remoteCodec["parameters"]["apt"] == extendedCodec["remotePayloadType"];
 				  });
 
 				if (remoteCodecIt == remoteCodecs.end())
@@ -1645,7 +1645,7 @@ namespace mediasoupclient
 			  [](json& ext)
 			  {
 				  return ext["uri"].get<std::string>() ==
-				         "http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01";
+					       "http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01";
 			  });
 
 			if (headerExtensionIt != headerExtensionsIt->end())
@@ -1679,7 +1679,7 @@ namespace mediasoupclient
 			  [](json& ext)
 			  {
 				  return ext["uri"].get<std::string>() ==
-				         "http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time";
+					       "http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time";
 			  });
 
 			if (headerExtensionIt != headerExtensionsIt->end())

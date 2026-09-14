@@ -58,108 +58,128 @@ namespace mediasoupclient
 					}
 
 					// Get codecs.
-					for (const auto& rtp : m["rtp"])
+					auto jsonRtpIt = m.find("rtp");
+
+					if (jsonRtpIt != m.end() && jsonRtpIt->is_array())
 					{
-						std::string mimeType(kind);
-						mimeType.append("/").append(rtp["codec"].get<std::string>());
-
-						// clang-format off
-						json codec =
+						for (const auto& rtp : *jsonRtpIt)
 						{
-							{ "kind",                 kind           },
-							{ "mimeType",             mimeType       },
-							{ "preferredPayloadType", rtp["payload"] },
-							{ "clockRate",            rtp["rate"]    },
-							{ "parameters",           json::object() },
-							{ "rtcpFeedback",         json::array()  }
-						};
-						// clang-format on
+							std::string mimeType(kind);
+							mimeType.append("/").append(rtp["codec"].get<std::string>());
 
-						if (kind == "audio")
-						{
-							auto jsonEncodingIt = rtp.find("encoding");
+							// clang-format off
+							json codec =
+							{
+								{ "kind",                 kind           },
+								{ "mimeType",             mimeType       },
+								{ "preferredPayloadType", rtp["payload"] },
+								{ "clockRate",            rtp["rate"]    },
+								{ "parameters",           json::object() },
+								{ "rtcpFeedback",         json::array()  }
+							};
+							// clang-format on
 
-							if (jsonEncodingIt != rtp.end() && jsonEncodingIt->is_string())
+							if (kind == "audio")
 							{
-								codec["channels"] = std::stoi(jsonEncodingIt->get<std::string>());
+								auto jsonEncodingIt = rtp.find("encoding");
+
+								if (jsonEncodingIt != rtp.end() && jsonEncodingIt->is_string())
+								{
+									codec["channels"] = std::stoi(jsonEncodingIt->get<std::string>());
+								}
+								else
+								{
+									codec["channels"] = 1;
+								}
 							}
-							else
-							{
-								codec["channels"] = 1;
-							}
+
+							codecsMap[codec["preferredPayloadType"].get<uint8_t>()] = codec;
 						}
-
-						codecsMap[codec["preferredPayloadType"].get<uint8_t>()] = codec;
 					}
 
 					// Get codec parameters.
-					for (const auto& fmtp : m["fmtp"])
+					auto jsonFmtpIt = m.find("fmtp");
+
+					if (jsonFmtpIt != m.end() && jsonFmtpIt->is_array())
 					{
-						auto parameters    = sdptransform::parseParams(fmtp["config"]);
-						auto jsonPayloadIt = codecsMap.find(fmtp["payload"]);
-
-						if (jsonPayloadIt == codecsMap.end())
+						for (const auto& fmtp : *jsonFmtpIt)
 						{
-							continue;
+							auto parameters    = sdptransform::parseParams(fmtp["config"]);
+							auto jsonPayloadIt = codecsMap.find(fmtp["payload"]);
+
+							if (jsonPayloadIt == codecsMap.end())
+							{
+								continue;
+							}
+
+							// If preset, convert 'profile-id' parameter (VP8 and VP9) into
+							// integer since we define it that way in mediasoup RtpCodecParameters
+							// and RtpCodecCapability.
+							auto profileIdIt = parameters.find("profile-id");
+
+							if (profileIdIt != parameters.end() && profileIdIt->is_string())
+							{
+								parameters["profile-id"] = std::stoi(profileIdIt->get<std::string>());
+							}
+
+							auto& codec = jsonPayloadIt->second;
+
+							codec["parameters"] = parameters;
 						}
-
-						// If preset, convert 'profile-id' parameter (VP8 and VP9) into
-						// integer since we define it that way in mediasoup RtpCodecParameters
-						// and RtpCodecCapability.
-						auto profileIdIt = parameters.find("profile-id");
-
-						if (profileIdIt != parameters.end() && profileIdIt->is_string())
-						{
-							parameters["profile-id"] = std::stoi(profileIdIt->get<std::string>());
-						}
-
-						auto& codec = jsonPayloadIt->second;
-
-						codec["parameters"] = parameters;
 					}
 
 					// Get RTCP feedback for each codec.
-					for (const auto& fb : m["rtcpFb"])
+					auto jsonRtcpFbIt = m.find("rtcpFb");
+
+					if (jsonRtcpFbIt != m.end() && jsonRtcpFbIt->is_array())
 					{
-						auto jsonCodecIt = codecsMap.find(std::stoi(fb["payload"].get<std::string>()));
-
-						if (jsonCodecIt == codecsMap.end())
+						for (const auto& fb : *jsonRtcpFbIt)
 						{
-							continue;
+							auto jsonCodecIt = codecsMap.find(std::stoi(fb["payload"].get<std::string>()));
+
+							if (jsonCodecIt == codecsMap.end())
+							{
+								continue;
+							}
+
+							auto& codec = jsonCodecIt->second;
+
+							// clang-format off
+							json feedback =
+							{
+								{"type", fb["type"]}
+							};
+							// clang-format on
+
+							auto jsonSubtypeIt = fb.find("subtype");
+
+							if (jsonSubtypeIt != fb.end())
+							{
+								feedback["parameter"] = *jsonSubtypeIt;
+							}
+
+							codec["rtcpFeedback"].push_back(feedback);
 						}
-
-						auto& codec = jsonCodecIt->second;
-
-						// clang-format off
-						json feedback =
-						{
-							{"type", fb["type"]}
-						};
-						// clang-format on
-
-						auto jsonSubtypeIt = fb.find("subtype");
-
-						if (jsonSubtypeIt != fb.end())
-						{
-							feedback["parameter"] = *jsonSubtypeIt;
-						}
-
-						codec["rtcpFeedback"].push_back(feedback);
 					}
 
 					// Get RTP header extensions.
-					for (const auto& ext : m["ext"])
-					{
-						// clang-format off
-						json headerExtension =
-						{
-								{ "kind",        kind },
-								{ "uri",         ext["uri"] },
-								{ "preferredId", ext["value"] }
-						};
-						// clang-format on
+					auto jsonExtIt = m.find("ext");
 
-						headerExtensions.push_back(headerExtension);
+					if (jsonExtIt != m.end() && jsonExtIt->is_array())
+					{
+						for (const auto& ext : *jsonExtIt)
+						{
+							// clang-format off
+							json headerExtension =
+							{
+									{ "kind",        kind },
+									{ "uri",         ext["uri"] },
+									{ "preferredId", ext["value"] }
+							};
+							// clang-format on
+
+							headerExtensions.push_back(headerExtension);
+						}
 					}
 				}
 

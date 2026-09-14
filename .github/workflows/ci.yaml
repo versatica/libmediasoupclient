@@ -26,7 +26,7 @@ jobs:
                   cache: "npm"
 
             - name: Install clang-format
-              run: brew install clang-format@22
+              run: brew install clang-format@23
 
             - name: Check clang-format version
               run: clang-format --version

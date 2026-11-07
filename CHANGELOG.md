@@ -4,6 +4,7 @@
 
 * Sync ortc with mediasoup-client ([#198](https://github.com/versatica/libmediasoupclient/pull/198)).
 * Adapt SCTP/DataChannels API to latest changes in mediasoup ([#200](https://github.com/versatica/libmediasoupclient/pull/200)).
+* Do not terminate the process when `GetStats()` receives an invalid stats JSON, reject it instead.
 
 ### 3.5.1
 

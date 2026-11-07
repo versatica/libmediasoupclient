@@ -621,7 +621,22 @@ namespace mediasoupclient
 		}
 		else
 		{
-			this->promise.set_value(json::parse(s));
+			try
+			{
+				this->promise.set_value(json::parse(s));
+			}
+			catch (const json::exception& error)
+			{
+				const std::string message =
+				  std::string(
+				    "RTCStatsReport::ToJson() produced invalid JSON, probably because the process "
+				    "C locale uses a decimal comma (LC_NUMERIC must be \"C\"): ") +
+				  error.what();
+
+				MSC_WARN("%s", message.c_str());
+
+				this->promise.set_exception(std::make_exception_ptr(MediaSoupClientError(message.c_str())));
+			}
 		}
 	};
 

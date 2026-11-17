@@ -2,50 +2,22 @@
  * Logger facility.
  *
  * This include file defines logging macros for source files (.cpp). Each
- * source file including Logger.hpp MUST define its own MSC_CLASS macro. Include
- * files (.hpp) MUST NOT include Logger.hpp.
+ * source file including Logger.hpp MUST define its own MSC_CLASS macro.
+ * Include files (.hpp) MUST NOT include Logger.hpp.
  *
- * All the logging macros use the same format as printf().
+ * All logging macros use the same format as printf().
  *
- * If the macro MSC_LOG_FILE_LINE is defied, all the logging macros print more
- * verbose information, including current file and line.
- *
- * MSC_TRACE()
- *
- *   Logs the current method/function if MSC_LOG_TRACE macro is defined and
- *   logLevel is 'debug'.
- *
- * MSC_DEBUG(...)
- *
- * 	 Logs a debug.
- *
- * MSC_WARN(...)
- *
- *   Logs a warning.
- *
- * MSC_ERROR(...)
- *
- *   Logs an error.
- *
- * MSC_DUMP(...)
- *
- * 	 Logs always to stdout.
- *
- * MSC_ABORT(...)
- *
- *   Logs the given error to stderr and aborts the process.
- *
- * MSC_ASSERT(condition, ...)
- *
- *   If the condition is not satisfied, it calls MSC_ABORT().
+ * If MSC_LOG_FILE_LINE is defined, logging macros include the current
+ * file and line.
  */
 
 #ifndef MSC_LOGGER_HPP
 #define MSC_LOGGER_HPP
 
-#include <cstdint> // uint8_t
-#include <cstdio>  // std::snprintf(), std::fprintf(), stdout, stderr
-#include <cstdlib> // std::abort()
+#include <cstddef>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
 #include <cstring>
 
 namespace mediasoupclient
@@ -65,13 +37,20 @@ namespace mediasoupclient
 		class LogHandlerInterface
 		{
 		public:
-			virtual ~LogHandlerInterface()                                = default;
-			virtual void OnLog(LogLevel level, char* payload, size_t len) = 0;
+			virtual ~LogHandlerInterface() = default;
+
+			virtual void OnLog(
+			  LogLevel level,
+			  char* payload,
+			  size_t len) = 0;
 		};
 
 		class DefaultLogHandler : public LogHandlerInterface
 		{
-			void OnLog(LogLevel level, char* payload, size_t len) override;
+			void OnLog(
+			  LogLevel level,
+			  char* payload,
+			  size_t len) override;
 		};
 
 		static void SetLogLevel(LogLevel level);
@@ -90,94 +69,196 @@ namespace mediasoupclient
 
 /* Logging macros. */
 
-using Logger = mediasoupclient::Logger;
-
 // NOLINTBEGIN
+
 #define _MSC_LOG_SEPARATOR_CHAR "\n"
 
 #ifdef MSC_LOG_FILE_LINE
+
 	#define _MSC_LOG_STR " %s:%d | %s::%s()"
 	#define _MSC_LOG_STR_DESC _MSC_LOG_STR " | "
-	#define _MSC_FILE (std::strchr(__FILE__, '/') ? std::strchr(__FILE__, '/') + 1 : __FILE__)
-	#define _MSC_LOG_ARG _MSC_FILE, __LINE__, MSC_CLASS, __FUNCTION__
+
+	#define _MSC_FILE \
+		(std::strchr(__FILE__, '/') \
+			? std::strchr(__FILE__, '/') + 1 \
+			: __FILE__)
+
+	#define _MSC_LOG_ARG \
+		_MSC_FILE, __LINE__, MSC_CLASS, __FUNCTION__
+
 #else
+
 	#define _MSC_LOG_STR " %s::%s()"
 	#define _MSC_LOG_STR_DESC _MSC_LOG_STR " | "
-	#define _MSC_LOG_ARG MSC_CLASS, __FUNCTION__
+
+	#define _MSC_LOG_ARG \
+		MSC_CLASS, __FUNCTION__
+
 #endif
-// NOLINTEND
+
+/*
+ * Safely format and dispatch a log message.
+ *
+ * The returned length from snprintf() is clamped to the actual
+ * buffer capacity to prevent out-of-bounds reads.
+ *
+ * NOTE:
+ * The shared static buffer is retained for compatibility with
+ * the existing Logger.cpp implementation.
+ * Concurrent logging still requires synchronization.
+ */
+
+#define _MSC_LOG(level, prefix, desc, ...) \
+	do \
+	{ \
+		auto* loggerHandler = ::mediasoupclient::Logger::handler; \
+		if (loggerHandler && \
+		    ::mediasoupclient::Logger::logLevel >= (level)) \
+		{ \
+			const int loggerWritten = std::snprintf( \
+				::mediasoupclient::Logger::buffer, \
+				::mediasoupclient::Logger::BufferSize, \
+				prefix _MSC_LOG_STR_DESC desc, \
+				_MSC_LOG_ARG, \
+				##__VA_ARGS__); \
+			if (loggerWritten >= 0) \
+			{ \
+				const size_t loggerLength = \
+					static_cast<size_t>(loggerWritten) < \
+					::mediasoupclient::Logger::BufferSize \
+						? static_cast<size_t>(loggerWritten) \
+						: ::mediasoupclient::Logger::BufferSize - 1; \
+				loggerHandler->OnLog( \
+					level, \
+					::mediasoupclient::Logger::buffer, \
+					loggerLength); \
+			} \
+		} \
+	} while (false)
+
+/*
+ * TRACE
+ */
 
 #ifdef MSC_LOG_TRACE
+
 	#define MSC_TRACE() \
 		do \
 		{ \
-			if (Logger::handler && Logger::logLevel == Logger::LogLevel::LOG_DEBUG) \
+			auto* loggerHandler = ::mediasoupclient::Logger::handler; \
+			if (loggerHandler && \
+			    ::mediasoupclient::Logger::logLevel >= \
+			        ::mediasoupclient::Logger::LogLevel::LOG_TRACE) \
 			{ \
-				int loggerWritten = std::snprintf(Logger::buffer, Logger::BufferSize, "[TRACE]" _MSC_LOG_STR, _MSC_LOG_ARG); \
-				Logger::handler->OnLog(Logger::LogLevel::LOG_TRACE, Logger::buffer, loggerWritten); \
+				const int loggerWritten = std::snprintf( \
+					::mediasoupclient::Logger::buffer, \
+					::mediasoupclient::Logger::BufferSize, \
+					"[TRACE]" _MSC_LOG_STR, \
+					_MSC_LOG_ARG); \
+				if (loggerWritten >= 0) \
+				{ \
+					const size_t loggerLength = \
+						static_cast<size_t>(loggerWritten) < \
+						::mediasoupclient::Logger::BufferSize \
+							? static_cast<size_t>(loggerWritten) \
+							: ::mediasoupclient::Logger::BufferSize - 1; \
+					loggerHandler->OnLog( \
+						::mediasoupclient::Logger::LogLevel::LOG_TRACE, \
+						::mediasoupclient::Logger::buffer, \
+						loggerLength); \
+				} \
 			} \
-		} \
-		while (false)
+		} while (false)
+
 #else
-	#define MSC_TRACE() ;
+
+	#define MSC_TRACE() \
+		do {} while (false)
+
 #endif
 
+/*
+ * DEBUG
+ */
+
 #define MSC_DEBUG(desc, ...) \
-	do \
-	{ \
-		if (Logger::handler && Logger::logLevel == Logger::LogLevel::LOG_DEBUG) \
-		{ \
-			int loggerWritten = std::snprintf(Logger::buffer, Logger::BufferSize, "[DEBUG]" _MSC_LOG_STR_DESC desc, _MSC_LOG_ARG, ##__VA_ARGS__); \
-			Logger::handler->OnLog(Logger::LogLevel::LOG_DEBUG, Logger::buffer, loggerWritten); \
-		} \
-	} \
-	while (false)
+	_MSC_LOG( \
+		::mediasoupclient::Logger::LogLevel::LOG_DEBUG, \
+		"[DEBUG]", \
+		desc, \
+		##__VA_ARGS__)
+
+/*
+ * WARN
+ */
 
 #define MSC_WARN(desc, ...) \
-	do \
-	{ \
-		if (Logger::handler && Logger::logLevel >= Logger::LogLevel::LOG_WARN) \
-		{ \
-			int loggerWritten = std::snprintf(Logger::buffer, Logger::BufferSize, "[WARN]" _MSC_LOG_STR_DESC desc, _MSC_LOG_ARG, ##__VA_ARGS__); \
-			Logger::handler->OnLog(Logger::LogLevel::LOG_WARN, Logger::buffer, loggerWritten); \
-		} \
-	} \
-	while (false)
+	_MSC_LOG( \
+		::mediasoupclient::Logger::LogLevel::LOG_WARN, \
+		"[WARN]", \
+		desc, \
+		##__VA_ARGS__)
+
+/*
+ * ERROR
+ */
 
 #define MSC_ERROR(desc, ...) \
-	do \
-	{ \
-		if (Logger::handler && Logger::logLevel >= Logger::LogLevel::LOG_ERROR) \
-		{ \
-			int loggerWritten = std::snprintf(Logger::buffer, Logger::BufferSize, "[ERROR]" _MSC_LOG_STR_DESC desc, _MSC_LOG_ARG, ##__VA_ARGS__); \
-			Logger::handler->OnLog(Logger::LogLevel::LOG_ERROR, Logger::buffer, loggerWritten); \
-		} \
-	} \
-	while (false)
+	_MSC_LOG( \
+		::mediasoupclient::Logger::LogLevel::LOG_ERROR, \
+		"[ERROR]", \
+		desc, \
+		##__VA_ARGS__)
+
+/*
+ * DUMP
+ */
 
 #define MSC_DUMP(desc, ...) \
 	do \
 	{ \
-		std::fprintf(stdout, _MSC_LOG_STR_DESC desc _MSC_LOG_SEPARATOR_CHAR, _MSC_LOG_ARG, ##__VA_ARGS__); \
+		std::fprintf( \
+			stdout, \
+			_MSC_LOG_STR_DESC desc _MSC_LOG_SEPARATOR_CHAR, \
+			_MSC_LOG_ARG, \
+			##__VA_ARGS__); \
 		std::fflush(stdout); \
-	} \
-	while (false)
+	} while (false)
+
+/*
+ * ABORT
+ */
 
 #define MSC_ABORT(desc, ...) \
 	do \
 	{ \
-		std::fprintf(stderr, "[ABORT]" _MSC_LOG_STR_DESC desc _MSC_LOG_SEPARATOR_CHAR, _MSC_LOG_ARG, ##__VA_ARGS__); \
+		std::fprintf( \
+			stderr, \
+			"[ABORT]" _MSC_LOG_STR_DESC desc _MSC_LOG_SEPARATOR_CHAR, \
+			_MSC_LOG_ARG, \
+			##__VA_ARGS__); \
 		std::fflush(stderr); \
 		std::abort(); \
-	} \
-	while (false)
+	} while (false)
+
+/*
+ * ASSERT
+ */
 
 #define MSC_ASSERT(condition, desc, ...) \
-	if (!(condition)) \
+	do \
 	{ \
-		MSC_ABORT("failed assertion `%s': " desc, #condition, ##__VA_ARGS__); \
-	}
+		if (!(condition)) \
+		{ \
+			MSC_ABORT( \
+				"failed assertion `%s': " desc, \
+				#condition, \
+				##__VA_ARGS__); \
+		} \
+	} while (false)
+
+// NOLINTEND
 
 // clang-format on
 
-#endif
+#endif // MSC_LOGGER_HPP

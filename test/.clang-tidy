@@ -1,0 +1,8 @@
+---
+# Inherit every check and option from the root .clang-tidy file (which is kept
+# in sync with mediasoup's worker/.clang-tidy) and just turn off the checks that
+# Catch2 macros trigger.
+InheritParentConfig: true
+Checks: "\
+  -bugprone-chained-comparison,\
+  "

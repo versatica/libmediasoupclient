@@ -2,10 +2,10 @@
 
 #include "sdp/RemoteSdp.hpp"
 #include "Logger.hpp"
-#include "algorithm" // find_if.
 #include "sdptransform.hpp"
+#include <algorithm> // find_if.
 
-using json = nlohmann::json;
+using nlohmann::json;
 
 namespace mediasoupclient
 {
@@ -49,7 +49,7 @@ namespace mediasoupclient
 		// clang-format on
 
 		// If ICE parameters are given, add ICE-Lite indicator.
-		if (this->iceParameters.find("iceLite") != this->iceParameters.end())
+		if (this->iceParameters.contains("iceLite"))
 		{
 			this->sdpObject["icelite"] = "ice-lite";
 		}
@@ -63,7 +63,7 @@ namespace mediasoupclient
 		// clang-format on
 
 		// NOTE: We take the latest fingerprint.
-		auto numFingerprints = this->dtlsParameters["fingerprints"].size();
+		const auto numFingerprints = this->dtlsParameters["fingerprints"].size();
 
 		this->sdpObject["fingerprint"] = {
 			{ "type", this->dtlsParameters.at("fingerprints")[numFingerprints - 1]["algorithm"] },
@@ -84,11 +84,6 @@ namespace mediasoupclient
 	Sdp::RemoteSdp::~RemoteSdp()
 	{
 		MSC_TRACE();
-
-		for (const auto* mediaSection : this->mediaSections)
-		{
-			delete mediaSection;
-		}
 	}
 
 	void Sdp::RemoteSdp::UpdateIceParameters(const json& iceParameters)
@@ -97,14 +92,15 @@ namespace mediasoupclient
 
 		this->iceParameters = iceParameters;
 
-		if (iceParameters.find("iceLite") != iceParameters.end())
+		if (iceParameters.contains("iceLite"))
 		{
 			sdpObject["icelite"] = "ice-lite";
 		}
 
-		for (auto idx{ 0u }; idx < this->mediaSections.size(); ++idx)
+		for (auto idx{ 0U }; idx < this->mediaSections.size(); ++idx)
 		{
-			auto* mediaSection = this->mediaSections[idx];
+			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
+			const auto& mediaSection = this->mediaSections[idx];
 
 			mediaSection->SetIceParameters(iceParameters);
 
@@ -119,14 +115,15 @@ namespace mediasoupclient
 
 		this->dtlsParameters["role"] = role;
 
-		if (iceParameters.find("iceLite") != iceParameters.end())
+		if (iceParameters.contains("iceLite"))
 		{
 			sdpObject["icelite"] = "ice-lite";
 		}
 
-		for (auto idx{ 0u }; idx < this->mediaSections.size(); ++idx)
+		for (auto idx{ 0U }; idx < this->mediaSections.size(); ++idx)
 		{
-			auto* mediaSection = this->mediaSections[idx];
+			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
+			const auto& mediaSection = this->mediaSections[idx];
 
 			mediaSection->SetDtlsRole(role);
 
@@ -140,18 +137,19 @@ namespace mediasoupclient
 		MSC_TRACE();
 
 		// If a closed media section is found, return its index.
-		for (auto idx{ 0u }; idx < this->mediaSections.size(); ++idx)
+		for (auto idx{ 0U }; idx < this->mediaSections.size(); ++idx)
 		{
-			auto* mediaSection = this->mediaSections[idx];
+			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
+			const auto& mediaSection = this->mediaSections[idx];
 
 			if (mediaSection->IsClosed())
 			{
-				return { idx, mediaSection->GetMid() };
+				return { .idx = idx, .reuseMid = mediaSection->GetMid() };
 			}
 		}
 
 		// If no closed media section is found, return next one.
-		return { this->mediaSections.size() };
+		return { .idx = this->mediaSections.size() };
 	}
 
 	void Sdp::RemoteSdp::Send(
@@ -163,7 +161,7 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		auto* mediaSection = new AnswerMediaSection(
+		auto mediaSection = std::make_unique<AnswerMediaSection>(
 		  this->iceParameters,
 		  this->iceCandidates,
 		  this->dtlsParameters,
@@ -176,18 +174,20 @@ namespace mediasoupclient
 		// Closed media section replacement.
 		if (!reuseMid.empty())
 		{
-			this->ReplaceMediaSection(mediaSection, reuseMid);
+			ReplaceMediaSection(std::move(mediaSection), reuseMid);
 		}
 		else
 		{
-			this->AddMediaSection(mediaSection);
+			AddMediaSection(std::move(mediaSection));
 		}
 	}
 
 	void Sdp::RemoteSdp::SendSctpAssociation(json& offerMediaObject)
 	{
+		MSC_TRACE();
+
 		nlohmann::json emptyJson;
-		auto* mediaSection = new AnswerMediaSection(
+		auto mediaSection = std::make_unique<AnswerMediaSection>(
 		  this->iceParameters,
 		  this->iceCandidates,
 		  this->dtlsParameters,
@@ -197,13 +197,15 @@ namespace mediasoupclient
 		  emptyJson,
 		  nullptr);
 
-		this->AddMediaSection(mediaSection);
+		AddMediaSection(std::move(mediaSection));
 	}
 
 	void Sdp::RemoteSdp::RecvSctpAssociation()
 	{
-		nlohmann::json emptyJson;
-		auto* mediaSection = new OfferMediaSection(
+		MSC_TRACE();
+
+		const nlohmann::json emptyJson;
+		auto mediaSection = std::make_unique<OfferMediaSection>(
 		  this->iceParameters,
 		  this->iceCandidates,
 		  this->dtlsParameters,
@@ -214,7 +216,7 @@ namespace mediasoupclient
 		  "",            // streamId
 		  ""             // trackId
 		);
-		this->AddMediaSection(mediaSection);
+		AddMediaSection(std::move(mediaSection));
 	}
 
 	void Sdp::RemoteSdp::Receive(
@@ -226,7 +228,7 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		auto* mediaSection = new OfferMediaSection(
+		auto mediaSection = std::make_unique<OfferMediaSection>(
 		  this->iceParameters,
 		  this->iceCandidates,
 		  this->dtlsParameters,
@@ -239,21 +241,23 @@ namespace mediasoupclient
 
 		// Let's try to recycle a closed media section (if any).
 		// NOTE: We can recycle a closed m=audio section with a new m=video.
-		auto mediaSectionIt = find_if(
-		  this->mediaSections.begin(),
-		  this->mediaSections.end(),
-		  [](const MediaSection* mediaSection)
+		const auto mediaSectionIt = std::ranges::find_if(
+		  this->mediaSections,
+
+		  [](const std::unique_ptr<MediaSection>& mediaSection) -> bool
 		  {
 			  return mediaSection->IsClosed();
 		  });
 
 		if (mediaSectionIt != this->mediaSections.end())
 		{
-			this->ReplaceMediaSection(mediaSection, (*mediaSectionIt)->GetMid());
+			const auto reuseMid = (*mediaSectionIt)->GetMid();
+
+			ReplaceMediaSection(std::move(mediaSection), reuseMid);
 		}
 		else
 		{
-			this->AddMediaSection(mediaSection);
+			AddMediaSection(std::move(mediaSection));
 		}
 	}
 
@@ -261,8 +265,9 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		const auto idx     = this->midToIndex[mid];
-		auto* mediaSection = this->mediaSections[idx];
+		const auto idx = this->midToIndex[mid];
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
+		const auto& mediaSection = this->mediaSections[idx];
 
 		mediaSection->Disable();
 	}
@@ -271,8 +276,9 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		const auto idx     = this->midToIndex[mid];
-		auto* mediaSection = this->mediaSections[idx];
+		const auto idx = this->midToIndex[mid];
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
+		const auto& mediaSection = this->mediaSections[idx];
 
 		// NOTE: Closing the first m section is a pain since it invalidates the
 		// bundled transport, so let's avoid it.
@@ -289,7 +295,7 @@ namespace mediasoupclient
 		this->sdpObject["media"][idx] = mediaSection->GetObject();
 
 		// Regenerate BUNDLE mids.
-		this->RegenerateBundleMids();
+		RegenerateBundleMids();
 	}
 
 	std::string Sdp::RemoteSdp::GetSdp()
@@ -304,7 +310,7 @@ namespace mediasoupclient
 		return sdptransform::write(this->sdpObject);
 	}
 
-	void Sdp::RemoteSdp::AddMediaSection(MediaSection* newMediaSection)
+	void Sdp::RemoteSdp::AddMediaSection(std::unique_ptr<MediaSection> newMediaSection)
 	{
 		MSC_TRACE();
 
@@ -313,57 +319,61 @@ namespace mediasoupclient
 			this->firstMid = newMediaSection->GetMid();
 		}
 
+		// NOTE: Observer pointer to keep using the media section once the vector owns it.
+		const auto* const mediaSection = newMediaSection.get();
+
 		// Add it in the vector.
-		this->mediaSections.push_back(newMediaSection);
+		this->mediaSections.push_back(std::move(newMediaSection));
 
 		// Add to the map.
-		this->midToIndex[newMediaSection->GetMid()] = this->mediaSections.size() - 1;
+		this->midToIndex[mediaSection->GetMid()] = this->mediaSections.size() - 1;
 
 		// Add to the SDP object.
-		this->sdpObject["media"].push_back(newMediaSection->GetObject());
+		this->sdpObject["media"].push_back(mediaSection->GetObject());
 
-		this->RegenerateBundleMids();
+		RegenerateBundleMids();
 	}
 
-	void Sdp::RemoteSdp::ReplaceMediaSection(MediaSection* newMediaSection, const std::string& reuseMid)
+	void Sdp::RemoteSdp::ReplaceMediaSection(
+	  std::unique_ptr<MediaSection> newMediaSection, const std::string& reuseMid)
 	{
 		MSC_TRACE();
+
+		// NOTE: Observer pointer to keep using the media section once the vector owns it.
+		const auto* const mediaSection = newMediaSection.get();
 
 		// Store it in the map.
 		if (!reuseMid.empty())
 		{
-			const auto idx              = this->midToIndex[reuseMid];
-			auto* const oldMediaSection = this->mediaSections[idx];
+			const auto idx = this->midToIndex[reuseMid];
+			// NOTE: Read before the assignment below, which destroys the old media section.
+			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
+			const auto oldMid = this->mediaSections[idx]->GetMid();
 
 			// Replace the index in the vector with the new media section.
-			this->mediaSections[idx] = newMediaSection;
+			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
+			this->mediaSections[idx] = std::move(newMediaSection);
 
 			// Update the map.
-			this->midToIndex.erase(oldMediaSection->GetMid());
-			this->midToIndex[newMediaSection->GetMid()] = idx;
-
-			// Delete old MediaSection.
-			delete oldMediaSection;
+			this->midToIndex.erase(oldMid);
+			this->midToIndex[mediaSection->GetMid()] = idx;
 
 			// Update the SDP object.
-			this->sdpObject["media"][idx] = newMediaSection->GetObject();
+			this->sdpObject["media"][idx] = mediaSection->GetObject();
 
 			// Regenerate BUNDLE mids.
-			this->RegenerateBundleMids();
+			RegenerateBundleMids();
 		}
 		else
 		{
-			const auto idx              = this->midToIndex[newMediaSection->GetMid()];
-			auto* const oldMediaSection = this->mediaSections[idx];
+			const auto idx = this->midToIndex[mediaSection->GetMid()];
 
 			// Replace the index in the vector with the new media section.
-			this->mediaSections[idx] = newMediaSection;
-
-			// Delete old MediaSection.
-			delete oldMediaSection;
+			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
+			this->mediaSections[idx] = std::move(newMediaSection);
 
 			// Update the SDP object.
-			this->sdpObject["media"][this->mediaSections.size() - 1] = newMediaSection->GetObject();
+			this->sdpObject["media"][this->mediaSections.size() - 1] = mediaSection->GetObject();
 		}
 	}
 
@@ -373,7 +383,7 @@ namespace mediasoupclient
 
 		std::string mids;
 
-		for (const auto* mediaSection : this->mediaSections)
+		for (const auto& mediaSection : this->mediaSections)
 		{
 			if (!mediaSection->IsClosed())
 			{

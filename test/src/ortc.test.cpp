@@ -3,8 +3,6 @@
 #include "fakeParameters.hpp"
 #include <catch.hpp>
 
-using namespace mediasoupclient;
-
 TEST_CASE("validateRtpCapabilities", "[ortc][validateRtpCapabilities]")
 {
 }
@@ -16,7 +14,8 @@ TEST_CASE("getExtendedCapabilities", "[ortc][getExtendedCapabilities]")
 		json remoteCaps = generateRouterRtpCapabilities();
 		json localCaps  = generateRouterRtpCapabilities();
 
-		auto extendedRtpCapabilities = ortc::getExtendedRtpCapabilities(localCaps, remoteCaps);
+		auto extendedRtpCapabilities =
+		  mediasoupclient::ortc::getExtendedRtpCapabilities(localCaps, remoteCaps);
 
 		REQUIRE(extendedRtpCapabilities["codecs"].size() == 3);
 
@@ -44,7 +43,8 @@ TEST_CASE("getExtendedCapabilities", "[ortc][getExtendedCapabilities]")
 		it++;
 		localCaps["codecs"].erase(it);
 
-		auto extendedRtpCapabilities = ortc::getExtendedRtpCapabilities(localCaps, remoteCaps);
+		auto extendedRtpCapabilities =
+		  mediasoupclient::ortc::getExtendedRtpCapabilities(localCaps, remoteCaps);
 
 		REQUIRE(extendedRtpCapabilities["codecs"].size() == 2);
 
@@ -72,8 +72,8 @@ TEST_CASE("getExtendedCapabilities", "[ortc][getExtendedCapabilities]")
 		reordered.push_back(localCaps["codecs"][2]); // VP8-rtx
 		localCaps["codecs"] = reordered;
 
-		auto extendedRtpCapabilities =
-		  ortc::getExtendedRtpCapabilities(localCaps, remoteCaps, true /*preferLocalCodecsOrder*/);
+		auto extendedRtpCapabilities = mediasoupclient::ortc::getExtendedRtpCapabilities(
+		  localCaps, remoteCaps, true /*preferLocalCodecsOrder*/);
 
 		REQUIRE(extendedRtpCapabilities["codecs"].size() == 3);
 
@@ -103,8 +103,8 @@ TEST_CASE("getExtendedCapabilities", "[ortc][getExtendedCapabilities]")
 		reordered.push_back(localCaps["codecs"][2]); // VP8-rtx
 		localCaps["codecs"] = reordered;
 
-		auto extendedRtpCapabilities =
-		  ortc::getExtendedRtpCapabilities(localCaps, remoteCaps, false /*preferLocalCodecsOrder*/);
+		auto extendedRtpCapabilities = mediasoupclient::ortc::getExtendedRtpCapabilities(
+		  localCaps, remoteCaps, false /*preferLocalCodecsOrder*/);
 
 		REQUIRE(extendedRtpCapabilities["codecs"].size() == 3);
 
@@ -124,8 +124,9 @@ TEST_CASE("getRecvRtpCapabilities", "[getRecvRtpCapabilities]")
 		json remoteCaps = generateRouterRtpCapabilities();
 		json localCaps  = generateRouterRtpCapabilities();
 
-		auto extendedRtpCapabilities = ortc::getExtendedRtpCapabilities(localCaps, remoteCaps);
-		auto recvRtpCapabilities     = ortc::getRecvRtpCapabilities(extendedRtpCapabilities);
+		const auto extendedRtpCapabilities =
+		  mediasoupclient::ortc::getExtendedRtpCapabilities(localCaps, remoteCaps);
+		auto recvRtpCapabilities = mediasoupclient::ortc::getRecvRtpCapabilities(extendedRtpCapabilities);
 
 		REQUIRE(recvRtpCapabilities["codecs"].size() == 5);
 
@@ -149,8 +150,9 @@ TEST_CASE("getRecvRtpCapabilities", "[getRecvRtpCapabilities]")
 
 		localCaps["codecs"].erase(it);
 
-		auto extendedRtpCapabilities = ortc::getExtendedRtpCapabilities(localCaps, remoteCaps);
-		auto recvRtpCapabilities     = ortc::getRecvRtpCapabilities(extendedRtpCapabilities);
+		const auto extendedRtpCapabilities =
+		  mediasoupclient::ortc::getExtendedRtpCapabilities(localCaps, remoteCaps);
+		auto recvRtpCapabilities = mediasoupclient::ortc::getRecvRtpCapabilities(extendedRtpCapabilities);
 
 		REQUIRE(recvRtpCapabilities["codecs"].size() == 3);
 
@@ -169,13 +171,16 @@ TEST_CASE("getSendingRtpParameters", "[getSendingRtpParameters]")
 		json remoteCaps = generateRouterRtpCapabilities();
 		json localCaps  = generateRouterRtpCapabilities();
 
-		auto extendedRtpCapabilities = ortc::getExtendedRtpCapabilities(localCaps, remoteCaps);
-		auto audioSendRtpParameters  = ortc::getSendingRtpParameters("audio", extendedRtpCapabilities);
+		const auto extendedRtpCapabilities =
+		  mediasoupclient::ortc::getExtendedRtpCapabilities(localCaps, remoteCaps);
+		auto audioSendRtpParameters =
+		  mediasoupclient::ortc::getSendingRtpParameters("audio", extendedRtpCapabilities);
 
 		REQUIRE(audioSendRtpParameters["codecs"].size() == 1);
 		REQUIRE(audioSendRtpParameters["codecs"][0]["mimeType"] == "audio/opus");
 
-		auto videoSendRtpParameters = ortc::getSendingRtpParameters("video", extendedRtpCapabilities);
+		auto videoSendRtpParameters =
+		  mediasoupclient::ortc::getSendingRtpParameters("video", extendedRtpCapabilities);
 
 		REQUIRE(videoSendRtpParameters["codecs"].size() == 4);
 		REQUIRE(videoSendRtpParameters["codecs"][0]["mimeType"] == "video/VP8");
@@ -185,44 +190,46 @@ TEST_CASE("getSendingRtpParameters", "[getSendingRtpParameters]")
 	}
 }
 
-TEST_CASE("ortc::canSend", "[ortc::canSend]")
+TEST_CASE("mediasoupclient::ortc::canSend", "[mediasoupclient::ortc::canSend]")
 {
 	json remoteCaps = generateRouterRtpCapabilities();
 	json localCaps  = generateRouterRtpCapabilities();
 
-	auto extendedRtpCapabilities = ortc::getExtendedRtpCapabilities(localCaps, remoteCaps);
+	auto extendedRtpCapabilities =
+	  mediasoupclient::ortc::getExtendedRtpCapabilities(localCaps, remoteCaps);
 
 	SECTION("it can send audio and video if audio and video codecs are present")
 	{
-		REQUIRE(ortc::canSend("audio", extendedRtpCapabilities));
-		REQUIRE(ortc::canSend("video", extendedRtpCapabilities));
+		REQUIRE(mediasoupclient::ortc::canSend("audio", extendedRtpCapabilities));
+		REQUIRE(mediasoupclient::ortc::canSend("video", extendedRtpCapabilities));
 	}
 
 	SECTION("it cannot send audio if no audio codec is present")
 	{
 		// Remove the first codec "opus"
-		auto it = extendedRtpCapabilities["codecs"].begin();
+		const auto it = extendedRtpCapabilities["codecs"].begin();
 		extendedRtpCapabilities["codecs"].erase(it);
 
-		REQUIRE(!ortc::canSend("audio", extendedRtpCapabilities));
-		REQUIRE(ortc::canSend("video", extendedRtpCapabilities));
+		REQUIRE(!mediasoupclient::ortc::canSend("audio", extendedRtpCapabilities));
+		REQUIRE(mediasoupclient::ortc::canSend("video", extendedRtpCapabilities));
 	}
 
 	SECTION("it cannot send audio nor video if no codec is present")
 	{
 		extendedRtpCapabilities["codecs"] = json::array();
 
-		REQUIRE(!ortc::canSend("audio", extendedRtpCapabilities));
-		REQUIRE(!ortc::canSend("video", extendedRtpCapabilities));
+		REQUIRE(!mediasoupclient::ortc::canSend("audio", extendedRtpCapabilities));
+		REQUIRE(!mediasoupclient::ortc::canSend("video", extendedRtpCapabilities));
 	}
 }
 
-TEST_CASE("ortc::canReceive", "[ortc::canReceive]")
+TEST_CASE("mediasoupclient::ortc::canReceive", "[mediasoupclient::ortc::canReceive]")
 {
 	json remoteCaps = generateRouterRtpCapabilities();
 	json localCaps  = generateRouterRtpCapabilities();
-	auto extendedRtpCapabilities =
-	  ortc::getRecvRtpCapabilities(ortc::getExtendedRtpCapabilities(localCaps, remoteCaps));
+
+	const auto extendedRtpCapabilities = mediasoupclient::ortc::getRecvRtpCapabilities(
+	  mediasoupclient::ortc::getExtendedRtpCapabilities(localCaps, remoteCaps));
 
 	SECTION("it can receive")
 	{
@@ -245,7 +252,7 @@ TEST_CASE("ortc::canReceive", "[ortc::canReceive]")
 			]
 		})"_json;
 
-		REQUIRE(ortc::canReceive(rtpParameters, extendedRtpCapabilities));
+		REQUIRE(mediasoupclient::ortc::canReceive(rtpParameters, extendedRtpCapabilities));
 	}
 
 	SECTION("it cannot receive if empty rtpParameters")
@@ -255,7 +262,7 @@ TEST_CASE("ortc::canReceive", "[ortc::canReceive]")
 			"codecs" : []
 		})"_json;
 
-		REQUIRE(!ortc::canReceive(rtpParameters, extendedRtpCapabilities));
+		REQUIRE(!mediasoupclient::ortc::canReceive(rtpParameters, extendedRtpCapabilities));
 	}
 
 	SECTION("it cannot receive if no matching payload type")
@@ -279,17 +286,17 @@ TEST_CASE("ortc::canReceive", "[ortc::canReceive]")
 			]
 		})"_json;
 
-		REQUIRE(!ortc::canReceive(rtpParameters, extendedRtpCapabilities));
+		REQUIRE(!mediasoupclient::ortc::canReceive(rtpParameters, extendedRtpCapabilities));
 	}
 }
 
-TEST_CASE("ortc::reduceCodecs", "[ortc::reduceCodecs]")
+TEST_CASE("mediasoupclient::ortc::reduceCodecs", "[mediasoupclient::ortc::reduceCodecs]")
 {
 	json caps = generateRouterRtpCapabilities();
 
 	SECTION("it can reduce codecs")
 	{
-		auto capCodec       = R"(
+		const auto capCodec = R"(
 		{
 			"mimeType"             : "video/H264",
 			"kind"                 : "video",
@@ -312,7 +319,8 @@ TEST_CASE("ortc::reduceCodecs", "[ortc::reduceCodecs]")
 				"profile-level-id"        : "42e01f"
 			}
 		})"_json;
-		json filteredCodecs = ortc::reduceCodecs(caps["codecs"], &capCodec);
+		json filteredCodecs =
+		  mediasoupclient::ortc::reduceCodecs(caps["codecs"], std::addressof(capCodec));
 
 		REQUIRE(filteredCodecs[0]["mimeType"] == "video/H264");
 		REQUIRE(filteredCodecs[1]["mimeType"] == "video/rtx");
@@ -320,25 +328,28 @@ TEST_CASE("ortc::reduceCodecs", "[ortc::reduceCodecs]")
 
 	SECTION("it can return the first codec if no capability codec is given")
 	{
-		json capsCodec      = json::array();
-		json filteredCodecs = ortc::reduceCodecs(caps["codecs"], &capsCodec);
+		const json capsCodec = json::array();
+		json filteredCodecs =
+		  mediasoupclient::ortc::reduceCodecs(caps["codecs"], std::addressof(capsCodec));
 
 		REQUIRE(filteredCodecs[0]["mimeType"] == "audio/opus");
 	}
 
 	SECTION("it throws if codecs doesn't contain a provided codec")
 	{
-		auto capCodec = R"(
+		const auto capCodec = R"(
 		{
 			"mimeType"             : "video/x-dummy"
 		})"_json;
 
-		REQUIRE_THROWS_AS(ortc::reduceCodecs(caps["codecs"], &capCodec), MediaSoupClientTypeError);
+		REQUIRE_THROWS_AS(
+		  mediasoupclient::ortc::reduceCodecs(caps["codecs"], std::addressof(capCodec)),
+		  MediaSoupClientTypeError);
 	}
 
 	SECTION("it throws if codecs is empty and no capability codec is given")
 	{
 		json empty = json::array();
-		REQUIRE_THROWS_AS(ortc::reduceCodecs(empty, nullptr), MediaSoupClientTypeError);
+		REQUIRE_THROWS_AS(mediasoupclient::ortc::reduceCodecs(empty, nullptr), MediaSoupClientTypeError);
 	}
 }

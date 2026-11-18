@@ -23,7 +23,7 @@
 #include <api/video_codecs/builtin_video_encoder_factory.h>
 #include <rtc_base/ssl_adapter.h>
 
-using json = nlohmann::json;
+using nlohmann::json;
 
 /**
  * Waits for a future while pumping the current WebRTC thread's message queue
@@ -36,6 +36,8 @@ using json = nlohmann::json;
 template<typename T>
 static T waitForFuture(std::future<T>& future)
 {
+	MSC_TRACE();
+
 	auto* thread = webrtc::Thread::Current();
 
 	if (thread)
@@ -56,6 +58,7 @@ namespace mediasoupclient
 	/* Static. */
 
 	// clang-format off
+	// NOLINTBEGIN(bugprone-throwing-static-initialization)
 	std::map<webrtc::PeerConnectionInterface::IceConnectionState, const std::string>
 		PeerConnection::iceConnectionState2String =
 	{
@@ -86,6 +89,7 @@ namespace mediasoupclient
 		{ webrtc::PeerConnectionInterface::SignalingState::kHaveRemotePrAnswer, "have-remote-pranswer" },
 		{ webrtc::PeerConnectionInterface::SignalingState::kClosed,             "closed"               }
 	};
+	// NOLINTEND(bugprone-throwing-static-initialization)
 	// clang-format on
 
 	/* Instance methods. */
@@ -178,7 +182,7 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		webrtc::RTCError error = this->pc->SetConfiguration(config);
+		const webrtc::RTCError error = this->pc->SetConfiguration(config);
 
 		if (error.ok())
 		{
@@ -229,11 +233,11 @@ namespace mediasoupclient
 
 		webrtc::SdpParseError error;
 		std::unique_ptr<webrtc::SessionDescriptionInterface> sessionDescription;
-		webrtc::scoped_refptr<SetLocalDescriptionObserver> observer(
+		const webrtc::scoped_refptr<SetLocalDescriptionObserver> observer(
 		  new webrtc::RefCountedObject<SetLocalDescriptionObserver>());
 		auto future = observer->GetFuture();
 
-		sessionDescription = webrtc::CreateSessionDescription(type, sdp, &error);
+		sessionDescription = webrtc::CreateSessionDescription(type, sdp, std::addressof(error));
 		if (sessionDescription == nullptr)
 		{
 			MSC_WARN(
@@ -257,11 +261,11 @@ namespace mediasoupclient
 
 		webrtc::SdpParseError error;
 		std::unique_ptr<webrtc::SessionDescriptionInterface> sessionDescription;
-		webrtc::scoped_refptr<SetRemoteDescriptionObserver> observer(
+		const webrtc::scoped_refptr<SetRemoteDescriptionObserver> observer(
 		  new webrtc::RefCountedObject<SetRemoteDescriptionObserver>());
 		auto future = observer->GetFuture();
 
-		sessionDescription = webrtc::CreateSessionDescription(type, sdp, &error);
+		sessionDescription = webrtc::CreateSessionDescription(type, sdp, std::addressof(error));
 		if (sessionDescription == nullptr)
 		{
 			MSC_WARN(
@@ -285,7 +289,7 @@ namespace mediasoupclient
 		const auto* desc = this->pc->local_description();
 		std::string sdp;
 
-		desc->ToString(&sdp);
+		desc->ToString(std::addressof(sdp));
 
 		return sdp;
 	}
@@ -297,7 +301,7 @@ namespace mediasoupclient
 		const auto* desc = this->pc->remote_description();
 		std::string sdp;
 
-		desc->ToString(&sdp);
+		desc->ToString(std::addressof(sdp));
 
 		return sdp;
 	}
@@ -341,8 +345,7 @@ namespace mediasoupclient
 		 */
 		rtpTransceiverInit.stream_ids.emplace_back("0");
 
-		auto result = this->pc->AddTransceiver(
-		  track, rtpTransceiverInit); // NOLINT(performance-unnecessary-value-param)
+		auto result = this->pc->AddTransceiver(std::move(track), rtpTransceiverInit);
 
 		if (!result.ok())
 		{
@@ -374,7 +377,7 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		webrtc::scoped_refptr<RTCStatsCollectorCallback> callback(
+		const webrtc::scoped_refptr<RTCStatsCollectorCallback> callback(
 		  new webrtc::RefCountedObject<RTCStatsCollectorCallback>());
 
 		auto future = callback->GetFuture();
@@ -388,7 +391,7 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		webrtc::scoped_refptr<RTCStatsCollectorCallback> callback(
+		const webrtc::scoped_refptr<RTCStatsCollectorCallback> callback(
 		  new webrtc::RefCountedObject<RTCStatsCollectorCallback>());
 
 		auto future = callback->GetFuture();
@@ -402,7 +405,7 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		webrtc::scoped_refptr<RTCStatsCollectorCallback> callback(
+		const webrtc::scoped_refptr<RTCStatsCollectorCallback> callback(
 		  new webrtc::RefCountedObject<RTCStatsCollectorCallback>());
 
 		auto future = callback->GetFuture();
@@ -433,7 +436,9 @@ namespace mediasoupclient
 
 	std::optional<int> PeerConnection::GetSctpMaxChannels() const
 	{
-		auto sctpTransport = this->pc->GetSctpTransport();
+		MSC_TRACE();
+
+		const auto sctpTransport = this->pc->GetSctpTransport();
 
 		if (!sctpTransport)
 		{
@@ -470,9 +475,9 @@ namespace mediasoupclient
 			  std::string(webrtc::ToString(error.type())).c_str(),
 			  error.message());
 
-			auto message = std::string(error.message());
+			const auto message = std::string(error.message());
 
-			this->Reject(message);
+			Reject(message);
 		}
 		else
 		{
@@ -507,9 +512,9 @@ namespace mediasoupclient
 			  std::string(webrtc::ToString(error.type())).c_str(),
 			  error.message());
 
-			auto message = std::string(error.message());
+			const auto message = std::string(error.message());
 
-			this->Reject(message);
+			Reject(message);
 		}
 		else
 		{
@@ -549,9 +554,9 @@ namespace mediasoupclient
 		  std::string(webrtc::ToString(error.type())).c_str(),
 		  error.message());
 
-		auto message = std::string(error.message());
+		const auto message = std::string(error.message());
 
-		this->Reject(message);
+		Reject(message);
 	};
 
 	/* CreateSessionDescriptionObserver */
@@ -580,7 +585,7 @@ namespace mediasoupclient
 
 		std::string sdp;
 
-		ownedDesc->ToString(&sdp);
+		ownedDesc->ToString(std::addressof(sdp));
 		this->promise.set_value(sdp);
 	};
 
@@ -593,9 +598,9 @@ namespace mediasoupclient
 		  std::string(webrtc::ToString(error.type())).c_str(),
 		  error.message());
 
-		auto message = std::string(error.message());
+		const auto message = std::string(error.message());
 
-		this->Reject(message);
+		Reject(message);
 	}
 
 	/* RTCStatsCollectorCallback */
@@ -612,7 +617,7 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		std::string s = report->ToJson();
+		const std::string s = report->ToJson();
 
 		// RtpReceiver stats JSON string is sometimes empty.
 		if (s.empty())
@@ -709,7 +714,7 @@ namespace mediasoupclient
 
 		std::string candidateStr;
 
-		candidate->ToString(&candidateStr);
+		candidate->ToString(std::addressof(candidateStr));
 
 		MSC_DEBUG("[candidate:%s]", candidateStr.c_str());
 	}

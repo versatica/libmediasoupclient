@@ -4,7 +4,7 @@
 #include "Logger.hpp"
 #include "MediaSoupClientErrors.hpp"
 
-using json = nlohmann::json;
+using nlohmann::json;
 
 namespace mediasoupclient
 {
@@ -118,6 +118,8 @@ namespace mediasoupclient
 
 	json Producer::GetStats() const
 	{
+		MSC_TRACE();
+
 		if (this->closed)
 		{
 			MSC_THROW_INVALID_STATE_ERROR("Producer closed");
@@ -192,7 +194,7 @@ namespace mediasoupclient
 		this->privateListener->OnReplaceTrack(this, track);
 
 		// Keep current paused state.
-		auto paused = IsPaused();
+		const auto paused = IsPaused();
 
 		// Set the new track.
 		this->track = track;

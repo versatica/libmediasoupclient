@@ -32,80 +32,83 @@
 #include <catch.hpp>
 #include <memory>
 
-using json = nlohmann::json;
+using nlohmann::json;
 
-class SmokeSendTransportListener : public mediasoupclient::SendTransport::Listener
+namespace
 {
-public:
-	std::future<void> OnConnect(
-	  mediasoupclient::Transport* /*transport*/, const json& /*dtlsParameters*/) override
+	class SmokeSendTransportListener : public mediasoupclient::SendTransport::Listener
 	{
-		std::promise<void> p;
-		p.set_value();
-		return p.get_future();
-	}
+	public:
+		std::future<void> OnConnect(
+		  mediasoupclient::Transport* /*transport*/, const json& /*dtlsParameters*/) override
+		{
+			std::promise<void> p;
+			p.set_value();
+			return p.get_future();
+		}
 
-	void OnConnectionStateChange(
-	  mediasoupclient::Transport* /*transport*/, const std::string& /*connectionState*/) override
-	{
-	}
+		void OnConnectionStateChange(
+		  mediasoupclient::Transport* /*transport*/, const std::string& /*connectionState*/) override
+		{
+		}
 
-	std::future<std::string> OnProduce(
-	  mediasoupclient::SendTransport* /*transport*/,
-	  const std::string& /*kind*/,
-	  json /*rtpParameters*/,
-	  const json& /*appData*/) override
-	{
-		std::promise<std::string> p;
-		p.set_value(generateProducerRemoteId());
-		return p.get_future();
-	}
+		std::future<std::string> OnProduce(
+		  mediasoupclient::SendTransport* /*transport*/,
+		  const std::string& /*kind*/,
+		  json /*rtpParameters*/,
+		  const json& /*appData*/) override
+		{
+			std::promise<std::string> p;
+			p.set_value(generateProducerRemoteId());
+			return p.get_future();
+		}
 
-	std::future<std::string> OnProduceData(
-	  mediasoupclient::SendTransport* /*transport*/,
-	  const json& /*sctpStreamParameters*/,
-	  const std::string& /*label*/,
-	  const std::string& /*protocol*/,
-	  const json& /*appData*/) override
-	{
-		std::promise<std::string> p;
-		p.set_value(generateProducerRemoteId());
-		return p.get_future();
-	}
-};
+		std::future<std::string> OnProduceData(
+		  mediasoupclient::SendTransport* /*transport*/,
+		  const json& /*sctpStreamParameters*/,
+		  const std::string& /*label*/,
+		  const std::string& /*protocol*/,
+		  const json& /*appData*/) override
+		{
+			std::promise<std::string> p;
+			p.set_value(generateProducerRemoteId());
+			return p.get_future();
+		}
+	};
 
-class SmokeRecvTransportListener : public mediasoupclient::RecvTransport::Listener
-{
-public:
-	std::future<void> OnConnect(
-	  mediasoupclient::Transport* /*transport*/, const json& /*dtlsParameters*/) override
+	class SmokeRecvTransportListener : public mediasoupclient::RecvTransport::Listener
 	{
-		std::promise<void> p;
-		p.set_value();
-		return p.get_future();
-	}
+	public:
+		std::future<void> OnConnect(
+		  mediasoupclient::Transport* /*transport*/, const json& /*dtlsParameters*/) override
+		{
+			std::promise<void> p;
+			p.set_value();
+			return p.get_future();
+		}
 
-	void OnConnectionStateChange(
-	  mediasoupclient::Transport* /*transport*/, const std::string& /*connectionState*/) override
-	{
-	}
-};
+		void OnConnectionStateChange(
+		  mediasoupclient::Transport* /*transport*/, const std::string& /*connectionState*/) override
+		{
+		}
+	};
 
-class SmokeProducerListener : public mediasoupclient::Producer::Listener
-{
-public:
-	void OnTransportClose(mediasoupclient::Producer* /*producer*/) override
+	class SmokeProducerListener : public mediasoupclient::Producer::Listener
 	{
-	}
-};
+	public:
+		void OnTransportClose(mediasoupclient::Producer* /*producer*/) override
+		{
+		}
+	};
 
-class SmokeConsumerListener : public mediasoupclient::Consumer::Listener
-{
-public:
-	void OnTransportClose(mediasoupclient::Consumer* /*consumer*/) override
+	class SmokeConsumerListener : public mediasoupclient::Consumer::Listener
 	{
-	}
-};
+	public:
+		void OnTransportClose(mediasoupclient::Consumer* /*consumer*/) override
+		{
+		}
+	};
+} // namespace
 
 TEST_CASE("Smoke", "[Smoke]")
 {
@@ -121,7 +124,7 @@ TEST_CASE("Smoke", "[Smoke]")
 	workerThread->Start();
 	signalingThread->Start();
 
-	auto factory = webrtc::CreatePeerConnectionFactory(
+	const auto factory = webrtc::CreatePeerConnectionFactory(
 	  networkThread.get(),
 	  workerThread.get(),
 	  signalingThread.get(),
@@ -152,53 +155,53 @@ TEST_CASE("Smoke", "[Smoke]")
 
 	SECTION("Device::Load succeeds")
 	{
-		REQUIRE_NOTHROW(device.Load(generateRouterRtpCapabilities(), &pcOptions));
+		REQUIRE_NOTHROW(device.Load(generateRouterRtpCapabilities(), std::addressof(pcOptions), false));
 	}
 
 	SECTION("SendTransport and Produce audio")
 	{
-		REQUIRE_NOTHROW(device.Load(generateRouterRtpCapabilities(), &pcOptions));
+		REQUIRE_NOTHROW(device.Load(generateRouterRtpCapabilities(), std::addressof(pcOptions), false));
 
 		auto transportParams = generateTransportRemoteParameters();
 		SmokeSendTransportListener sendListener;
-		auto* sendTransport = device.CreateSendTransport(
-		  &sendListener,
+		const std::unique_ptr<mediasoupclient::SendTransport> sendTransport(device.CreateSendTransport(
+		  std::addressof(sendListener),
 		  transportParams["id"].get<std::string>(),
 		  transportParams["iceParameters"],
 		  transportParams["iceCandidates"],
 		  transportParams["dtlsParameters"],
 		  transportParams["sctpParameters"],
-		  &pcOptions);
+		  std::addressof(pcOptions)));
 
 		REQUIRE(sendTransport != nullptr);
 
-		auto audioSource = factory->CreateAudioSource({});
-		auto audioTrack  = factory->CreateAudioTrack("smoke-audio", audioSource.get());
+		const auto audioSource = factory->CreateAudioSource({});
+		const auto audioTrack  = factory->CreateAudioTrack("smoke-audio", audioSource.get());
 		REQUIRE(audioTrack != nullptr);
 
 		SmokeProducerListener producerListener;
 		mediasoupclient::Producer* producer{ nullptr };
 		REQUIRE_NOTHROW(
-		  producer = sendTransport->Produce(&producerListener, audioTrack.get(), nullptr, nullptr, {}));
+		  producer = sendTransport->Produce(
+		    std::addressof(producerListener), audioTrack.get(), nullptr, nullptr, {}));
 		REQUIRE(producer != nullptr);
 
-		delete producer;
-		delete sendTransport;
+		const std::unique_ptr<mediasoupclient::Producer> producerPtr(producer);
 	}
 
 	SECTION("RecvTransport and Consume audio")
 	{
-		REQUIRE_NOTHROW(device.Load(generateRouterRtpCapabilities(), &pcOptions));
+		REQUIRE_NOTHROW(device.Load(generateRouterRtpCapabilities(), std::addressof(pcOptions), false));
 
 		auto recvTransportParams = generateTransportRemoteParameters();
 		SmokeRecvTransportListener recvListener;
-		auto* recvTransport = device.CreateRecvTransport(
-		  &recvListener,
+		const std::unique_ptr<mediasoupclient::RecvTransport> recvTransport(device.CreateRecvTransport(
+		  std::addressof(recvListener),
 		  recvTransportParams["id"].get<std::string>(),
 		  recvTransportParams["iceParameters"],
 		  recvTransportParams["iceCandidates"],
 		  recvTransportParams["dtlsParameters"],
-		  &pcOptions);
+		  std::addressof(pcOptions)));
 
 		REQUIRE(recvTransport != nullptr);
 
@@ -207,14 +210,13 @@ TEST_CASE("Smoke", "[Smoke]")
 		mediasoupclient::Consumer* consumer{ nullptr };
 		REQUIRE_NOTHROW(
 		  consumer = recvTransport->Consume(
-		    &consumerListener,
+		    std::addressof(consumerListener),
 		    consumerParams["id"].get<std::string>(),
 		    consumerParams["producerId"].get<std::string>(),
 		    consumerParams["kind"].get<std::string>(),
 		    &consumerParams["rtpParameters"]));
 		REQUIRE(consumer != nullptr);
 
-		delete consumer;
-		delete recvTransport;
+		const std::unique_ptr<mediasoupclient::Consumer> consumerPtr(consumer);
 	}
 }

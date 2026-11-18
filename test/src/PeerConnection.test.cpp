@@ -1,21 +1,20 @@
 #include "PeerConnection.hpp"
 #include "MediaSoupClientErrors.hpp"
-#include "helpers.hpp"
-#include "sdp/Utils.hpp"
 #include <catch.hpp>
 
 TEST_CASE("PeerConnection", "[PeerConnection]")
 {
-	static std::list<std::string> iceServerUris;
+	static const std::list<std::string> IceServerUris;
 	static mediasoupclient::PeerConnection::PrivateListener listener;
-	static mediasoupclient::PeerConnection::Options peerConnectionOptions;
-	static mediasoupclient::PeerConnection pc(&listener, &peerConnectionOptions);
+	static const mediasoupclient::PeerConnection::Options PeerConnectionOptions;
+	static mediasoupclient::PeerConnection pc(
+	  std::addressof(listener), std::addressof(PeerConnectionOptions));
 
 	static std::string offer;
 
 	SECTION("'pc.GetConfiguration()' succeeds")
 	{
-		auto configuration = pc.GetConfiguration();
+		const auto configuration = pc.GetConfiguration();
 	}
 
 	/*
@@ -38,7 +37,8 @@ TEST_CASE("PeerConnection", "[PeerConnection]")
 		configuration.servers.push_back(iceServer);
 
 		mediasoupclient::PeerConnection::PrivateListener listener;
-		mediasoupclient::PeerConnection pc(&listener, &peerConnectionOptions);
+		mediasoupclient::PeerConnection pc(
+		  std::addressof(listener), std::addressof(PeerConnectionOptions));
 
 		REQUIRE(!pc.SetConfiguration(configuration));
 	}
@@ -50,21 +50,21 @@ TEST_CASE("PeerConnection", "[PeerConnection]")
 
 	SECTION("'pc.CreateAnswer()' fails if no remote offer has been provided")
 	{
-		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
+		const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
 
 		REQUIRE_THROWS_AS(pc.CreateAnswer(options), MediaSoupClientError);
 	}
 
 	SECTION("'pc.SetRemoteDescription()' fails if incorrect SDP is provided")
 	{
-		auto sdp = std::string();
+		const auto sdp = std::string();
 
 		REQUIRE_THROWS_AS(pc.SetLocalDescription(webrtc::SdpType::kOffer, sdp), MediaSoupClientError);
 	}
 
 	SECTION("'pc.CreateOffer()' succeeds")
 	{
-		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
+		const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
 
 		REQUIRE_NOTHROW(offer = pc.CreateOffer(options));
 	}
@@ -76,7 +76,7 @@ TEST_CASE("PeerConnection", "[PeerConnection]")
 
 	SECTION("'pc.CreateAnswer()' succeeds if remote offer is provided")
 	{
-		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
+		const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
 
 		REQUIRE_NOTHROW(pc.CreateAnswer(options));
 	}

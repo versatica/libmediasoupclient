@@ -1,6 +1,5 @@
 #include "RoomClient.hpp"
 #include <iostream>
-#include <stdexcept>
 
 // ---------------------------------------------------------------------------
 // Private listener classes
@@ -41,7 +40,7 @@ public:
 		return p.get_future();
 	}
 
-	void OnConnectionStateChange(mediasoupclient::Transport*, const std::string& state) override
+	void OnConnectionStateChange(mediasoupclient::Transport* /*transport*/, const std::string& state) override
 	{
 		std::cout << "[send] connection state changed to: " << state << "\n";
 	}
@@ -244,13 +243,13 @@ RoomClient::RoomClient(
   : protoo(
       url,
       origin,
-      [this](const std::string& method, const json& data)
+      [this](const std::string& method, const json& data) -> void
       {
-	      this->HandleNotification(method, data);
+	      HandleNotification(method, data);
       },
-      [this](const std::string& method, const json& data, json& responseData)
+      [this](const std::string& method, const json& data, json& responseData) -> void
       {
-	      this->HandleRequest(method, data, responseData);
+	      HandleRequest(method, data, responseData);
       }),
     displayName(displayName),
     factory(factory),
@@ -264,7 +263,7 @@ RoomClient::RoomClient(
 
 RoomClient::~RoomClient()
 {
-	this->Close();
+	Close();
 }
 
 void RoomClient::Join()
@@ -275,7 +274,7 @@ void RoomClient::Join()
 	// -- Load device --
 	auto res = this->protoo.Request("getRouterRtpCapabilities");
 
-	this->device.Load(res["routerRtpCapabilities"], &this->pcOptions);
+	this->device.Load(res["routerRtpCapabilities"], &this->pcOptions, false);
 	std::cout << "[room] device loaded\n";
 
 	// -- SendTransport --
@@ -289,15 +288,15 @@ void RoomClient::Join()
 		  });
 		// clang-format on
 
-		this->sendListener  = std::make_unique<SendTransportListener>(this->protoo, r["transportId"]);
-		this->sendTransport = this->device.CreateSendTransport(
+		this->sendListener = std::make_unique<SendTransportListener>(this->protoo, r["transportId"]);
+		this->sendTransport.reset(this->device.CreateSendTransport(
 		  this->sendListener.get(),
 		  r["transportId"],
 		  r["iceParameters"],
 		  r["iceCandidates"],
 		  r["dtlsParameters"],
 		  r["sctpParameters"],
-		  &this->pcOptions);
+		  std::addressof(this->pcOptions)));
 	}
 
 	// -- RecvTransport --
@@ -311,15 +310,15 @@ void RoomClient::Join()
 		  });
 		// clang-format on
 
-		this->recvListener  = std::make_unique<RecvTransportListener>(this->protoo, r["transportId"]);
-		this->recvTransport = this->device.CreateRecvTransport(
+		this->recvListener = std::make_unique<RecvTransportListener>(this->protoo, r["transportId"]);
+		this->recvTransport.reset(this->device.CreateRecvTransport(
 		  this->recvListener.get(),
 		  r["transportId"],
 		  r["iceParameters"],
 		  r["iceCandidates"],
 		  r["dtlsParameters"],
 		  r["sctpParameters"],
-		  &this->pcOptions);
+		  std::addressof(this->pcOptions)));
 	}
 
 	// -- Wire up server requests and notifications --
@@ -353,48 +352,32 @@ void RoomClient::Close()
 
 	std::cout << "[room] closing...\n";
 
-	// Close transports first — each Close() calls TransportClosed() on all its
-	// producers/consumers before tearing down the PeerConnection. Only after
-	// the transport is done do we delete the raw pointers we hold.
+	// NOTE: Close the transports first, each Close() calls TransportClosed() on
+	// all its producers/consumers before tearing down the PeerConnection, so they
+	// must still be alive here. Only once the transport is done are they reset
+	// below, which is why the order of these resets matters.
 	if (this->sendTransport)
 	{
 		this->sendTransport->Close();
-		delete this->sendTransport;
-		this->sendTransport = nullptr;
+		this->sendTransport.reset();
 	}
 
-	delete this->micProducer;
-	this->micProducer = nullptr;
-
-	delete this->cameraProducer;
-	this->cameraProducer = nullptr;
-
-	delete this->chatDataProducer;
-	this->chatDataProducer = nullptr;
+	this->micProducer.reset();
+	this->cameraProducer.reset();
+	this->chatDataProducer.reset();
 
 	if (this->recvTransport)
 	{
 		this->recvTransport->Close();
-		delete this->recvTransport;
-		this->recvTransport = nullptr;
+		this->recvTransport.reset();
 	}
 
 	// Delete consumer pointers after the transport has already notified them.
 	{
-		std::lock_guard<std::mutex> lock(this->participantsMutex);
+		const std::scoped_lock lock(this->participantsMutex);
 
-		for (auto& kv : this->participants)
-		{
-			delete kv.second.audioConsumer;
-			delete kv.second.videoConsumer;
-		}
-
+		// Destroying the participants destroys the consumers they own.
 		this->participants.clear();
-	}
-
-	for (auto* dc : this->dataConsumers)
-	{
-		delete dc;
 	}
 
 	this->dataConsumers.clear();
@@ -404,11 +387,11 @@ void RoomClient::Close()
 
 void RoomClient::EnableMic()
 {
-	auto audioSource = this->factory->CreateAudioSource({});
-	auto audioTrack  = this->factory->CreateAudioTrack("mic", audioSource.get());
+	const auto audioSource = this->factory->CreateAudioSource({});
+	const auto audioTrack  = this->factory->CreateAudioTrack("mic", audioSource.get());
 
-	this->micProducer = this->sendTransport->Produce(
-	  this->producerListener.get(), audioTrack.get(), nullptr, nullptr, {});
+	this->micProducer.reset(this->sendTransport->Produce(
+	  this->producerListener.get(), audioTrack.get(), nullptr, nullptr, {}));
 
 	std::cout << "[room] mic producer: " << this->micProducer->GetId() << "\n";
 }
@@ -421,19 +404,18 @@ void RoomClient::DisableMic()
 	}
 
 	this->micProducer->Close();
-	delete this->micProducer;
-	this->micProducer = nullptr;
+	this->micProducer.reset();
 }
 
-void RoomClient::EnableCamera(webrtc::scoped_refptr<webrtc::VideoTrackInterface> videoTrack)
+void RoomClient::EnableCamera(const webrtc::scoped_refptr<webrtc::VideoTrackInterface>& videoTrack)
 {
 	if (!videoTrack)
 	{
 		return;
 	}
 
-	this->cameraProducer = this->sendTransport->Produce(
-	  this->producerListener.get(), videoTrack.get(), nullptr, nullptr, {});
+	this->cameraProducer.reset(this->sendTransport->Produce(
+	  this->producerListener.get(), videoTrack.get(), nullptr, nullptr, {}));
 
 	std::cout << "[room] camera producer: " << this->cameraProducer->GetId() << "\n";
 }
@@ -446,13 +428,12 @@ void RoomClient::DisableCamera()
 	}
 
 	this->cameraProducer->Close();
-	delete this->cameraProducer;
-	this->cameraProducer = nullptr;
+	this->cameraProducer.reset();
 }
 
 void RoomClient::EnableChat()
 {
-	this->chatDataProducer = this->sendTransport->ProduceData(
+	this->chatDataProducer.reset(this->sendTransport->ProduceData(
 	  this->dataProducerListener.get(),
 	  "chat",
 	  "text/plain",
@@ -462,7 +443,7 @@ void RoomClient::EnableChat()
 	  // clang-format off
 	  {
 		{ "channel", "chat" },
-	  });
+	  }));
 	// clang-format on
 
 	std::cout << "[room] chat data producer: " << this->chatDataProducer->GetId() << "\n";
@@ -474,7 +455,7 @@ void RoomClient::EnableChat()
 
 void RoomClient::HandleRequest(const std::string& method, const json& data, json& /*responseData*/)
 {
-	std::lock_guard<std::mutex> lock(this->handleRequestMutex);
+	const std::scoped_lock lock(this->handleRequestMutex);
 
 	if (method == "newConsumer")
 	{
@@ -485,19 +466,19 @@ void RoomClient::HandleRequest(const std::string& method, const json& data, json
 		auto rtpParameters    = data["rtpParameters"];
 
 		auto* consumer = this->recvTransport->Consume(
-		  this->consumerListener.get(), consumerId, producerId, kind, &rtpParameters);
+		  this->consumerListener.get(), consumerId, producerId, kind, std::addressof(rtpParameters));
 
 		{
-			std::lock_guard<std::mutex> lock(this->participantsMutex);
+			const std::scoped_lock lock(this->participantsMutex);
 			auto& p = this->participants[peerIdFrom];
 
 			if (kind == "audio")
 			{
-				p.audioConsumer = consumer;
+				p.audioConsumer.reset(consumer);
 			}
 			else if (kind == "video")
 			{
-				p.videoConsumer = consumer;
+				p.videoConsumer.reset(consumer);
 			}
 		}
 
@@ -521,7 +502,7 @@ void RoomClient::HandleRequest(const std::string& method, const json& data, json
 		  data.value("protocol", ""),
 		  data.value("appData", json::object()));
 
-		this->dataConsumers.push_back(dc);
+		this->dataConsumers.emplace_back(dc);
 	}
 }
 
@@ -535,13 +516,13 @@ void RoomClient::HandleNotification(const std::string& method, const json& data)
 	{
 		const auto peerId = data["peerId"].get<std::string>();
 		{
-			std::lock_guard<std::mutex> lock(this->participantsMutex);
-			auto it = this->participants.find(peerId);
+			const std::scoped_lock lock(this->participantsMutex);
+			const auto it = this->participants.find(peerId);
 
 			if (it != this->participants.end())
 			{
-				delete it->second.audioConsumer;
-				delete it->second.videoConsumer;
+				it->second.audioConsumer.reset();
+				it->second.videoConsumer.reset();
 				this->participants.erase(it);
 			}
 		}

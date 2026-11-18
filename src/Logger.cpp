@@ -2,6 +2,7 @@
 
 #include "Logger.hpp"
 #include <iostream>
+#include <memory> // std::addressof()
 
 namespace mediasoupclient
 {
@@ -25,7 +26,11 @@ namespace mediasoupclient
 
 	void Logger::SetDefaultHandler()
 	{
-		Logger::handler = new Logger::DefaultLogHandler();
+		// NOTE: Static so that it outlives any logging done by the application, and
+		// so that setting the default handler twice does not leak the first one.
+		static Logger::DefaultLogHandler defaultLogHandler;
+
+		Logger::handler = std::addressof(defaultLogHandler);
 	}
 
 	/* DefaultLogHandler */

@@ -62,10 +62,6 @@ if (${MEDIASOUPCLIENT_BUILD_TESTS})
 	add_subdirectory(test)
 endif()
 
-set(HEADER_FILES
-	include/mediasoupclient.hpp
-)
-
 set(
 	SOURCE_FILES
 	src/Consumer.cpp
@@ -83,20 +79,6 @@ set(
 	src/sdp/MediaSection.cpp
 	src/sdp/RemoteSdp.cpp
 	src/sdp/Utils.cpp
-	include/Consumer.hpp
-	include/Device.hpp
-	include/Handler.hpp
-	include/Logger.hpp
-	include/MediaSoupClientErrors.hpp
-	include/PeerConnection.hpp
-	include/Producer.hpp
-	include/Transport.hpp
-	include/mediasoupclient.hpp
-	include/ortc.hpp
-	include/scalabilityMode.hpp
-	include/sdp/MediaSection.hpp
-	include/sdp/RemoteSdp.hpp
-	include/sdp/Utils.hpp
 )
 
 # Create target.
@@ -133,8 +115,18 @@ else()
 		PROPERTIES COMPILE_FLAGS -Wall -Wextra -Wpedantic)
 endif()
 
-# Private (implementation) header files.
-target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/include)
+# Public (interface) headers of this library.
+# NOTE: The installed tree needs two directories: "include" so that applications
+# can use #include <mediasoupclient/mediasoupclient.hpp>, and
+# "include/mediasoupclient" because the headers include each other with their
+# folder (such as #include "sdp/MediaSection.hpp" in sdp/RemoteSdp.hpp), which
+# keeps those includes unambiguous if another folder ever holds a header with
+# the same name.
+target_include_directories(${PROJECT_NAME} PUBLIC
+	$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+	$<INSTALL_INTERFACE:include>
+	$<INSTALL_INTERFACE:include/mediasoupclient>
+)
 
 # Public (interface) headers from dependencies.
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -159,7 +151,16 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC
 )
 
 install(TARGETS mediasoupclient DESTINATION lib)
-install(FILES ${HEADER_FILES} DESTINATION include/mediasoupclient)
+
+# NOTE: The whole include/ tree is installed (preserving the sdp/ subdirectory)
+# rather than a hand written list of headers. mediasoupclient.hpp includes
+# Device.hpp, which includes Transport.hpp, and so on, so installing just some of
+# them gives the application a public header that does not compile.
+install(
+	DIRECTORY ${PROJECT_SOURCE_DIR}/include/
+	DESTINATION include/mediasoupclient
+	FILES_MATCHING PATTERN "*.hpp"
+)
 
 if (${MEDIASOUPCLIENT_BUILD_DEMO})
 	add_subdirectory(demo)

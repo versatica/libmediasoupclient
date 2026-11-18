@@ -2,18 +2,19 @@
 #include "helpers.hpp"
 #include "sdptransform.hpp"
 #include <catch.hpp>
+#include <memory> // std::make_unique()
 
 TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 {
 	SECTION("audio only", "[CreateAnswerSdp]")
 	{
-		auto iceParameters = R"(
+		const auto iceParameters = R"(
 		{
 			"usernameFragment" : "5I2uVefP13X1wzOY",
 			"password"         : "e46UjXntt0K/xTncQcDBQePn"
 		})"_json;
 
-		auto iceCandidates = R"(
+		const auto iceCandidates = R"(
 		[
 			{
 				"foundation" : "1162875081",
@@ -27,7 +28,7 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 			}
 		])"_json;
 
-		auto dtlsParameters = R"(
+		const auto dtlsParameters = R"(
 		{
 			"role"         : "client",
 			"fingerprints" :
@@ -39,7 +40,7 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 			]
 		})"_json;
 
-		auto sctpParameters = R"(
+		const auto sctpParameters = R"(
 		{
 			"port" : 5000,
 			"OS"   : 1024,
@@ -80,7 +81,7 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 		])"_json;
 
 		/* clang-format off */
-		json sendingRtpParametersByKind =
+		json const sendingRtpParametersByKind =
 		{
 			{
 				"audio",
@@ -93,21 +94,21 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 
 		/* clang-format on */
 
-		auto* remoteSdp = new mediasoupclient::Sdp::RemoteSdp(
+		const auto remoteSdp = std::make_unique<mediasoupclient::Sdp::RemoteSdp>(
 		  iceParameters, iceCandidates, dtlsParameters, sctpParameters);
 
-		auto sdp         = helpers::readFile("test/data/jssip.sdp");
-		auto localSdpObj = sdptransform::parse(sdp);
-		auto sdpAnswer   = remoteSdp->GetSdp();
-		auto parsed      = sdptransform::parse(sdpAnswer);
+		const auto sdp         = helpers::readFile("test/data/jssip.sdp");
+		const auto localSdpObj = sdptransform::parse(sdp);
+		const auto sdpAnswer   = remoteSdp->GetSdp();
+		auto parsed            = sdptransform::parse(sdpAnswer);
 
-		REQUIRE(parsed.find("fingerprint") != parsed.end());
+		REQUIRE(parsed.contains("fingerprint"));
 		REQUIRE(
 		  parsed["fingerprint"]["hash"] ==
 		  "79:14:AB:AB:93:7F:07:E8:91:1A:11:16:36:D0:11:66:C4:4F:31:A0:74:46:65:58:70:E5:09:95:48:F4:4B:D9");
 		REQUIRE(parsed["fingerprint"]["type"] == "sha-256");
 
-		REQUIRE(parsed.find("groups") != parsed.end());
+		REQUIRE(parsed.contains("groups"));
 		REQUIRE(parsed["groups"].size() == 1);
 		// REQUIRE(parsed["groups"][0]["mids"] == "audio");
 		REQUIRE(parsed["groups"][0]["type"] == "BUNDLE");
@@ -159,26 +160,24 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 		// REQUIRE(parsed["media"][0]["rtp"][1]["payload"] == 96);
 		// REQUIRE(parsed["media"][0]["rtp"][1]["rate"] == 48000);
 
-		REQUIRE(parsed.find("msidSemantic") != parsed.end());
+		REQUIRE(parsed.contains("msidSemantic"));
 		REQUIRE(parsed["msidSemantic"]["semantic"] == "WMS");
 		REQUIRE(parsed["msidSemantic"]["token"] == "*");
 
 		REQUIRE(parsed["name"] == "-");
 
-		REQUIRE(parsed.find("origin") != parsed.end());
+		REQUIRE(parsed.contains("origin"));
 		REQUIRE(parsed["origin"]["address"] == "0.0.0.0");
 		REQUIRE(parsed["origin"]["ipVer"] == 4);
 		REQUIRE(parsed["origin"]["netType"] == "IN");
 		REQUIRE(parsed["origin"]["sessionVersion"] == 1);
 		REQUIRE(parsed["origin"]["username"] == "libmediasoupclient");
 
-		REQUIRE(parsed.find("timing") != parsed.end());
+		REQUIRE(parsed.contains("timing"));
 		REQUIRE(parsed["timing"]["start"] == 0);
 		REQUIRE(parsed["timing"]["stop"] == 0);
 
 		REQUIRE(parsed["version"] == 0);
-
-		delete remoteSdp;
 	}
 
 	SECTION("audio and video", "[CreateAnswerSdp]")
@@ -215,7 +214,7 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 			]
 		})"_json;
 
-		auto sctpParameters = R"(
+		const auto sctpParameters = R"(
 		{
 			"port" : 5000,
 			"OS"   : 1024,
@@ -256,7 +255,7 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 		])"_json;
 
 		/* clang-format off */
-		json sendingRtpParametersByKind =
+		json const sendingRtpParametersByKind =
 		{
 			{
 				"audio",
@@ -267,7 +266,7 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 			}
 		};
 
-		json transportRemoteParameters =
+		json const transportRemoteParameters =
 		{
 			{ "iceParameters", iceParameters   },
 			{ "iceCandidates", iceCandidates   },
@@ -275,22 +274,22 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 		};
 		/* clang-format on */
 
-		auto* remoteSdp = new mediasoupclient::Sdp::RemoteSdp(
+		const auto remoteSdp = std::make_unique<mediasoupclient::Sdp::RemoteSdp>(
 		  iceParameters, iceCandidates, dtlsParameters, sctpParameters);
 
-		auto sdp         = helpers::readFile("test/data/audio_video.sdp");
-		auto localSdpObj = sdptransform::parse(sdp);
+		const auto sdp         = helpers::readFile("test/data/audio_video.sdp");
+		const auto localSdpObj = sdptransform::parse(sdp);
 
-		auto sdpAnswer = remoteSdp->GetSdp();
-		auto parsed    = sdptransform::parse(sdpAnswer);
+		const auto sdpAnswer = remoteSdp->GetSdp();
+		auto parsed          = sdptransform::parse(sdpAnswer);
 
-		REQUIRE(parsed.find("fingerprint") != parsed.end());
+		REQUIRE(parsed.contains("fingerprint"));
 		REQUIRE(
 		  parsed["fingerprint"]["hash"] ==
 		  "79:14:AB:AB:93:7F:07:E8:91:1A:11:16:36:D0:11:66:C4:4F:31:A0:74:46:65:58:70:E5:09:95:48:F4:4B:D9");
 		REQUIRE(parsed["fingerprint"]["type"] == "sha-256");
 
-		REQUIRE(parsed.find("groups") != parsed.end());
+		REQUIRE(parsed.contains("groups"));
 		REQUIRE(parsed["groups"].size() == 1);
 		// REQUIRE(parsed["groups"][0]["mids"] == "audio video");
 		REQUIRE(parsed["groups"][0]["type"] == "BUNDLE");
@@ -342,25 +341,23 @@ TEST_CASE("SendRemoteSdp", "[SendRemoteSdp]")
 		// REQUIRE(parsed["media"][0]["rtp"][1]["payload"] == 96);
 		// REQUIRE(parsed["media"][0]["rtp"][1]["rate"] == 48000);
 
-		REQUIRE(parsed.find("msidSemantic") != parsed.end());
+		REQUIRE(parsed.contains("msidSemantic"));
 		REQUIRE(parsed["msidSemantic"]["semantic"] == "WMS");
 		REQUIRE(parsed["msidSemantic"]["token"] == "*");
 
 		REQUIRE(parsed["name"] == "-");
 
-		REQUIRE(parsed.find("origin") != parsed.end());
+		REQUIRE(parsed.contains("origin"));
 		REQUIRE(parsed["origin"]["address"] == "0.0.0.0");
 		REQUIRE(parsed["origin"]["ipVer"] == 4);
 		REQUIRE(parsed["origin"]["netType"] == "IN");
 		REQUIRE(parsed["origin"]["sessionVersion"] == 1);
 		REQUIRE(parsed["origin"]["username"] == "libmediasoupclient");
 
-		REQUIRE(parsed.find("timing") != parsed.end());
+		REQUIRE(parsed.contains("timing"));
 		REQUIRE(parsed["timing"]["start"] == 0);
 		REQUIRE(parsed["timing"]["stop"] == 0);
 
 		REQUIRE(parsed["version"] == 0);
-
-		delete remoteSdp;
 	}
 }

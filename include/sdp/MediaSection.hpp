@@ -11,16 +11,23 @@ namespace mediasoupclient
 		class MediaSection
 		{
 		public:
-			MediaSection()          = default;
+			MediaSection() = default;
+
 			virtual ~MediaSection() = default;
+
 			MediaSection(const nlohmann::json& iceParameters, const nlohmann::json& iceCandidates);
 
 		public:
 			std::string GetMid() const;
+
 			bool IsClosed() const;
+
 			nlohmann::json GetObject() const;
+
 			void SetIceParameters(const nlohmann::json& iceParameters);
+
 			void Disable();
+
 			void Close();
 
 		public:

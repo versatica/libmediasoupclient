@@ -14,16 +14,22 @@ namespace mediasoupclient
 	{
 		template<typename T>
 		T GetRandomInteger(T min, T max);
+
 		std::string GetRandomInteger(size_t len);
 
 		std::vector<std::string> Split(const std::string& s, char delimiter);
+
 		std::string Join(const std::vector<std::string>& v, char delimiter);
+
 		std::string Join(const std::vector<uint32_t>& v, char delimiter);
 
 		// https://stackoverflow.com/a/447307/4827838.
 		bool IsInt(const std::string& str);
+
 		bool IsFloat(const std::string& str);
+
 		int ToInt(const std::string& str);
+
 		float ToFloat(const std::string& str);
 
 		/* Inline utils implementations */
@@ -32,10 +38,10 @@ namespace mediasoupclient
 		inline T GetRandomInteger(T min, T max)
 		{
 			// Seed with time.
-			static unsigned int seed = time(nullptr);
+			static const unsigned int Seed = time(nullptr);
 
 			// Engine based on the Mersenne Twister 19937 (64 bits).
-			static std::mt19937_64 rng(seed);
+			static std::mt19937_64 rng(Seed);
 
 			// Uniform distribution for integers in the [min, max) range.
 			// https://en.cppreference.com/w/cpp/numeric/random/uniform_int_distribution, [min, max]
@@ -60,10 +66,10 @@ namespace mediasoupclient
 			/* clang-format on */
 
 			// Seed with time.
-			static unsigned int seed = time(nullptr);
+			static const unsigned int Seed = time(nullptr);
 
 			// Engine based on the Mersenne Twister 19937 (64 bits).
-			static std::mt19937_64 rng(seed);
+			static std::mt19937_64 rng(Seed);
 
 			// Uniform distribution for integers in the [min, max) range.
 			std::uniform_int_distribution<std::string::size_type> dis(0, chars.size() - 1);
@@ -72,8 +78,11 @@ namespace mediasoupclient
 
 			s.reserve(len);
 
-			while ((len--) != 0u)
+			while ((len--) != 0)
 			{
+				// NOTE: The distribution is built from the size of the vector above, so the
+				// index is always within bounds.
+				// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
 				s += chars[dis(rng)];
 			}
 

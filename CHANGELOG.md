@@ -4,6 +4,7 @@
 
 * Sync ortc with mediasoup-client ([#198](https://github.com/versatica/libmediasoupclient/pull/198)).
 * Adapt SCTP/DataChannels API to latest changes in mediasoup ([#200](https://github.com/versatica/libmediasoupclient/pull/200)).
+* Modernize code ([#XXX](https://github.com/versatica/libmediasoupclient/pull/XXX)).
 
 ### 3.5.1
 

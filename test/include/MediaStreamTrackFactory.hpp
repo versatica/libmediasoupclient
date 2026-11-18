@@ -2,14 +2,16 @@
 #define MSC_TEST_MEDIA_STREAM_TRACK_FACTORY_HPP
 
 #include "api/media_stream_interface.h"
-#include "mediasoupclient.hpp"
+// NOTE: Included for the mediasoupclient declarations it re-exports (such as
+// PeerConnection::Options), not used directly.
+#include "mediasoupclient.hpp" // IWYU pragma: keep
 #include "rtc_base/thread.h"
 #include <memory>
 
 class MediaStreamTrackFactory
 {
 public:
-	static MediaStreamTrackFactory& getInstance()
+	static MediaStreamTrackFactory& GetInstance()
 	{
 		static MediaStreamTrackFactory instance;
 		return instance;
@@ -19,11 +21,12 @@ public:
 	MediaStreamTrackFactory& operator=(const MediaStreamTrackFactory&) = delete;
 
 	void Create();
+
 	void Destroy();
 
-	webrtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> Factory;
-	mediasoupclient::PeerConnection::Options PeerConnectionOptions;
-	webrtc::scoped_refptr<webrtc::AudioSourceInterface> AudioSource;
+	webrtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> factory;
+	mediasoupclient::PeerConnection::Options peerConnectionOptions;
+	webrtc::scoped_refptr<webrtc::AudioSourceInterface> audioSource;
 
 private:
 	MediaStreamTrackFactory()
@@ -35,12 +38,13 @@ private:
 		Destroy();
 	}
 
-	std::unique_ptr<webrtc::Thread> NetworkThread;
-	std::unique_ptr<webrtc::Thread> WorkerThread;
-	std::unique_ptr<webrtc::Thread> SignalingThread;
+	std::unique_ptr<webrtc::Thread> networkThread;
+	std::unique_ptr<webrtc::Thread> workerThread;
+	std::unique_ptr<webrtc::Thread> signalingThread;
 };
 
 webrtc::scoped_refptr<webrtc::AudioTrackInterface> createAudioTrack(const std::string& id);
+
 webrtc::scoped_refptr<webrtc::VideoTrackInterface> createVideoTrack(const std::string& id);
 
 #endif

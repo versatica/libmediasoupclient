@@ -58,7 +58,7 @@ namespace mediasoupclient
 					}
 
 					// Get codecs.
-					auto jsonRtpIt = m.find("rtp");
+					const auto jsonRtpIt = m.find("rtp");
 
 					if (jsonRtpIt != m.end() && jsonRtpIt->is_array())
 					{
@@ -81,7 +81,7 @@ namespace mediasoupclient
 
 							if (kind == "audio")
 							{
-								auto jsonEncodingIt = rtp.find("encoding");
+								const auto jsonEncodingIt = rtp.find("encoding");
 
 								if (jsonEncodingIt != rtp.end() && jsonEncodingIt->is_string())
 								{
@@ -98,14 +98,15 @@ namespace mediasoupclient
 					}
 
 					// Get codec parameters.
-					auto jsonFmtpIt = m.find("fmtp");
+					const auto jsonFmtpIt = m.find("fmtp");
 
 					if (jsonFmtpIt != m.end() && jsonFmtpIt->is_array())
 					{
 						for (const auto& fmtp : *jsonFmtpIt)
 						{
-							auto parameters    = sdptransform::parseParams(fmtp["config"]);
-							auto jsonPayloadIt = codecsMap.find(fmtp["payload"]);
+							const auto jsonPayloadIt = codecsMap.find(fmtp["payload"]);
+
+							auto parameters = sdptransform::parseParams(fmtp["config"]);
 
 							if (jsonPayloadIt == codecsMap.end())
 							{
@@ -115,7 +116,7 @@ namespace mediasoupclient
 							// If preset, convert 'profile-id' parameter (VP8 and VP9) into
 							// integer since we define it that way in mediasoup RtpCodecParameters
 							// and RtpCodecCapability.
-							auto profileIdIt = parameters.find("profile-id");
+							const auto profileIdIt = parameters.find("profile-id");
 
 							if (profileIdIt != parameters.end() && profileIdIt->is_string())
 							{
@@ -129,13 +130,13 @@ namespace mediasoupclient
 					}
 
 					// Get RTCP feedback for each codec.
-					auto jsonRtcpFbIt = m.find("rtcpFb");
+					const auto jsonRtcpFbIt = m.find("rtcpFb");
 
 					if (jsonRtcpFbIt != m.end() && jsonRtcpFbIt->is_array())
 					{
 						for (const auto& fb : *jsonRtcpFbIt)
 						{
-							auto jsonCodecIt = codecsMap.find(std::stoi(fb["payload"].get<std::string>()));
+							const auto jsonCodecIt = codecsMap.find(std::stoi(fb["payload"].get<std::string>()));
 
 							if (jsonCodecIt == codecsMap.end())
 							{
@@ -151,7 +152,7 @@ namespace mediasoupclient
 							};
 							// clang-format on
 
-							auto jsonSubtypeIt = fb.find("subtype");
+							const auto jsonSubtypeIt = fb.find("subtype");
 
 							if (jsonSubtypeIt != fb.end())
 							{
@@ -163,14 +164,14 @@ namespace mediasoupclient
 					}
 
 					// Get RTP header extensions.
-					auto jsonExtIt = m.find("ext");
+					const auto jsonExtIt = m.find("ext");
 
 					if (jsonExtIt != m.end() && jsonExtIt->is_array())
 					{
 						for (const auto& ext : *jsonExtIt)
 						{
 							// clang-format off
-							json headerExtension =
+							json const headerExtension =
 							{
 									{ "kind",        kind },
 									{ "uri",         ext["uri"] },
@@ -192,9 +193,11 @@ namespace mediasoupclient
 				};
 				// clang-format on
 
-				for (auto& kv : codecsMap)
+				for (const auto& kv : codecsMap)
 				{
-					rtpCapabilities["codecs"].push_back(kv.second);
+					const auto& codec = kv.second;
+
+					rtpCapabilities["codecs"].push_back(codec);
 				}
 
 				return rtpCapabilities;
@@ -210,25 +213,25 @@ namespace mediasoupclient
 
 				for (const auto& media : sdpObject["media"])
 				{
-					if (media.find("iceUfrag") != media.end() && media["port"] != 0)
+					if (media.contains("iceUfrag") && media["port"] != 0)
 					{
 						m = media;
 						break;
 					}
 				}
 
-				if (m.find("fingerprint") != m.end())
+				if (m.contains("fingerprint"))
 				{
 					fingerprint = m["fingerprint"];
 				}
-				else if (sdpObject.find("fingerprint") != sdpObject.end())
+				else if (sdpObject.contains("fingerprint"))
 				{
 					fingerprint = sdpObject["fingerprint"];
 				}
 
-				if (m.find("setup") != m.end())
+				if (m.contains("setup"))
 				{
-					std::string setup = m["setup"];
+					const std::string setup = m["setup"];
 
 					if (setup == "active")
 					{
@@ -274,12 +277,12 @@ namespace mediasoupclient
 				// Get the SSRC.
 				auto mSsrcs = offerMediaObject["ssrcs"];
 
-				auto jsonSsrcIt = std::find_if(
-				  mSsrcs.begin(),
-				  mSsrcs.end(),
-				  [](const json& line)
+				auto jsonSsrcIt = std::ranges::find_if(
+				  mSsrcs,
+
+				  [](const json& line) -> bool
 				  {
-					  auto jsonAttributeIt = line.find("attribute");
+					  const auto jsonAttributeIt = line.find("attribute");
 
 					  if (jsonAttributeIt == line.end() || !jsonAttributeIt->is_string())
 					  {
@@ -296,29 +299,31 @@ namespace mediasoupclient
 
 				auto& ssrcMsidLine = *jsonSsrcIt;
 				auto v = mediasoupclient::Utils::Split(ssrcMsidLine["value"].get<std::string>(), ' ');
-				auto& streamId = v[0];
-				auto& trackId  = v[1];
-				auto firstSsrc = ssrcMsidLine["id"].get<std::uint32_t>();
+				// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
+				const auto& streamId = v[0];
+				// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
+				const auto& trackId  = v[1];
+				const auto firstSsrc = ssrcMsidLine["id"].get<std::uint32_t>();
 				uint32_t firstRtxSsrc{ 0 };
 
 				// Get the SSRC for RTX.
 
-				auto jsonSsrcGroupsIt = offerMediaObject.find("ssrcGroups");
+				const auto jsonSsrcGroupsIt = offerMediaObject.find("ssrcGroups");
 
 				if (jsonSsrcGroupsIt != offerMediaObject.end())
 				{
-					auto& ssrcGroups = *jsonSsrcGroupsIt;
+					const auto& ssrcGroups = *jsonSsrcGroupsIt;
 
 					for (const auto& line : ssrcGroups)
 					{
-						auto jsonSemanticsIt = line.find("semantics");
+						const auto jsonSemanticsIt = line.find("semantics");
 
 						if (jsonSemanticsIt == line.end() || !jsonSemanticsIt->is_string())
 						{
 							continue;
 						}
 
-						auto jsonSsrcsIt = line.find("ssrcs");
+						const auto jsonSsrcsIt = line.find("ssrcs");
 
 						if (jsonSsrcsIt == line.end() || !jsonSsrcsIt->is_string())
 						{
@@ -327,8 +332,10 @@ namespace mediasoupclient
 
 						auto v = mediasoupclient::Utils::Split(jsonSsrcsIt->get<std::string>(), ' ');
 
+						// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
 						if (std::stoull(v[0]) == firstSsrc)
 						{
+							// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
 							firstRtxSsrc = std::stoull(v[1]);
 
 							break;
@@ -336,18 +343,18 @@ namespace mediasoupclient
 					};
 				}
 
-				jsonSsrcIt = std::find_if(
-				  mSsrcs.begin(),
-				  mSsrcs.end(),
-				  [](const json& line)
+				jsonSsrcIt = std::ranges::find_if(
+				  mSsrcs,
+
+				  [](const json& line) -> bool
 				  {
-					  auto jsonAttributeIt = line.find("attribute");
+					  const auto jsonAttributeIt = line.find("attribute");
 					  if (jsonAttributeIt == line.end() || !jsonAttributeIt->is_string())
 					  {
 						  return false;
 					  }
 
-					  auto jsonIdIt = line.find("id");
+					  const auto jsonIdIt = line.find("id");
 					  if (jsonIdIt == line.end() || !jsonIdIt->is_number())
 					  {
 						  return false;
@@ -369,7 +376,7 @@ namespace mediasoupclient
 				{
 					ssrcs.push_back(firstSsrc + i);
 
-					if (firstRtxSsrc != 0u)
+					if (firstRtxSsrc != 0)
 					{
 						rtxSsrcs.push_back(firstRtxSsrc + i);
 					}
@@ -378,8 +385,8 @@ namespace mediasoupclient
 				offerMediaObject["ssrcGroups"] = json::array();
 				offerMediaObject["ssrcs"]      = json::array();
 
-				std::vector<uint32_t> ussrcs = ssrcs;
-				auto ssrcsLine               = mediasoupclient::Utils::Join(ussrcs, ' ');
+				const std::vector<uint32_t> ussrcs = ssrcs;
+				auto ssrcsLine                     = mediasoupclient::Utils::Join(ussrcs, ' ');
 
 				std::string msidValue(streamId);
 				msidValue.append(" ").append(trackId);
@@ -392,7 +399,7 @@ namespace mediasoupclient
 					});
 				// clang-format on
 
-				for (auto& i : ssrcs)
+				for (const auto& i : ssrcs)
 				{
 					auto ssrc = i.get<uint32_t>();
 
@@ -417,8 +424,8 @@ namespace mediasoupclient
 
 				for (size_t i = 0; i < rtxSsrcs.size(); ++i)
 				{
-					auto ssrc    = ssrcs[i].get<uint32_t>();
-					auto rtxSsrc = rtxSsrcs[i].get<uint32_t>();
+					const auto ssrc = ssrcs[i].get<uint32_t>();
+					auto rtxSsrc    = rtxSsrcs[i].get<uint32_t>();
 
 					std::string fid;
 					fid = std::to_string(ssrc).append(" ");
@@ -456,7 +463,7 @@ namespace mediasoupclient
 			{
 				MSC_TRACE();
 
-				auto jsonMssrcsIt = offerMediaObject.find("ssrcs");
+				const auto jsonMssrcsIt = offerMediaObject.find("ssrcs");
 
 				if (jsonMssrcsIt == offerMediaObject.end())
 				{
@@ -465,12 +472,12 @@ namespace mediasoupclient
 
 				const json& mSsrcs = *jsonMssrcsIt;
 
-				auto jsonSsrcIt = find_if(
-				  mSsrcs.begin(),
-				  mSsrcs.end(),
-				  [](const json& line)
+				const auto jsonSsrcIt = std::ranges::find_if(
+				  mSsrcs,
+
+				  [](const json& line) -> bool
 				  {
-					  auto jsonAttributeIt = line.find("attribute");
+					  const auto jsonAttributeIt = line.find("attribute");
 
 					  return (jsonAttributeIt != line.end() && jsonAttributeIt->is_string());
 				  });
@@ -487,11 +494,13 @@ namespace mediasoupclient
 
 			json getRtpEncodings(const json& offerMediaObject)
 			{
+				MSC_TRACE();
+
 				std::list<uint32_t> ssrcs;
 
 				for (const auto& line : offerMediaObject["ssrcs"])
 				{
-					auto ssrc = line["id"].get<uint32_t>();
+					const auto ssrc = line["id"].get<uint32_t>();
 					ssrcs.push_back(ssrc);
 				}
 
@@ -506,7 +515,7 @@ namespace mediasoupclient
 
 				std::map<uint32_t, uint32_t> ssrcToRtxSsrc;
 
-				auto jsonSsrcGroupsIt = offerMediaObject.find("ssrcGroups");
+				const auto jsonSsrcGroupsIt = offerMediaObject.find("ssrcGroups");
 				if (jsonSsrcGroupsIt != offerMediaObject.end())
 				{
 					const auto& ssrcGroups = *jsonSsrcGroupsIt;
@@ -519,10 +528,12 @@ namespace mediasoupclient
 							continue;
 						}
 
-						auto fidLine = line["ssrcs"].get<std::string>();
-						auto v       = mediasoupclient::Utils::Split(fidLine, ' ');
-						auto ssrc    = std::stoull(v[0]);
-						auto rtxSsrc = std::stoull(v[1]);
+						const auto fidLine = line["ssrcs"].get<std::string>();
+						auto v             = mediasoupclient::Utils::Split(fidLine, ' ');
+						// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
+						auto ssrc = std::stoull(v[0]);
+						// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
+						const auto rtxSsrc = std::stoull(v[1]);
 
 						// Remove the RTX SSRC from the List so later we know that they
 						// are already handled.
@@ -543,7 +554,7 @@ namespace mediasoupclient
 						{ "ssrc", ssrc }
 					};
 
-					auto it = ssrcToRtxSsrc.find(ssrc);
+					const auto it = ssrcToRtxSsrc.find(ssrc);
 
 					if (it != ssrcToRtxSsrc.end())
 					{
@@ -566,7 +577,7 @@ namespace mediasoupclient
 				{
 					auto mimeType = codec["mimeType"].get<std::string>();
 
-					std::transform(mimeType.begin(), mimeType.end(), mimeType.begin(), ::tolower);
+					std::ranges::transform(mimeType, mimeType.begin(), ::tolower);
 
 					// Avoid parsing codec parameters for unhandled codecs.
 					if (mimeType != "audio/opus")
@@ -574,11 +585,12 @@ namespace mediasoupclient
 						continue;
 					}
 
-					auto& rtps     = answerMediaObject["rtp"];
-					auto jsonRtpIt = find_if(
-					  rtps.begin(),
-					  rtps.end(),
-					  [&codec](const json& r)
+					auto& rtps = answerMediaObject["rtp"];
+
+					const auto jsonRtpIt = std::ranges::find_if(
+					  rtps,
+
+					  [&codec](const json& r) -> bool
 					  {
 						  return r["payload"] == codec["payloadType"];
 					  });
@@ -589,23 +601,23 @@ namespace mediasoupclient
 					}
 
 					// Just in case.
-					if (answerMediaObject.find("fmtp") == answerMediaObject.end())
+					if (!answerMediaObject.contains("fmtp"))
 					{
 						answerMediaObject["fmtp"] = json::array();
 					}
 
 					auto& fmtps     = answerMediaObject["fmtp"];
-					auto jsonFmtpIt = find_if(
-					  fmtps.begin(),
-					  fmtps.end(),
-					  [&codec](const json& f)
+					auto jsonFmtpIt = std::ranges::find_if(
+					  fmtps,
+
+					  [&codec](const json& f) -> bool
 					  {
 						  return f["payload"] == codec["payloadType"];
 					  });
 
 					if (jsonFmtpIt == fmtps.end())
 					{
-						json fmtp = {
+						const json fmtp = {
 							{ "payload", codec["payloadType"] },
               { "config",  ""                   }
 						};
@@ -619,11 +631,11 @@ namespace mediasoupclient
 
 					if (mimeType == "audio/opus")
 					{
-						auto jsonSpropStereoIt = codec["parameters"].find("sprop-stereo");
+						const auto jsonSpropStereoIt = codec["parameters"].find("sprop-stereo");
 
 						if (jsonSpropStereoIt != codec["parameters"].end() && jsonSpropStereoIt->is_number())
 						{
-							auto spropStereo = jsonSpropStereoIt->get<int>();
+							const auto spropStereo = jsonSpropStereoIt->get<int>();
 
 							parameters["stereo"] = spropStereo ? 1 : 0;
 						}

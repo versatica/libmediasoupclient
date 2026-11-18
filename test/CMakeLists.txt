@@ -21,11 +21,6 @@ set(
 	src/fakeParameters.cpp
 	src/MediaStreamTrackFactory.cpp
 	src/tests.cpp
-	# Headers
-	include/fakeParameters.hpp
-	include/FakeTransportListener.hpp
-	include/helpers.hpp
-	include/MediaStreamTrackFactory.hpp
 )
 
 # Create unit test target
@@ -41,9 +36,9 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(catch2)
 
 # Configure unit tests
+# NOTE: The headers of the library itself come from the mediasoupclient target.
 target_include_directories(test PRIVATE
 	include
-	${mediasoupclient_SOURCE_DIR}/include
 	${catch2_SOURCE_DIR}/single_include/catch2
 )
 

@@ -3,10 +3,9 @@
 #include "Device.hpp"
 #include "Logger.hpp"
 #include "MediaSoupClientErrors.hpp"
-#include "Transport.hpp"
 #include "ortc.hpp"
 
-using json = nlohmann::json;
+using nlohmann::json;
 
 namespace mediasoupclient
 {
@@ -40,6 +39,8 @@ namespace mediasoupclient
 	 */
 	void Device::Load(json routerRtpCapabilities, const PeerConnection::Options* peerConnectionOptions)
 	{
+		MSC_TRACE();
+
 		Load(std::move(routerRtpCapabilities), peerConnectionOptions, false);
 	}
 
@@ -74,7 +75,7 @@ namespace mediasoupclient
 		// offer. See: https://github.com/versatica/mediasoup-client/pull/336 for the JS counterpart and
 		// more rationale.
 		this->getSendExtendedRtpCapabilities =
-		  [routerRtpCapabilities, preferLocalCodecsOrder](json& currentLocalRtpCapabilities)
+		  [routerRtpCapabilities, preferLocalCodecsOrder](json& currentLocalRtpCapabilities) -> json
 		{
 			auto routerRtpCapabilitiesCopy = routerRtpCapabilities;
 			return ortc::getExtendedRtpCapabilities(

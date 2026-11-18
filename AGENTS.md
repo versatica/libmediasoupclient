@@ -123,7 +123,7 @@ Read [doc/Building.md](doc/Building.md) for the whole workflow. In short:
 
 - Classes, structs and methods are `CamelCase`. Members, local variables and parameters are `camelBack`. Value getters are `GetXxx()`, boolean getters `IsXxx()` / `HasXxx()`.
 - Namespace scope functions are not uniform in this project: `mediasoupclient::Utils` uses `CamelCase` while `mediasoupclient::ortc` and `mediasoupclient::Sdp::Utils` use `camelBack`. `.clang-tidy` accepts both and carries a TODO about unifying them. Follow the file being edited, and do not rename any of them as part of an unrelated change.
-- The `json` alias is `using nlohmann::json;` in `.cpp` files, and `using json = nlohmann::json;` in headers (with its `NOLINT`, since a using declaration there would leak the name into the global namespace of every file including them).
+- A public header of `include/` never declares a name at global scope.
 
 ## Robustness
 

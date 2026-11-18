@@ -9,7 +9,7 @@ namespace mediasoupclient
 	/* Class variables. */
 
 	Logger::LogHandlerInterface* Logger::handler{ nullptr };
-	char Logger::buffer[Logger::BufferSize];
+	thread_local char Logger::buffer[Logger::BufferSize];
 	Logger::LogLevel Logger::logLevel = Logger::LogLevel::LOG_NONE;
 
 	/* Class methods. */

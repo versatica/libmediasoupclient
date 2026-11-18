@@ -89,18 +89,14 @@ namespace mediasoupclient
 	public:
 		static LogLevel logLevel;
 		static LogHandlerInterface* handler;
-		static char buffer[];
+		// NOTE: A buffer per thread to avoid corrupted logs.
+		static thread_local char buffer[];
 	};
 } // namespace mediasoupclient
 
 // clang-format off
 
 /* Logging macros. */
-
-// NOTE: An alias and not a using declaration, which would bring the name into
-// the global namespace of every file including this header.
-// NOLINTNEXTLINE(readability-redundant-qualified-alias)
-using Logger = mediasoupclient::Logger;
 
 // NOLINTBEGIN
 #define _MSC_LOG_SEPARATOR_CHAR "\n"
@@ -121,10 +117,10 @@ using Logger = mediasoupclient::Logger;
 	#define MSC_TRACE() \
 		do \
 		{ \
-			if (Logger::handler && Logger::logLevel == Logger::LogLevel::LOG_DEBUG) \
+			if (mediasoupclient::Logger::handler && mediasoupclient::Logger::logLevel == mediasoupclient::Logger::LogLevel::LOG_DEBUG) \
 			{ \
-				const int loggerWritten = std::snprintf(Logger::buffer, Logger::BufferSize, "[TRACE]" _MSC_LOG_STR, _MSC_LOG_ARG); \
-				Logger::handler->OnLog(Logger::LogLevel::LOG_TRACE, Logger::buffer, loggerWritten); \
+				const int loggerWritten = std::snprintf(mediasoupclient::Logger::buffer, mediasoupclient::Logger::BufferSize, "[TRACE]" _MSC_LOG_STR, _MSC_LOG_ARG); \
+				mediasoupclient::Logger::handler->OnLog(mediasoupclient::Logger::LogLevel::LOG_TRACE, mediasoupclient::Logger::buffer, loggerWritten); \
 			} \
 		} \
 		while (false)
@@ -135,10 +131,10 @@ using Logger = mediasoupclient::Logger;
 #define MSC_DEBUG(desc, ...) \
 	do \
 	{ \
-		if (Logger::handler && Logger::logLevel == Logger::LogLevel::LOG_DEBUG) \
+		if (mediasoupclient::Logger::handler && mediasoupclient::Logger::logLevel == mediasoupclient::Logger::LogLevel::LOG_DEBUG) \
 		{ \
-			const int loggerWritten = std::snprintf(Logger::buffer, Logger::BufferSize, "[DEBUG]" _MSC_LOG_STR_DESC desc, _MSC_LOG_ARG, ##__VA_ARGS__); \
-			Logger::handler->OnLog(Logger::LogLevel::LOG_DEBUG, Logger::buffer, loggerWritten); \
+			const int loggerWritten = std::snprintf(mediasoupclient::Logger::buffer, mediasoupclient::Logger::BufferSize, "[DEBUG]" _MSC_LOG_STR_DESC desc, _MSC_LOG_ARG, ##__VA_ARGS__); \
+			mediasoupclient::Logger::handler->OnLog(mediasoupclient::Logger::LogLevel::LOG_DEBUG, mediasoupclient::Logger::buffer, loggerWritten); \
 		} \
 	} \
 	while (false)
@@ -146,10 +142,10 @@ using Logger = mediasoupclient::Logger;
 #define MSC_WARN(desc, ...) \
 	do \
 	{ \
-		if (Logger::handler && Logger::logLevel >= Logger::LogLevel::LOG_WARN) \
+		if (mediasoupclient::Logger::handler && mediasoupclient::Logger::logLevel >= mediasoupclient::Logger::LogLevel::LOG_WARN) \
 		{ \
-			const int loggerWritten = std::snprintf(Logger::buffer, Logger::BufferSize, "[WARN]" _MSC_LOG_STR_DESC desc, _MSC_LOG_ARG, ##__VA_ARGS__); \
-			Logger::handler->OnLog(Logger::LogLevel::LOG_WARN, Logger::buffer, loggerWritten); \
+			const int loggerWritten = std::snprintf(mediasoupclient::Logger::buffer, mediasoupclient::Logger::BufferSize, "[WARN]" _MSC_LOG_STR_DESC desc, _MSC_LOG_ARG, ##__VA_ARGS__); \
+			mediasoupclient::Logger::handler->OnLog(mediasoupclient::Logger::LogLevel::LOG_WARN, mediasoupclient::Logger::buffer, loggerWritten); \
 		} \
 	} \
 	while (false)
@@ -157,10 +153,10 @@ using Logger = mediasoupclient::Logger;
 #define MSC_ERROR(desc, ...) \
 	do \
 	{ \
-		if (Logger::handler && Logger::logLevel >= Logger::LogLevel::LOG_ERROR) \
+		if (mediasoupclient::Logger::handler && mediasoupclient::Logger::logLevel >= mediasoupclient::Logger::LogLevel::LOG_ERROR) \
 		{ \
-			const int loggerWritten = std::snprintf(Logger::buffer, Logger::BufferSize, "[ERROR]" _MSC_LOG_STR_DESC desc, _MSC_LOG_ARG, ##__VA_ARGS__); \
-			Logger::handler->OnLog(Logger::LogLevel::LOG_ERROR, Logger::buffer, loggerWritten); \
+			const int loggerWritten = std::snprintf(mediasoupclient::Logger::buffer, mediasoupclient::Logger::BufferSize, "[ERROR]" _MSC_LOG_STR_DESC desc, _MSC_LOG_ARG, ##__VA_ARGS__); \
+			mediasoupclient::Logger::handler->OnLog(mediasoupclient::Logger::LogLevel::LOG_ERROR, mediasoupclient::Logger::buffer, loggerWritten); \
 		} \
 	} \
 	while (false)
@@ -183,10 +179,14 @@ using Logger = mediasoupclient::Logger;
 	while (false)
 
 #define MSC_ASSERT(condition, desc, ...) \
-	if (!(condition)) \
+	do \
 	{ \
-		MSC_ABORT("failed assertion `%s': " desc, #condition, ##__VA_ARGS__); \
-	}
+		if (!(condition)) \
+		{ \
+			MSC_ABORT("failed assertion `%s': " desc, #condition, ##__VA_ARGS__); \
+		} \
+	} \
+	while (false)
 
 // clang-format on
 

@@ -10,6 +10,9 @@
   - Document the public API.
   - Sync `.clang-format` and `.clang-tidy` with mediasoup and fix every reported warning.
   - Add `doc/Building.md` with the build, test and lint workflow.
+- Do not declare `Logger` in the global namespace ([issue #225](https://github.com/versatica/libmediasoupclient/issues/225), credits to @ZhengLinLei).
+  - Fix corrupted log messages when logging from several threads: the log buffer is now `thread_local`.
+  - Fix `MSC_ASSERT()`.
 
 ### 3.5.1
 

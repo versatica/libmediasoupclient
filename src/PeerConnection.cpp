@@ -275,6 +275,7 @@ namespace mediasoupclient
 
 			observer->Reject(error.description);
 			waitForFuture(future);
+
 			return;
 		}
 

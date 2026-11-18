@@ -43,7 +43,9 @@ namespace
 		  mediasoupclient::Transport* /*transport*/, const json& /*dtlsParameters*/) override
 		{
 			std::promise<void> p;
+
 			p.set_value();
+
 			return p.get_future();
 		}
 
@@ -59,7 +61,9 @@ namespace
 		  const json& /*appData*/) override
 		{
 			std::promise<std::string> p;
+
 			p.set_value(generateProducerRemoteId());
+
 			return p.get_future();
 		}
 
@@ -71,7 +75,9 @@ namespace
 		  const json& /*appData*/) override
 		{
 			std::promise<std::string> p;
+
 			p.set_value(generateProducerRemoteId());
+
 			return p.get_future();
 		}
 	};
@@ -83,7 +89,9 @@ namespace
 		  mediasoupclient::Transport* /*transport*/, const json& /*dtlsParameters*/) override
 		{
 			std::promise<void> p;
+
 			p.set_value();
+
 			return p.get_future();
 		}
 

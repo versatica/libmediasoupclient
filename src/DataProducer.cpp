@@ -138,18 +138,32 @@ namespace mediasoupclient
 		switch (state)
 		{
 			case webrtc::DataChannelInterface::DataState::kConnecting:
+			{
 				break;
+			}
+
 			case webrtc::DataChannelInterface::DataState::kOpen:
+			{
 				this->listener->OnOpen(this);
 				break;
+			}
+
 			case webrtc::DataChannelInterface::DataState::kClosing:
+			{
 				break;
+			}
+
 			case webrtc::DataChannelInterface::DataState::kClosed:
+			{
 				Close();
 				break;
+			}
+
 			default:
+			{
 				MSC_ERROR("unknown state %s", webrtc::DataChannelInterface::DataStateString(state));
 				break;
+			}
 		}
 	}
 

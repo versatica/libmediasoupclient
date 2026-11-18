@@ -78,6 +78,7 @@ namespace mediasoupclient
 		  [routerRtpCapabilities, preferLocalCodecsOrder](json& currentLocalRtpCapabilities) -> json
 		{
 			auto routerRtpCapabilitiesCopy = routerRtpCapabilities;
+
 			return ortc::getExtendedRtpCapabilities(
 			  currentLocalRtpCapabilities, routerRtpCapabilitiesCopy, preferLocalCodecsOrder);
 		};

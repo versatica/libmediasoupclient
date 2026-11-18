@@ -1,15 +1,19 @@
-#pragma once
+#ifndef MSC_DEMO_PROTOO_CLIENT_HPP
+#define MSC_DEMO_PROTOO_CLIENT_HPP
 
+#include <json.hpp>
 #include <atomic>
 #include <condition_variable>
 #include <functional>
 #include <future>
 #include <ixwebsocket/IXWebSocket.h>
-#include <json.hpp>
 #include <map>
 #include <mutex>
 #include <string>
 
+// NOTE: An alias and not a using declaration, which would bring the name into
+// the global namespace of every file including this header.
+// NOLINTNEXTLINE(readability-redundant-qualified-alias)
 using json = nlohmann::json;
 
 /**
@@ -28,13 +32,14 @@ public:
 	using RequestCallback =
 	  std::function<void(const std::string& method, const json& data, json& responseData)>;
 
-	explicit ProtooClient(
+	ProtooClient(
 	  const std::string& url,
 	  const std::string& origin,
 	  NotificationCallback notificationCb,
 	  RequestCallback requestCb);
 
 	void Connect(int timeoutMs = 5000);
+
 	void Close();
 
 	// Send a Protoo request and block until the response arrives.
@@ -63,3 +68,5 @@ private:
 	NotificationCallback notificationCb;
 	RequestCallback requestCb;
 };
+
+#endif

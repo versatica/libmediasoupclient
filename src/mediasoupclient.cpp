@@ -1,14 +1,13 @@
 #define MSC_CLASS "mediasoupclient"
 
 #include "mediasoupclient.hpp"
-#include "Logger.hpp"
 #include "version.hpp"
 #include <rtc_base/ssl_adapter.h>
 #include <sstream>
 
 namespace mediasoupclient
 {
-	void Initialize() // NOLINT(readability-identifier-naming)
+	void Initialize()
 	{
 		MSC_TRACE();
 
@@ -17,15 +16,17 @@ namespace mediasoupclient
 		webrtc::InitializeSSL();
 	}
 
-	void Cleanup() // NOLINT(readability-identifier-naming)
+	void Cleanup()
 	{
 		MSC_TRACE();
 
 		webrtc::CleanupSSL();
 	}
 
-	std::string Version() // NOLINT(readability-identifier-naming)
+	std::string Version()
 	{
+		MSC_TRACE();
+
 		std::stringstream ss;
 
 		ss << MEDIASOUPCLIENT_VERSION_MAJOR << "." << MEDIASOUPCLIENT_VERSION_MINOR << "."

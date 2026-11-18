@@ -2,13 +2,15 @@
 #define MSC_TEST_FAKE_TRANSPORT_LISTENER_HPP
 
 #include "fakeParameters.hpp"
-#include "mediasoupclient.hpp"
+// NOTE: Included for the mediasoupclient declarations it re-exports (such as
+// SendTransport::Listener), not used directly.
+#include "mediasoupclient.hpp" // IWYU pragma: keep
 #include <catch.hpp>
 
 class FakeSendTransportListener : public mediasoupclient::SendTransport::Listener
 {
 public:
-	virtual std::future<std::string> OnProduce(
+	std::future<std::string> OnProduce(
 	  mediasoupclient::SendTransport* /*transport*/,
 	  const std::string& kind,
 	  nlohmann::json rtpParameters,
@@ -79,7 +81,7 @@ public:
 	};
 
 	void OnConnectionStateChange(
-	  mediasoupclient::Transport* transport, const std::string& /*connectionState*/) override
+	  mediasoupclient::Transport* /*transport*/, const std::string& /*connectionState*/) override
 	{
 		this->onConnectionStateChangeTimesCalled++;
 	};
@@ -125,7 +127,7 @@ public:
 	};
 
 	void OnConnectionStateChange(
-	  mediasoupclient::Transport* transport, const std::string& /*connectionState*/) override
+	  mediasoupclient::Transport* /*transport*/, const std::string& /*connectionState*/) override
 	{
 		this->onConnectionStateChangeTimesCalled++;
 	};
@@ -150,7 +152,7 @@ public:
 	}
 	void OnClose(mediasoupclient::DataProducer* dataProducer) override {};
 	void OnBufferedAmountChange(
-	  mediasoupclient::DataProducer* dataProducer, uint64_t sent_data_size) override {};
+	  mediasoupclient::DataProducer* dataProducer, uint64_t sentDataSize) override {};
 
 	void OnTransportClose(mediasoupclient::DataProducer* /*dataProducer*/) override {};
 

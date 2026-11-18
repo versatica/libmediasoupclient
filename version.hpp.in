@@ -2,8 +2,12 @@
 #define MSC_VERSION_HPP
 
 // Version configuration.
+// NOTE: Macros and not constants so that they can be used in preprocessor
+// conditionals by applications including this header.
+// NOLINTBEGIN(cppcoreguidelines-macro-to-enum,modernize-macro-to-enum,cppcoreguidelines-macro-usage)
 #define MEDIASOUPCLIENT_VERSION_MAJOR @mediasoupclient_VERSION_MAJOR@
 #define MEDIASOUPCLIENT_VERSION_MINOR @mediasoupclient_VERSION_MINOR@
 #define MEDIASOUPCLIENT_VERSION_PATCH @mediasoupclient_VERSION_PATCH@
+// NOLINTEND(cppcoreguidelines-macro-to-enum,modernize-macro-to-enum,cppcoreguidelines-macro-usage)
 
 #endif

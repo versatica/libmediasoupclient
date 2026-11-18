@@ -6,9 +6,8 @@
 #include <cctype>    // ::tolower
 #include <regex>
 #include <sstream>
-#include <utility>
 
-using json = nlohmann::json;
+using nlohmann::json;
 
 // Static functions declaration.
 static std::string getCodecName(const json& codec);
@@ -27,7 +26,7 @@ namespace mediasoupclient
 			// Set ICE candidates.
 			this->mediaObject["candidates"] = json::array();
 
-			for (auto& candidate : iceCandidates)
+			for (const auto& candidate : iceCandidates)
 			{
 				auto candidateObject = json::object();
 
@@ -41,7 +40,7 @@ namespace mediasoupclient
 				candidateObject["transport"]  = candidate["protocol"];
 				candidateObject["type"]       = candidate["type"];
 
-				if (candidate.find("tcpType") != candidate.end())
+				if (candidate.contains("tcpType"))
 				{
 					candidateObject["tcptype"] = candidate["tcpType"];
 				}
@@ -123,7 +122,7 @@ namespace mediasoupclient
 		{
 			MSC_TRACE();
 
-			auto type = offerMediaObject["type"].get<std::string>();
+			const auto type = offerMediaObject["type"].get<std::string>();
 
 			this->mediaObject["mid"]        = offerMediaObject["mid"];
 			this->mediaObject["type"]       = type;
@@ -135,7 +134,7 @@ namespace mediasoupclient
 			this->mediaObject["port"] = 7;
 
 			// Set DTLS role.
-			auto dtlsRole = dtlsParameters["role"].get<std::string>();
+			const auto dtlsRole = dtlsParameters["role"].get<std::string>();
 
 			if (dtlsRole == "client")
 			{
@@ -170,7 +169,7 @@ namespace mediasoupclient
 
 					if (codec.contains("channels"))
 					{
-						auto channels = codec["channels"].get<uint8_t>();
+						const auto channels = codec["channels"].get<uint8_t>();
 
 						if (channels > 1)
 						{
@@ -185,93 +184,94 @@ namespace mediasoupclient
 					if (codecOptions != nullptr && !codecOptions->empty())
 					{
 						auto& offerCodecs = offerRtpParameters["codecs"];
-						auto codecIt      = find_if(
-						  offerCodecs.begin(),
-						  offerCodecs.end(),
-						  [&codec](json& offerCodec)
+
+						const auto codecIt = std::ranges::find_if(
+						  offerCodecs,
+
+						  [&codec](json& offerCodec) -> bool
 						  {
 							  return offerCodec["payloadType"] == codec["payloadType"];
 						  });
 
 						auto& offerCodec = *codecIt;
 						auto mimeType    = codec["mimeType"].get<std::string>();
-						std::transform(mimeType.begin(), mimeType.end(), mimeType.begin(), ::tolower);
+						std::ranges::transform(mimeType, mimeType.begin(), ::tolower);
 
 						if (mimeType == "audio/opus")
 						{
-							auto opusStereoIt = codecOptions->find("opusStereo");
+							const auto opusStereoIt = codecOptions->find("opusStereo");
 							if (opusStereoIt != codecOptions->end())
 							{
-								auto opusStereo                          = opusStereoIt->get<bool>();
+								const auto opusStereo                    = opusStereoIt->get<bool>();
 								offerCodec["parameters"]["sprop-stereo"] = opusStereo ? 1 : 0;
 								codecParameters["stereo"]                = opusStereo ? 1 : 0;
 							}
 
-							auto opusFecIt = codecOptions->find("opusFec");
+							const auto opusFecIt = codecOptions->find("opusFec");
 							if (opusFecIt != codecOptions->end())
 							{
-								auto opusFec                             = opusFecIt->get<bool>();
+								const auto opusFec                       = opusFecIt->get<bool>();
 								offerCodec["parameters"]["useinbandfec"] = opusFec ? 1 : 0;
 								codecParameters["useinbandfec"]          = opusFec ? 1 : 0;
 							}
 
-							auto opusDtxIt = codecOptions->find("opusDtx");
+							const auto opusDtxIt = codecOptions->find("opusDtx");
 							if (opusDtxIt != codecOptions->end())
 							{
-								auto opusDtx                       = opusDtxIt->get<bool>();
+								const auto opusDtx                 = opusDtxIt->get<bool>();
 								offerCodec["parameters"]["usedtx"] = opusDtx ? 1 : 0;
 								codecParameters["usedtx"]          = opusDtx ? 1 : 0;
 							}
 
-							auto opusCbrIt = codecOptions->find("opusCbr");
+							const auto opusCbrIt = codecOptions->find("opusCbr");
 							if (opusCbrIt != codecOptions->end())
 							{
-								auto opusCbr                    = opusCbrIt->get<bool>();
+								const auto opusCbr              = opusCbrIt->get<bool>();
 								offerCodec["parameters"]["cbr"] = opusCbr ? 1 : 0;
 								codecParameters["cbr"]          = opusCbr ? 1 : 0;
 							}
 
-							auto opusMaxPlaybackRateIt = codecOptions->find("opusMaxPlaybackRate");
+							const auto opusMaxPlaybackRateIt = codecOptions->find("opusMaxPlaybackRate");
 							if (opusMaxPlaybackRateIt != codecOptions->end())
 							{
-								auto opusMaxPlaybackRate           = opusMaxPlaybackRateIt->get<uint32_t>();
+								const auto opusMaxPlaybackRate     = opusMaxPlaybackRateIt->get<uint32_t>();
 								codecParameters["maxplaybackrate"] = opusMaxPlaybackRate;
 							}
 
-							auto opusMaxAverageBitrateIt = codecOptions->find("opusMaxAverageBitrate");
+							const auto opusMaxAverageBitrateIt = codecOptions->find("opusMaxAverageBitrate");
 							if (opusMaxAverageBitrateIt != codecOptions->end())
 							{
-								auto opusMaxAverageBitrate           = opusMaxAverageBitrateIt->get<uint32_t>();
+								const auto opusMaxAverageBitrate     = opusMaxAverageBitrateIt->get<uint32_t>();
 								codecParameters["maxaveragebitrate"] = opusMaxAverageBitrate;
 							}
 
-							auto opusPtimeIt = codecOptions->find("opusPtime");
+							const auto opusPtimeIt = codecOptions->find("opusPtime");
 							if (opusPtimeIt != codecOptions->end())
 							{
-								auto opusPtime           = opusPtimeIt->get<uint32_t>();
+								const auto opusPtime     = opusPtimeIt->get<uint32_t>();
 								codecParameters["ptime"] = opusPtime;
 							}
 						}
 						else if (mimeType == "video/vp8" || mimeType == "video/vp9" || mimeType == "video/h264" || mimeType == "video/h265")
 						{
-							auto videoGoogleStartBitrateIt = codecOptions->find("videoGoogleStartBitrate");
+							const auto videoGoogleStartBitrateIt = codecOptions->find("videoGoogleStartBitrate");
 							if (videoGoogleStartBitrateIt != codecOptions->end())
 							{
-								auto videoGoogleStartBitrate = videoGoogleStartBitrateIt->get<uint32_t>();
+								const auto videoGoogleStartBitrate = videoGoogleStartBitrateIt->get<uint32_t>();
 								codecParameters["x-google-start-bitrate"] = videoGoogleStartBitrate;
 							}
 
-							auto videoGoogleMaxBitrateIt = codecOptions->find("videoGoogleMaxBitrate");
+							const auto videoGoogleMaxBitrateIt = codecOptions->find("videoGoogleMaxBitrate");
 							if (videoGoogleMaxBitrateIt != codecOptions->end())
 							{
-								auto videoGoogleMaxBitrate              = videoGoogleMaxBitrateIt->get<uint32_t>();
+								const auto videoGoogleMaxBitrate        = videoGoogleMaxBitrateIt->get<uint32_t>();
 								codecParameters["x-google-max-bitrate"] = videoGoogleMaxBitrate;
 							}
 
-							auto videoGoogleMinBitrateIt = codecOptions->find("videoGoogleMinBitrate");
+							const auto videoGoogleMinBitrateIt = codecOptions->find("videoGoogleMinBitrate");
 							if (videoGoogleMinBitrateIt != codecOptions->end())
 							{
-								auto videoGoogleMinBitrate              = videoGoogleMinBitrateIt->get<uint32_t>();
+								const auto videoGoogleMinBitrate        = videoGoogleMinBitrateIt->get<uint32_t>();
 								codecParameters["x-google-min-bitrate"] = videoGoogleMinBitrate;
 							}
 						}
@@ -286,7 +286,7 @@ namespace mediasoupclient
 
 					std::ostringstream config;
 
-					for (auto& item : codecParameters.items())
+					for (const auto& item : codecParameters.items())
 					{
 						if (!config.str().empty())
 						{
@@ -332,7 +332,7 @@ namespace mediasoupclient
 
 				for (auto& codec : answerRtpParameters["codecs"])
 				{
-					auto payloadType = codec["payloadType"].get<uint8_t>();
+					const auto payloadType = codec["payloadType"].get<uint8_t>();
 
 					if (!payloads.empty())
 					{
@@ -349,10 +349,10 @@ namespace mediasoupclient
 				for (auto& ext : answerRtpParameters["headerExtensions"])
 				{
 					const auto& localExts = offerMediaObject["ext"];
-					auto localExtIt       = find_if(
-					  localExts.begin(),
-					  localExts.end(),
-					  [&ext](const json& localExt)
+					const auto localExtIt = std::ranges::find_if(
+					  localExts,
+
+					  [&ext](const json& localExt) -> bool
 					  {
 						  return localExt["uri"] == ext["uri"];
 					  });
@@ -372,7 +372,7 @@ namespace mediasoupclient
 				}
 
 				// Allow both 1 byte and 2 bytes length header extensions.
-				auto extmapAllowMixedIt = offerMediaObject.find("extmapAllowMixed");
+				const auto extmapAllowMixedIt = offerMediaObject.find("extmapAllowMixed");
 
 				// clang-format off
 				if (
@@ -385,8 +385,8 @@ namespace mediasoupclient
 				}
 
 				// Simulcast.
-				auto simulcastId = offerMediaObject.find("simulcast");
-				auto ridsIt      = offerMediaObject.find("rids");
+				const auto simulcastId = offerMediaObject.find("simulcast");
+				const auto ridsIt      = offerMediaObject.find("rids");
 
 				// clang-format off
 				if (
@@ -501,7 +501,7 @@ namespace mediasoupclient
 
 					if (codec.contains("channels"))
 					{
-						auto channels = codec["channels"].get<uint8_t>();
+						const auto channels = codec["channels"].get<uint8_t>();
 
 						if (channels > 1)
 						{
@@ -522,7 +522,7 @@ namespace mediasoupclient
 
 					std::ostringstream config;
 
-					for (auto& item : codecParameters.items())
+					for (const auto& item : codecParameters.items())
 					{
 						if (!config.str().empty())
 						{
@@ -568,7 +568,7 @@ namespace mediasoupclient
 
 				for (const auto& codec : offerRtpParameters["codecs"])
 				{
-					auto payloadType = codec["payloadType"].get<uint8_t>();
+					const auto payloadType = codec["payloadType"].get<uint8_t>();
 
 					if (!payloads.empty())
 					{
@@ -599,20 +599,20 @@ namespace mediasoupclient
 				auto ssrc            = encoding["ssrc"].get<uint32_t>();
 				uint32_t rtxSsrc;
 
-				auto rtxIt = encoding.find("rtx");
-				if ((rtxIt != encoding.end()) && ((*rtxIt).find("ssrc") != (*rtxIt).end()))
+				const auto rtxIt = encoding.find("rtx");
+				if ((rtxIt != encoding.end()) && (*rtxIt).contains("ssrc"))
 				{
 					rtxSsrc = encoding["rtx"]["ssrc"].get<uint32_t>();
 				}
 				else
 				{
-					rtxSsrc = 0u;
+					rtxSsrc = 0;
 				}
 
 				this->mediaObject["ssrcs"]      = json::array();
 				this->mediaObject["ssrcGroups"] = json::array();
 
-				auto cnameIt = offerRtpParameters["rtcp"].find("cname");
+				const auto cnameIt = offerRtpParameters["rtcp"].find("cname");
 				if (cnameIt != offerRtpParameters["rtcp"].end() && cnameIt->is_string())
 				{
 					auto cname = (*cnameIt).get<std::string>();
@@ -634,7 +634,7 @@ namespace mediasoupclient
               { "value",     msid   }
           });
 
-					if (rtxSsrc != 0u)
+					if (rtxSsrc != 0)
 					{
 						std::string ssrcs = std::to_string(ssrc).append(" ").append(std::to_string(rtxSsrc));
 
@@ -683,10 +683,12 @@ namespace mediasoupclient
 
 static std::string getCodecName(const json& codec)
 {
+	MSC_TRACE();
+
 	static const std::regex MimeTypeRegex(
 	  "^(audio|video)/", std::regex_constants::ECMAScript | std::regex_constants::icase);
 
-	auto mimeType = codec["mimeType"].get<std::string>();
+	const auto mimeType = codec["mimeType"].get<std::string>();
 
 	return std::regex_replace(mimeType, MimeTypeRegex, "");
 }

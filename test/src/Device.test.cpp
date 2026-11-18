@@ -15,7 +15,6 @@
 #include "api/video_codecs/video_encoder_factory_template_libvpx_vp9_adapter.h"
 #include "api/video_codecs/video_encoder_factory_template_open_h264_adapter.h"
 #include "fakeParameters.hpp"
-#include "ortc.hpp"
 #include "rtc_base/thread.h"
 #include <catch.hpp>
 
@@ -26,7 +25,7 @@ TEST_CASE("Device", "[Device]")
 	static FakeSendTransportListener sendTransportListener;
 	static FakeRecvTransportListener recvTransportListener;
 
-	static std::unique_ptr<mediasoupclient::Device> device(new mediasoupclient::Device());
+	static auto device = std::make_unique<mediasoupclient::Device>();
 
 	static json routerRtpCapabilities;
 
@@ -50,7 +49,7 @@ TEST_CASE("Device", "[Device]")
 	{
 		REQUIRE_THROWS_AS(
 		  device->CreateSendTransport(
-		    &sendTransportListener,
+		    std::addressof(sendTransportListener),
 		    TransportRemoteParameters["id"],
 		    TransportRemoteParameters["iceParameters"],
 		    TransportRemoteParameters["iceCandidates"],
@@ -62,7 +61,7 @@ TEST_CASE("Device", "[Device]")
 	{
 		REQUIRE_THROWS_AS(
 		  device->CreateRecvTransport(
-		    &recvTransportListener,
+		    std::addressof(recvTransportListener),
 		    TransportRemoteParameters["id"],
 		    TransportRemoteParameters["iceParameters"],
 		    TransportRemoteParameters["iceCandidates"],
@@ -74,13 +73,14 @@ TEST_CASE("Device", "[Device]")
 	{
 		routerRtpCapabilities = generateRouterRtpCapabilities();
 
-		REQUIRE_NOTHROW(device->Load(routerRtpCapabilities));
+		REQUIRE_NOTHROW(device->Load(routerRtpCapabilities, nullptr, false));
 		REQUIRE(device->IsLoaded());
 	}
 
 	SECTION("device.Load() fails if already loaded")
 	{
-		REQUIRE_THROWS_AS(device->Load(routerRtpCapabilities), MediaSoupClientInvalidStateError);
+		REQUIRE_THROWS_AS(
+		  device->Load(routerRtpCapabilities, nullptr, false), MediaSoupClientInvalidStateError);
 	}
 
 	SECTION("device.GetRtpCapabilities() succeeds")
@@ -102,7 +102,7 @@ TEST_CASE("Device", "[Device]")
 	SECTION("device.CreateSendTransport() succeeds")
 	{
 		REQUIRE_NOTHROW(device->CreateSendTransport(
-		  &sendTransportListener,
+		  std::addressof(sendTransportListener),
 		  TransportRemoteParameters["id"],
 		  TransportRemoteParameters["iceParameters"],
 		  TransportRemoteParameters["iceCandidates"],
@@ -112,7 +112,7 @@ TEST_CASE("Device", "[Device]")
 	SECTION("device.CreateRecvTransport() succeeds")
 	{
 		REQUIRE_NOTHROW(device->CreateRecvTransport(
-		  &recvTransportListener,
+		  std::addressof(recvTransportListener),
 		  TransportRemoteParameters["id"],
 		  TransportRemoteParameters["iceParameters"],
 		  TransportRemoteParameters["iceCandidates"],
@@ -145,7 +145,7 @@ TEST_CASE("Device::Load from signaling thread does not deadlock", "[Device]")
 	workerThread->Start();
 	signalingThread->Start();
 
-	auto factory = webrtc::CreatePeerConnectionFactory(
+	const auto factory = webrtc::CreatePeerConnectionFactory(
 	  networkThread.get(),
 	  workerThread.get(),
 	  signalingThread.get(),
@@ -176,10 +176,10 @@ TEST_CASE("Device::Load from signaling thread does not deadlock", "[Device]")
 	// from the bug report.
 	bool loaded{ false };
 	signalingThread->BlockingCall(
-	  [&]()
+	  [&]() -> void
 	  {
 		  mediasoupclient::Device device;
-		  REQUIRE_NOTHROW(device.Load(generateRouterRtpCapabilities(), &pcOptions));
+		  REQUIRE_NOTHROW(device.Load(generateRouterRtpCapabilities(), std::addressof(pcOptions), false));
 		  loaded = device.IsLoaded();
 	  });
 

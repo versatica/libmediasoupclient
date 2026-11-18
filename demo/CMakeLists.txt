@@ -22,9 +22,6 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(cli11)
 
 add_executable(mediasoupclient_demo
-	include/AVFCaptureVideoSource.hpp
-	include/ProtooClient.hpp
-	include/RoomClient.hpp
 	src/AVFCaptureVideoSource.mm
 	src/ProtooClient.cpp
 	src/RoomClient.cpp
@@ -37,9 +34,9 @@ target_compile_definitions(mediasoupclient_demo PRIVATE
 	NDEBUG
 )
 
+# NOTE: The headers of the library itself come from the mediasoupclient target.
 target_include_directories(mediasoupclient_demo PRIVATE
 	include
-	${mediasoupclient_SOURCE_DIR}/include
 	${LIBWEBRTC_INCLUDE_PATH}/third_party/libyuv/include
 )
 

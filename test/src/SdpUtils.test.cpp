@@ -6,11 +6,11 @@ TEST_CASE("Sdp::Utils", "[Sdp][Utils]")
 {
 	SECTION("extractRtpCapabilities")
 	{
-		auto sdp             = helpers::readFile("test/data/audio_video.sdp");
-		auto session         = sdptransform::parse(sdp);
+		const auto sdp       = helpers::readFile("test/data/audio_video.sdp");
+		const auto session   = sdptransform::parse(sdp);
 		auto rtpCapabilities = mediasoupclient::Sdp::Utils::extractRtpCapabilities(session);
 
-		auto codecs = rtpCapabilities.at("codecs");
+		const auto codecs = rtpCapabilities.at("codecs");
 
 		for (const auto& codec : rtpCapabilities["codecs"])
 		{
@@ -24,8 +24,8 @@ TEST_CASE("Sdp::Utils", "[Sdp][Utils]")
 
 	SECTION("extractDtlsParameters")
 	{
-		auto sdp            = helpers::readFile("test/data/jssip.sdp");
-		auto session        = sdptransform::parse(sdp);
+		const auto sdp      = helpers::readFile("test/data/jssip.sdp");
+		const auto session  = sdptransform::parse(sdp);
 		auto dtlsParameters = mediasoupclient::Sdp::Utils::extractDtlsParameters(session);
 
 		REQUIRE(dtlsParameters.at("role") == "auto");
@@ -43,7 +43,7 @@ TEST_CASE("Sdp::Utils", "[Sdp][Utils]")
 
 	SECTION("getRtpEncodings respect the given SSRC order")
 	{
-		auto offerMediaObject = R"({
+		const auto offerMediaObject = R"({
 			"ssrcs":
 			[
 				{

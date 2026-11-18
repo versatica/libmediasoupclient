@@ -9,12 +9,12 @@ const PYTHON = getPython();
 const ROOT_DIR = getRootDir();
 const BUILD_DIR = getBuildDir();
 const NUM_CORES = getNumCores();
+
 const CLANG_FORMAT_VERSION = 23;
-const CLANG_TIDY_VERSION = 21;
+const CLANG_TIDY_VERSION = 23;
 
 const CLANG_FORMAT_PATHS = ["src/**/*.cpp", "include/**/*.hpp", "test/**/*.cpp", "test/**/*.hpp", "demo/**/*.cpp", "demo/**/*.hpp"];
-
-const CLANG_TIDY_PATHS = ["src/**/*.cpp", "test/**/*.cpp"];
+const CLANG_TIDY_PATHS = ["src/**/*.cpp", "test/**/*.cpp", "demo/**/*.cpp"];
 
 const task = process.argv.slice(2).join(" ");
 

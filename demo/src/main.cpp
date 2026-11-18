@@ -88,7 +88,9 @@ static webrtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> createFacto
 // main
 // ---------------------------------------------------------------------------
 
-int main(int argc, char* argv[])
+// NOTE: Split from main() so that the latter can guarantee that no exception
+// escapes it, which would call std::terminate().
+static int run(int argc, char* argv[])
 {
 	CLI::App app{ "mediasoupclient demo — send/receive media via a mediasoup-demo server" };
 
@@ -110,7 +112,7 @@ int main(int argc, char* argv[])
 
 	mediasoupclient::Initialize();
 
-	auto factory = createFactory();
+	const auto factory = createFactory();
 
 	if (!factory)
 	{
@@ -126,15 +128,15 @@ int main(int argc, char* argv[])
 	  "mediasoupclient-demo",
 	  factory.get(),
 	  {},
-	  [](const std::string& peerId, webrtc::VideoTrackInterface*)
+	  [](const std::string& peerId, webrtc::VideoTrackInterface*) -> void
 	  {
 		  std::cout << "[demo] video track from " << peerId << "\n";
 	  },
-	  [](const std::string& peerId)
+	  [](const std::string& peerId) -> void
 	  {
 		  std::cout << "[demo] peer left: " << peerId << "\n";
 	  },
-	  [](const std::string& msg)
+	  [](const std::string& msg) -> void
 	  {
 		  std::cout << "[data] " << msg << "\n";
 	  });
@@ -161,11 +163,11 @@ int main(int argc, char* argv[])
 	}
 
 	// -- Camera --
-	auto videoSource = AVFCaptureVideoSource::Create(640, 480, 30);
+	const auto videoSource = AVFCaptureVideoSource::Create(640, 480, 30);
 
 	if (videoSource)
 	{
-		auto videoTrack = factory->CreateVideoTrack(videoSource, "camera");
+		const auto videoTrack = factory->CreateVideoTrack(videoSource, "camera");
 
 		try
 		{
@@ -201,4 +203,24 @@ int main(int argc, char* argv[])
 	std::cout << "[demo] done\n";
 
 	return 0;
+}
+
+int main(int argc, char* argv[])
+{
+	try
+	{
+		return run(argc, argv);
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << "[demo] FAILED: " << e.what() << "\n";
+
+		return 1;
+	}
+	catch (...)
+	{
+		std::cerr << "[demo] FAILED: unknown error\n";
+
+		return 1;
+	}
 }

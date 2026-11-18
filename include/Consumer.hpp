@@ -1,9 +1,9 @@
 #ifndef MSC_CONSUMER_HPP
 #define MSC_CONSUMER_HPP
 
+#include <json.hpp>
 #include <api/media_stream_interface.h> // webrtc::MediaStreamTrackInterface
 #include <api/rtp_receiver_interface.h> // webrtc::RtpReceiverInterface
-#include <json.hpp>
 #include <string>
 
 namespace mediasoupclient
@@ -18,8 +18,10 @@ namespace mediasoupclient
 		class PrivateListener
 		{
 		public:
-			virtual ~PrivateListener()                                  = default;
-			virtual void OnClose(Consumer* consumer)                    = 0;
+			virtual ~PrivateListener() = default;
+
+			virtual void OnClose(Consumer* consumer) = 0;
+
 			virtual nlohmann::json OnGetStats(const Consumer* consumer) = 0;
 		};
 
@@ -27,7 +29,8 @@ namespace mediasoupclient
 		class Listener
 		{
 		public:
-			virtual ~Listener()                               = default;
+			virtual ~Listener() = default;
+
 			virtual void OnTransportClose(Consumer* consumer) = 0;
 		};
 
@@ -44,19 +47,79 @@ namespace mediasoupclient
 		  const nlohmann::json& appData);
 
 	public:
+		/**
+		 * Consumer id.
+		 */
 		const std::string& GetId() const;
+
+		/**
+		 * Local id.
+		 */
 		const std::string& GetLocalId() const;
+
+		/**
+		 * Associated Producer id.
+		 */
 		const std::string& GetProducerId() const;
+
+		/**
+		 * Whether the Consumer is closed.
+		 */
 		bool IsClosed() const;
-		const std::string GetKind() const;
+
+		/**
+		 * Media kind.
+		 */
+		std::string GetKind() const;
+
+		/**
+		 * Associated RtpReceiver.
+		 */
 		webrtc::RtpReceiverInterface* GetRtpReceiver() const;
+
+		/**
+		 * The associated track.
+		 */
 		webrtc::MediaStreamTrackInterface* GetTrack() const;
+
+		/**
+		 * RTP parameters.
+		 */
 		const nlohmann::json& GetRtpParameters() const;
+
+		/**
+		 * Whether the Consumer is paused.
+		 */
 		bool IsPaused() const;
+
+		/**
+		 * App custom data.
+		 */
 		nlohmann::json& GetAppData();
+
+		/**
+		 * Closes the Consumer.
+		 *
+		 * @remarks
+		 * - The application owns the Consumer, so it must destroy it after closing it.
+		 */
 		void Close();
+
+		/**
+		 * Get associated RtpReceiver stats.
+		 *
+		 * @throws MediaSoupClientInvalidStateError if the Consumer is closed.
+		 */
 		nlohmann::json GetStats() const;
+
+		/**
+		 * Pauses receiving media.
+		 */
 		void Pause();
+
+		/**
+		 * Resumes receiving media.
+		 */
 		void Resume();
 
 	private:
@@ -67,23 +130,23 @@ namespace mediasoupclient
 
 	private:
 		// PrivateListener instance.
-		PrivateListener* privateListener;
+		PrivateListener* const privateListener;
 		// Public Listener instance.
-		Listener* listener;
+		Listener* const listener;
 		// Id.
-		std::string id;
+		const std::string id;
 		// localId.
-		std::string localId;
+		const std::string localId;
 		// Producer Id.
-		std::string producerId;
+		const std::string producerId;
 		// Closed flag.
 		bool closed{ false };
 		// Associated RTCRtpReceiver.
-		webrtc::RtpReceiverInterface* rtpReceiver{ nullptr };
+		webrtc::RtpReceiverInterface* const rtpReceiver;
 		// Local track.
-		webrtc::MediaStreamTrackInterface* track{ nullptr };
+		webrtc::MediaStreamTrackInterface* const track;
 		// RTP parameters.
-		nlohmann::json rtpParameters;
+		const nlohmann::json rtpParameters;
 		// Paused flag.
 		bool paused{ false };
 		// App custom data.

@@ -1,5 +1,4 @@
 #include "ProtooClient.hpp"
-
 #include <iostream>
 #include <stdexcept>
 #include <thread>
@@ -31,21 +30,21 @@ ProtooClient::ProtooClient(
 	this->ws.setTLSOptions(tlsOpts);
 
 	this->ws.setOnMessageCallback(
-	  [this](const ix::WebSocketMessagePtr& msg)
+	  [this](const ix::WebSocketMessagePtr& msg) -> void
 	  {
 		  if (msg->type == ix::WebSocketMessageType::Message)
 		  {
-			  this->OnMessage(msg->str);
+			  OnMessage(msg->str);
 		  }
 		  else if (msg->type == ix::WebSocketMessageType::Open)
 		  {
-			  std::lock_guard<std::mutex> lock(this->connMutex);
+			  const std::scoped_lock lock(this->connMutex);
 			  this->connected = true;
 			  this->connCv.notify_all();
 		  }
 		  else if (msg->type == ix::WebSocketMessageType::Error)
 		  {
-			  std::lock_guard<std::mutex> lock(this->connMutex);
+			  const std::scoped_lock lock(this->connMutex);
 			  this->connectError = msg->errorInfo.reason;
 			  this->connected    = true; // unblock waitForConnection
 			  this->connCv.notify_all();
@@ -61,7 +60,7 @@ void ProtooClient::Connect(int timeoutMs)
 	this->connCv.wait_for(
 	  lock,
 	  std::chrono::milliseconds(timeoutMs),
-	  [this]
+	  [this]() -> bool
 	  {
 		  return this->connected;
 	  });
@@ -87,7 +86,7 @@ json ProtooClient::Request(const std::string& method, const json& data)
 	const int id = this->nextId++;
 
 	// clang-format off
-	json msg = {
+	json const msg = {
 		{ "request", true   },
 		{ "id",      id     },
 		{ "method",  method },
@@ -99,13 +98,13 @@ json ProtooClient::Request(const std::string& method, const json& data)
 	auto future = promise.get_future();
 
 	{
-		std::lock_guard<std::mutex> lock(this->pendingMutex);
+		const std::scoped_lock lock(this->pendingMutex);
 		this->pending[id] = std::move(promise);
 	}
 
 	this->ws.sendText(msg.dump());
 
-	auto status = future.wait_for(std::chrono::seconds(10));
+	const auto status = future.wait_for(std::chrono::seconds(10));
 
 	if (status != std::future_status::ready)
 	{
@@ -133,8 +132,8 @@ void ProtooClient::OnMessage(const std::string& str)
 	if (msg.value("response", false))
 	{
 		const int id = msg["id"];
-		std::lock_guard<std::mutex> lock(this->pendingMutex);
-		auto it = this->pending.find(id);
+		const std::scoped_lock lock(this->pendingMutex);
+		const auto it = this->pending.find(id);
 
 		if (it == this->pending.end())
 		{
@@ -162,42 +161,54 @@ void ProtooClient::OnMessage(const std::string& str)
 		// Server-initiated request.
 		// IMPORTANT: dispatch to a worker thread so we don't block the ixwebsocket
 		// receive thread. Blocking it (e.g. via a nested protoo.request() inside
-		// ConsumeData → OnConnect) would deadlock because the thread can't receive
+		// ConsumeData -> OnConnect) would deadlock because the thread can't receive
 		// the response for the nested request while it's blocked.
 		const int id             = msg["id"];
 		const std::string method = msg["method"];
 		const json data          = msg.value("data", json::object());
 
 		std::thread(
-		  [this, id, method, data]()
+		  // NOTE: This is the entry point of a detached thread, so no exception must
+		  // escape it or std::terminate() would be called. Note that the error handler
+		  // below may throw as well, hence the outer catch.
+		  // NOLINTNEXTLINE(bugprone-exception-escape)
+		  [this, id, method, data]() -> void
 		  {
-			  json responseData = json::object();
 			  try
 			  {
-				  this->requestCb(method, data, responseData);
+				  json responseData = json::object();
 
-				  // clang-format off
-				  json response = {
-					  { "response", true         },
-					  { "id",       id           },
-					  { "ok",       true         },
-					  { "data",     responseData },
-				  };
-				  // clang-format on
-				  this->ws.sendText(response.dump());
+				  try
+				  {
+					  this->requestCb(method, data, responseData);
+
+					  // clang-format off
+					  json const response = {
+						  { "response", true         },
+						  { "id",       id           },
+						  { "ok",       true         },
+						  { "data",     responseData },
+					  };
+					  // clang-format on
+					  this->ws.sendText(response.dump());
+				  }
+				  catch (const std::exception& e)
+				  {
+					  std::cerr << "[protoo] request '" << method << "' handler error: " << e.what() << "\n";
+					  // clang-format off
+					  json const response = {
+						  { "response",    true     },
+						  { "id",          id       },
+						  { "ok",          false    },
+						  { "errorReason", e.what() },
+					  };
+					  // clang-format on
+					  this->ws.sendText(response.dump());
+				  }
 			  }
-			  catch (const std::exception& e)
+			  catch (...)
 			  {
-				  std::cerr << "[protoo] request '" << method << "' handler error: " << e.what() << "\n";
-				  // clang-format off
-				  json response = {
-					  { "response",    true     },
-					  { "id",          id       },
-					  { "ok",          false    },
-					  { "errorReason", e.what() },
-				  };
-				  // clang-format on
-				  this->ws.sendText(response.dump());
+				  std::cerr << "[protoo] request handler failed, response not sent\n";
 			  }
 		  })
 		  .detach();

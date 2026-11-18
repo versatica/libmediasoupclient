@@ -16,6 +16,7 @@ Checks: "*,\
   -clang-analyzer-osx.*,\
   -concurrency-mt-unsafe,\
   -cppcoreguidelines-avoid-c-arrays,\
+  -cppcoreguidelines-avoid-const-or-ref-data-members,\
   -cppcoreguidelines-avoid-do-while,\
   -cppcoreguidelines-avoid-goto,\
   -cppcoreguidelines-avoid-non-const-global-variables,\
@@ -35,9 +36,6 @@ Checks: "*,\
   -cppcoreguidelines-pro-type-union-access,\
   -cppcoreguidelines-pro-type-vararg,\
   -cppcoreguidelines-special-member-functions,\
-  -hicpp-exception-baseclass,\
-  -hicpp-no-malloc,\
-  -hicpp-function-size,\
   -fuchsia-default-arguments-calls,\
   -fuchsia-default-arguments-declarations,\
   -fuchsia-overloaded-operator,\
@@ -47,14 +45,6 @@ Checks: "*,\
   -google-readability-*,\
   -google-runtime-int,\
   -google-upgrade-googletest-case,\
-  -hicpp-avoid-c-arrays,\
-  -hicpp-avoid-goto,\
-  -hicpp-braces-around-statements,\
-  -hicpp-no-array-decay,\
-  -hicpp-signed-bitwise,\
-  -hicpp-special-member-functions,\
-  -hicpp-uppercase-literal-suffix,\
-  -hicpp-vararg,\
   -llvm-include-order,\
   -llvm-header-guard,\
   -llvm-else-after-return,\
@@ -82,12 +72,22 @@ Checks: "*,\
   -readability-magic-numbers,\
   -readability-redundant-access-specifiers, \
   -readability-simplify-boolean-expr,\
+  -readability-trailing-comma,\
   -readability-uppercase-literal-suffix,\
   "
-HeaderFilterRegex: '.*/worker/(include|test/include|fuzzer/include)/.*'
+HeaderFilterRegex: '.*/libmediasoupclient/(include|test/include|demo/include)/.*'
 FormatStyle: 'file'
 User: mediasoup
 CheckOptions:
+  # A positive integer literal is never negative, so it cannot cause any signed
+  # bitwise issue.
+  - key: bugprone-signed-bitwise.IgnorePositiveIntegerLiterals
+    value: 'true'
+  # Maps' operator[] inserts the key if missing, so it is never out of bounds.
+  # nlohmann::basic_json is added too since its operator[] behaves the same way
+  # on objects, and the whole SDP/ORTC code is written on top of it.
+  - key: cppcoreguidelines-pro-bounds-avoid-unchecked-container-access.ExcludeClasses
+    value: '::std::map;::std::unordered_map;::std::flat_map;::nlohmann::(.*::)?basic_json'
   - key: cppcoreguidelines-pro-bounds-constant-array-index.GslHeader
     value: ''
   - key: cppcoreguidelines-pro-bounds-constant-array-index.IncludeStyle
@@ -157,13 +157,13 @@ CheckOptions:
   - key: readability-identifier-naming.ConstantSuffix
     value: ''
   - key: readability-identifier-naming.ConstexprFunctionCase
-    value: camelBack
+    value: CamelCase
   - key: readability-identifier-naming.ConstexprFunctionPrefix
     value: ''
   - key: readability-identifier-naming.ConstexprFunctionSuffix
     value: ''
   - key: readability-identifier-naming.ConstexprMethodCase
-    value: camelBack
+    value: CamelCase
   - key: readability-identifier-naming.ConstexprMethodPrefix
     value: ''
   - key: readability-identifier-naming.ConstexprMethodSuffix
@@ -198,8 +198,12 @@ CheckOptions:
     value: ''
   - key: readability-identifier-naming.GlobalConstantSuffix
     value: ''
+  # TODO: Unify the case of the namespace-scope functions and restore the
+  # CamelCase value that mediasoup's worker uses. Currently both cases are
+  # mixed: mediasoupclient::Utils uses CamelCase while mediasoupclient::ortc and
+  # mediasoupclient::Sdp::Utils use camelBack.
   - key: readability-identifier-naming.GlobalFunctionCase
-    value: CamelCase
+    value: aNy_CasE
   - key: readability-identifier-naming.GlobalFunctionPrefix
     value: ''
   - key: readability-identifier-naming.GlobalFunctionSuffix

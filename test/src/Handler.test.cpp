@@ -4,38 +4,29 @@
 #include "fakeParameters.hpp"
 #include "ortc.hpp"
 #include <catch.hpp>
-#include <iostream>
-#include <memory>
 
-static const json TransportRemoteParameters = generateTransportRemoteParameters();
-static const json RtpParametersByKind       = generateRtpParametersByKind();
-static const json RouterRtpCapabilities     = generateRouterRtpCapabilities();
-static const auto getSendCapabilities       = [](json& currentLocalRtpCapabilities)
+namespace
 {
-	auto routerRtpCapabilitiesCopy = RouterRtpCapabilities;
-	return mediasoupclient::ortc::getExtendedRtpCapabilities(
-	  currentLocalRtpCapabilities, routerRtpCapabilitiesCopy);
-};
+	class FakeHandlerListener : public mediasoupclient::Handler::PrivateListener
+	{
+	public:
+		void OnConnect(json& /*transportLocalParameters*/) override {};
 
-class FakeHandlerListener : public mediasoupclient::Handler::PrivateListener
-{
-public:
-	void OnConnect(json& /*transportLocalParameters*/) override {};
-
-	void OnConnectionStateChange(
-	  webrtc::PeerConnectionInterface::IceConnectionState /*connectionState*/) override{};
-};
+		void OnConnectionStateChange(
+		  webrtc::PeerConnectionInterface::IceConnectionState /*connectionState*/) override{};
+	};
+} // namespace
 
 TEST_CASE("Handler", "[Handler]")
 {
-	MediaStreamTrackFactory& singleton = MediaStreamTrackFactory::getInstance();
+	const MediaStreamTrackFactory& singleton = MediaStreamTrackFactory::GetInstance();
 	SECTION("Handler::GetNativeRtpCapabilities() succeeds")
 	{
 		json rtpCapabilities;
 
 		REQUIRE_NOTHROW(
 		  rtpCapabilities =
-		    mediasoupclient::Handler::GetNativeRtpCapabilities(&singleton.PeerConnectionOptions));
+		    mediasoupclient::Handler::GetNativeRtpCapabilities(&singleton.peerConnectionOptions));
 
 		REQUIRE(rtpCapabilities["codecs"].is_array());
 		REQUIRE(rtpCapabilities["fecMechanisms"].is_array());
@@ -45,16 +36,29 @@ TEST_CASE("Handler", "[Handler]")
 
 TEST_CASE("SendHandler", "[Handler][SendHandler]")
 {
+	const json transportRemoteParameters = generateTransportRemoteParameters();
+
+	// NOTE: Captureless, since the handler below outlives this body (Catch2 runs
+	// it once per SECTION) and copying a captured json may throw.
+	const auto getSendCapabilities = [](json& currentLocalRtpCapabilities) -> json
+	{
+		auto routerRtpCapabilities = generateRouterRtpCapabilities();
+
+		return mediasoupclient::ortc::getExtendedRtpCapabilities(
+		  currentLocalRtpCapabilities, routerRtpCapabilities);
+	};
+
+	const MediaStreamTrackFactory& singleton = MediaStreamTrackFactory::GetInstance();
+
 	static FakeHandlerListener handlerListener;
-	MediaStreamTrackFactory& singleton = MediaStreamTrackFactory::getInstance();
 
 	static mediasoupclient::SendHandler sendHandler(
-	  &handlerListener,
-	  TransportRemoteParameters["iceParameters"],
-	  TransportRemoteParameters["iceCandidates"],
-	  TransportRemoteParameters["dtlsParameters"],
-	  TransportRemoteParameters["sctpParameters"],
-	  &singleton.PeerConnectionOptions,
+	  std::addressof(handlerListener),
+	  transportRemoteParameters["iceParameters"],
+	  transportRemoteParameters["iceCandidates"],
+	  transportRemoteParameters["dtlsParameters"],
+	  transportRemoteParameters["sctpParameters"],
+	  &singleton.peerConnectionOptions,
 	  getSendCapabilities);
 
 	static webrtc::scoped_refptr<webrtc::AudioTrackInterface> track;
@@ -92,7 +96,7 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 
 	SECTION("sendHandler.ReplaceTrack() succeeds if a new track is provided")
 	{
-		auto newTrack = createAudioTrack("test-new-track-id");
+		const auto newTrack = createAudioTrack("test-new-track-id");
 
 		REQUIRE_NOTHROW(sendHandler.ReplaceTrack(localId, newTrack.get()));
 
@@ -140,7 +144,7 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 
 	SECTION("sendHandler.RestartIce() succeeds")
 	{
-		auto iceParameters = TransportRemoteParameters["iceParameters"];
+		const auto& iceParameters = transportRemoteParameters["iceParameters"];
 
 		REQUIRE_NOTHROW(sendHandler.RestartIce(iceParameters));
 	}
@@ -155,29 +159,29 @@ TEST_CASE("SendHandler", "[Handler][SendHandler]")
 TEST_CASE("RecvHandler", "[Handler][RecvHandler]")
 {
 	auto consumerRemoteParameters = generateConsumerRemoteParameters("audio/opus");
-	auto producerId               = consumerRemoteParameters["producerId"].get<std::string>();
-	auto id                       = consumerRemoteParameters["id"].get<std::string>();
-	auto kind                     = consumerRemoteParameters["kind"].get<std::string>();
-	auto rtpParameters            = consumerRemoteParameters["rtpParameters"];
+
+	const auto rtpParameters             = consumerRemoteParameters["rtpParameters"];
+	const json transportRemoteParameters = generateTransportRemoteParameters();
 
 	static std::string localId;
 
+	const MediaStreamTrackFactory& singleton = MediaStreamTrackFactory::GetInstance();
+
 	static FakeHandlerListener handlerListener;
-	MediaStreamTrackFactory& singleton = MediaStreamTrackFactory::getInstance();
 
 	static mediasoupclient::RecvHandler recvHandler(
-	  &handlerListener,
-	  TransportRemoteParameters["iceParameters"],
-	  TransportRemoteParameters["iceCandidates"],
-	  TransportRemoteParameters["dtlsParameters"],
-	  TransportRemoteParameters["sctpParameters"],
-	  &singleton.PeerConnectionOptions);
+	  std::addressof(handlerListener),
+	  transportRemoteParameters["iceParameters"],
+	  transportRemoteParameters["iceCandidates"],
+	  transportRemoteParameters["dtlsParameters"],
+	  transportRemoteParameters["sctpParameters"],
+	  &singleton.peerConnectionOptions);
 
 	SECTION("recvHander.Receive() succeeds if correct rtpParameters are provided")
 	{
 		mediasoupclient::RecvHandler::RecvResult recvResult;
 
-		REQUIRE_NOTHROW(recvResult = recvHandler.Receive("test", "audio", &rtpParameters));
+		REQUIRE_NOTHROW(recvResult = recvHandler.Receive("test", "audio", std::addressof(rtpParameters)));
 
 		localId = recvResult.localId;
 	}
@@ -204,7 +208,7 @@ TEST_CASE("RecvHandler", "[Handler][RecvHandler]")
 
 	SECTION("recvHandler.RestartIce() succeeds")
 	{
-		auto iceParameters = TransportRemoteParameters["iceParameters"];
+		const auto& iceParameters = transportRemoteParameters["iceParameters"];
 
 		REQUIRE_NOTHROW(recvHandler.RestartIce(iceParameters));
 	}

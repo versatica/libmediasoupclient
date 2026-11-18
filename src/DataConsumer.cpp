@@ -2,9 +2,9 @@
 
 #include "DataConsumer.hpp"
 #include "Logger.hpp"
-#include "MediaSoupClientErrors.hpp"
+#include <utility>
 
-using json = nlohmann::json;
+using nlohmann::json;
 
 namespace mediasoupclient
 {
@@ -20,7 +20,7 @@ namespace mediasoupclient
 	    privateListener(privateListener),
 	    id(id),
 	    dataProducerId(dataProducerId),
-	    dataChannel(dataChannel),
+	    dataChannel(std::move(dataChannel)),
 	    sctpParameters(sctpStreamParameters),
 	    appData(appData)
 	{
@@ -34,25 +34,39 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		webrtc::DataChannelInterface::DataState state = this->dataChannel->state();
+		const webrtc::DataChannelInterface::DataState state = this->dataChannel->state();
 
 		switch (state)
 		{
 			case webrtc::DataChannelInterface::DataState::kConnecting:
+			{
 				this->listener->OnConnecting(this);
 				break;
+			}
+
 			case webrtc::DataChannelInterface::DataState::kOpen:
+			{
 				this->listener->OnOpen(this);
 				break;
+			}
+
 			case webrtc::DataChannelInterface::DataState::kClosing:
+			{
 				this->listener->OnClosing(this);
 				break;
+			}
+
 			case webrtc::DataChannelInterface::DataState::kClosed:
-				this->Close();
+			{
+				Close();
 				break;
+			}
+
 			default:
+			{
 				MSC_ERROR("unknown state %s", webrtc::DataChannelInterface::DataStateString(state));
 				break;
+			}
 		}
 	}
 

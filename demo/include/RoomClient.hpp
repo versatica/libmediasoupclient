@@ -1,7 +1,10 @@
-#pragma once
+#ifndef MSC_DEMO_ROOM_CLIENT_HPP
+#define MSC_DEMO_ROOM_CLIENT_HPP
 
 #include "ProtooClient.hpp"
-#include "mediasoupclient.hpp"
+// NOTE: Included for the mediasoupclient declarations it re-exports (Device,
+// SendTransport, Producer, etc.), not used directly.
+#include "mediasoupclient.hpp"          // IWYU pragma: keep
 #include <api/media_stream_interface.h> // webrtc::VideoTrackInterface
 #include <functional>
 #include <map>
@@ -60,8 +63,9 @@ public:
 	// Non-copyable, non-movable (owns raw transport/producer pointers).
 	RoomClient(const RoomClient&)            = delete;
 	RoomClient& operator=(const RoomClient&) = delete;
-	RoomClient(RoomClient&&)                 = delete;
-	RoomClient& operator=(RoomClient&&)      = delete;
+
+	RoomClient(RoomClient&&)            = delete;
+	RoomClient& operator=(RoomClient&&) = delete;
 
 	/**
 	 * Connect to the Protoo server, load the Device, create transports, and
@@ -87,7 +91,7 @@ public:
 	 * @param videoTrack A VideoTrackInterface obtained from the factory or a
 	 *                   platform capture source (e.g. AVFCaptureVideoSource).
 	 */
-	void EnableCamera(webrtc::scoped_refptr<webrtc::VideoTrackInterface> videoTrack);
+	void EnableCamera(const webrtc::scoped_refptr<webrtc::VideoTrackInterface>& videoTrack);
 
 	/** Close and destroy the current camera producer. */
 	void DisableCamera();
@@ -131,8 +135,8 @@ private:
 
 	struct Participant
 	{
-		mediasoupclient::Consumer* audioConsumer{ nullptr };
-		mediasoupclient::Consumer* videoConsumer{ nullptr };
+		std::unique_ptr<mediasoupclient::Consumer> audioConsumer;
+		std::unique_ptr<mediasoupclient::Consumer> videoConsumer;
 	};
 
 	// -------------------------------------------------------------------------
@@ -163,13 +167,13 @@ private:
 	mediasoupclient::Device device;
 
 	// WebRTC transports — created during join(), owned by this class.
-	mediasoupclient::SendTransport* sendTransport{ nullptr };
-	mediasoupclient::RecvTransport* recvTransport{ nullptr };
+	std::unique_ptr<mediasoupclient::SendTransport> sendTransport;
+	std::unique_ptr<mediasoupclient::RecvTransport> recvTransport;
 
 	// Active producers — nullptr when the respective source is disabled.
-	mediasoupclient::Producer* micProducer{ nullptr };
-	mediasoupclient::Producer* cameraProducer{ nullptr };
-	mediasoupclient::DataProducer* chatDataProducer{ nullptr };
+	std::unique_ptr<mediasoupclient::Producer> micProducer;
+	std::unique_ptr<mediasoupclient::Producer> cameraProducer;
+	std::unique_ptr<mediasoupclient::DataProducer> chatDataProducer;
 
 	// Transport / producer / consumer listener singletons.
 	// Defined as unique_ptr so that their full types only need to be visible
@@ -197,7 +201,7 @@ private:
 	std::mutex handleRequestMutex;
 
 	// All active DataConsumers (owned by this class).
-	std::vector<mediasoupclient::DataConsumer*> dataConsumers;
+	std::vector<std::unique_ptr<mediasoupclient::DataConsumer>> dataConsumers;
 
 	// PeerConnection factory — not owned; caller must keep it alive.
 	webrtc::PeerConnectionFactoryInterface* factory{ nullptr };
@@ -216,3 +220,5 @@ private:
 	// Set to true after close() is called to prevent double-close.
 	bool closed{ false };
 };
+
+#endif

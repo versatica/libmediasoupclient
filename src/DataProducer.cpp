@@ -2,8 +2,9 @@
 
 #include "DataProducer.hpp"
 #include "Logger.hpp"
+#include <utility>
 
-using json = nlohmann::json;
+using nlohmann::json;
 
 namespace mediasoupclient
 {
@@ -17,7 +18,7 @@ namespace mediasoupclient
 	  : privateListener(privateListener),
 	    listener(listener),
 	    id(id),
-	    dataChannel(dataChannel),
+	    dataChannel(std::move(dataChannel)),
 	    sctpStreamParameters(sctpStreamParameters),
 	    appData(appData)
 	{
@@ -132,30 +133,46 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		webrtc::DataChannelInterface::DataState state = this->dataChannel->state();
+		const webrtc::DataChannelInterface::DataState state = this->dataChannel->state();
 
 		switch (state)
 		{
 			case webrtc::DataChannelInterface::DataState::kConnecting:
+			{
 				break;
+			}
+
 			case webrtc::DataChannelInterface::DataState::kOpen:
+			{
 				this->listener->OnOpen(this);
 				break;
+			}
+
 			case webrtc::DataChannelInterface::DataState::kClosing:
+			{
 				break;
+			}
+
 			case webrtc::DataChannelInterface::DataState::kClosed:
-				this->Close();
+			{
+				Close();
 				break;
+			}
+
 			default:
+			{
 				MSC_ERROR("unknown state %s", webrtc::DataChannelInterface::DataStateString(state));
 				break;
+			}
 		}
 	}
 
 	//  A data buffer was successfully received.
 	void DataProducer::OnMessage(const webrtc::DataBuffer& /*buffer*/)
 	{
-		MSC_ERROR("message received on DataProducer [dataProducer.id:%s]", this->GetId().c_str());
+		MSC_TRACE();
+
+		MSC_ERROR("message received on DataProducer [dataProducer.id:%s]", GetId().c_str());
 	}
 
 	// The data channel's buffered_amount has changed.

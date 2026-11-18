@@ -4,7 +4,7 @@
 #include "Logger.hpp"
 #include "MediaSoupClientErrors.hpp"
 
-using json = nlohmann::json;
+using nlohmann::json;
 
 namespace mediasoupclient
 {
@@ -59,7 +59,7 @@ namespace mediasoupclient
 		return this->closed;
 	}
 
-	const std::string Consumer::GetKind() const
+	std::string Consumer::GetKind() const
 	{
 		MSC_TRACE();
 
@@ -120,6 +120,8 @@ namespace mediasoupclient
 
 	json Consumer::GetStats() const
 	{
+		MSC_TRACE();
+
 		if (this->closed)
 		{
 			MSC_THROW_INVALID_STATE_ERROR("Consumer closed");

@@ -4,8 +4,9 @@
 #include "Logger.hpp"
 #include <regex>
 
-using json = nlohmann::json;
+using nlohmann::json;
 
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization)
 static const std::regex ScalabilityModeRegex(
   "^[LS]([1-9]\\d{0,1})T([1-9]\\d{0,1}).*", std::regex_constants::ECMAScript);
 
@@ -13,6 +14,8 @@ namespace mediasoupclient
 {
 	json parseScalabilityMode(const std::string& scalabilityMode)
 	{
+		MSC_TRACE();
+
 		/* clang-format off */
 	json jsonScalabilityMode
 	{
@@ -27,12 +30,15 @@ namespace mediasoupclient
 
 		if (!match.empty())
 		{
+			// NOTE: The regex always has these 2 groups when it matches.
 			try
 			{
-				jsonScalabilityMode["spatialLayers"]  = std::stoul(match[1].str());
+				// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
+				jsonScalabilityMode["spatialLayers"] = std::stoul(match[1].str());
+				// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
 				jsonScalabilityMode["temporalLayers"] = std::stoul(match[2].str());
 			}
-			catch (std::exception& e)
+			catch (const std::exception& e)
 			{
 				MSC_WARN("invalid scalabilityMode: %s", e.what());
 			}

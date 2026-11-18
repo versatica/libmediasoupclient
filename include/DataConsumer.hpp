@@ -1,8 +1,8 @@
 #ifndef MSC_DATACONSUMER_HPP
 #define MSC_DATACONSUMER_HPP
 
-#include <api/data_channel_interface.h>
 #include <json.hpp>
+#include <api/data_channel_interface.h>
 #include <string>
 
 namespace mediasoupclient
@@ -15,7 +15,8 @@ namespace mediasoupclient
 		class PrivateListener
 		{
 		public:
-			virtual ~PrivateListener()                       = default;
+			virtual ~PrivateListener() = default;
+
 			virtual void OnClose(DataConsumer* dataConsumer) = 0;
 		};
 
@@ -25,9 +26,12 @@ namespace mediasoupclient
 			virtual ~Listener() = default;
 			// DataChannel state changes.
 			virtual void OnConnecting(DataConsumer* dataConsumer) = 0;
-			virtual void OnOpen(DataConsumer* dataConsumer)       = 0;
-			virtual void OnClosing(DataConsumer* dataConsumer)    = 0;
-			virtual void OnClose(DataConsumer* dataConsumer)      = 0;
+
+			virtual void OnOpen(DataConsumer* dataConsumer) = 0;
+
+			virtual void OnClosing(DataConsumer* dataConsumer) = 0;
+
+			virtual void OnClose(DataConsumer* dataConsumer) = 0;
 
 			//  A data buffer was successfully received.
 			virtual void OnMessage(DataConsumer* dataConsumer, const webrtc::DataBuffer& buffer) = 0;
@@ -46,15 +50,58 @@ namespace mediasoupclient
 		  const nlohmann::json& appData);
 
 	public:
+		/**
+		 * DataConsumer id.
+		 */
 		const std::string& GetId() const;
+
+		/**
+		 * Local id.
+		 */
 		std::string GetLocalId() const;
+
+		/**
+		 * Associated DataProducer id.
+		 */
 		const std::string& GetDataProducerId() const;
+
+		/**
+		 * SCTP stream parameters.
+		 */
 		const nlohmann::json& GetSctpStreamParameters() const;
+
+		/**
+		 * DataChannel readyState.
+		 */
 		webrtc::DataChannelInterface::DataState GetReadyState() const;
+
+		/**
+		 * DataChannel label.
+		 */
 		std::string GetLabel() const;
+
+		/**
+		 * DataChannel protocol.
+		 */
 		std::string GetProtocol() const;
+
+		/**
+		 * App custom data.
+		 */
 		const nlohmann::json& GetAppData() const;
+
+		/**
+		 * Whether the DataConsumer is closed.
+		 */
 		bool IsClosed() const;
+
+		/**
+		 * Closes the DataConsumer.
+		 *
+		 * @remarks
+		 * - The application owns the DataConsumer, so it must destroy it after
+		 *   closing it.
+		 */
 		void Close();
 
 	private:
@@ -64,14 +111,14 @@ namespace mediasoupclient
 		friend RecvTransport;
 
 	private:
-		Listener* listener;
-		PrivateListener* privateListener;
-		std::string id;
-		std::string dataProducerId;
-		webrtc::scoped_refptr<webrtc::DataChannelInterface> dataChannel;
+		Listener* const listener;
+		PrivateListener* const privateListener;
+		const std::string id;
+		const std::string dataProducerId;
+		const webrtc::scoped_refptr<webrtc::DataChannelInterface> dataChannel;
 		bool closed{ false };
-		nlohmann::json sctpParameters;
-		nlohmann::json appData;
+		const nlohmann::json sctpParameters;
+		const nlohmann::json appData;
 
 		/* Virtual methods inherited from webrtc::DataChannelObserver. */
 	public:

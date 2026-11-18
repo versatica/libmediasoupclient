@@ -179,7 +179,7 @@ json generateRtpParametersByKind()
 		codec["payloadType"] = codec["preferredPayloadType"];
 		codec.erase("preferredPayloadType");
 
-		auto kind = codec["kind"].get<std::string>();
+		const auto kind = codec["kind"].get<std::string>();
 
 		if (kind == "audio")
 		{
@@ -197,7 +197,7 @@ json generateRtpParametersByKind()
 		ext["id"] = ext["preferredId"];
 		ext.erase("preferredId");
 
-		auto kind = ext["kind"].get<std::string>();
+		const auto kind = ext["kind"].get<std::string>();
 
 		if (kind == "audio")
 		{

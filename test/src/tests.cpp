@@ -1,11 +1,16 @@
 #define CATCH_CONFIG_RUNNER
 
 #include "Logger.hpp"
-#include "PeerConnection.hpp"
+// NOTE: Included for the libwebrtc declarations it re-exports (such as
+// webrtc::LoggingSeverity), not used directly.
+#include "PeerConnection.hpp" // IWYU pragma: keep
 #include "mediasoupclient.hpp"
 #include <catch.hpp>
 #include <string>
 
+// NOTE: This is the test runner entry point, Catch2 already reports any
+// exception thrown by the test cases themselves.
+// NOLINTNEXTLINE(bugprone-exception-escape)
 int main(int argc, char* argv[])
 {
 	mediasoupclient::Logger::LogLevel logLevel{ mediasoupclient::Logger::LogLevel::LOG_NONE };
@@ -16,11 +21,13 @@ int main(int argc, char* argv[])
 	int ret;
 
 	// Build a new parser on top of Catch.
+	// NOLINTBEGIN(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
 	// clang-format off
-	auto cli = session.cli()
+	auto const cli = session.cli()
 	  | Catch::clara::Opt(logLevelStr, "debug|warn|error|none")["-L"]["--log-level"]("libmediasoupclient log level (default: none)")
 	  | Catch::clara::Opt(webrtcLogLevelStr, "verbose|info|warn|error|none")["-W"]["--webrtc-log-level"]("libwebrtc log level (default: none)");
 	// clang-format on
+	// NOLINTEND(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
 
 	// Now pass the new composite back to Catch so it uses that.
 	session.cli(cli);
@@ -65,7 +72,7 @@ int main(int argc, char* argv[])
 	}
 
 	mediasoupclient::Logger::SetLogLevel(logLevel);
-	mediasoupclient::Logger::SetHandler(new mediasoupclient::Logger::DefaultLogHandler());
+	mediasoupclient::Logger::SetDefaultHandler();
 
 	webrtc::LogMessage::LogToDebug(webrtcLogLevel);
 

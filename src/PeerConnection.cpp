@@ -22,6 +22,7 @@
 #include <api/video_codecs/builtin_video_decoder_factory.h>
 #include <api/video_codecs/builtin_video_encoder_factory.h>
 #include <rtc_base/ssl_adapter.h>
+#include <exception> // std::make_exception_ptr()
 
 using nlohmann::json;
 
@@ -618,18 +619,45 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		const std::string s = report->ToJson();
+		std::string errorMessage;
 
-		// RtpReceiver stats JSON string is sometimes empty.
-		if (s.empty())
+		// NOTE: libwebrtc calls this on one of its own threads.
+		//
+		// libwebrtc writes the double and 64 bit integer values of the stats with
+		// std::snprintf() and "%.16g", which honours LC_NUMERIC, so with a locale
+		// whose decimal separator is a comma (de_DE, ru_RU and others) a value comes
+		// out as "0,002" and the stats are no longer valid JSON. A process starts in
+		// the C locale, so only applications that replace it are affected, and
+		// calling std::setlocale(LC_NUMERIC, "C") restores it.
+		try
 		{
-			this->promise.set_value(json::array());
+			const std::string stats = report->ToJson();
+
+			this->promise.set_value(stats.empty() ? json::array() : json::parse(stats));
+
+			return;
 		}
-		else
+		catch (const std::exception& error)
 		{
-			this->promise.set_value(json::parse(s));
+			errorMessage = error.what();
 		}
-	};
+		catch (...)
+		{
+			errorMessage = "unknown exception";
+		}
+
+		MSC_ERROR("cannot deliver the stats [error:%s]", errorMessage.c_str());
+
+		// NOTE: set_exception() throws if the promise was already satisfied.
+		try
+		{
+			this->promise.set_exception(std::make_exception_ptr(MediaSoupClientError(errorMessage.c_str())));
+		}
+		catch (const std::exception& error)
+		{
+			MSC_ERROR("cannot report the stats failure [error:%s]", error.what());
+		}
+	}
 
 	/* PeerConnection::PrivateListener */
 

@@ -108,7 +108,16 @@ namespace mediasoupclient
 		/**
 		 * Get associated RtpReceiver stats.
 		 *
+		 * @remarks
+		 * - libwebrtc writes the double and 64 bit integer values of the stats with
+		 *   std::snprintf() and "%.16g", which honours LC_NUMERIC, so with a locale
+		 *   whose decimal separator is a comma (de_DE, ru_RU and others) a value comes
+		 *   out as "0,002" and the stats are no longer valid JSON. A process starts in
+		 *   the C locale, so only applications that replace it are affected, and
+		 *   calling std::setlocale(LC_NUMERIC, "C") restores it.
+		 *
 		 * @throws MediaSoupClientInvalidStateError if the Consumer is closed.
+		 * @throws MediaSoupClientError if the stats cannot be parsed.
 		 */
 		nlohmann::json GetStats() const;
 

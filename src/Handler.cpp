@@ -603,7 +603,6 @@ namespace mediasoupclient
 				highEncoding->active = false;
 			}
 		}
-
 		else if (spatialLayer == 2)
 		{
 			if (hasLowEncoding)
@@ -621,7 +620,6 @@ namespace mediasoupclient
 				highEncoding->active = false;
 			}
 		}
-
 		else if (spatialLayer == 3)
 		{
 			if (hasLowEncoding)

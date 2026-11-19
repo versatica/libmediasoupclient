@@ -19,10 +19,12 @@
 #include <api/audio_codecs/builtin_audio_encoder_factory.h>
 #include <api/create_peerconnection_factory.h>
 #include <api/sctp_transport_interface.h>
+#include <api/stats/attribute.h> // webrtc::Attribute
 #include <api/video_codecs/builtin_video_decoder_factory.h>
 #include <api/video_codecs/builtin_video_encoder_factory.h>
 #include <rtc_base/ssl_adapter.h>
-#include <exception> // std::make_exception_ptr()
+#include <map>
+#include <vector>
 
 using nlohmann::json;
 
@@ -619,44 +621,104 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		std::string errorMessage;
+		json jsonReport = json::array();
 
-		// NOTE: libwebrtc calls this on one of its own threads.
-		//
-		// libwebrtc writes the double and 64 bit integer values of the stats with
-		// std::snprintf() and "%.16g", which honours LC_NUMERIC, so with a locale
-		// whose decimal separator is a comma (de_DE, ru_RU and others) a value comes
-		// out as "0,002" and the stats are no longer valid JSON. A process starts in
-		// the C locale, so only applications that replace it are affected, and
-		// calling std::setlocale(LC_NUMERIC, "C") restores it.
-		try
+		if (!report)
 		{
-			const std::string stats = report->ToJson();
-
-			this->promise.set_value(stats.empty() ? json::array() : json::parse(stats));
+			this->promise.set_value(jsonReport);
 
 			return;
 		}
-		catch (const std::exception& error)
+
+		for (const auto& stats : *report)
 		{
-			errorMessage = error.what();
-		}
-		catch (...)
-		{
-			errorMessage = "unknown exception";
+			json jsonStats = json::object();
+
+			// Fields present in every RTCStats.
+			jsonStats["id"]        = stats.id();
+			jsonStats["type"]      = stats.type();
+			jsonStats["timestamp"] = stats.timestamp().us();
+
+			// Retrieve the name and value of every attribute.
+			for (const webrtc::Attribute& attr : stats.Attributes())
+			{
+				if (!attr.has_value())
+				{
+					continue;
+				}
+
+				const char* name = attr.name();
+
+				if (attr.holds_alternative<bool>())
+				{
+					jsonStats[name] = attr.get<bool>();
+				}
+				else if (attr.holds_alternative<int32_t>())
+				{
+					jsonStats[name] = attr.get<int32_t>();
+				}
+				else if (attr.holds_alternative<uint32_t>())
+				{
+					jsonStats[name] = attr.get<uint32_t>();
+				}
+				else if (attr.holds_alternative<int64_t>())
+				{
+					jsonStats[name] = attr.get<int64_t>();
+				}
+				else if (attr.holds_alternative<uint64_t>())
+				{
+					jsonStats[name] = attr.get<uint64_t>();
+				}
+				else if (attr.holds_alternative<double>())
+				{
+					jsonStats[name] = attr.get<double>();
+				}
+				else if (attr.holds_alternative<std::string>())
+				{
+					jsonStats[name] = attr.get<std::string>();
+				}
+				else if (attr.holds_alternative<std::vector<bool>>())
+				{
+					jsonStats[name] = attr.get<std::vector<bool>>();
+				}
+				else if (attr.holds_alternative<std::vector<int32_t>>())
+				{
+					jsonStats[name] = attr.get<std::vector<int32_t>>();
+				}
+				else if (attr.holds_alternative<std::vector<uint32_t>>())
+				{
+					jsonStats[name] = attr.get<std::vector<uint32_t>>();
+				}
+				else if (attr.holds_alternative<std::vector<int64_t>>())
+				{
+					jsonStats[name] = attr.get<std::vector<int64_t>>();
+				}
+				else if (attr.holds_alternative<std::vector<uint64_t>>())
+				{
+					jsonStats[name] = attr.get<std::vector<uint64_t>>();
+				}
+				else if (attr.holds_alternative<std::vector<double>>())
+				{
+					jsonStats[name] = attr.get<std::vector<double>>();
+				}
+				else if (attr.holds_alternative<std::vector<std::string>>())
+				{
+					jsonStats[name] = attr.get<std::vector<std::string>>();
+				}
+				else if (attr.holds_alternative<std::map<std::string, uint64_t>>())
+				{
+					jsonStats[name] = attr.get<std::map<std::string, uint64_t>>();
+				}
+				else if (attr.holds_alternative<std::map<std::string, double>>())
+				{
+					jsonStats[name] = attr.get<std::map<std::string, double>>();
+				}
+			}
+
+			jsonReport.push_back(std::move(jsonStats));
 		}
 
-		MSC_ERROR("cannot deliver the stats [error:%s]", errorMessage.c_str());
-
-		// NOTE: set_exception() throws if the promise was already satisfied.
-		try
-		{
-			this->promise.set_exception(std::make_exception_ptr(MediaSoupClientError(errorMessage.c_str())));
-		}
-		catch (const std::exception& error)
-		{
-			MSC_ERROR("cannot report the stats failure [error:%s]", error.what());
-		}
+		this->promise.set_value(jsonReport);
 	}
 
 	/* PeerConnection::PrivateListener */

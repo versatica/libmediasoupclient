@@ -13,8 +13,7 @@
 - Do not declare `Logger` in the global namespace ([issue #225](https://github.com/versatica/libmediasoupclient/issues/225), credits to @ZhengLinLei).
   - Fix corrupted log messages when logging from several threads: the log buffer is now `thread_local`.
   - Fix `MSC_ASSERT()`.
-- Do not crash the when the stats cannot be parsed ([issue #224](https://github.com/versatica/libmediasoupclient/issues/224), credits to @daniil-kaverzin).
-  - `GetStats()` now throws `MediaSoupClientError` in the calling thread instead of terminating the libwebrtc one.
+- Fix crash when parsing stats ([issue #224](https://github.com/versatica/libmediasoupclient/issues/224), credits to @daniil-kaverzin).
 
 ### 3.5.1
 

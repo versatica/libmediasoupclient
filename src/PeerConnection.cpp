@@ -19,9 +19,12 @@
 #include <api/audio_codecs/builtin_audio_encoder_factory.h>
 #include <api/create_peerconnection_factory.h>
 #include <api/sctp_transport_interface.h>
+#include <api/stats/attribute.h> // webrtc::Attribute
 #include <api/video_codecs/builtin_video_decoder_factory.h>
 #include <api/video_codecs/builtin_video_encoder_factory.h>
 #include <rtc_base/ssl_adapter.h>
+#include <map>
+#include <vector>
 
 using nlohmann::json;
 
@@ -618,18 +621,105 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		const std::string s = report->ToJson();
+		json jsonReport = json::array();
 
-		// RtpReceiver stats JSON string is sometimes empty.
-		if (s.empty())
+		if (!report)
 		{
-			this->promise.set_value(json::array());
+			this->promise.set_value(jsonReport);
+
+			return;
 		}
-		else
+
+		for (const auto& stats : *report)
 		{
-			this->promise.set_value(json::parse(s));
+			json jsonStats = json::object();
+
+			// Fields present in every RTCStats.
+			jsonStats["id"]        = stats.id();
+			jsonStats["type"]      = stats.type();
+			jsonStats["timestamp"] = stats.timestamp().us();
+
+			// Retrieve the name and value of every attribute.
+			for (const webrtc::Attribute& attr : stats.Attributes())
+			{
+				if (!attr.has_value())
+				{
+					continue;
+				}
+
+				const char* name = attr.name();
+
+				if (attr.holds_alternative<bool>())
+				{
+					jsonStats[name] = attr.get<bool>();
+				}
+				else if (attr.holds_alternative<int32_t>())
+				{
+					jsonStats[name] = attr.get<int32_t>();
+				}
+				else if (attr.holds_alternative<uint32_t>())
+				{
+					jsonStats[name] = attr.get<uint32_t>();
+				}
+				else if (attr.holds_alternative<int64_t>())
+				{
+					jsonStats[name] = attr.get<int64_t>();
+				}
+				else if (attr.holds_alternative<uint64_t>())
+				{
+					jsonStats[name] = attr.get<uint64_t>();
+				}
+				else if (attr.holds_alternative<double>())
+				{
+					jsonStats[name] = attr.get<double>();
+				}
+				else if (attr.holds_alternative<std::string>())
+				{
+					jsonStats[name] = attr.get<std::string>();
+				}
+				else if (attr.holds_alternative<std::vector<bool>>())
+				{
+					jsonStats[name] = attr.get<std::vector<bool>>();
+				}
+				else if (attr.holds_alternative<std::vector<int32_t>>())
+				{
+					jsonStats[name] = attr.get<std::vector<int32_t>>();
+				}
+				else if (attr.holds_alternative<std::vector<uint32_t>>())
+				{
+					jsonStats[name] = attr.get<std::vector<uint32_t>>();
+				}
+				else if (attr.holds_alternative<std::vector<int64_t>>())
+				{
+					jsonStats[name] = attr.get<std::vector<int64_t>>();
+				}
+				else if (attr.holds_alternative<std::vector<uint64_t>>())
+				{
+					jsonStats[name] = attr.get<std::vector<uint64_t>>();
+				}
+				else if (attr.holds_alternative<std::vector<double>>())
+				{
+					jsonStats[name] = attr.get<std::vector<double>>();
+				}
+				else if (attr.holds_alternative<std::vector<std::string>>())
+				{
+					jsonStats[name] = attr.get<std::vector<std::string>>();
+				}
+				else if (attr.holds_alternative<std::map<std::string, uint64_t>>())
+				{
+					jsonStats[name] = attr.get<std::map<std::string, uint64_t>>();
+				}
+				else if (attr.holds_alternative<std::map<std::string, double>>())
+				{
+					jsonStats[name] = attr.get<std::map<std::string, double>>();
+				}
+			}
+
+			jsonReport.push_back(std::move(jsonStats));
 		}
-	};
+
+		this->promise.set_value(jsonReport);
+	}
 
 	/* PeerConnection::PrivateListener */
 

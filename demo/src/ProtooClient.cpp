@@ -154,7 +154,20 @@ void ProtooClient::OnMessage(const std::string& str)
 	}
 	else if (msg.value("notification", false))
 	{
-		this->notificationCb(msg["method"], msg.value("data", json::object()));
+		// NOTE: This runs on the ixwebsocket receive thread, so no exception must
+		// escape it or std::terminate() would be called.
+		try
+		{
+			this->notificationCb(msg["method"], msg.value("data", json::object()));
+		}
+		catch (const std::exception& error)
+		{
+			std::cerr << "[protoo] notification handler error: " << error.what() << "\n";
+		}
+		catch (...)
+		{
+			std::cerr << "[protoo] notification handler failed\n";
+		}
 	}
 	else if (msg.value("request", false))
 	{

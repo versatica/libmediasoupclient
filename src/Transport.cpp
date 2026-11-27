@@ -285,8 +285,8 @@ namespace mediasoupclient
 	  const std::string& label,
 	  const std::string& protocol,
 	  bool ordered,
-	  int maxRetransmits,
-	  int maxPacketLifeTime,
+	  std::optional<int> maxRetransmits,
+	  std::optional<int> maxPacketLifeTime,
 	  const nlohmann::json& appData)
 	{
 		MSC_TRACE();
@@ -296,21 +296,24 @@ namespace mediasoupclient
 			MSC_THROW_UNSUPPORTED_ERROR("SCTP not enabled by remote transport");
 		}
 
+		if (maxRetransmits.has_value() && maxPacketLifeTime.has_value())
+		{
+			MSC_THROW_TYPE_ERROR("cannot provide both maxPacketLifeTime and maxRetransmits");
+		}
+
+		// NOTE: Giving either of them makes the DataChannel unordered, and a value of
+		// 0 counts as given.
+		if (maxRetransmits.has_value() || maxPacketLifeTime.has_value())
+		{
+			ordered = false;
+		}
+
 		webrtc::DataChannelInit dataChannelInit;
-		dataChannelInit.protocol = protocol;
-		dataChannelInit.ordered  = ordered;
-		if (maxRetransmits != -1 && maxPacketLifeTime != 0)
-		{
-			MSC_THROW_ERROR("Cannot set both maxRetransmits and maxPacketLifeTime");
-		}
-		if (maxRetransmits != 0)
-		{
-			dataChannelInit.maxRetransmits = maxRetransmits;
-		}
-		if (maxPacketLifeTime != 0)
-		{
-			dataChannelInit.maxRetransmitTime = maxPacketLifeTime;
-		}
+
+		dataChannelInit.protocol          = protocol;
+		dataChannelInit.ordered           = ordered;
+		dataChannelInit.maxRetransmits    = maxRetransmits;
+		dataChannelInit.maxRetransmitTime = maxPacketLifeTime;
 
 		// This may throw.
 		const auto sendResult = this->sendHandler->SendDataChannel(label, dataChannelInit);

@@ -13,6 +13,7 @@
 #include <future>
 #include <map>
 #include <memory> // unique_ptr
+#include <optional>
 #include <string>
 
 namespace mediasoupclient
@@ -209,14 +210,16 @@ namespace mediasoupclient
 		 * @param label - Label of the underlying DataChannel.
 		 * @param protocol - Subprotocol of the underlying DataChannel.
 		 * @param ordered - Whether messages are delivered in order.
-		 * @param maxRetransmits - Maximum number of retransmissions.
-		 * @param maxPacketLifeTime - Time to retransmit a message for (ms).
+		 * @param maxRetransmits - Maximum number of retransmissions, or no value.
+		 * @param maxPacketLifeTime - Time to retransmit a message for (ms), or no
+		 *   value.
 		 * @param appData - Custom data to attach to the data producer.
 		 *
 		 * @remarks
 		 * - The returned DataProducer is owned by the application, which must close
 		 *   and destroy it.
-		 * - maxRetransmits and maxPacketLifeTime are exclusive.
+		 * - maxRetransmits and maxPacketLifeTime are exclusive, and giving either of
+		 *   them makes the DataChannel unordered.
 		 *
 		 * @throws MediaSoupClientUnsupportedError if the server side transport does
 		 *   not have SCTP enabled.
@@ -225,12 +228,12 @@ namespace mediasoupclient
 		 */
 		[[nodiscard]] DataProducer* ProduceData(
 		  DataProducer::Listener* listener,
-		  const std::string& label      = "",
-		  const std::string& protocol   = "",
-		  bool ordered                  = true,
-		  int maxRetransmits            = 0,
-		  int maxPacketLifeTime         = 0,
-		  const nlohmann::json& appData = nlohmann::json::object());
+		  const std::string& label             = "",
+		  const std::string& protocol          = "",
+		  bool ordered                         = true,
+		  std::optional<int> maxRetransmits    = std::nullopt,
+		  std::optional<int> maxPacketLifeTime = std::nullopt,
+		  const nlohmann::json& appData        = nlohmann::json::object());
 
 		/* Virtual methods inherited from Transport. */
 	public:

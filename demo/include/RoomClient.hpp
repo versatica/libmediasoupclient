@@ -80,18 +80,49 @@ public:
 	 */
 	void Close();
 
-	/** Create an audio producer from the platform microphone. */
-	void EnableMic();
+	/**
+	 * Create an audio producer from the platform microphone.
+	 *
+	 * @param zeroRtpOnPause Whether pausing it also sets its RtpTransceiver
+	 *                       inactive, so that no RTP is sent at all.
+	 */
+	void EnableMic(bool zeroRtpOnPause = false);
 
 	/** Close and destroy the current mic producer. */
 	void DisableMic();
+
+	/** Pause the mic producer, if any. */
+	void PauseMic();
+
+	/** Resume the mic producer, if any. */
+	void ResumeMic();
+
+	/** Pause the camera producer, if any. */
+	void PauseCamera();
+
+	/** Resume the camera producer, if any. */
+	void ResumeCamera();
+
+	/** Pause the audio Consumer of every participant. */
+	void PauseAudioConsumers();
+
+	/** Resume the audio Consumer of every participant. */
+	void ResumeAudioConsumers();
+
+	/** Pause the video Consumer of every participant. */
+	void PauseVideoConsumers();
+
+	/** Resume the video Consumer of every participant. */
+	void ResumeVideoConsumers();
 
 	/**
 	 * Create a video producer from the supplied track.
 	 * @param videoTrack A VideoTrackInterface obtained from the factory or a
 	 *                   platform capture source (e.g. AVFCaptureVideoSource).
 	 */
-	void EnableCamera(const webrtc::scoped_refptr<webrtc::VideoTrackInterface>& videoTrack);
+	void EnableCamera(
+	  const webrtc::scoped_refptr<webrtc::VideoTrackInterface>& videoTrack,
+	  bool zeroRtpOnPause = false);
 
 	/** Close and destroy the current camera producer. */
 	void DisableCamera();
@@ -155,6 +186,13 @@ private:
 	 * "newPeer" and "peerClosed".
 	 */
 	void HandleNotification(const std::string& method, const json& data);
+
+	/** Shared by PauseMic(), ResumeMic(), PauseCamera() and ResumeCamera(). */
+	static void SetProducerPaused(
+	  mediasoupclient::Producer* producer, const std::string& name, bool paused);
+
+	/** Shared by the four Pause/Resume methods of the Consumers. */
+	void SetConsumersPaused(const std::string& kind, bool paused);
 
 	// -------------------------------------------------------------------------
 	// Data members

@@ -28,9 +28,14 @@
 #include "rtc_base/thread.h"
 #include <CLI/CLI.hpp>
 #include <atomic>
+#include <chrono>
 #include <csignal>
 #include <iostream>
+#include <optional>
+#include <string>
+#include <sys/select.h> // select(), fd_set, FD_ZERO(), FD_SET()
 #include <thread>
+#include <unistd.h> // STDIN_FILENO
 
 // ---------------------------------------------------------------------------
 // Graceful shutdown on Ctrl+C
@@ -41,6 +46,45 @@ static std::atomic<bool> Running{ true };
 static void onSignal(int /*unused*/)
 {
 	Running = false;
+}
+
+// ---------------------------------------------------------------------------
+// Interactive commands
+// ---------------------------------------------------------------------------
+
+static void printCommands()
+{
+	std::cout << "[demo] commands: m/M pause/resume mic, c/C pause/resume camera,"
+	          << " a/A pause/resume audio consumers, v/V pause/resume video consumers,"
+	          << " q quit\n";
+}
+
+/**
+ * Reads a command from stdin, waiting at most the given time so that Ctrl+C is
+ * still handled promptly.
+ */
+static std::optional<char> readCommand(std::chrono::milliseconds timeout)
+{
+	fd_set readFds;
+
+	FD_ZERO(&readFds);
+	FD_SET(STDIN_FILENO, &readFds);
+
+	struct timeval tv{ .tv_sec = 0, .tv_usec = static_cast<suseconds_t>(timeout.count() * 1000) };
+
+	if (select(STDIN_FILENO + 1, &readFds, nullptr, nullptr, std::addressof(tv)) <= 0)
+	{
+		return std::nullopt;
+	}
+
+	std::string line;
+
+	if (!std::getline(std::cin, line) || line.empty())
+	{
+		return std::nullopt;
+	}
+
+	return line.front();
 }
 
 // ---------------------------------------------------------------------------
@@ -96,11 +140,16 @@ static int run(int argc, char* argv[])
 
 	std::string wsUrl;
 	std::string origin;
-	std::string roomId = "demo-room";
+	std::string roomId  = "demo-room";
+	bool zeroRtpOnPause = false;
 
 	app.add_option("--ws-url", wsUrl, "Protoo WebSocket URL (e.g. wss://localhost:4443)")->required();
 	app.add_option("--origin", origin, "HTTP Origin header  (e.g. https://myserver:4443)")->required();
 	app.add_option("--room-id", roomId, "Room ID")->capture_default_str();
+	app.add_flag(
+	  "--zero-rtp-on-pause",
+	  zeroRtpOnPause,
+	  "Set the RtpTransceiver of the producers inactive while paused");
 
 	CLI11_PARSE(app, argc, argv);
 
@@ -155,7 +204,7 @@ static int run(int argc, char* argv[])
 	// -- Mic --
 	try
 	{
-		room.EnableMic();
+		room.EnableMic(zeroRtpOnPause);
 	}
 	catch (const std::exception& e)
 	{
@@ -171,7 +220,7 @@ static int run(int argc, char* argv[])
 
 		try
 		{
-			room.EnableCamera(videoTrack);
+			room.EnableCamera(videoTrack, zeroRtpOnPause);
 		}
 		catch (const std::exception& e)
 		{
@@ -189,11 +238,86 @@ static int run(int argc, char* argv[])
 		std::cerr << "[demo] FAILED: enableChat: " << e.what() << "\n";
 	}
 
-	std::cout << "[demo] running — press Ctrl+C to quit\n";
+	printCommands();
 
 	while (Running)
 	{
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		const auto command = readCommand(std::chrono::milliseconds(100));
+
+		if (!command.has_value())
+		{
+			continue;
+		}
+
+		try
+		{
+			switch (command.value())
+			{
+				case 'm':
+				{
+					room.PauseMic();
+					break;
+				}
+
+				case 'M':
+				{
+					room.ResumeMic();
+					break;
+				}
+
+				case 'c':
+				{
+					room.PauseCamera();
+					break;
+				}
+
+				case 'C':
+				{
+					room.ResumeCamera();
+					break;
+				}
+
+				case 'a':
+				{
+					room.PauseAudioConsumers();
+					break;
+				}
+
+				case 'A':
+				{
+					room.ResumeAudioConsumers();
+					break;
+				}
+
+				case 'v':
+				{
+					room.PauseVideoConsumers();
+					break;
+				}
+
+				case 'V':
+				{
+					room.ResumeVideoConsumers();
+					break;
+				}
+
+				case 'q':
+				{
+					Running = false;
+					break;
+				}
+
+				default:
+				{
+					printCommands();
+					break;
+				}
+			}
+		}
+		catch (const std::exception& error)
+		{
+			std::cerr << "[demo] FAILED: " << error.what() << "\n";
+		}
 	}
 
 	std::cout << "\n[demo] shutting down...\n";

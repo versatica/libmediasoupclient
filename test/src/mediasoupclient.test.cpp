@@ -294,8 +294,8 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 		};
 		/* clang-format on */
 
-		REQUIRE_NOTHROW(dataProducer.reset(
-		  sendTransport->ProduceData(std::addressof(producerListener), "", "", true, 0, 0, appData)));
+		REQUIRE_NOTHROW(dataProducer.reset(sendTransport->ProduceData(
+		  std::addressof(producerListener), "", "", true, std::nullopt, std::nullopt, appData)));
 
 		REQUIRE(
 		  sendTransportListener.onConnectTimesCalled ==
@@ -338,7 +338,8 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 		  appData)));
 
 		REQUIRE_THROWS_AS(
-		  sendTransportNoSctp->ProduceData(std::addressof(producerListener), "", "", true, 0, 0, appData),
+		  sendTransportNoSctp->ProduceData(
+		    std::addressof(producerListener), "", "", true, std::nullopt, std::nullopt, appData),
 		  MediaSoupClientError);
 	}
 

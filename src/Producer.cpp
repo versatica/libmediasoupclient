@@ -16,6 +16,7 @@ namespace mediasoupclient
 	  webrtc::RtpSenderInterface* rtpSender,
 	  webrtc::MediaStreamTrackInterface* track,
 	  const json& rtpParameters,
+	  bool zeroRtpOnPause,
 	  const json& appData)
 	  : privateListener(privateListener),
 	    listener(listener),
@@ -24,6 +25,8 @@ namespace mediasoupclient
 	    rtpSender(rtpSender),
 	    track(track),
 	    rtpParameters(rtpParameters),
+	    zeroRtpOnPause(zeroRtpOnPause),
+	    paused(!track->enabled()),
 	    appData(appData)
 	{
 		MSC_TRACE();
@@ -82,7 +85,7 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		return !this->track->enabled();
+		return this->paused;
 	}
 
 	uint8_t Producer::GetMaxSpatialLayer() const
@@ -142,7 +145,15 @@ namespace mediasoupclient
 			return;
 		}
 
+		this->paused = true;
+
 		this->track->set_enabled(false);
+
+		if (this->zeroRtpOnPause)
+		{
+			// May throw.
+			this->privateListener->OnPause(this);
+		}
 	}
 
 	/**
@@ -159,7 +170,15 @@ namespace mediasoupclient
 			return;
 		}
 
+		this->paused = false;
+
 		this->track->set_enabled(true);
+
+		if (this->zeroRtpOnPause)
+		{
+			// May throw.
+			this->privateListener->OnResume(this);
+		}
 	}
 
 	/**

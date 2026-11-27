@@ -200,6 +200,7 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 		  nullptr,
 		  std::addressof(codecOptions),
 		  nullptr,
+		  /* zeroRtpOnPause */ false,
 		  appData)));
 
 		REQUIRE(
@@ -293,8 +294,8 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 		};
 		/* clang-format on */
 
-		REQUIRE_NOTHROW(dataProducer.reset(
-		  sendTransport->ProduceData(std::addressof(producerListener), "", "", true, 0, 0, appData)));
+		REQUIRE_NOTHROW(dataProducer.reset(sendTransport->ProduceData(
+		  std::addressof(producerListener), "", "", true, std::nullopt, std::nullopt, appData)));
 
 		REQUIRE(
 		  sendTransportListener.onConnectTimesCalled ==
@@ -337,7 +338,8 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 		  appData)));
 
 		REQUIRE_THROWS_AS(
-		  sendTransportNoSctp->ProduceData(std::addressof(producerListener), "", "", true, 0, 0, appData),
+		  sendTransportNoSctp->ProduceData(
+		    std::addressof(producerListener), "", "", true, std::nullopt, std::nullopt, appData),
 		  MediaSoupClientError);
 	}
 
@@ -649,6 +651,36 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 		REQUIRE(!videoProducer->IsPaused());
 	}
 
+	SECTION("producer.Pause() and producer.Resume() succeed with zeroRtpOnPause")
+	{
+		auto const track = createVideoTrack("video-track-id-zero-rtp");
+
+		std::unique_ptr<mediasoupclient::Producer> producer;
+
+		REQUIRE_NOTHROW(producer.reset(sendTransport->Produce(
+		  std::addressof(producerListener),
+		  track.get(),
+		  nullptr,
+		  nullptr,
+		  nullptr,
+		  /* zeroRtpOnPause */ true,
+		  json::object())));
+
+		REQUIRE(!producer->IsPaused());
+
+		// Sets the RtpTransceiver inactive and renegotiates.
+		REQUIRE_NOTHROW(producer->Pause());
+
+		REQUIRE(producer->IsPaused());
+
+		// Sets the RtpTransceiver back to sendonly and renegotiates.
+		REQUIRE_NOTHROW(producer->Resume());
+
+		REQUIRE(!producer->IsPaused());
+
+		producer->Close();
+	}
+
 	SECTION("producer.ReplaceTrack() succeeds")
 	{
 		// Have the audio Producer paused.
@@ -711,6 +743,29 @@ TEST_CASE("mediasoupclient", "[mediasoupclient]")
 		videoConsumer->Pause();
 
 		REQUIRE(videoConsumer->IsPaused());
+	}
+
+	SECTION("consumer.Pause() and consumer.Resume() renegotiate")
+	{
+		// The sections share state, so start from a known one.
+		videoConsumer->Resume();
+
+		REQUIRE(!videoConsumer->IsPaused());
+
+		// Sets the RtpTransceiver inactive and renegotiates.
+		REQUIRE_NOTHROW(videoConsumer->Pause());
+
+		REQUIRE(videoConsumer->IsPaused());
+
+		// Already paused, so it does nothing.
+		REQUIRE_NOTHROW(videoConsumer->Pause());
+
+		REQUIRE(videoConsumer->IsPaused());
+
+		// Sets the RtpTransceiver back to recvonly and renegotiates.
+		REQUIRE_NOTHROW(videoConsumer->Resume());
+
+		REQUIRE(!videoConsumer->IsPaused());
 	}
 
 	SECTION("consumer.GetStats() succeeds")

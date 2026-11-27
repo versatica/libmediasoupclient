@@ -767,16 +767,20 @@ namespace mediasoupclient
 				params["ordered"] = true;
 			}
 
-			// maxPacketLifeTime is optional. If unset set it to 0.
-			if (maxPacketLifeTimeIt == params.end() || !maxPacketLifeTimeIt->is_number_integer())
+			// NOTE: maxPacketLifeTime and maxRetransmits are left unset rather than
+			// defaulted to 0, since they are sent to the server, which rejects a
+			// sctpStreamParameters carrying both of them.
+
+			// maxPacketLifeTime is optional.
+			if (maxPacketLifeTimeIt != params.end() && !maxPacketLifeTimeIt->is_number_integer())
 			{
-				params["maxPacketLifeTime"] = 0;
+				MSC_THROW_TYPE_ERROR("invalid params.maxPacketLifeTime");
 			}
 
-			// maxRetransmits is optional. If unset set it to 0.
-			if (maxRetransmitsIt == params.end() || !maxRetransmitsIt->is_number_integer())
+			// maxRetransmits is optional.
+			if (maxRetransmitsIt != params.end() && !maxRetransmitsIt->is_number_integer())
 			{
-				params["maxRetransmits"] = 0;
+				MSC_THROW_TYPE_ERROR("invalid params.maxRetransmits");
 			}
 
 			if (maxPacketLifeTimeIt != params.end() && maxRetransmitsIt != params.end())

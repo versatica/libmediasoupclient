@@ -1,5 +1,18 @@
 #include "RoomClient.hpp"
 #include <iostream>
+#include <string>
+
+namespace
+{
+	/**
+	 * Protoo ids are strings, but a peer may be announced with a number, so both
+	 * are accepted and turned into the string this class keys participants by.
+	 */
+	std::string idToString(const json& id)
+	{
+		return id.is_string() ? id.get<std::string>() : id.dump();
+	}
+} // namespace
 
 // ---------------------------------------------------------------------------
 // Private listener classes
@@ -385,13 +398,13 @@ void RoomClient::Close()
 	this->protoo.Close();
 }
 
-void RoomClient::EnableMic()
+void RoomClient::EnableMic(bool zeroRtpOnPause)
 {
 	const auto audioSource = this->factory->CreateAudioSource({});
 	const auto audioTrack  = this->factory->CreateAudioTrack("mic", audioSource.get());
 
 	this->micProducer.reset(this->sendTransport->Produce(
-	  this->producerListener.get(), audioTrack.get(), nullptr, nullptr, {}));
+	  this->producerListener.get(), audioTrack.get(), nullptr, nullptr, {}, zeroRtpOnPause));
 
 	std::cout << "[room] mic producer: " << this->micProducer->GetId() << "\n";
 }
@@ -407,7 +420,87 @@ void RoomClient::DisableMic()
 	this->micProducer.reset();
 }
 
-void RoomClient::EnableCamera(const webrtc::scoped_refptr<webrtc::VideoTrackInterface>& videoTrack)
+void RoomClient::PauseMic()
+{
+	RoomClient::SetProducerPaused(this->micProducer.get(), "mic", true);
+}
+
+void RoomClient::ResumeMic()
+{
+	RoomClient::SetProducerPaused(this->micProducer.get(), "mic", false);
+}
+
+void RoomClient::PauseCamera()
+{
+	RoomClient::SetProducerPaused(this->cameraProducer.get(), "camera", true);
+}
+
+void RoomClient::ResumeCamera()
+{
+	RoomClient::SetProducerPaused(this->cameraProducer.get(), "camera", false);
+}
+
+void RoomClient::PauseAudioConsumers()
+{
+	SetConsumersPaused("audio", true);
+}
+
+void RoomClient::ResumeAudioConsumers()
+{
+	SetConsumersPaused("audio", false);
+}
+
+void RoomClient::PauseVideoConsumers()
+{
+	SetConsumersPaused("video", true);
+}
+
+void RoomClient::ResumeVideoConsumers()
+{
+	SetConsumersPaused("video", false);
+}
+
+void RoomClient::SetProducerPaused(
+  mediasoupclient::Producer* producer, const std::string& name, bool paused)
+{
+	if (!producer)
+	{
+		std::cout << "[room] no " << name << " producer\n";
+
+		return;
+	}
+
+	paused ? producer->Pause() : producer->Resume();
+
+	std::cout << "[room] " << name << " " << (producer->IsPaused() ? "paused" : "resumed") << "\n";
+}
+
+void RoomClient::SetConsumersPaused(const std::string& kind, bool paused)
+{
+	const std::scoped_lock lock(this->participantsMutex);
+
+	size_t count = 0;
+
+	for (auto& [peerId, participant] : this->participants)
+	{
+		const auto& consumer = kind == "audio" ? participant.audioConsumer : participant.videoConsumer;
+
+		if (!consumer)
+		{
+			continue;
+		}
+
+		paused ? consumer->Pause() : consumer->Resume();
+
+		++count;
+	}
+
+	std::cout << "[room] " << count << " " << kind << " consumers " << (paused ? "paused" : "resumed")
+	          << "\n";
+}
+
+void RoomClient::EnableCamera(
+  const webrtc::scoped_refptr<webrtc::VideoTrackInterface>& videoTrack, bool zeroRtpOnPause)
 {
 	if (!videoTrack)
 	{
@@ -415,7 +508,7 @@ void RoomClient::EnableCamera(const webrtc::scoped_refptr<webrtc::VideoTrackInte
 	}
 
 	this->cameraProducer.reset(this->sendTransport->Produce(
-	  this->producerListener.get(), videoTrack.get(), nullptr, nullptr, {}));
+	  this->producerListener.get(), videoTrack.get(), nullptr, nullptr, {}, zeroRtpOnPause));
 
 	std::cout << "[room] camera producer: " << this->cameraProducer->GetId() << "\n";
 }
@@ -438,8 +531,8 @@ void RoomClient::EnableChat()
 	  "chat",
 	  "text/plain",
 	  true,
-	  0,
-	  0,
+	  std::nullopt,
+	  std::nullopt,
 	  // clang-format off
 	  {
 		{ "channel", "chat" },
@@ -462,7 +555,7 @@ void RoomClient::HandleRequest(const std::string& method, const json& data, json
 		const auto consumerId = data["consumerId"].get<std::string>();
 		const auto producerId = data["producerId"].get<std::string>();
 		const auto kind       = data["kind"].get<std::string>();
-		const auto peerIdFrom = data["peerId"].get<std::string>();
+		const auto peerIdFrom = idToString(data["peerId"]);
 		auto rtpParameters    = data["rtpParameters"];
 
 		auto* consumer = this->recvTransport->Consume(
@@ -470,16 +563,18 @@ void RoomClient::HandleRequest(const std::string& method, const json& data, json
 
 		{
 			const std::scoped_lock lock(this->participantsMutex);
-			auto& p = this->participants[peerIdFrom];
+			auto& participant = this->participants[peerIdFrom];
+			auto& slot        = kind == "audio" ? participant.audioConsumer : participant.videoConsumer;
 
-			if (kind == "audio")
+			// NOTE: Closing the previous Consumer deregisters it from the RecvTransport,
+			// which otherwise would keep a dangling pointer to it once reset() destroys
+			// it.
+			if (slot)
 			{
-				p.audioConsumer.reset(consumer);
+				slot->Close();
 			}
-			else if (kind == "video")
-			{
-				p.videoConsumer.reset(consumer);
-			}
+
+			slot.reset(consumer);
 		}
 
 		std::cout << "[room] consuming " << kind << " from " << peerIdFrom << "\n";
@@ -510,19 +605,52 @@ void RoomClient::HandleNotification(const std::string& method, const json& data)
 {
 	if (method == "newPeer")
 	{
-		std::cout << "[room] new peer: " << data["id"].get<std::string>() << "\n";
+		std::cout << "[room] new peer: " << idToString(data["id"]) << "\n";
+	}
+	else if (method == "consumerClosed")
+	{
+		const auto consumerId = idToString(data["consumerId"]);
+
+		const std::scoped_lock lock(this->participantsMutex);
+
+		for (auto& [peerId, participant] : this->participants)
+		{
+			for (auto* slot :
+			     { std::addressof(participant.audioConsumer), std::addressof(participant.videoConsumer) })
+			{
+				if (!*slot || (*slot)->GetId() != consumerId)
+				{
+					continue;
+				}
+
+				// NOTE: Closing it deregisters it from the RecvTransport, which
+				// otherwise would keep a dangling pointer to it once it is destroyed.
+				(*slot)->Close();
+				slot->reset();
+
+				std::cout << "[room] consumer closed: " << consumerId << "\n";
+			}
+		}
 	}
 	else if (method == "peerClosed")
 	{
-		const auto peerId = data["peerId"].get<std::string>();
+		const auto peerId = idToString(data["peerId"]);
 		{
 			const std::scoped_lock lock(this->participantsMutex);
 			const auto it = this->participants.find(peerId);
 
 			if (it != this->participants.end())
 			{
-				it->second.audioConsumer.reset();
-				it->second.videoConsumer.reset();
+				// NOTE: Closing a Consumer deregisters it from the RecvTransport, which
+				// otherwise would keep a dangling pointer to it once it is destroyed.
+				for (const auto& consumer : { it->second.audioConsumer.get(), it->second.videoConsumer.get() })
+				{
+					if (consumer)
+					{
+						consumer->Close();
+					}
+				}
+
 				this->participants.erase(it);
 			}
 		}

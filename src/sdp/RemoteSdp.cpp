@@ -261,6 +261,39 @@ namespace mediasoupclient
 		}
 	}
 
+	void Sdp::RemoteSdp::PauseMediaSection(const std::string& mid)
+	{
+		MSC_TRACE();
+
+		const auto idx = this->midToIndex[mid];
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
+		const auto& mediaSection = this->mediaSections[idx];
+
+		mediaSection->Pause();
+	}
+
+	void Sdp::RemoteSdp::ResumeSendingMediaSection(const std::string& mid)
+	{
+		MSC_TRACE();
+
+		const auto idx = this->midToIndex[mid];
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
+		const auto& mediaSection = this->mediaSections[idx];
+
+		mediaSection->Resume();
+	}
+
+	void Sdp::RemoteSdp::ResumeReceivingMediaSection(const std::string& mid)
+	{
+		MSC_TRACE();
+
+		const auto idx = this->midToIndex[mid];
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
+		const auto& mediaSection = this->mediaSections[idx];
+
+		mediaSection->Resume();
+	}
+
 	void Sdp::RemoteSdp::DisableMediaSection(const std::string& mid)
 	{
 		MSC_TRACE();

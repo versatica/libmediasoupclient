@@ -13,6 +13,7 @@
 #include <future>
 #include <map>
 #include <memory> // unique_ptr
+#include <optional>
 #include <string>
 
 namespace mediasoupclient
@@ -176,11 +177,16 @@ namespace mediasoupclient
 		 * @param encodings - Encodings to use, or no value for a single encoding.
 		 * @param codecOptions - Codec specific options.
 		 * @param codec - Codec to use instead of the preferred one.
+		 * @param zeroRtpOnPause - Whether pausing the Producer also sets its
+		 *   RtpTransceiver inactive, so that no RTP is sent at all.
 		 * @param appData - Custom data to attach to the producer.
 		 *
 		 * @remarks
 		 * - The returned Producer is owned by the application, which must close and
 		 *   destroy it.
+		 * - zeroRtpOnPause makes Producer::Pause() and Producer::Resume() run an
+		 *   offer/answer cycle on the local PeerConnection, so they are not free and
+		 *   may throw.
 		 *
 		 * @throws MediaSoupClientInvalidStateError if the Transport is closed or the
 		 *   given track is ended.
@@ -194,6 +200,7 @@ namespace mediasoupclient
 		  const std::vector<webrtc::RtpEncodingParameters>* encodings,
 		  const nlohmann::json* codecOptions,
 		  const nlohmann::json* codec,
+		  bool zeroRtpOnPause           = false,
 		  const nlohmann::json& appData = nlohmann::json::object());
 
 		/**
@@ -203,14 +210,16 @@ namespace mediasoupclient
 		 * @param label - Label of the underlying DataChannel.
 		 * @param protocol - Subprotocol of the underlying DataChannel.
 		 * @param ordered - Whether messages are delivered in order.
-		 * @param maxRetransmits - Maximum number of retransmissions.
-		 * @param maxPacketLifeTime - Time to retransmit a message for (ms).
+		 * @param maxRetransmits - Maximum number of retransmissions, or no value.
+		 * @param maxPacketLifeTime - Time to retransmit a message for (ms), or no
+		 *   value.
 		 * @param appData - Custom data to attach to the data producer.
 		 *
 		 * @remarks
 		 * - The returned DataProducer is owned by the application, which must close
 		 *   and destroy it.
-		 * - maxRetransmits and maxPacketLifeTime are exclusive.
+		 * - maxRetransmits and maxPacketLifeTime are exclusive, and giving either of
+		 *   them makes the DataChannel unordered.
 		 *
 		 * @throws MediaSoupClientUnsupportedError if the server side transport does
 		 *   not have SCTP enabled.
@@ -219,12 +228,12 @@ namespace mediasoupclient
 		 */
 		[[nodiscard]] DataProducer* ProduceData(
 		  DataProducer::Listener* listener,
-		  const std::string& label      = "",
-		  const std::string& protocol   = "",
-		  bool ordered                  = true,
-		  int maxRetransmits            = 0,
-		  int maxPacketLifeTime         = 0,
-		  const nlohmann::json& appData = nlohmann::json::object());
+		  const std::string& label             = "",
+		  const std::string& protocol          = "",
+		  bool ordered                         = true,
+		  std::optional<int> maxRetransmits    = std::nullopt,
+		  std::optional<int> maxPacketLifeTime = std::nullopt,
+		  const nlohmann::json& appData        = nlohmann::json::object());
 
 		/* Virtual methods inherited from Transport. */
 	public:
@@ -241,6 +250,10 @@ namespace mediasoupclient
 		void OnSetMaxSpatialLayer(const Producer* producer, uint8_t maxSpatialLayer) override;
 
 		nlohmann::json OnGetStats(const Producer* producer) override;
+
+		void OnPause(Producer* producer) override;
+
+		void OnResume(Producer* producer) override;
 
 	private:
 		// Listener instance.
@@ -347,6 +360,10 @@ namespace mediasoupclient
 		void OnClose(DataConsumer* consumer) override;
 
 		nlohmann::json OnGetStats(const Consumer* consumer) override;
+
+		void OnPause(Consumer* consumer) override;
+
+		void OnResume(Consumer* consumer) override;
 
 	private:
 		// Map of Consumers indexed by id.

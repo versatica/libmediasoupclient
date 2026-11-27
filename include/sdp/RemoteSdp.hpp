@@ -54,6 +54,12 @@ namespace mediasoupclient
 
 			void UpdateDtlsRole(const std::string& role);
 
+			void PauseMediaSection(const std::string& mid);
+
+			void ResumeSendingMediaSection(const std::string& mid);
+
+			void ResumeReceivingMediaSection(const std::string& mid);
+
 			void DisableMediaSection(const std::string& mid);
 
 			void CloseMediaSection(const std::string& mid);

@@ -195,6 +195,7 @@ namespace mediasoupclient
 	  const std::vector<webrtc::RtpEncodingParameters>* encodings,
 	  const json* codecOptions,
 	  const json* codec,
+	  bool zeroRtpOnPause,
 	  const json& appData)
 	{
 		MSC_TRACE();
@@ -271,6 +272,7 @@ namespace mediasoupclient
 		  sendResult.rtpSender,
 		  track,
 		  sendResult.rtpParameters,
+		  zeroRtpOnPause,
 		  appData);
 
 		this->producers[producer->GetId()] = producer;
@@ -283,8 +285,8 @@ namespace mediasoupclient
 	  const std::string& label,
 	  const std::string& protocol,
 	  bool ordered,
-	  int maxRetransmits,
-	  int maxPacketLifeTime,
+	  std::optional<int> maxRetransmits,
+	  std::optional<int> maxPacketLifeTime,
 	  const nlohmann::json& appData)
 	{
 		MSC_TRACE();
@@ -294,21 +296,24 @@ namespace mediasoupclient
 			MSC_THROW_UNSUPPORTED_ERROR("SCTP not enabled by remote transport");
 		}
 
+		if (maxRetransmits.has_value() && maxPacketLifeTime.has_value())
+		{
+			MSC_THROW_TYPE_ERROR("cannot provide both maxPacketLifeTime and maxRetransmits");
+		}
+
+		// NOTE: Giving either of them makes the DataChannel unordered, and a value of
+		// 0 counts as given.
+		if (maxRetransmits.has_value() || maxPacketLifeTime.has_value())
+		{
+			ordered = false;
+		}
+
 		webrtc::DataChannelInit dataChannelInit;
-		dataChannelInit.protocol = protocol;
-		dataChannelInit.ordered  = ordered;
-		if (maxRetransmits != -1 && maxPacketLifeTime != 0)
-		{
-			MSC_THROW_ERROR("Cannot set both maxRetransmits and maxPacketLifeTime");
-		}
-		if (maxRetransmits != 0)
-		{
-			dataChannelInit.maxRetransmits = maxRetransmits;
-		}
-		if (maxPacketLifeTime != 0)
-		{
-			dataChannelInit.maxRetransmitTime = maxPacketLifeTime;
-		}
+
+		dataChannelInit.protocol          = protocol;
+		dataChannelInit.ordered           = ordered;
+		dataChannelInit.maxRetransmits    = maxRetransmits;
+		dataChannelInit.maxRetransmitTime = maxPacketLifeTime;
 
 		// This may throw.
 		const auto sendResult = this->sendHandler->SendDataChannel(label, dataChannelInit);
@@ -403,6 +408,30 @@ namespace mediasoupclient
 		}
 
 		return this->sendHandler->GetSenderStats(producer->GetLocalId());
+	}
+
+	void SendTransport::OnPause(Producer* producer)
+	{
+		MSC_TRACE();
+
+		if (this->closed)
+		{
+			MSC_THROW_INVALID_STATE_ERROR("SendTransport closed");
+		}
+
+		this->sendHandler->PauseSending(producer->GetLocalId());
+	}
+
+	void SendTransport::OnResume(Producer* producer)
+	{
+		MSC_TRACE();
+
+		if (this->closed)
+		{
+			MSC_THROW_INVALID_STATE_ERROR("SendTransport closed");
+		}
+
+		this->sendHandler->ResumeSending(producer->GetLocalId());
 	}
 
 	/* RecvTransport */
@@ -638,5 +667,29 @@ namespace mediasoupclient
 		}
 
 		return this->recvHandler->GetReceiverStats(consumer->GetLocalId());
+	}
+
+	void RecvTransport::OnPause(Consumer* consumer)
+	{
+		MSC_TRACE();
+
+		if (this->closed)
+		{
+			MSC_THROW_INVALID_STATE_ERROR("RecvTransport closed");
+		}
+
+		this->recvHandler->PauseReceiving(consumer->GetLocalId());
+	}
+
+	void RecvTransport::OnResume(Consumer* consumer)
+	{
+		MSC_TRACE();
+
+		if (this->closed)
+		{
+			MSC_THROW_INVALID_STATE_ERROR("RecvTransport closed");
+		}
+
+		this->recvHandler->ResumeReceiving(consumer->GetLocalId());
 	}
 } // namespace mediasoupclient

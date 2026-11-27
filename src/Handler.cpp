@@ -502,9 +502,9 @@ namespace mediasoupclient
 		// NOLINTNEXTLINE(bugprone-unchecked-optional-access)
 		this->remoteSdp->CloseMediaSection(transceiver->mid().value());
 
-		// May throw.
 		const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
 
+		// May throw.
 		const auto offer = this->pc->CreateOffer(options);
 
 		MSC_DEBUG("calling pc->SetLocalDescription():\n%s", offer.c_str());
@@ -514,6 +514,88 @@ namespace mediasoupclient
 
 		const auto localSdpObj = sdptransform::parse(this->pc->GetLocalDescription());
 		const auto answer      = this->remoteSdp->GetSdp();
+
+		MSC_DEBUG("calling pc->SetRemoteDescription():\n%s", answer.c_str());
+
+		// May throw.
+		this->pc->SetRemoteDescription(webrtc::SdpType::kAnswer, answer);
+	}
+
+	void SendHandler::PauseSending(const std::string& localId)
+	{
+		MSC_TRACE();
+
+		MSC_DEBUG("[localId:%s]", localId.c_str());
+
+		const auto localIdIt = this->mapMidTransceiver.find(localId);
+
+		if (localIdIt == this->mapMidTransceiver.end())
+		{
+			MSC_THROW_ERROR("associated RtpTransceiver not found");
+		}
+
+		const auto transceiver = localIdIt->second;
+		const auto error = transceiver->SetDirectionWithError(webrtc::RtpTransceiverDirection::kInactive);
+
+		if (!error.ok())
+		{
+			MSC_THROW_ERROR("cannot set the RtpTransceiver direction [error:%s]", error.message());
+		}
+
+		this->remoteSdp->PauseMediaSection(localId);
+
+		const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
+
+		// May throw.
+		const auto offer = this->pc->CreateOffer(options);
+
+		MSC_DEBUG("calling pc->SetLocalDescription():\n%s", offer.c_str());
+
+		// May throw.
+		this->pc->SetLocalDescription(webrtc::SdpType::kOffer, offer);
+
+		const auto answer = this->remoteSdp->GetSdp();
+
+		MSC_DEBUG("calling pc->SetRemoteDescription():\n%s", answer.c_str());
+
+		// May throw.
+		this->pc->SetRemoteDescription(webrtc::SdpType::kAnswer, answer);
+	}
+
+	void SendHandler::ResumeSending(const std::string& localId)
+	{
+		MSC_TRACE();
+
+		MSC_DEBUG("[localId:%s]", localId.c_str());
+
+		const auto localIdIt = this->mapMidTransceiver.find(localId);
+
+		if (localIdIt == this->mapMidTransceiver.end())
+		{
+			MSC_THROW_ERROR("associated RtpTransceiver not found");
+		}
+
+		const auto transceiver = localIdIt->second;
+		const auto error = transceiver->SetDirectionWithError(webrtc::RtpTransceiverDirection::kSendOnly);
+
+		if (!error.ok())
+		{
+			MSC_THROW_ERROR("cannot set the RtpTransceiver direction [error:%s]", error.message());
+		}
+
+		this->remoteSdp->ResumeSendingMediaSection(localId);
+
+		const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
+
+		// May throw.
+		const auto offer = this->pc->CreateOffer(options);
+
+		MSC_DEBUG("calling pc->SetLocalDescription():\n%s", offer.c_str());
+
+		// May throw.
+		this->pc->SetLocalDescription(webrtc::SdpType::kOffer, offer);
+
+		const auto answer = this->remoteSdp->GetSdp();
 
 		MSC_DEBUG("calling pc->SetRemoteDescription():\n%s", answer.c_str());
 
@@ -910,6 +992,88 @@ namespace mediasoupclient
 		const auto offer = this->remoteSdp->GetSdp();
 
 		MSC_DEBUG("calling pc->setRemoteDescription():\n%s", offer.c_str());
+
+		// May throw.
+		this->pc->SetRemoteDescription(webrtc::SdpType::kOffer, offer);
+
+		const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
+
+		// May throw.
+		const auto answer = this->pc->CreateAnswer(options);
+
+		MSC_DEBUG("calling pc->SetLocalDescription():\n%s", answer.c_str());
+
+		// May throw.
+		this->pc->SetLocalDescription(webrtc::SdpType::kAnswer, answer);
+	}
+
+	void RecvHandler::PauseReceiving(const std::string& localId)
+	{
+		MSC_TRACE();
+
+		MSC_DEBUG("[localId:%s]", localId.c_str());
+
+		const auto localIdIt = this->mapMidTransceiver.find(localId);
+
+		if (localIdIt == this->mapMidTransceiver.end())
+		{
+			MSC_THROW_ERROR("associated RtpTransceiver not found");
+		}
+
+		const auto& transceiver = localIdIt->second;
+		const auto error = transceiver->SetDirectionWithError(webrtc::RtpTransceiverDirection::kInactive);
+
+		if (!error.ok())
+		{
+			MSC_THROW_ERROR("cannot set the RtpTransceiver direction [error:%s]", error.message());
+		}
+
+		this->remoteSdp->PauseMediaSection(localId);
+
+		const auto offer = this->remoteSdp->GetSdp();
+
+		MSC_DEBUG("calling pc->SetRemoteDescription():\n%s", offer.c_str());
+
+		// May throw.
+		this->pc->SetRemoteDescription(webrtc::SdpType::kOffer, offer);
+
+		const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
+
+		// May throw.
+		const auto answer = this->pc->CreateAnswer(options);
+
+		MSC_DEBUG("calling pc->SetLocalDescription():\n%s", answer.c_str());
+
+		// May throw.
+		this->pc->SetLocalDescription(webrtc::SdpType::kAnswer, answer);
+	}
+
+	void RecvHandler::ResumeReceiving(const std::string& localId)
+	{
+		MSC_TRACE();
+
+		MSC_DEBUG("[localId:%s]", localId.c_str());
+
+		const auto localIdIt = this->mapMidTransceiver.find(localId);
+
+		if (localIdIt == this->mapMidTransceiver.end())
+		{
+			MSC_THROW_ERROR("associated RtpTransceiver not found");
+		}
+
+		const auto& transceiver = localIdIt->second;
+		const auto error = transceiver->SetDirectionWithError(webrtc::RtpTransceiverDirection::kRecvOnly);
+
+		if (!error.ok())
+		{
+			MSC_THROW_ERROR("cannot set the RtpTransceiver direction [error:%s]", error.message());
+		}
+
+		this->remoteSdp->ResumeReceivingMediaSection(localId);
+
+		const auto offer = this->remoteSdp->GetSdp();
+
+		MSC_DEBUG("calling pc->SetRemoteDescription():\n%s", offer.c_str());
 
 		// May throw.
 		this->pc->SetRemoteDescription(webrtc::SdpType::kOffer, offer);

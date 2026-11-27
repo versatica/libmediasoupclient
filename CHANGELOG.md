@@ -14,6 +14,9 @@
   - Fix corrupted log messages when logging from several threads: the log buffer is now `thread_local`.
   - Fix `MSC_ASSERT()`.
 - Fix crash when parsing stats ([issue #224](https://github.com/versatica/libmediasoupclient/issues/224), credits to @daniil-kaverzin).
+- Set the RtpTransceiver inactive on pause, so that no RTP is sent or received while paused ([PR #230](https://github.com/versatica/libmediasoupclient/pull/230), credits to @tdrz).
+  - `Producer::Pause()` only does it with the new `zeroRtpOnPause` option of `SendTransport::Produce()`, `Consumer::Pause()` always does.
+  - **BREAKING** `zeroRtpOnPause` goes before `appData`, so a `Produce()` call giving `appData` must be updated. The compiler does not catch it, since `nlohmann::json` converts to `bool` implicitly.
 
 ### 3.5.1
 

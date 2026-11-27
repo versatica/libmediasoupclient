@@ -28,6 +28,10 @@ namespace mediasoupclient
 			virtual void OnSetMaxSpatialLayer(const Producer* producer, uint8_t maxSpatialLayer) = 0;
 
 			virtual nlohmann::json OnGetStats(const Producer* producer) = 0;
+
+			virtual void OnPause(Producer* producer) = 0;
+
+			virtual void OnResume(Producer* producer) = 0;
 		};
 
 		/* Public Listener API */
@@ -48,6 +52,7 @@ namespace mediasoupclient
 		  webrtc::RtpSenderInterface* rtpSender,
 		  webrtc::MediaStreamTrackInterface* track,
 		  const nlohmann::json& rtpParameters,
+		  bool zeroRtpOnPause,
 		  const nlohmann::json& appData);
 
 	public:
@@ -118,11 +123,25 @@ namespace mediasoupclient
 
 		/**
 		 * Pauses sending media.
+		 *
+		 * @remarks
+		 * - With zeroRtpOnPause this also sets the RtpTransceiver inactive, which
+		 *   needs an offer/answer cycle on the local PeerConnection. Nothing is
+		 *   signalled to the server, the client just stops sending RTP.
+		 *
+		 * @throws MediaSoupClientError if the offer/answer cycle fails.
 		 */
 		void Pause();
 
 		/**
 		 * Resumes sending media.
+		 *
+		 * @remarks
+		 * - With zeroRtpOnPause this also sets the RtpTransceiver back to sendonly,
+		 *   which needs an offer/answer cycle on the local PeerConnection. Nothing is
+		 *   signalled to the server, the client just starts sending RTP again.
+		 *
+		 * @throws MediaSoupClientError if the offer/answer cycle fails.
 		 */
 		void Resume();
 
@@ -170,8 +189,10 @@ namespace mediasoupclient
 		webrtc::MediaStreamTrackInterface* track;
 		// RTP parameters.
 		const nlohmann::json rtpParameters;
+		// Whether the RtpTransceiver is set inactive while paused.
+		const bool zeroRtpOnPause;
 		// Paused flag.
-		bool paused{ false };
+		bool paused;
 		// Video Max spatial layer.
 		uint8_t maxSpatialLayer{ 0 };
 		// App custom data.

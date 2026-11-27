@@ -195,6 +195,7 @@ namespace mediasoupclient
 	  const std::vector<webrtc::RtpEncodingParameters>* encodings,
 	  const json* codecOptions,
 	  const json* codec,
+	  bool zeroRtpOnPause,
 	  const json& appData)
 	{
 		MSC_TRACE();
@@ -271,6 +272,7 @@ namespace mediasoupclient
 		  sendResult.rtpSender,
 		  track,
 		  sendResult.rtpParameters,
+		  zeroRtpOnPause,
 		  appData);
 
 		this->producers[producer->GetId()] = producer;
@@ -403,6 +405,30 @@ namespace mediasoupclient
 		}
 
 		return this->sendHandler->GetSenderStats(producer->GetLocalId());
+	}
+
+	void SendTransport::OnPause(Producer* producer)
+	{
+		MSC_TRACE();
+
+		if (this->closed)
+		{
+			MSC_THROW_INVALID_STATE_ERROR("SendTransport closed");
+		}
+
+		this->sendHandler->PauseSending(producer->GetLocalId());
+	}
+
+	void SendTransport::OnResume(Producer* producer)
+	{
+		MSC_TRACE();
+
+		if (this->closed)
+		{
+			MSC_THROW_INVALID_STATE_ERROR("SendTransport closed");
+		}
+
+		this->sendHandler->ResumeSending(producer->GetLocalId());
 	}
 
 	/* RecvTransport */
@@ -638,5 +664,29 @@ namespace mediasoupclient
 		}
 
 		return this->recvHandler->GetReceiverStats(consumer->GetLocalId());
+	}
+
+	void RecvTransport::OnPause(Consumer* consumer)
+	{
+		MSC_TRACE();
+
+		if (this->closed)
+		{
+			MSC_THROW_INVALID_STATE_ERROR("RecvTransport closed");
+		}
+
+		this->recvHandler->PauseReceiving(consumer->GetLocalId());
+	}
+
+	void RecvTransport::OnResume(Consumer* consumer)
+	{
+		MSC_TRACE();
+
+		if (this->closed)
+		{
+			MSC_THROW_INVALID_STATE_ERROR("RecvTransport closed");
+		}
+
+		this->recvHandler->ResumeReceiving(consumer->GetLocalId());
 	}
 } // namespace mediasoupclient

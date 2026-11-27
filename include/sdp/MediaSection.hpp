@@ -26,11 +26,15 @@ namespace mediasoupclient
 
 			void SetIceParameters(const nlohmann::json& iceParameters);
 
+			void Pause();
+
 			void Disable();
 
 			void Close();
 
 		public:
+			virtual void Resume() = 0;
+
 			virtual void SetDtlsRole(const std::string& role) = 0;
 
 		protected:
@@ -51,6 +55,8 @@ namespace mediasoupclient
 			  const nlohmann::json* codecOptions);
 
 		public:
+			void Resume() override;
+
 			void SetDtlsRole(const std::string& role) override;
 		};
 
@@ -69,6 +75,8 @@ namespace mediasoupclient
 			  const std::string& trackId);
 
 		public:
+			void Resume() override;
+
 			void SetDtlsRole(const std::string& role) override;
 		};
 	} // namespace Sdp

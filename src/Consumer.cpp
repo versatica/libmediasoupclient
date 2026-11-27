@@ -26,6 +26,7 @@ namespace mediasoupclient
 	    rtpReceiver(rtpReceiver),
 	    track(track),
 	    rtpParameters(rtpParameters),
+	    paused(!track->enabled()),
 	    appData(appData)
 	{
 		MSC_TRACE();
@@ -91,7 +92,7 @@ namespace mediasoupclient
 	{
 		MSC_TRACE();
 
-		return !this->track->enabled();
+		return this->paused;
 	}
 
 	json& Consumer::GetAppData()
@@ -144,7 +145,19 @@ namespace mediasoupclient
 			return;
 		}
 
+		if (this->paused)
+		{
+			MSC_DEBUG("Consumer is already paused");
+
+			return;
+		}
+
+		this->paused = true;
+
 		this->track->set_enabled(false);
+
+		// May throw.
+		this->privateListener->OnPause(this);
 	}
 
 	/**
@@ -161,7 +174,19 @@ namespace mediasoupclient
 			return;
 		}
 
+		if (!this->paused)
+		{
+			MSC_DEBUG("Consumer is already resumed");
+
+			return;
+		}
+
+		this->paused = false;
+
 		this->track->set_enabled(true);
+
+		// May throw.
+		this->privateListener->OnResume(this);
 	}
 
 	/**

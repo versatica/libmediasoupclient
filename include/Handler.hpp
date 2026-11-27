@@ -112,6 +112,10 @@ namespace mediasoupclient
 
 		void StopSending(const std::string& localId);
 
+		void PauseSending(const std::string& localId);
+
+		void ResumeSending(const std::string& localId);
+
 		void ReplaceTrack(const std::string& localId, webrtc::MediaStreamTrackInterface* track);
 
 		void SetMaxSpatialLayer(const std::string& localId, uint8_t spatialLayer);
@@ -149,6 +153,10 @@ namespace mediasoupclient
 		  const std::string& id, const std::string& kind, const nlohmann::json* rtpParameters);
 
 		void StopReceiving(const std::string& localId);
+
+		void PauseReceiving(const std::string& localId);
+
+		void ResumeReceiving(const std::string& localId);
 
 		nlohmann::json GetReceiverStats(const std::string& localId);
 

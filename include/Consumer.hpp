@@ -23,6 +23,10 @@ namespace mediasoupclient
 			virtual void OnClose(Consumer* consumer) = 0;
 
 			virtual nlohmann::json OnGetStats(const Consumer* consumer) = 0;
+
+			virtual void OnPause(Consumer* consumer) = 0;
+
+			virtual void OnResume(Consumer* consumer) = 0;
 		};
 
 		/* Public Listener API */
@@ -114,11 +118,27 @@ namespace mediasoupclient
 
 		/**
 		 * Pauses receiving media.
+		 *
+		 * @remarks
+		 * - This sets the RtpTransceiver inactive, which needs an offer/answer cycle
+		 *   on the local PeerConnection. Nothing is signalled to the server, the
+		 *   client just stops receiving RTP.
+		 * - Pausing an already paused Consumer does nothing.
+		 *
+		 * @throws MediaSoupClientError if the offer/answer cycle fails.
 		 */
 		void Pause();
 
 		/**
 		 * Resumes receiving media.
+		 *
+		 * @remarks
+		 * - This sets the RtpTransceiver back to recvonly, which needs an offer/answer
+		 *   cycle on the local PeerConnection. Nothing is signalled to the server, the
+		 *   client just starts receiving RTP again.
+		 * - Resuming an already resumed Consumer does nothing.
+		 *
+		 * @throws MediaSoupClientError if the offer/answer cycle fails.
 		 */
 		void Resume();
 
@@ -148,7 +168,7 @@ namespace mediasoupclient
 		// RTP parameters.
 		const nlohmann::json rtpParameters;
 		// Paused flag.
-		bool paused{ false };
+		bool paused;
 		// App custom data.
 		nlohmann::json appData;
 	};

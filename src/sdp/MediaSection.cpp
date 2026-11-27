@@ -81,6 +81,13 @@ namespace mediasoupclient
 			this->mediaObject["icePwd"]   = iceParameters["password"];
 		}
 
+		void MediaSection::Pause()
+		{
+			MSC_TRACE();
+
+			this->mediaObject["direction"] = "inactive";
+		}
+
 		void MediaSection::Disable()
 		{
 			MSC_TRACE();
@@ -428,6 +435,13 @@ namespace mediasoupclient
 			}
 		}
 
+		void AnswerMediaSection::Resume()
+		{
+			MSC_TRACE();
+
+			this->mediaObject["direction"] = "recvonly";
+		}
+
 		void AnswerMediaSection::SetDtlsRole(const std::string& role)
 		{
 			MSC_TRACE();
@@ -667,6 +681,13 @@ namespace mediasoupclient
 				this->mediaObject["sctpPort"]       = sctpParameters["port"];
 				this->mediaObject["maxMessageSize"] = sctpParameters["maxMessageSize"];
 			}
+		}
+
+		void OfferMediaSection::Resume()
+		{
+			MSC_TRACE();
+
+			this->mediaObject["direction"] = "sendonly";
 		}
 
 		void OfferMediaSection::SetDtlsRole(const std::string& /* role */)
